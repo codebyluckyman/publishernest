@@ -1,10 +1,11 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import OrganizationSwitcher from "./OrganizationSwitcher";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -17,6 +18,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: FileText, label: "Quotes", path: "/quotes" },
     { icon: ShoppingCart, label: "Purchase Orders", path: "/orders" },
     { icon: Truck, label: "Shipments", path: "/shipments" },
+    { icon: Building, label: "Organizations", path: "/organizations" },
   ];
 
   const handleSignOut = async () => {
@@ -40,6 +42,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <h1 className="text-xl font-bold text-primary">PublishFlow</h1>
               </div>
               <SidebarGroupContent>
+                <div className="px-3 mb-2">
+                  <OrganizationSwitcher />
+                </div>
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.path}>
