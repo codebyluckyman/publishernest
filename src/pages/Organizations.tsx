@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,18 +32,15 @@ const Organizations = () => {
       try {
         const memberData = await getOrganizationMembers(currentOrganization.id);
         
-        // Fetch profiles for each member
         const memberIds = memberData.map(m => m.user_id);
         
-        // Use a different approach for the select statement - don't qualify column names in the select part
         const { data: profiles, error } = await supabase
           .from('profiles')
           .select('id, email, first_name, last_name')
-          .in('profiles.id', memberIds);
+          .in('id', memberIds);
         
         if (error) throw error;
         
-        // Merge profiles with members
         const membersWithProfiles = memberData.map(member => {
           const profile = profiles?.find(p => p.id === member.user_id);
           return { ...member, profile };
@@ -68,7 +64,6 @@ const Organizations = () => {
     await inviteMember(currentOrganization.id, inviteEmail, inviteRole);
     setInviteEmail("");
     
-    // Refresh member list
     const memberData = await getOrganizationMembers(currentOrganization.id);
     setMembers(memberData);
   };
@@ -78,7 +73,6 @@ const Organizations = () => {
     
     await updateMemberRole(memberId, role);
     
-    // Update local state
     setMembers(prev => 
       prev.map(member => 
         member.id === memberId ? { ...member, role } : member
@@ -91,7 +85,6 @@ const Organizations = () => {
     
     await removeMember(memberId);
     
-    // Update local state
     setMembers(prev => prev.filter(member => member.id !== memberId));
   };
 
