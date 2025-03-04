@@ -11,28 +11,28 @@ export type Database = {
     Tables: {
       organization_members: {
         Row: {
+          auth_user_id: string
           created_at: string
           id: string
           organization_id: string
           role: string
           updated_at: string
-          auth_user_id: string
         }
         Insert: {
+          auth_user_id: string
           created_at?: string
           id?: string
           organization_id: string
           role: string
           updated_at?: string
-          auth_user_id: string
         }
         Update: {
+          auth_user_id?: string
           created_at?: string
           id?: string
           organization_id?: string
           role?: string
           updated_at?: string
-          auth_user_id?: string
         }
         Relationships: [
           {
@@ -42,13 +42,6 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "organization_members_users_id_fkey"
-            columns: ["auth_user_id"]
-            isOneToOne: false
-            referencedRelation: "auth.users"
-            referencedColumns: ["id"]
-          }
         ]
       }
       organizations: {
@@ -74,6 +67,104 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      products: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          currency_code: string | null
+          edition_number: number | null
+          height_measurement: number | null
+          id: string
+          isbn10: string | null
+          isbn13: string | null
+          language_code: string | null
+          list_price: number | null
+          long_description: string | null
+          organization_id: string
+          page_count: number | null
+          product_availability_code: string | null
+          product_form: string | null
+          product_form_detail: string | null
+          publication_date: string | null
+          publisher_name: string | null
+          series_name: string | null
+          short_description: string | null
+          subject_code: string | null
+          subtitle: string | null
+          thickness_measurement: number | null
+          title: string
+          updated_at: string
+          weight_measurement: number | null
+          width_measurement: number | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          currency_code?: string | null
+          edition_number?: number | null
+          height_measurement?: number | null
+          id?: string
+          isbn10?: string | null
+          isbn13?: string | null
+          language_code?: string | null
+          list_price?: number | null
+          long_description?: string | null
+          organization_id: string
+          page_count?: number | null
+          product_availability_code?: string | null
+          product_form?: string | null
+          product_form_detail?: string | null
+          publication_date?: string | null
+          publisher_name?: string | null
+          series_name?: string | null
+          short_description?: string | null
+          subject_code?: string | null
+          subtitle?: string | null
+          thickness_measurement?: number | null
+          title: string
+          updated_at?: string
+          weight_measurement?: number | null
+          width_measurement?: number | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          currency_code?: string | null
+          edition_number?: number | null
+          height_measurement?: number | null
+          id?: string
+          isbn10?: string | null
+          isbn13?: string | null
+          language_code?: string | null
+          list_price?: number | null
+          long_description?: string | null
+          organization_id?: string
+          page_count?: number | null
+          product_availability_code?: string | null
+          product_form?: string | null
+          product_form_detail?: string | null
+          publication_date?: string | null
+          publisher_name?: string | null
+          series_name?: string | null
+          short_description?: string | null
+          subject_code?: string | null
+          subtitle?: string | null
+          thickness_measurement?: number | null
+          title?: string
+          updated_at?: string
+          weight_measurement?: number | null
+          width_measurement?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
