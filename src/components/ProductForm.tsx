@@ -85,12 +85,15 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   useEffect(() => {
     if (isEditMode && productId) {
       setIsLoading(true);
-      supabase
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .single()
-        .then(({ data, error }) => {
+      
+      const fetchProduct = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("products")
+            .select("*")
+            .eq("id", productId)
+            .single();
+            
           if (error) {
             toast.error("Failed to load product: " + error.message);
             return;
@@ -110,10 +113,14 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
               page_count: data.page_count !== null ? Number(data.page_count) : null,
             });
           }
-        })
-        .finally(() => {
+        } catch (err: any) {
+          toast.error("Error loading product: " + err.message);
+        } finally {
           setIsLoading(false);
-        });
+        }
+      };
+      
+      fetchProduct();
     }
   }, [isEditMode, productId, form]);
 
@@ -126,9 +133,10 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
     setIsLoading(true);
     
     try {
-      // Format publication_date from Date to string for database storage
+      // Make sure title is defined (enforced by zod schema)
       const formattedValues = {
         ...values,
+        title: values.title, // Ensure title is passed explicitly
         publication_date: values.publication_date ? values.publication_date.toISOString().split('T')[0] : null,
         organization_id: currentOrganization.id,
       };
