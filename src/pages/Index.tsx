@@ -1,13 +1,13 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Printer, ShoppingCart, TruckDelivery } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck } from "lucide-react";
 
 const Dashboard = () => {
   const stats = [
     { label: "Active Quotes", value: "12", icon: FileText, color: "text-blue-500" },
     { label: "Open Orders", value: "8", icon: ShoppingCart, color: "text-purple-500" },
     { label: "In Production", value: "5", icon: Printer, color: "text-green-500" },
-    { label: "Shipments", value: "3", icon: TruckDelivery, color: "text-orange-500" },
+    { label: "Shipments", value: "3", icon: Truck, color: "text-orange-500" },
   ];
 
   return (

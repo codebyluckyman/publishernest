@@ -1,6 +1,6 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, TruckDelivery, BarChart3 } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -10,7 +10,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: BarChart3, label: "Dashboard", path: "/" },
     { icon: FileText, label: "Quotes", path: "/quotes" },
     { icon: ShoppingCart, label: "Purchase Orders", path: "/orders" },
-    { icon: TruckDelivery, label: "Shipments", path: "/shipments" },
+    { icon: Truck, label: "Shipments", path: "/shipments" },
   ];
 
   return (
