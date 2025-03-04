@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Box, BookOpen, Search, PlusCircle, Edit, Pencil } from "lucide-react";
+import { Package, Box, BookOpen, Search, PlusCircle, Pencil, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -23,6 +22,7 @@ type Product = {
   list_price: number | null;
   created_at: string;
   updated_at: string;
+  cover_image_url: string | null;
 };
 
 const ProductCategories = () => {
@@ -175,6 +175,7 @@ const ProductsTable = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[70px]">Cover</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>ISBN</TableHead>
                   <TableHead>Format</TableHead>
@@ -187,6 +188,24 @@ const ProductsTable = () => {
               <TableBody>
                 {products.map((product) => (
                   <TableRow key={product.id}>
+                    <TableCell>
+                      <div className="w-10 h-14 overflow-hidden rounded border bg-muted">
+                        {product.cover_image_url ? (
+                          <img 
+                            src={product.cover_image_url} 
+                            alt={`Cover for ${product.title}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder.svg";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                            <Image className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="font-medium">{product.title}</TableCell>
                     <TableCell>{product.isbn13 || product.isbn10 || "N/A"}</TableCell>
                     <TableCell>{getProductFormLabel(product.product_form)}</TableCell>

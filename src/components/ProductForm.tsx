@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -129,7 +128,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
     },
   });
 
-  // Fetch product data if in edit mode
   useEffect(() => {
     if (isEditMode && productId) {
       setIsLoading(true);
@@ -148,7 +146,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           }
           
           if (data) {
-            // Format date from string to Date object
             const publicationDate = data.publication_date 
               ? new Date(data.publication_date) 
               : null;
@@ -156,7 +153,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
             form.reset({
               ...data,
               publication_date: publicationDate,
-              // Ensure numeric fields are properly typed
               list_price: data.list_price !== null ? Number(data.list_price) : null,
               page_count: data.page_count !== null ? Number(data.page_count) : null,
               edition_number: data.edition_number !== null ? Number(data.edition_number) : null,
@@ -186,10 +182,9 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
     setIsLoading(true);
     
     try {
-      // Make sure title is defined (enforced by zod schema)
       const formattedValues = {
         ...values,
-        title: values.title, // Ensure title is passed explicitly
+        title: values.title,
         publication_date: values.publication_date ? values.publication_date.toISOString().split('T')[0] : null,
         organization_id: currentOrganization.id,
       };
@@ -197,13 +192,11 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
       let result;
       
       if (isEditMode) {
-        // Update existing product
         result = await supabase
           .from("products")
           .update(formattedValues)
           .eq("id", productId);
       } else {
-        // Insert new product
         result = await supabase
           .from("products")
           .insert(formattedValues);
@@ -225,7 +218,47 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Basic Information */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Cover Image</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <FormField
+                control={form.control}
+                name="cover_image_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cover Image URL</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/cover.jpg" 
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div>
+              {form.watch('cover_image_url') && (
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground mb-2">Preview:</p>
+                  <div className="border rounded overflow-hidden w-32 h-48">
+                    <img 
+                      src={form.watch('cover_image_url')} 
+                      alt="Cover preview" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -312,7 +345,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           </div>
         </div>
         
-        {/* Identifiers */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Identifiers</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -360,7 +392,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           </div>
         </div>
 
-        {/* Product Format */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Product Format</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -467,7 +498,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           </div>
         </div>
 
-        {/* Publication and Pricing */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Publication and Pricing</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -583,7 +613,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           </div>
         </div>
 
-        {/* Physical Properties */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Physical Properties</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -685,43 +714,6 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           </div>
         </div>
 
-        {/* Cover Image */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium">Cover Image</h3>
-          <FormField
-            control={form.control}
-            name="cover_image_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cover Image URL</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="https://example.com/cover.jpg" 
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {form.watch('cover_image_url') && (
-            <div className="mt-2">
-              <p className="text-sm text-muted-foreground mb-2">Preview:</p>
-              <div className="border rounded overflow-hidden w-32 h-48">
-                <img 
-                  src={form.watch('cover_image_url')} 
-                  alt="Cover preview" 
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg";
-                  }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Description */}
         <div className="space-y-2">
           <h3 className="text-lg font-medium">Description</h3>
           <div className="space-y-4">
