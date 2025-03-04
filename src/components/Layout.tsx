@@ -1,10 +1,15 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const menuItems = [
     { icon: BarChart3, label: "Dashboard", path: "/" },
@@ -13,6 +18,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: ShoppingCart, label: "Purchase Orders", path: "/orders" },
     { icon: Truck, label: "Shipments", path: "/shipments" },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Logged out successfully");
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Error signing out");
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -44,6 +60,27 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
+              
+              {user && (
+                <div className="mt-auto p-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <User className="w-5 h-5 text-gray-500" />
+                      <span className="text-sm font-medium truncate">
+                        {user.email}
+                      </span>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-2" 
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              )}
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
