@@ -1,0 +1,91 @@
+
+import { z } from "zod";
+
+export const productSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  subtitle: z.string().optional(),
+  isbn13: z.string().optional(),
+  isbn10: z.string().optional(),
+  product_form: z.string().optional(),
+  product_form_detail: z.string().optional(),
+  publisher_name: z.string().optional(),
+  series_name: z.string().optional(),
+  publication_date: z.date().optional().nullable(),
+  list_price: z.coerce.number().optional().nullable(),
+  currency_code: z.string().optional(),
+  language_code: z.string().optional(),
+  subject_code: z.string().optional(),
+  product_availability_code: z.string().optional(),
+  short_description: z.string().optional(),
+  long_description: z.string().optional(),
+  page_count: z.coerce.number().optional().nullable(),
+  edition_number: z.coerce.number().optional().nullable(),
+  height_measurement: z.coerce.number().optional().nullable(),
+  width_measurement: z.coerce.number().optional().nullable(),
+  thickness_measurement: z.coerce.number().optional().nullable(),
+  weight_measurement: z.coerce.number().optional().nullable(),
+  cover_image_url: z.string().optional(),
+});
+
+export type ProductFormValues = z.infer<typeof productSchema>;
+
+export const productFormOptions = {
+  productForms: [
+    { value: "BA", label: "Book" },
+    { value: "BB", label: "Hardcover" },
+    { value: "BC", label: "Paperback" },
+    { value: "JB", label: "Journal" },
+    { value: "DG", label: "Electronic" },
+    { value: "XA", label: "Custom" },
+  ],
+  currencyCodes: [
+    { value: "USD", label: "US Dollar (USD)" },
+    { value: "EUR", label: "Euro (EUR)" },
+    { value: "GBP", label: "British Pound (GBP)" },
+    { value: "CAD", label: "Canadian Dollar (CAD)" },
+    { value: "AUD", label: "Australian Dollar (AUD)" },
+  ],
+  languageCodes: [
+    { value: "eng", label: "English" },
+    { value: "spa", label: "Spanish" },
+    { value: "fre", label: "French" },
+    { value: "ger", label: "German" },
+    { value: "ita", label: "Italian" },
+    { value: "por", label: "Portuguese" },
+    { value: "chi", label: "Chinese" },
+    { value: "jpn", label: "Japanese" },
+  ],
+  availabilityCodes: [
+    { value: "IP", label: "In Print" },
+    { value: "OS", label: "Out of Stock" },
+    { value: "OI", label: "Out of Print" },
+    { value: "RP", label: "Reprint" },
+    { value: "AD", label: "Available Direct" },
+  ],
+};
+
+export const defaultProductValues: ProductFormValues = {
+  title: "",
+  subtitle: "",
+  isbn13: "",
+  isbn10: "",
+  product_form: "",
+  product_form_detail: "",
+  publisher_name: "",
+  series_name: "",
+  publication_date: null,
+  list_price: null,
+  currency_code: "USD",
+  language_code: "",
+  subject_code: "",
+  product_availability_code: "",
+  short_description: "",
+  long_description: "",
+  page_count: null,
+  edition_number: null,
+  height_measurement: null,
+  width_measurement: null,
+  thickness_measurement: null,
+  weight_measurement: null,
+  cover_image_url: "",
+};
