@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -41,7 +40,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user's organizations
   useEffect(() => {
     if (!user) {
       setOrganizations([]);
@@ -53,7 +51,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
     const fetchOrganizations = async () => {
       setIsLoading(true);
       try {
-        // Get organizations the user is a member of
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
           .select('organization_id')
@@ -64,7 +61,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         if (memberships && memberships.length > 0) {
           const orgIds = memberships.map(m => m.organization_id);
           
-          // Get organization details
           const { data: orgs, error: orgsError } = await supabase
             .from('organizations')
             .select('*')
@@ -73,7 +69,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
           if (orgsError) throw orgsError;
           setOrganizations(orgs || []);
 
-          // Get user's current organization preference
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('current_organization_id')
@@ -88,9 +83,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
             const currentOrg = orgs?.find(org => org.id === profile.current_organization_id) || null;
             setCurrentOrganization(currentOrg);
           } else if (orgs && orgs.length > 0) {
-            // If no current org is set but user has orgs, use the first one
             setCurrentOrganization(orgs[0]);
-            // Update the user's current organization preference
             await supabase
               .from('profiles')
               .update({ current_organization_id: orgs[0].id })
@@ -120,10 +113,8 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
     }
 
     try {
-      // Generate a slug from the name
       const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       
-      // Insert the new organization
       const { data: org, error: orgError } = await supabase
         .from('organizations')
         .insert({ name, slug })
@@ -133,7 +124,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       if (orgError) throw orgError;
       if (!org) throw new Error("Failed to create organization");
 
-      // Add the creator as an owner
       const { error: memberError } = await supabase
         .from('organization_members')
         .insert({
@@ -144,13 +134,11 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
 
       if (memberError) throw memberError;
 
-      // Update user's current organization
       await supabase
         .from('profiles')
         .update({ current_organization_id: org.id })
         .eq('id', user.id);
 
-      // Update local state
       setOrganizations(prev => [...prev, org]);
       setCurrentOrganization(org);
       
@@ -170,7 +158,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       const org = organizations.find(o => o.id === organizationId);
       if (!org) throw new Error("Organization not found");
 
-      // Update user's current organization preference
       await supabase
         .from('profiles')
         .update({ current_organization_id: organizationId })
@@ -192,7 +179,13 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         .eq('organization_id', organizationId);
 
       if (error) throw error;
-      return data || [];
+      
+      const members: OrganizationMember[] = (data || []).map(member => ({
+        ...member,
+        role: member.role as "owner" | "admin" | "member"
+      }));
+      
+      return members;
     } catch (error: any) {
       console.error("Error fetching organization members:", error);
       toast.error(error.message || "Failed to fetch organization members");
@@ -202,7 +195,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
 
   const inviteMember = async (organizationId: string, email: string, role: "admin" | "member") => {
     try {
-      // Check if user with this email exists
       const { data: userExists, error: userError } = await supabase
         .from('profiles')
         .select('id')
@@ -217,7 +209,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         throw new Error("User with this email does not exist");
       }
 
-      // Check if user is already a member
       const { data: existingMember, error: memberError } = await supabase
         .from('organization_members')
         .select('*')
@@ -233,7 +224,6 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         throw new Error("User is already a member of this organization");
       }
 
-      // Add the member
       const { error: insertError } = await supabase
         .from('organization_members')
         .insert({
