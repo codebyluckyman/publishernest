@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -82,7 +82,7 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
   });
 
   // Fetch product data if in edit mode
-  useState(() => {
+  useEffect(() => {
     if (isEditMode && productId) {
       setIsLoading(true);
       supabase
@@ -111,7 +111,9 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
             });
           }
         })
-        .finally(() => setIsLoading(false));
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }, [isEditMode, productId, form]);
 
@@ -124,9 +126,10 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
     setIsLoading(true);
     
     try {
-      // Prepare data for saving
-      const productData = {
+      // Format publication_date from Date to string for database storage
+      const formattedValues = {
         ...values,
+        publication_date: values.publication_date ? values.publication_date.toISOString().split('T')[0] : null,
         organization_id: currentOrganization.id,
       };
 
@@ -136,13 +139,13 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
         // Update existing product
         result = await supabase
           .from("products")
-          .update(productData)
+          .update(formattedValues)
           .eq("id", productId);
       } else {
         // Insert new product
         result = await supabase
           .from("products")
-          .insert(productData);
+          .insert(formattedValues);
       }
       
       if (result.error) {
