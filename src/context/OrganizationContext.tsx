@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -54,7 +55,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', user.id);
+          .eq('organization_members.user_id', user.id);
 
         if (membershipError) throw membershipError;
 
@@ -64,7 +65,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
           const { data: orgs, error: orgsError } = await supabase
             .from('organizations')
             .select('*')
-            .in('id', orgIds);
+            .in('organizations.id', orgIds);
 
           if (orgsError) throw orgsError;
           setOrganizations(orgs || []);
@@ -72,7 +73,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('current_organization_id')
-            .eq('id', user.id)
+            .eq('profiles.id', user.id)
             .single();
 
           if (profileError && profileError.code !== 'PGRST116') {
@@ -87,7 +88,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
             await supabase
               .from('profiles')
               .update({ current_organization_id: orgs[0].id })
-              .eq('id', user.id);
+              .eq('profiles.id', user.id);
           } else {
             setCurrentOrganization(null);
           }
@@ -137,7 +138,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       await supabase
         .from('profiles')
         .update({ current_organization_id: org.id })
-        .eq('id', user.id);
+        .eq('profiles.id', user.id);
 
       setOrganizations(prev => [...prev, org]);
       setCurrentOrganization(org);
@@ -161,7 +162,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       await supabase
         .from('profiles')
         .update({ current_organization_id: organizationId })
-        .eq('id', user.id);
+        .eq('profiles.id', user.id);
 
       setCurrentOrganization(org);
       toast.success(`Switched to ${org.name}`);
@@ -176,7 +177,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       const { data, error } = await supabase
         .from('organization_members')
         .select('*')
-        .eq('organization_id', organizationId);
+        .eq('organization_members.organization_id', organizationId);
 
       if (error) throw error;
       
@@ -198,7 +199,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       const { data: userExists, error: userError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('email', email)
+        .eq('profiles.email', email)
         .single();
 
       if (userError && userError.code !== 'PGRST116') {
@@ -212,8 +213,8 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       const { data: existingMember, error: memberError } = await supabase
         .from('organization_members')
         .select('*')
-        .eq('organization_id', organizationId)
-        .eq('user_id', userExists.id)
+        .eq('organization_members.organization_id', organizationId)
+        .eq('organization_members.user_id', userExists.id)
         .single();
 
       if (memberError && memberError.code !== 'PGRST116') {
@@ -246,7 +247,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       const { error } = await supabase
         .from('organization_members')
         .update({ role })
-        .eq('id', memberId);
+        .eq('organization_members.id', memberId);
 
       if (error) throw error;
       toast.success("Member role updated");
@@ -261,7 +262,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       const { error } = await supabase
         .from('organization_members')
         .delete()
-        .eq('id', memberId);
+        .eq('organization_members.id', memberId);
 
       if (error) throw error;
       toast.success("Member removed from organization");

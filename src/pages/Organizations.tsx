@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,8 +36,8 @@ const Organizations = () => {
         const memberIds = memberData.map(m => m.user_id);
         const { data: profiles, error } = await supabase
           .from('profiles')
-          .select('id, email, first_name, last_name')
-          .in('id', memberIds);
+          .select('profiles.id, profiles.email, profiles.first_name, profiles.last_name')
+          .in('profiles.id', memberIds);
         
         if (error) throw error;
         
