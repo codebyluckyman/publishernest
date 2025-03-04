@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Box, BookOpen, Search, PlusCircle } from "lucide-react";
+import { Package, Box, BookOpen, Search, PlusCircle, Edit, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
+import ProductDialog from "@/components/ProductDialog";
 
 type Product = {
   id: string;
@@ -54,6 +55,8 @@ const ProductCategories = () => {
 const ProductsTable = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
 
   const fetchProducts = async () => {
     if (!currentOrganization) {
@@ -90,6 +93,20 @@ const ProductsTable = () => {
       toast.error("Failed to load products: " + (error as Error).message);
     }
   }, [error]);
+
+  const handleAddProduct = () => {
+    setSelectedProductId(undefined);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditProduct = (productId: string) => {
+    setSelectedProductId(productId);
+    setIsDialogOpen(true);
+  };
+
+  const handleDialogSuccess = () => {
+    refetch();
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
@@ -138,7 +155,7 @@ const ProductsTable = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button className="gap-1">
+            <Button className="gap-1" onClick={handleAddProduct}>
               <PlusCircle className="h-4 w-4" />
               Add Product
             </Button>
@@ -164,6 +181,7 @@ const ProductsTable = () => {
                   <TableHead>Publisher</TableHead>
                   <TableHead>Pub Date</TableHead>
                   <TableHead>Price</TableHead>
+                  <TableHead className="w-[80px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -175,6 +193,16 @@ const ProductsTable = () => {
                     <TableCell>{product.publisher_name || "N/A"}</TableCell>
                     <TableCell>{formatDate(product.publication_date)}</TableCell>
                     <TableCell>{formatPrice(product.list_price)}</TableCell>
+                    <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleEditProduct(product.id)}
+                        title="Edit product"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -190,7 +218,7 @@ const ProductsTable = () => {
                 : "Get started by adding your first product to the catalog."}
             </p>
             {currentOrganization && (
-              <Button className="mt-4 gap-1">
+              <Button className="mt-4 gap-1" onClick={handleAddProduct}>
                 <PlusCircle className="h-4 w-4" />
                 Add First Product
               </Button>
@@ -198,6 +226,13 @@ const ProductsTable = () => {
           </div>
         )}
       </CardContent>
+
+      <ProductDialog
+        open={isDialogOpen}
+        productId={selectedProductId}
+        onOpenChange={setIsDialogOpen}
+        onSuccess={handleDialogSuccess}
+      />
     </Card>
   );
 };
