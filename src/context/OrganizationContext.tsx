@@ -53,7 +53,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
       try {
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
-          .select('*')
+          .select('id', 'organization_id', 'organization_members.user_id')
           .eq('organization_members.user_id', user.id);
 
         if (membershipError) throw membershipError;
