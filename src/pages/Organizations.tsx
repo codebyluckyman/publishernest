@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +33,7 @@ const Organizations = () => {
       try {
         const memberData = await getOrganizationMembers(currentOrganization.id);
         
-        const memberIds = memberData.map(m => m.user_id);
+        const memberIds = memberData.map(m => m.auth_user_id);
         
         const { data: profiles, error } = await supabase
           .from('profiles')
@@ -42,7 +43,7 @@ const Organizations = () => {
         if (error) throw error;
         
         const membersWithProfiles = memberData.map(member => {
-          const profile = profiles?.find(p => p.id === member.user_id);
+          const profile = profiles?.find(p => p.id === member.auth_user_id);
           return { ...member, profile };
         });
         
@@ -170,7 +171,7 @@ const Organizations = () => {
               ) : (
                 members.map((member) => {
                   const isOwner = member.role === "owner";
-                  const isCurrentUser = member.user_id === user?.id;
+                  const isCurrentUser = member.auth_user_id === user?.id;
                   
                   return (
                     <div key={member.id} className="flex items-center justify-between py-2 border-b">
