@@ -76,14 +76,24 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                       </span>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start gap-2" 
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </Button>
+                  <div className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start gap-2" 
+                      onClick={() => navigate('/profile')}
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start gap-2" 
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </Button>
+                  </div>
                 </div>
               )}
             </SidebarGroup>
