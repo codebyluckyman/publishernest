@@ -16,7 +16,7 @@ export type Database = {
           organization_id: string
           role: string
           updated_at: string
-          user_id: string
+          auth_user_id: string
         }
         Insert: {
           created_at?: string
@@ -24,7 +24,7 @@ export type Database = {
           organization_id: string
           role: string
           updated_at?: string
-          user_id: string
+          auth_user_id: string
         }
         Update: {
           created_at?: string
@@ -32,7 +32,7 @@ export type Database = {
           organization_id?: string
           role?: string
           updated_at?: string
-          user_id?: string
+          auth_user_id?: string
         }
         Relationships: [
           {
@@ -44,7 +44,7 @@ export type Database = {
           },
           {
             foreignKeyName: "organization_members_users_id_fkey"
-            columns: ["user_id"]
+            columns: ["auth_user_id"]
             isOneToOne: false
             referencedRelation: "auth.users"
             referencedColumns: ["id"]

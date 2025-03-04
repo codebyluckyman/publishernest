@@ -14,7 +14,7 @@ export type Organization = {
 export type OrganizationMember = {
   id: string;
   organization_id: string;
-  user_id: string;
+  auth_user_id: string;
   role: "owner" | "admin" | "member";
   created_at: string;
 };
@@ -54,7 +54,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', user.id);
+          .eq('auth_user_id', user.id);
 
         if (membershipError) throw membershipError;
 
@@ -128,7 +128,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         .from('organization_members')
         .insert({
           organization_id: org.id,
-          user_id: user.id,
+          auth_user_id: user.id,
           role: 'owner'
         });
 
@@ -213,7 +213,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         .from('organization_members')
         .select('*')
         .eq('organization_id', organizationId)
-        .eq('user_id', userExists.id)
+        .eq('auth_user_id', userExists.id)
         .single();
 
       if (memberError && memberError.code !== 'PGRST116') {
@@ -228,7 +228,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         .from('organization_members')
         .insert({
           organization_id: organizationId,
-          user_id: userExists.id,
+          auth_user_id: userExists.id,
           role
         });
 
