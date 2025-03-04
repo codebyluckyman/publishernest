@@ -9,12 +9,15 @@ import { CalendarIcon } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { format } from "date-fns";
 import { ProductFormValues, productFormOptions } from "@/schemas/productSchema";
+import { useState } from "react";
 
 interface PublicationSectionProps {
   form: UseFormReturn<ProductFormValues>;
 }
 
 export function PublicationSection({ form }: PublicationSectionProps) {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Publication and Pricing</h3>
@@ -25,7 +28,7 @@ export function PublicationSection({ form }: PublicationSectionProps) {
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel>Publication Date</FormLabel>
-              <Popover>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
@@ -33,6 +36,7 @@ export function PublicationSection({ form }: PublicationSectionProps) {
                       className={`w-full justify-start text-left font-normal ${
                         !field.value ? "text-muted-foreground" : ""
                       }`}
+                      onClick={() => setIsCalendarOpen(true)}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {field.value ? format(field.value, "PPP") : "Pick a date"}
@@ -43,7 +47,15 @@ export function PublicationSection({ form }: PublicationSectionProps) {
                   <Calendar
                     mode="single"
                     selected={field.value || undefined}
-                    onSelect={field.onChange}
+                    onSelect={(date) => {
+                      field.onChange(date);
+                      // Only close after a successful selection
+                      if (date) {
+                        setTimeout(() => {
+                          setIsCalendarOpen(false);
+                        }, 100);
+                      }
+                    }}
                     initialFocus
                   />
                 </PopoverContent>
