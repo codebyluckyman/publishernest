@@ -54,7 +54,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', user.id);
+          .eq('organization_members.user_id', user.id);
 
         if (membershipError) throw membershipError;
 
@@ -213,7 +213,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         .from('organization_members')
         .select('*')
         .eq('organization_id', organizationId)
-        .eq('user_id', userExists.id)
+        .eq('organization_members.user_id', userExists.id)
         .single();
 
       if (memberError && memberError.code !== 'PGRST116') {
