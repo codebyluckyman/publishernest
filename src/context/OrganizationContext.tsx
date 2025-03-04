@@ -52,6 +52,8 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
     const fetchOrganizations = async () => {
       setIsLoading(true);
       try {
+        // For these queries, we'll use table name qualifiers only in the .eq(), .in(), etc. methods
+        // but not in the .select() method to avoid parser errors
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
           .select('organization_id')
@@ -196,6 +198,8 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
 
   const inviteMember = async (organizationId: string, email: string, role: "admin" | "member") => {
     try {
+      // For these queries, we'll use table name qualifiers only in the .eq() method
+      // but not in the .select() method to avoid parser errors
       const { data: userExists, error: userError } = await supabase
         .from('profiles')
         .select('id')

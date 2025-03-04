@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,9 +35,11 @@ const Organizations = () => {
         
         // Fetch profiles for each member
         const memberIds = memberData.map(m => m.user_id);
+        
+        // Use a different approach for the select statement - don't qualify column names in the select part
         const { data: profiles, error } = await supabase
           .from('profiles')
-          .select('profiles.id, profiles.email, profiles.first_name, profiles.last_name')
+          .select('id, email, first_name, last_name')
           .in('profiles.id', memberIds);
         
         if (error) throw error;
