@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -54,7 +55,7 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', user.id);
+          .eq('organization_members.user_id', user.id);  // Specify the table name for user_id
 
         if (membershipError) throw membershipError;
 
