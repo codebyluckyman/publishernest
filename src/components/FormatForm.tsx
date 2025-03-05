@@ -1,6 +1,9 @@
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FormatFormFields } from "./form/FormatFormFields";
 import { useFormatForm } from "@/hooks/useFormatForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -31,9 +34,6 @@ export default function FormatForm({
     onSuccess 
   });
 
-  // Log to debug
-  console.log("FormatForm: isEditMode =", isEditMode, "formatId =", formatId);
-
   // Sync loading state with parent if provided
   useEffect(() => {
     if (setParentIsLoading) {
@@ -55,7 +55,7 @@ export default function FormatForm({
         
         {!hideButtons && (
           <div className="flex justify-end space-x-2">
-            {formatId && (
+            {isEditMode && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" type="button" disabled={isLoading}>
@@ -72,9 +72,7 @@ export default function FormatForm({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete
-                    </AlertDialogAction>
+                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -85,9 +83,9 @@ export default function FormatForm({
             <Button 
               type="submit" 
               disabled={isLoading} 
-              variant={formatId ? "success" : "default"}
+              variant={isEditMode ? "success" : "default"}
             >
-              {isLoading ? "Saving..." : formatId ? "Update Format" : "Create Format"}
+              {isLoading ? "Saving..." : isEditMode ? "Update Format" : "Create Format"}
             </Button>
           </div>
         )}

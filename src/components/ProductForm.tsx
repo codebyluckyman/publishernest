@@ -34,9 +34,6 @@ export default function ProductForm({
 }: ProductFormProps) {
   const { form, isLoading, isEditMode, onSubmit, deleteProduct } = useProductForm(productId, onSuccess);
 
-  // Log to debug
-  console.log("ProductForm: isEditMode =", isEditMode, "productId =", productId);
-
   // Sync loading state with parent if provided
   useEffect(() => {
     if (setParentIsLoading) {
@@ -64,7 +61,7 @@ export default function ProductForm({
 
         {!hideButtons && (
           <div className="flex justify-end space-x-2">
-            {productId && (
+            {isEditMode && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" type="button" disabled={isLoading}>
@@ -81,9 +78,7 @@ export default function ProductForm({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete
-                    </AlertDialogAction>
+                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -94,9 +89,9 @@ export default function ProductForm({
             <Button 
               type="submit" 
               disabled={isLoading} 
-              variant={productId ? "success" : "default"}
+              variant={isEditMode ? "success" : "default"}
             >
-              {isLoading ? "Saving..." : productId ? "Update Product" : "Create Product"}
+              {isLoading ? "Saving..." : isEditMode ? "Update Product" : "Create Product"}
             </Button>
           </div>
         )}

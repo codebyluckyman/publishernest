@@ -4,6 +4,8 @@ import { Separator } from "@/components/ui/separator";
 import FormatForm from "./FormatForm";
 import { LinkedProductsGallery } from "./format/LinkedProductsGallery";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 type FormatDialogProps = {
@@ -37,6 +39,28 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>{isEditMode ? "Edit Format" : "Add New Format"}</DialogTitle>
           <div className="flex space-x-2">
+            {isEditMode && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" type="button" disabled={isLoading}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete this format and cannot be undone. This may also affect products that use this format.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Button variant="outline" type="button" onClick={handleCancel} disabled={isLoading}>
               Cancel
             </Button>
