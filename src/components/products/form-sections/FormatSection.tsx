@@ -153,7 +153,7 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
                 </Button>
               )}
             </div>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 text-sm text-black">
               <p><span className="font-medium">TPS:</span> {selectedFormat.tps || "N/A"}</p>
               <p><span className="font-medium">Extent:</span> {selectedFormat.extent || "N/A"}</p>
               <p><span className="font-medium">Cover Stock/Print:</span> {selectedFormat.cover_stock_print || "N/A"}</p>
