@@ -48,25 +48,10 @@ const ProductsTable = () => {
       return [];
     }
 
-    // Query to fetch products with their default price
-    const query = `
-      products.*,
-      COALESCE(
-        (SELECT price FROM product_prices 
-         WHERE product_prices.product_id = products.id 
-         AND product_prices.is_default = true
-         LIMIT 1),
-        products.list_price
-      ) as default_price,
-      (SELECT currency_code FROM product_prices 
-       WHERE product_prices.product_id = products.id 
-       AND product_prices.is_default = true
-       LIMIT 1) as default_currency
-    `;
-
+    // First, fetch the basic product data
     let queryBuilder = supabase
       .from("products")
-      .select(query)
+      .select("*")
       .eq("organization_id", currentOrganization.id);
 
     if (searchQuery) {
@@ -81,14 +66,49 @@ const ProductsTable = () => {
       queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
     }
 
-    const { data, error } = await queryBuilder.order("created_at", { ascending: false });
+    const { data: productsData, error } = await queryBuilder.order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching products:", error);
       throw new Error(error.message);
     }
 
-    return data as Product[];
+    // If there are products, fetch their default prices
+    if (productsData && productsData.length > 0) {
+      const productIds = productsData.map(product => product.id);
+      
+      const { data: pricesData, error: pricesError } = await supabase
+        .from("product_prices")
+        .select("product_id, price, currency_code")
+        .in("product_id", productIds)
+        .eq("is_default", true);
+
+      if (pricesError) {
+        console.error("Error fetching product prices:", pricesError);
+        // Continue with products but without prices
+      }
+
+      // Create a map of product_id to default price info
+      const priceMap: Record<string, { price: number; currency: string }> = {};
+      
+      if (pricesData) {
+        pricesData.forEach(priceInfo => {
+          priceMap[priceInfo.product_id] = {
+            price: priceInfo.price,
+            currency: priceInfo.currency_code
+          };
+        });
+      }
+
+      // Add default price information to products
+      return productsData.map(product => ({
+        ...product,
+        default_price: priceMap[product.id]?.price ?? product.list_price,
+        default_currency: priceMap[product.id]?.currency ?? "USD"
+      })) as Product[];
+    }
+
+    return productsData as Product[];
   };
 
   const { data: products, isLoading, error, refetch } = useQuery({
