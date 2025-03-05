@@ -112,8 +112,8 @@ export function FormatSection({ form }: FormatSectionProps) {
               <FormLabel>Select Format</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value || ""}
-                value={field.value || ""}
+                defaultValue={field.value || undefined}
+                value={field.value || undefined}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -121,7 +121,6 @@ export function FormatSection({ form }: FormatSectionProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
                   {formats.map((format) => (
                     <SelectItem key={format.id} value={format.id}>
                       {format.format_name}
