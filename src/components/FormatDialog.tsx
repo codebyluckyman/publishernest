@@ -1,6 +1,8 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import FormatForm from "./FormatForm";
+import { LinkedProductsGallery } from "./format/LinkedProductsGallery";
 
 type FormatDialogProps = {
   open: boolean;
@@ -23,7 +25,7 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Format" : "Add New Format"}</DialogTitle>
         </DialogHeader>
@@ -32,6 +34,13 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
           onSuccess={handleSuccess} 
           onCancel={handleCancel} 
         />
+        
+        {isEditMode && formatId && (
+          <>
+            <Separator className="my-4" />
+            <LinkedProductsGallery formatId={formatId} />
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
