@@ -50,6 +50,7 @@ const Organizations = () => {
         setMembers(membersWithProfiles);
       } catch (error) {
         console.error("Error fetching members:", error);
+        toast.error("Failed to fetch organization members");
       } finally {
         setLoading(false);
       }
@@ -172,6 +173,9 @@ const Organizations = () => {
                 members.map((member) => {
                   const isOwner = member.role === "owner";
                   const isCurrentUser = member.auth_user_id === user?.id;
+                  const displayName = member.profile?.first_name && member.profile?.last_name
+                    ? `${member.profile.first_name} ${member.profile.last_name}`
+                    : member.profile?.email || "Unknown User";
                   
                   return (
                     <div key={member.id} className="flex items-center justify-between py-2 border-b">
@@ -186,10 +190,15 @@ const Organizations = () => {
                           )}
                         </div>
                         <div>
-                          <div className="font-medium">{member.profile?.email || "Unknown User"}</div>
+                          <div className="font-medium">{displayName}</div>
                           <div className="text-xs text-gray-500">
-                            {isOwner ? "Owner" : member.role === "admin" ? "Admin" : "Member"}
-                            {isCurrentUser && " (You)"}
+                            {member.profile?.email && displayName !== member.profile.email && (
+                              <span className="block">{member.profile.email}</span>
+                            )}
+                            <span>
+                              {isOwner ? "Owner" : member.role === "admin" ? "Admin" : "Member"}
+                              {isCurrentUser && " (You)"}
+                            </span>
                           </div>
                         </div>
                       </div>
