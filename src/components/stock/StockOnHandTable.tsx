@@ -138,7 +138,7 @@ const StockOnHandTable = () => {
     
     const csvContent = objectsToCSV(csvData, columns);
     const today = new Date().toISOString().slice(0, 10);
-    const filename = `stock-inventory-${today}.csv`;
+    const filename = `${currentOrganization.name}-stock-inventory-${today}.csv`;
     
     downloadCSV(csvContent, filename);
   };
