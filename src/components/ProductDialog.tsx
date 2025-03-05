@@ -21,6 +21,11 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
     onOpenChange(false);
   };
 
+  const handleDelete = () => {
+    onSuccess();
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
@@ -30,7 +35,8 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
         <ProductForm 
           productId={productId} 
           onSuccess={handleSuccess} 
-          onCancel={handleCancel} 
+          onCancel={handleCancel}
+          onDelete={handleDelete}
         />
       </DialogContent>
     </Dialog>

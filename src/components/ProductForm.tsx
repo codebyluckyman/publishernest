@@ -9,15 +9,25 @@ import { FormatSection } from "./products/form-sections/FormatSection";
 import { PublicationSection } from "./products/form-sections/PublicationSection";
 import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalPropertiesSection";
 import { DescriptionSection } from "./products/form-sections/DescriptionSection";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 type ProductFormProps = {
   productId?: string;
   onSuccess: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
 };
 
-export default function ProductForm({ productId, onSuccess, onCancel }: ProductFormProps) {
-  const { form, isLoading, isEditMode, onSubmit } = useProductForm(productId, onSuccess);
+export default function ProductForm({ productId, onSuccess, onCancel, onDelete }: ProductFormProps) {
+  const { form, isLoading, isEditMode, onSubmit, deleteProduct } = useProductForm(productId, onSuccess);
+
+  const handleDelete = async () => {
+    if (productId) {
+      await deleteProduct();
+      if (onDelete) onDelete();
+    }
+  };
 
   return (
     <Form {...form}>
@@ -31,6 +41,28 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
         <DescriptionSection form={form} />
 
         <div className="flex justify-end space-x-2">
+          {isEditMode && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" type="button" disabled={isLoading}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete this product and cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Button variant="destructive" type="button" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>

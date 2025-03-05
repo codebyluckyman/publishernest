@@ -128,10 +128,39 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
     }
   }
 
+  // Handle format deletion
+  async function deleteFormat() {
+    if (!formatId || !currentOrganization) {
+      toast.error("Cannot delete format: Missing ID or organization");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from("formats")
+        .delete()
+        .eq("id", formatId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Format deleted successfully");
+      onSuccess();
+    } catch (error: any) {
+      toast.error(`Failed to delete format: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return {
     form,
     isLoading,
     isEditMode,
-    onSubmit
+    onSubmit,
+    deleteFormat
   };
 }

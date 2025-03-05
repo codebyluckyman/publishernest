@@ -105,10 +105,39 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     }
   }
 
+  // Handle product deletion
+  async function deleteProduct() {
+    if (!productId || !currentOrganization) {
+      toast.error("Cannot delete product: Missing ID or organization");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      toast.success("Product deleted successfully");
+      onSuccess();
+    } catch (error: any) {
+      toast.error(`Failed to delete product: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return {
     form,
     isLoading,
     isEditMode,
     onSubmit,
+    deleteProduct
   };
 }

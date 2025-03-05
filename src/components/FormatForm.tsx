@@ -6,18 +6,28 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormatFormFields } from "./form/FormatFormFields";
 import { useFormatForm } from "@/hooks/useFormatForm";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 type FormatFormProps = {
   formatId?: string;
   onSuccess: () => void;
   onCancel: () => void;
+  onDelete?: () => void;
 };
 
-export default function FormatForm({ formatId, onSuccess, onCancel }: FormatFormProps) {
-  const { form, isLoading, isEditMode, onSubmit } = useFormatForm({ 
+export default function FormatForm({ formatId, onSuccess, onCancel, onDelete }: FormatFormProps) {
+  const { form, isLoading, isEditMode, onSubmit, deleteFormat } = useFormatForm({ 
     formatId, 
     onSuccess 
   });
+
+  const handleDelete = async () => {
+    if (formatId) {
+      await deleteFormat();
+      if (onDelete) onDelete();
+    }
+  };
 
   return (
     <Form {...form}>
@@ -25,6 +35,28 @@ export default function FormatForm({ formatId, onSuccess, onCancel }: FormatForm
         <FormatFormFields form={form} />
         
         <div className="flex justify-end space-x-2">
+          {isEditMode && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" type="button" disabled={isLoading}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete this format and cannot be undone. This may also affect products that use this format.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Button variant="destructive" type="button" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
