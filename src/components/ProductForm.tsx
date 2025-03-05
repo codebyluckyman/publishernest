@@ -66,7 +66,11 @@ export default function ProductForm({ productId, onSuccess, onCancel, onDelete }
           <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading} variant="default">
+          <Button 
+            type="submit" 
+            disabled={isLoading} 
+            variant={isEditMode ? "success" : "default"}
+          >
             {isLoading ? "Saving..." : isEditMode ? "Update Product" : "Create Product"}
           </Button>
         </div>
