@@ -80,7 +80,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       };
 
       let result;
-      let productId = isEditMode ? productId : null;
+      let submittedProductId = isEditMode ? productId : null;
       
       if (isEditMode) {
         result = await supabase
@@ -94,7 +94,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
           .select();
           
         if (result.data && result.data.length > 0) {
-          productId = result.data[0].id;
+          submittedProductId = result.data[0].id;
         }
       }
       
@@ -105,7 +105,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       toast.success(isEditMode ? "Product updated successfully" : "Product created successfully");
       onSuccess();
       
-      return { success: true, productId };
+      return { success: true, productId: submittedProductId };
     } catch (error: any) {
       toast.error(`Failed to ${isEditMode ? "update" : "create"} product: ${error.message}`);
       return { success: false, productId: null };
