@@ -46,6 +46,7 @@ serve(async (req) => {
       });
 
     if (uploadError) {
+      console.error("Upload error:", uploadError);
       return new Response(
         JSON.stringify({ error: 'Failed to upload file', details: uploadError }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -62,6 +63,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
+    console.error("Function error:", error);
     return new Response(
       JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }

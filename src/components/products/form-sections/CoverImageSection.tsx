@@ -8,6 +8,7 @@ import { Image, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOrganization } from "@/context/OrganizationContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client"; 
 
 interface CoverImageSectionProps {
   form: UseFormReturn<ProductFormValues>;
@@ -46,17 +47,20 @@ export function CoverImageSection({ form, readOnly = false }: CoverImageSectionP
       formData.append("file", file);
       formData.append("organizationId", currentOrganization.id);
       
-      const response = await fetch("/api/upload-product-image", {
-        method: "POST",
+      // Call the edge function directly
+      const { data, error } = await supabase.functions.invoke('upload-product-image', {
         body: formData,
+        method: 'POST',
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to upload image");
+      if (error) {
+        throw new Error(error.message || "Failed to upload image");
       }
       
-      const data = await response.json();
+      if (!data || !data.url) {
+        throw new Error("No URL returned from upload");
+      }
+      
       form.setValue("cover_image_url", data.url);
       toast.success("Image uploaded successfully");
     } catch (error) {
