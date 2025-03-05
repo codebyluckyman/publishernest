@@ -31,6 +31,9 @@ export default function FormatForm({
     onSuccess 
   });
 
+  // Log to debug
+  console.log("FormatForm: isEditMode =", isEditMode, "formatId =", formatId);
+
   // Sync loading state with parent if provided
   useEffect(() => {
     if (setParentIsLoading) {
@@ -52,7 +55,7 @@ export default function FormatForm({
         
         {!hideButtons && (
           <div className="flex justify-end space-x-2">
-            {isEditMode && (
+            {formatId && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" type="button" disabled={isLoading}>
@@ -82,9 +85,9 @@ export default function FormatForm({
             <Button 
               type="submit" 
               disabled={isLoading} 
-              variant={isEditMode ? "success" : "default"}
+              variant={formatId ? "success" : "default"}
             >
-              {isLoading ? "Saving..." : isEditMode ? "Update Format" : "Create Format"}
+              {isLoading ? "Saving..." : formatId ? "Update Format" : "Create Format"}
             </Button>
           </div>
         )}
