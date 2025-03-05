@@ -19,6 +19,8 @@ interface Product {
   publisher_name: string | null;
   publication_date: string | null;
   list_price: number | null;
+  default_price: number | null;
+  default_currency: string | null;
   created_at: string;
   updated_at: string;
   cover_image_url: string | null;
@@ -46,24 +48,40 @@ const ProductsTable = () => {
       return [];
     }
 
-    let query = supabase
+    // Query to fetch products with their default price
+    const query = `
+      products.*,
+      COALESCE(
+        (SELECT price FROM product_prices 
+         WHERE product_prices.product_id = products.id 
+         AND product_prices.is_default = true
+         LIMIT 1),
+        products.list_price
+      ) as default_price,
+      (SELECT currency_code FROM product_prices 
+       WHERE product_prices.product_id = products.id 
+       AND product_prices.is_default = true
+       LIMIT 1) as default_currency
+    `;
+
+    let queryBuilder = supabase
       .from("products")
-      .select("*")
+      .select(query)
       .eq("organization_id", currentOrganization.id);
 
     if (searchQuery) {
-      query = query.ilike("title", `%${searchQuery}%`);
+      queryBuilder = queryBuilder.ilike("title", `%${searchQuery}%`);
     }
 
     if (filters.product_form) {
-      query = query.eq("product_form", filters.product_form);
+      queryBuilder = queryBuilder.eq("product_form", filters.product_form);
     }
 
     if (filters.publisher_name) {
-      query = query.eq("publisher_name", filters.publisher_name);
+      queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
     }
 
-    const { data, error } = await query.order("created_at", { ascending: false });
+    const { data, error } = await queryBuilder.order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching products:", error);
@@ -108,11 +126,11 @@ const ProductsTable = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatPrice = (price: number | null) => {
+  const formatPrice = (price: number | null, currencyCode: string | null = "USD") => {
     if (price === null) return "N/A";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: currencyCode || "USD",
     }).format(price);
   };
 

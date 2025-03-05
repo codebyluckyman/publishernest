@@ -13,6 +13,8 @@ interface Product {
   publisher_name: string | null;
   publication_date: string | null;
   list_price: number | null;
+  default_price: number | null;
+  default_currency: string | null;
   created_at: string;
   updated_at: string;
   cover_image_url: string | null;
@@ -26,7 +28,7 @@ interface ProductTableContentProps {
   handleEditProduct: (id: string) => void;
   handleAddProduct: () => void;
   formatDate: (date: string | null) => string;
-  formatPrice: (price: number | null) => string;
+  formatPrice: (price: number | null, currencyCode?: string | null) => string;
   getProductFormLabel: (form: string | null) => string;
 }
 
@@ -117,7 +119,11 @@ const ProductTableContent = ({
               <TableCell>{getProductFormLabel(product.product_form)}</TableCell>
               <TableCell>{product.publisher_name || "N/A"}</TableCell>
               <TableCell>{formatDate(product.publication_date)}</TableCell>
-              <TableCell>{formatPrice(product.list_price)}</TableCell>
+              <TableCell>
+                {product.default_price !== null 
+                  ? formatPrice(product.default_price, product.default_currency)
+                  : formatPrice(product.list_price)}
+              </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()} className="space-x-1">
                 <Button 
                   variant="ghost" 
