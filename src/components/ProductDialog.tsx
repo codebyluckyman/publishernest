@@ -4,7 +4,7 @@ import ProductForm from "./ProductForm";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type ProductDialogProps = {
   open: boolean;
@@ -16,6 +16,7 @@ type ProductDialogProps = {
 const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDialogProps) => {
   const isEditMode = !!productId;
   const [isLoading, setIsLoading] = useState(false);
+  const productFormRef = useRef<{ deleteProduct: () => Promise<void> } | null>(null);
   
   // Debug log to check productId
   useEffect(() => {
@@ -31,7 +32,11 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
     onOpenChange(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    console.log("Dialog handleDelete called, productFormRef:", productFormRef.current);
+    if (productFormRef.current) {
+      await productFormRef.current.deleteProduct();
+    }
     onSuccess();
     onOpenChange(false);
   };
@@ -85,6 +90,7 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
           formId="product-form"
           setIsLoading={setIsLoading}
           hideButtons={true}
+          ref={productFormRef}
         />
       </DialogContent>
     </Dialog>

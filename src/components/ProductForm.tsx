@@ -11,7 +11,7 @@ import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalProp
 import { DescriptionSection } from "./products/form-sections/DescriptionSection";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect, forwardRef, useImperativeHandle } from "react";
 
 type ProductFormProps = {
   productId?: string;
@@ -23,7 +23,8 @@ type ProductFormProps = {
   hideButtons?: boolean;
 };
 
-export default function ProductForm({ 
+// Define the component with forwardRef to expose methods
+const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFormProps>(({ 
   productId, 
   onSuccess, 
   onCancel, 
@@ -31,8 +32,16 @@ export default function ProductForm({
   formId = "product-form",
   setIsLoading: setParentIsLoading,
   hideButtons = false
-}: ProductFormProps) {
+}, ref) => {
   const { form, isLoading, isEditMode, onSubmit, deleteProduct } = useProductForm(productId, onSuccess);
+
+  // Expose the deleteProduct method via ref
+  useImperativeHandle(ref, () => ({
+    deleteProduct: async () => {
+      console.log("ProductForm deleteProduct called");
+      await deleteProduct();
+    }
+  }));
 
   // Debug log to check productId
   useEffect(() => {
@@ -48,6 +57,7 @@ export default function ProductForm({
 
   const handleDelete = async () => {
     if (productId) {
+      console.log("ProductForm handleDelete called");
       await deleteProduct();
       if (onDelete) onDelete();
     }
@@ -103,4 +113,8 @@ export default function ProductForm({
       </form>
     </Form>
   );
-}
+});
+
+ProductForm.displayName = "ProductForm";
+
+export default ProductForm;

@@ -6,7 +6,7 @@ import { LinkedProductsGallery } from "./format/LinkedProductsGallery";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type FormatDialogProps = {
   open: boolean;
@@ -18,6 +18,7 @@ type FormatDialogProps = {
 const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogProps) => {
   const isEditMode = !!formatId;
   const [isLoading, setIsLoading] = useState(false);
+  const formatFormRef = useRef<{ deleteFormat: () => Promise<void> } | null>(null);
   
   // Debug log to check formatId
   useEffect(() => {
@@ -33,7 +34,11 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
     onOpenChange(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    console.log("Dialog handleDelete called, formatFormRef:", formatFormRef.current);
+    if (formatFormRef.current) {
+      await formatFormRef.current.deleteFormat();
+    }
     onSuccess();
     onOpenChange(false);
   };
@@ -87,6 +92,7 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
           formId="format-form"
           setIsLoading={setIsLoading}
           hideButtons={true}
+          ref={formatFormRef}
         />
         
         {isEditMode && formatId && (

@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { productSchema, defaultProductValues, ProductFormValues } from "@/schemas/productSchema";
-import { string } from "zod";
 
 export function useProductForm(productId: string | undefined, onSuccess: () => void) {
   const { currentOrganization } = useOrganization();
@@ -114,7 +113,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     }
     
     setIsLoading(true);
-    console.log("Delete Production function has set is loading to true")
+    console.log("Delete Product function called with productId:", productId);
     
     try {
       const { error } = await supabase
@@ -123,12 +122,14 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
         .eq("id", productId);
         
       if (error) {
+        console.error("Error deleting product:", error);
         throw error;
       }
       
       toast.success("Product deleted successfully");
       onSuccess();
     } catch (error: any) {
+      console.error("Exception when deleting product:", error);
       toast.error(`Failed to delete product: ${error.message}`);
     } finally {
       setIsLoading(false);

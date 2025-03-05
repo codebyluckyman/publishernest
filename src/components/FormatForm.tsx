@@ -8,7 +8,7 @@ import { FormatFormFields } from "./form/FormatFormFields";
 import { useFormatForm } from "@/hooks/useFormatForm";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect, forwardRef, useImperativeHandle } from "react";
 
 type FormatFormProps = {
   formatId?: string;
@@ -20,7 +20,8 @@ type FormatFormProps = {
   hideButtons?: boolean;
 };
 
-export default function FormatForm({ 
+// Define the component with forwardRef to expose methods
+const FormatForm = forwardRef<{ deleteFormat: () => Promise<void> }, FormatFormProps>(({ 
   formatId, 
   onSuccess, 
   onCancel, 
@@ -28,11 +29,19 @@ export default function FormatForm({
   formId = "format-form",
   setIsLoading: setParentIsLoading,
   hideButtons = false
-}: FormatFormProps) {
+}, ref) => {
   const { form, isLoading, isEditMode, onSubmit, deleteFormat } = useFormatForm({ 
     formatId, 
     onSuccess 
   });
+
+  // Expose the deleteFormat method via ref
+  useImperativeHandle(ref, () => ({
+    deleteFormat: async () => {
+      console.log("FormatForm deleteFormat called");
+      await deleteFormat();
+    }
+  }));
 
   // Debug log to check formatId
   useEffect(() => {
@@ -48,6 +57,7 @@ export default function FormatForm({
 
   const handleDelete = async () => {
     if (formatId) {
+      console.log("FormatForm handleDelete called");
       await deleteFormat();
       if (onDelete) onDelete();
     }
@@ -97,4 +107,8 @@ export default function FormatForm({
       </form>
     </Form>
   );
-}
+});
+
+FormatForm.displayName = "FormatForm";
+
+export default FormatForm;
