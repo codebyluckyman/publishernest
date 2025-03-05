@@ -100,15 +100,20 @@ const ProductsTable = () => {
         });
       }
 
-      // Add default price information to products
+      // Add default price information to products and ensure type safety
       return productsData.map(product => ({
         ...product,
         default_price: priceMap[product.id]?.price ?? product.list_price,
         default_currency: priceMap[product.id]?.currency ?? "USD"
-      })) as Product[];
+      })) as unknown as Product[];
     }
 
-    return productsData as Product[];
+    // If no products, return an empty array with the correct type
+    return productsData ? productsData.map(product => ({
+      ...product,
+      default_price: product.list_price,
+      default_currency: "USD"
+    })) as unknown as Product[] : [];
   };
 
   const { data: products, isLoading, error, refetch } = useQuery({
