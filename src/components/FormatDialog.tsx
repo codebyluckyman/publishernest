@@ -26,6 +26,11 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
     onOpenChange(false);
   };
 
+  const handleDelete = () => {
+    onSuccess();
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px]">
@@ -49,6 +54,7 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
           formatId={formatId || undefined} 
           onSuccess={handleSuccess} 
           onCancel={handleCancel}
+          onDelete={handleDelete}
           formId="format-form"
           setIsLoading={setIsLoading}
           hideButtons={true}
