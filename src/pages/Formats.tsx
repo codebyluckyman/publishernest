@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, PlusCircle, Pencil, Package } from "lucide-react";
+import { FileText, PlusCircle, Pencil, Package, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -10,6 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import FormatDialog from "@/components/FormatDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Format = {
   id: string;
@@ -22,11 +30,32 @@ type Format = {
   updated_at: string;
 };
 
+type FilterOptions = {
+  tps: string | null;
+  cover_stock_print: string | null;
+  internal_stock_print: string | null;
+};
+
 const FormatsTable = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFormatId, setSelectedFormatId] = useState<string | undefined>(undefined);
+  const [filters, setFilters] = useState<FilterOptions>({
+    tps: null,
+    cover_stock_print: null,
+    internal_stock_print: null,
+  });
+  const [filterOptions, setFilterOptions] = useState<{
+    tps: string[];
+    cover_stock_print: string[];
+    internal_stock_print: string[];
+  }>({
+    tps: [],
+    cover_stock_print: [],
+    internal_stock_print: [],
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   const fetchFormats = async () => {
     if (!currentOrganization) {
@@ -42,6 +71,17 @@ const FormatsTable = () => {
       query = query.ilike("format_name", `%${searchQuery}%`);
     }
 
+    // Apply filters if they are set
+    if (filters.tps) {
+      query = query.eq("tps", filters.tps);
+    }
+    if (filters.cover_stock_print) {
+      query = query.eq("cover_stock_print", filters.cover_stock_print);
+    }
+    if (filters.internal_stock_print) {
+      query = query.eq("internal_stock_print", filters.internal_stock_print);
+    }
+
     const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
@@ -53,10 +93,33 @@ const FormatsTable = () => {
   };
 
   const { data: formats, isLoading, error, refetch } = useQuery({
-    queryKey: ["formats", currentOrganization?.id, searchQuery],
+    queryKey: ["formats", currentOrganization?.id, searchQuery, filters],
     queryFn: fetchFormats,
     enabled: !!currentOrganization,
   });
+
+  // Fetch unique filter options when formats data is loaded
+  useEffect(() => {
+    if (formats && formats.length > 0) {
+      const tpsOptions = Array.from(
+        new Set(formats.map((format) => format.tps).filter(Boolean))
+      ) as string[];
+      
+      const coverStockOptions = Array.from(
+        new Set(formats.map((format) => format.cover_stock_print).filter(Boolean))
+      ) as string[];
+      
+      const internalStockOptions = Array.from(
+        new Set(formats.map((format) => format.internal_stock_print).filter(Boolean))
+      ) as string[];
+
+      setFilterOptions({
+        tps: tpsOptions,
+        cover_stock_print: coverStockOptions,
+        internal_stock_print: internalStockOptions,
+      });
+    }
+  }, [formats]);
 
   useEffect(() => {
     if (error) {
@@ -83,6 +146,28 @@ const FormatsTable = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handleFilterChange = (field: keyof FilterOptions, value: string | null) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      tps: null,
+      cover_stock_print: null,
+      internal_stock_print: null,
+    });
+  };
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
+  const areFiltersActive = () => {
+    return filters.tps !== null || 
+           filters.cover_stock_print !== null || 
+           filters.internal_stock_print !== null;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -101,12 +186,99 @@ const FormatsTable = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <Button
+              variant={showFilters ? "secondary" : "outline"}
+              className="gap-1"
+              onClick={toggleFilters}
+            >
+              Filters {areFiltersActive() && <span className="ml-1 text-xs bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center">{Object.values(filters).filter(Boolean).length}</span>}
+            </Button>
             <Button className="gap-1" onClick={handleAddFormat}>
               <PlusCircle className="h-4 w-4" />
               Add Format
             </Button>
           </div>
         </div>
+
+        {showFilters && (
+          <div className="mt-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {filterOptions.tps.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium mb-1 block">TPS</label>
+                  <Select 
+                    value={filters.tps || ""}
+                    onValueChange={(value) => handleFilterChange("tps", value || null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select TPS" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All</SelectItem>
+                      {filterOptions.tps.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {filterOptions.cover_stock_print.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Cover Stock/Print</label>
+                  <Select 
+                    value={filters.cover_stock_print || ""}
+                    onValueChange={(value) => handleFilterChange("cover_stock_print", value || null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Cover Stock" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All</SelectItem>
+                      {filterOptions.cover_stock_print.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {filterOptions.internal_stock_print.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Internal Stock/Print</label>
+                  <Select 
+                    value={filters.internal_stock_print || ""}
+                    onValueChange={(value) => handleFilterChange("internal_stock_print", value || null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Internal Stock" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All</SelectItem>
+                      {filterOptions.internal_stock_print.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            {areFiltersActive() && (
+              <div className="flex justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={resetFilters}
+                  size="sm" 
+                  className="gap-1"
+                >
+                  <FilterX className="h-4 w-4" />
+                  Reset Filters
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {isLoading ? (
