@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Box, BookOpen, Search, PlusCircle, Pencil, Image } from "lucide-react";
+import { Package, Box, BookOpen, Search, PlusCircle, Pencil, Image, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import ProductDialog from "@/components/ProductDialog";
+import ProductViewDialog from "@/components/ProductViewDialog";
 
 type Product = {
   id: string;
@@ -56,6 +57,7 @@ const ProductsTable = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
 
   const fetchProducts = async () => {
@@ -102,6 +104,11 @@ const ProductsTable = () => {
   const handleEditProduct = (productId: string) => {
     setSelectedProductId(productId);
     setIsDialogOpen(true);
+  };
+
+  const handleViewProduct = (productId: string) => {
+    setSelectedProductId(productId);
+    setIsViewDialogOpen(true);
   };
 
   const handleDialogSuccess = () => {
@@ -182,13 +189,17 @@ const ProductsTable = () => {
                   <TableHead>Publisher</TableHead>
                   <TableHead>Pub Date</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead className="w-[80px]">Actions</TableHead>
+                  <TableHead className="w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
+                  <TableRow 
+                    key={product.id} 
+                    className="cursor-pointer hover:bg-muted/70" 
+                    onClick={() => handleViewProduct(product.id)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="w-10 h-14 overflow-hidden rounded border bg-muted">
                         {product.cover_image_url ? (
                           <img 
@@ -212,7 +223,15 @@ const ProductsTable = () => {
                     <TableCell>{product.publisher_name || "N/A"}</TableCell>
                     <TableCell>{formatDate(product.publication_date)}</TableCell>
                     <TableCell>{formatPrice(product.list_price)}</TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()} className="space-x-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleViewProduct(product.id)}
+                        title="View product"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
@@ -251,6 +270,12 @@ const ProductsTable = () => {
         productId={selectedProductId}
         onOpenChange={setIsDialogOpen}
         onSuccess={handleDialogSuccess}
+      />
+
+      <ProductViewDialog
+        open={isViewDialogOpen}
+        productId={selectedProductId}
+        onOpenChange={setIsViewDialogOpen}
       />
     </Card>
   );

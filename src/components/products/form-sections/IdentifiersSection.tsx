@@ -6,9 +6,10 @@ import { ProductFormValues } from "@/schemas/productSchema";
 
 interface IdentifiersSectionProps {
   form: UseFormReturn<ProductFormValues>;
+  readOnly?: boolean;
 }
 
-export function IdentifiersSection({ form }: IdentifiersSectionProps) {
+export function IdentifiersSection({ form, readOnly = false }: IdentifiersSectionProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Identifiers</h3>
@@ -20,7 +21,7 @@ export function IdentifiersSection({ form }: IdentifiersSectionProps) {
             <FormItem>
               <FormLabel>ISBN-13</FormLabel>
               <FormControl>
-                <Input placeholder="ISBN-13" {...field} />
+                <Input placeholder="ISBN-13" disabled={readOnly} {...field} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -34,7 +35,7 @@ export function IdentifiersSection({ form }: IdentifiersSectionProps) {
             <FormItem>
               <FormLabel>ISBN-10</FormLabel>
               <FormControl>
-                <Input placeholder="ISBN-10" {...field} />
+                <Input placeholder="ISBN-10" disabled={readOnly} {...field} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -48,7 +49,12 @@ export function IdentifiersSection({ form }: IdentifiersSectionProps) {
             <FormItem>
               <FormLabel>Subject Code</FormLabel>
               <FormControl>
-                <Input placeholder="Subject classification code" {...field} />
+                <Input 
+                  placeholder="Subject classification code" 
+                  disabled={readOnly} 
+                  {...field} 
+                  value={field.value || ""} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

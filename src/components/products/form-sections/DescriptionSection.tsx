@@ -6,9 +6,10 @@ import { ProductFormValues } from "@/schemas/productSchema";
 
 interface DescriptionSectionProps {
   form: UseFormReturn<ProductFormValues>;
+  readOnly?: boolean;
 }
 
-export function DescriptionSection({ form }: DescriptionSectionProps) {
+export function DescriptionSection({ form, readOnly = false }: DescriptionSectionProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Description</h3>
@@ -24,6 +25,7 @@ export function DescriptionSection({ form }: DescriptionSectionProps) {
                   placeholder="Brief description" 
                   className="resize-none" 
                   rows={2}
+                  disabled={readOnly}
                   {...field} 
                 />
               </FormControl>
@@ -43,6 +45,7 @@ export function DescriptionSection({ form }: DescriptionSectionProps) {
                   placeholder="Detailed description" 
                   className="resize-none" 
                   rows={5}
+                  disabled={readOnly}
                   {...field} 
                 />
               </FormControl>
