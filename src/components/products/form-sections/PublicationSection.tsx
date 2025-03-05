@@ -21,7 +21,7 @@ export function PublicationSection({ form }: PublicationSectionProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Publication and Pricing</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <FormField
           control={form.control}
           name="publication_date"
