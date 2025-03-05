@@ -25,9 +25,20 @@ type StockItem = {
   list_price: number | null;
 };
 
-// Extended type that includes the total_value property for CSV export
-type StockItemExport = StockItem & {
-  total_value: number | 'N/A';
+// Create a separate type for CSV export that doesn't extend StockItem
+// This avoids the type conflict with list_price
+type StockItemCSV = {
+  id: string;
+  quantity: number;
+  warehouse_id: string;
+  warehouse_name: string;
+  warehouse_location: string;
+  product_id: string;
+  product_title: string;
+  product_isbn13: string;
+  product_form: string;
+  list_price: string;
+  total_value: string;
 };
 
 const StockOnHandTable = () => {
@@ -103,7 +114,7 @@ const StockOnHandTable = () => {
   const handleDownloadCSV = () => {
     if (!stockItems || stockItems.length === 0) return;
     
-    const columns: { key: keyof StockItemExport; label: string }[] = [
+    const columns: { key: keyof StockItemCSV; label: string }[] = [
       { key: 'product_title', label: 'Product' },
       { key: 'product_isbn13', label: 'ISBN' },
       { key: 'product_form', label: 'Format' },
@@ -114,13 +125,15 @@ const StockOnHandTable = () => {
       { key: 'total_value', label: 'Total Value' },
     ];
     
-    const csvData: StockItemExport[] = stockItems.map(item => ({
+    // Convert all values to strings for the CSV
+    const csvData: StockItemCSV[] = stockItems.map(item => ({
       ...item,
       product_isbn13: item.product_isbn13 || 'N/A',
       product_form: item.product_form || 'N/A',
       warehouse_location: item.warehouse_location || 'N/A',
-      list_price: item.list_price !== null ? item.list_price : 'N/A',
-      total_value: item.list_price !== null ? (item.list_price * item.quantity) : 'N/A'
+      // Convert all numeric values to strings to avoid type conflicts
+      list_price: item.list_price !== null ? item.list_price.toString() : 'N/A',
+      total_value: item.list_price !== null ? (item.list_price * item.quantity).toString() : 'N/A'
     }));
     
     const csvContent = objectsToCSV(csvData, columns);
