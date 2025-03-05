@@ -7,8 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import ProductDialog from "@/components/ProductDialog";
 import ProductViewDialog from "@/components/ProductViewDialog";
-import ProductTableHeader from "./ProductTableHeader";
 import ProductTableContent from "./ProductTableContent";
+import ProductFilters from "./ProductFilters";
 
 interface Product {
   id: string;
@@ -24,12 +24,22 @@ interface Product {
   cover_image_url: string | null;
 }
 
+type FilterOptions = {
+  product_form: string | null;
+  publisher_name: string | null;
+};
+
 const ProductsTable = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    product_form: null,
+    publisher_name: null,
+  });
 
   const fetchProducts = async () => {
     if (!currentOrganization) {
@@ -45,6 +55,14 @@ const ProductsTable = () => {
       query = query.ilike("title", `%${searchQuery}%`);
     }
 
+    if (filters.product_form) {
+      query = query.eq("product_form", filters.product_form);
+    }
+
+    if (filters.publisher_name) {
+      query = query.eq("publisher_name", filters.publisher_name);
+    }
+
     const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) {
@@ -56,7 +74,7 @@ const ProductsTable = () => {
   };
 
   const { data: products, isLoading, error, refetch } = useQuery({
-    queryKey: ["products", currentOrganization?.id, searchQuery],
+    queryKey: ["products", currentOrganization?.id, searchQuery, filters],
     queryFn: fetchProducts,
     enabled: !!currentOrganization,
   });
@@ -116,10 +134,13 @@ const ProductsTable = () => {
   return (
     <Card>
       <CardHeader>
-        <ProductTableHeader 
+        <ProductFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          handleAddProduct={handleAddProduct}
+          filters={filters}
+          setFilters={setFilters}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
         />
       </CardHeader>
       <CardContent>
