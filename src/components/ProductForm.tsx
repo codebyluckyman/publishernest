@@ -9,6 +9,9 @@ import { FormatSection } from "./products/form-sections/FormatSection";
 import { PublicationSection } from "./products/form-sections/PublicationSection";
 import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalPropertiesSection";
 import { DescriptionSection } from "./products/form-sections/DescriptionSection";
+import { CartonSection } from "./products/form-sections/CartonSection";
+import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSection";
+import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
 import { Dispatch, SetStateAction, useEffect, forwardRef, useImperativeHandle, useState } from "react";
@@ -114,7 +117,10 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
         <FormatSection form={form} />
         <PublicationSection form={form} />
         <PhysicalPropertiesSection form={form} />
+        <CartonSection form={form} />
         <DescriptionSection form={form} />
+        <AdditionalInfoSection form={form} />
+        <InternalImagesSection form={form} />
         
         {productId && (
           <Card>

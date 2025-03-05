@@ -50,6 +50,16 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               thickness_measurement: data.thickness_measurement !== null ? Number(data.thickness_measurement) : null,
               weight_measurement: data.weight_measurement !== null ? Number(data.weight_measurement) : null,
               format_id: data.format_id || null,
+              // New fields
+              internal_images: data.internal_images || [],
+              carton_quantity: data.carton_quantity !== null ? Number(data.carton_quantity) : null,
+              carton_length_mm: data.carton_length_mm !== null ? Number(data.carton_length_mm) : null,
+              carton_width_mm: data.carton_width_mm !== null ? Number(data.carton_width_mm) : null,
+              carton_height_mm: data.carton_height_mm !== null ? Number(data.carton_height_mm) : null,
+              carton_weight_kg: data.carton_weight_kg !== null ? Number(data.carton_weight_kg) : null,
+              age_range: data.age_range || "",
+              synopsis: data.synopsis || "",
+              license: data.license || "",
             });
           }
         } catch (err: any) {

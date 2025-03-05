@@ -114,6 +114,12 @@ export type Database = {
       }
       products: {
         Row: {
+          age_range: string | null
+          carton_height_mm: number | null
+          carton_length_mm: number | null
+          carton_quantity: number | null
+          carton_weight_kg: number | null
+          carton_width_mm: number | null
           cover_image_url: string | null
           created_at: string
           currency_code: string | null
@@ -121,9 +127,11 @@ export type Database = {
           format_id: string | null
           height_measurement: number | null
           id: string
+          internal_images: string[] | null
           isbn10: string | null
           isbn13: string | null
           language_code: string | null
+          license: string | null
           list_price: number | null
           long_description: string | null
           organization_id: string
@@ -137,6 +145,7 @@ export type Database = {
           short_description: string | null
           subject_code: string | null
           subtitle: string | null
+          synopsis: string | null
           thickness_measurement: number | null
           title: string
           updated_at: string
@@ -144,6 +153,12 @@ export type Database = {
           width_measurement: number | null
         }
         Insert: {
+          age_range?: string | null
+          carton_height_mm?: number | null
+          carton_length_mm?: number | null
+          carton_quantity?: number | null
+          carton_weight_kg?: number | null
+          carton_width_mm?: number | null
           cover_image_url?: string | null
           created_at?: string
           currency_code?: string | null
@@ -151,9 +166,11 @@ export type Database = {
           format_id?: string | null
           height_measurement?: number | null
           id?: string
+          internal_images?: string[] | null
           isbn10?: string | null
           isbn13?: string | null
           language_code?: string | null
+          license?: string | null
           list_price?: number | null
           long_description?: string | null
           organization_id: string
@@ -167,6 +184,7 @@ export type Database = {
           short_description?: string | null
           subject_code?: string | null
           subtitle?: string | null
+          synopsis?: string | null
           thickness_measurement?: number | null
           title: string
           updated_at?: string
@@ -174,6 +192,12 @@ export type Database = {
           width_measurement?: number | null
         }
         Update: {
+          age_range?: string | null
+          carton_height_mm?: number | null
+          carton_length_mm?: number | null
+          carton_quantity?: number | null
+          carton_weight_kg?: number | null
+          carton_width_mm?: number | null
           cover_image_url?: string | null
           created_at?: string
           currency_code?: string | null
@@ -181,9 +205,11 @@ export type Database = {
           format_id?: string | null
           height_measurement?: number | null
           id?: string
+          internal_images?: string[] | null
           isbn10?: string | null
           isbn13?: string | null
           language_code?: string | null
+          license?: string | null
           list_price?: number | null
           long_description?: string | null
           organization_id?: string
@@ -197,6 +223,7 @@ export type Database = {
           short_description?: string | null
           subject_code?: string | null
           subtitle?: string | null
+          synopsis?: string | null
           thickness_measurement?: number | null
           title?: string
           updated_at?: string

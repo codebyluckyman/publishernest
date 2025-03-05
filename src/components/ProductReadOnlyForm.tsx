@@ -8,6 +8,9 @@ import { FormatSection } from "./products/form-sections/FormatSection";
 import { PublicationSection } from "./products/form-sections/PublicationSection";
 import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalPropertiesSection";
 import { DescriptionSection } from "./products/form-sections/DescriptionSection";
+import { CartonSection } from "./products/form-sections/CartonSection";
+import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSection";
+import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
 import { StockTable } from "./products/form-sections/StockTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -37,7 +40,10 @@ export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormPr
         <FormatSection form={form} readOnly />
         <PublicationSection form={form} readOnly />
         <PhysicalPropertiesSection form={form} readOnly />
+        <CartonSection form={form} readOnly />
         <DescriptionSection form={form} readOnly />
+        <AdditionalInfoSection form={form} readOnly />
+        <InternalImagesSection form={form} readOnly />
         
         <Card>
           <CardHeader>

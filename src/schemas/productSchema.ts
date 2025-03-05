@@ -26,6 +26,16 @@ export const productSchema = z.object({
   weight_measurement: z.coerce.number().optional().nullable(),
   cover_image_url: z.string().optional(),
   format_id: z.string().optional().nullable(),
+  // New fields
+  internal_images: z.array(z.string()).optional().default([]),
+  carton_quantity: z.coerce.number().optional().nullable(),
+  carton_length_mm: z.coerce.number().optional().nullable(),
+  carton_width_mm: z.coerce.number().optional().nullable(),
+  carton_height_mm: z.coerce.number().optional().nullable(),
+  carton_weight_kg: z.coerce.number().optional().nullable(),
+  age_range: z.string().optional(),
+  synopsis: z.string().optional(),
+  license: z.string().optional(),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
@@ -90,4 +100,14 @@ export const defaultProductValues: ProductFormValues = {
   weight_measurement: null,
   cover_image_url: "",
   format_id: null,
+  // New fields with default values
+  internal_images: [],
+  carton_quantity: null,
+  carton_length_mm: null,
+  carton_width_mm: null,
+  carton_height_mm: null,
+  carton_weight_kg: null,
+  age_range: "",
+  synopsis: "",
+  license: "",
 };
