@@ -7,9 +7,10 @@ import { FormatFormValues } from "@/hooks/useFormatForm";
 
 interface FormatFormFieldsProps {
   form: UseFormReturn<FormatFormValues>;
+  readOnly?: boolean;
 }
 
-export function FormatFormFields({ form }: FormatFormFieldsProps) {
+export function FormatFormFields({ form, readOnly = false }: FormatFormFieldsProps) {
   return (
     <>
       <FormField
@@ -19,7 +20,7 @@ export function FormatFormFields({ form }: FormatFormFieldsProps) {
           <FormItem>
             <FormLabel>Format Name</FormLabel>
             <FormControl>
-              <Input placeholder="e.g., Paperback 6x9" {...field} />
+              <Input placeholder="e.g., Paperback 6x9" {...field} disabled={readOnly} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -33,7 +34,7 @@ export function FormatFormFields({ form }: FormatFormFieldsProps) {
           <FormItem>
             <FormLabel>TPS (Total Pages)</FormLabel>
             <FormControl>
-              <Input placeholder="e.g., 240 pages" {...field} />
+              <Input placeholder="e.g., 240 pages" {...field} disabled={readOnly} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -47,7 +48,7 @@ export function FormatFormFields({ form }: FormatFormFieldsProps) {
           <FormItem>
             <FormLabel>Extent</FormLabel>
             <FormControl>
-              <Input placeholder="e.g., 6x9 inches" {...field} />
+              <Input placeholder="e.g., 6x9 inches" {...field} disabled={readOnly} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -61,7 +62,7 @@ export function FormatFormFields({ form }: FormatFormFieldsProps) {
           <FormItem>
             <FormLabel>Cover Stock/Print</FormLabel>
             <FormControl>
-              <Textarea placeholder="e.g., 12pt C1S, 4-color process + matte lamination" {...field} />
+              <Textarea placeholder="e.g., 12pt C1S, 4-color process + matte lamination" {...field} disabled={readOnly} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -75,7 +76,7 @@ export function FormatFormFields({ form }: FormatFormFieldsProps) {
           <FormItem>
             <FormLabel>Internal Stock/Print</FormLabel>
             <FormControl>
-              <Textarea placeholder="e.g., 60# white offset, 1-color black" {...field} />
+              <Textarea placeholder="e.g., 60# white offset, 1-color black" {...field} disabled={readOnly} />
             </FormControl>
             <FormMessage />
           </FormItem>
