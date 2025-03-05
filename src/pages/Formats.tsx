@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -71,7 +70,6 @@ const FormatsTable = () => {
       query = query.ilike("format_name", `%${searchQuery}%`);
     }
 
-    // Apply filters if they are set
     if (filters.tps) {
       query = query.eq("tps", filters.tps);
     }
@@ -98,7 +96,6 @@ const FormatsTable = () => {
     enabled: !!currentOrganization,
   });
 
-  // Fetch unique filter options when formats data is loaded
   useEffect(() => {
     if (formats && formats.length > 0) {
       const tpsOptions = Array.from(
@@ -214,7 +211,7 @@ const FormatsTable = () => {
                       <SelectValue placeholder="Select TPS" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
                       {filterOptions.tps.map((option) => (
                         <SelectItem key={option} value={option}>{option}</SelectItem>
                       ))}
@@ -234,7 +231,7 @@ const FormatsTable = () => {
                       <SelectValue placeholder="Select Cover Stock" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
                       {filterOptions.cover_stock_print.map((option) => (
                         <SelectItem key={option} value={option}>{option}</SelectItem>
                       ))}
@@ -254,7 +251,7 @@ const FormatsTable = () => {
                       <SelectValue placeholder="Select Internal Stock" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
                       {filterOptions.internal_stock_print.map((option) => (
                         <SelectItem key={option} value={option}>{option}</SelectItem>
                       ))}
