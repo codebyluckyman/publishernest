@@ -1,3 +1,4 @@
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -7,6 +8,7 @@ import Products from "./pages/Products";
 import Formats from "./pages/Formats";
 import Organizations from "./pages/Organizations";
 import Profile from "./pages/Profile";
+import Stock from "./pages/Stock";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./context/AuthContext";
@@ -34,6 +36,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Products />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/stock" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Stock />
                 </Layout>
               </ProtectedRoute>
             } />
