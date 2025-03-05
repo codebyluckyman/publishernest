@@ -92,8 +92,17 @@ export default function FormatForm({ formatId, onSuccess, onCancel }: FormatForm
     setIsLoading(true);
     
     try {
+      // Ensure format_name is properly set and not optional in our object
+      if (!values.format_name) {
+        throw new Error("Format name is required");
+      }
+
       const formattedValues = {
-        ...values,
+        format_name: values.format_name,
+        tps: values.tps,
+        extent: values.extent,
+        cover_stock_print: values.cover_stock_print,
+        internal_stock_print: values.internal_stock_print,
         organization_id: currentOrganization.id,
       };
 

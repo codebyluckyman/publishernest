@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Edit } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ProductFormValues } from "@/schemas/productSchema";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,9 @@ export function FormatSection({ form }: FormatSectionProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
+  const [selectedFormat, setSelectedFormat] = useState<Format | null>(null);
+  
+  const formatId = form.watch('format_id');
 
   const fetchFormats = async () => {
     if (!currentOrganization) return;
@@ -58,9 +61,26 @@ export function FormatSection({ form }: FormatSectionProps) {
     fetchFormats();
   }, [currentOrganization]);
 
+  // Update the selected format when formatId changes
+  useEffect(() => {
+    if (formatId) {
+      const format = formats.find(f => f.id === formatId);
+      setSelectedFormat(format || null);
+    } else {
+      setSelectedFormat(null);
+    }
+  }, [formatId, formats]);
+
   const handleAddFormat = () => {
     setSelectedFormatId(null);
     setIsDialogOpen(true);
+  };
+
+  const handleEditFormat = () => {
+    if (formatId) {
+      setSelectedFormatId(formatId);
+      setIsDialogOpen(true);
+    }
   };
 
   const handleFormatSuccess = () => {
@@ -114,17 +134,26 @@ export function FormatSection({ form }: FormatSectionProps) {
           )}
         />
 
-        {selectedFormatId && (
+        {selectedFormat && (
           <div className="p-4 border rounded-md">
-            <h4 className="font-medium mb-2">Format Details</h4>
-            {formats.find(f => f.id === selectedFormatId) && (
-              <div className="space-y-2 text-sm">
-                <p><span className="font-medium">TPS:</span> {formats.find(f => f.id === selectedFormatId)?.tps || "N/A"}</p>
-                <p><span className="font-medium">Extent:</span> {formats.find(f => f.id === selectedFormatId)?.extent || "N/A"}</p>
-                <p><span className="font-medium">Cover Stock/Print:</span> {formats.find(f => f.id === selectedFormatId)?.cover_stock_print || "N/A"}</p>
-                <p><span className="font-medium">Internal Stock/Print:</span> {formats.find(f => f.id === selectedFormatId)?.internal_stock_print || "N/A"}</p>
-              </div>
-            )}
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-medium">Format Details</h4>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleEditFormat}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <p><span className="font-medium">TPS:</span> {selectedFormat.tps || "N/A"}</p>
+              <p><span className="font-medium">Extent:</span> {selectedFormat.extent || "N/A"}</p>
+              <p><span className="font-medium">Cover Stock/Print:</span> {selectedFormat.cover_stock_print || "N/A"}</p>
+              <p><span className="font-medium">Internal Stock/Print:</span> {selectedFormat.internal_stock_print || "N/A"}</p>
+            </div>
           </div>
         )}
       </div>
