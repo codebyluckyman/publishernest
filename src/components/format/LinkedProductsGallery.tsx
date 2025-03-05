@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Image, Grid, List } from "lucide-react";
@@ -7,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import ProductDialog from "@/components/ProductDialog";
+import ProductViewDialog from "@/components/ProductViewDialog";
 
 type Product = {
   id: string;
@@ -116,11 +115,10 @@ export function LinkedProductsGallery({ formatId }: LinkedProductsGalleryProps) 
         <TableView products={products} onProductClick={handleProductClick} />
       )}
 
-      <ProductDialog 
+      <ProductViewDialog 
         open={isProductDialogOpen} 
         productId={selectedProductId}
         onOpenChange={setIsProductDialogOpen}
-        onSuccess={() => {}}
       />
     </div>
   );
