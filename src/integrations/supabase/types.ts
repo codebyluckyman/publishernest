@@ -112,6 +112,54 @@ export type Database = {
         }
         Relationships: []
       }
+      product_prices: {
+        Row: {
+          created_at: string
+          currency_code: string
+          id: string
+          is_default: boolean | null
+          organization_id: string
+          price: number | null
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency_code: string
+          id?: string
+          is_default?: boolean | null
+          organization_id: string
+          price?: number | null
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency_code?: string
+          id?: string
+          is_default?: boolean | null
+          organization_id?: string
+          price?: number | null
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_prices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_prices_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           age_range: string | null

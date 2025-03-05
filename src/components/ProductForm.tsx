@@ -12,6 +12,7 @@ import { DescriptionSection } from "./products/form-sections/DescriptionSection"
 import { CartonSection } from "./products/form-sections/CartonSection";
 import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSection";
 import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
+import { PricingSection } from "./products/form-sections/PricingSection";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
 import { Dispatch, SetStateAction, useEffect, forwardRef, useImperativeHandle, useState } from "react";
@@ -121,6 +122,11 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
         <DescriptionSection form={form} />
         <AdditionalInfoSection form={form} />
         <InternalImagesSection form={form} />
+        
+        {/* Add the new Pricing Section */}
+        {productId && (
+          <PricingSection form={form} productId={productId} />
+        )}
         
         {productId && (
           <Card>
