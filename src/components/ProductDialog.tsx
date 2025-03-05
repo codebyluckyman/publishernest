@@ -23,7 +23,7 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[1050px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit Product" : "Add New Product"}</DialogTitle>
         </DialogHeader>
