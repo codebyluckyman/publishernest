@@ -13,6 +13,23 @@ export function CoverImageSection({ form }: CoverImageSectionProps) {
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Cover Image</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          {form.watch('cover_image_url') && (
+            <div className="mt-2">
+              <p className="text-sm text-muted-foreground mb-2">Preview:</p>
+              <div className="border rounded overflow-hidden w-48 h-72">
+                <img 
+                  src={form.watch('cover_image_url')} 
+                  alt="Cover preview" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
         <div className="md:col-span-2">
           <FormField
             control={form.control}
@@ -30,23 +47,6 @@ export function CoverImageSection({ form }: CoverImageSectionProps) {
               </FormItem>
             )}
           />
-        </div>
-        <div>
-          {form.watch('cover_image_url') && (
-            <div className="mt-2">
-              <p className="text-sm text-muted-foreground mb-2">Preview:</p>
-              <div className="border rounded overflow-hidden w-48 h-72">
-                <img 
-                  src={form.watch('cover_image_url')} 
-                  alt="Cover preview" 
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg";
-                  }}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
