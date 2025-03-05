@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { HelpCircle, Search, Book, BookOpen, MessageCircle } from "lucide-react";
+import { HelpCircle, Search, Book, BookOpen, MessageCircle, Package as PackageIcon, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +21,7 @@ const HELP_CATEGORIES = [
   {
     id: "products",
     name: "Managing Products",
-    icon: Package,
+    icon: PackageIcon,
     articles: [
       { id: "p1", title: "Creating a new product", snippet: "Add books to your catalog" },
       { id: "p2", title: "Formatting options", snippet: "Configure book formats" },
