@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, PlusCircle, Pencil, Package, FilterX } from "lucide-react";
+import { FileText, PlusCircle, Pencil, Package, FilterX, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import FormatDialog from "@/components/FormatDialog";
+import FormatViewDialog from "@/components/FormatViewDialog";
 import {
   Select,
   SelectContent,
@@ -39,7 +40,9 @@ const FormatsTable = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedFormatId, setSelectedFormatId] = useState<string | undefined>(undefined);
+  const [viewFormatId, setViewFormatId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     tps: null,
     cover_stock_print: null,
@@ -123,6 +126,11 @@ const FormatsTable = () => {
       toast.error("Failed to load formats: " + (error as Error).message);
     }
   }, [error]);
+
+  const handleViewFormat = (formatId: string) => {
+    setViewFormatId(formatId);
+    setIsViewDialogOpen(true);
+  };
 
   const handleAddFormat = () => {
     setSelectedFormatId(undefined);
@@ -296,12 +304,16 @@ const FormatsTable = () => {
                   <TableHead>Cover Stock/Print</TableHead>
                   <TableHead>Internal Stock/Print</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead className="w-[80px]">Actions</TableHead>
+                  <TableHead className="w-[120px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {formats.map((format) => (
-                  <TableRow key={format.id}>
+                  <TableRow 
+                    key={format.id}
+                    className="cursor-pointer"
+                    onClick={() => handleViewFormat(format.id)}
+                  >
                     <TableCell className="font-medium">{format.format_name}</TableCell>
                     <TableCell>{format.tps || "N/A"}</TableCell>
                     <TableCell>{format.extent || "N/A"}</TableCell>
@@ -309,14 +321,30 @@ const FormatsTable = () => {
                     <TableCell>{format.internal_stock_print || "N/A"}</TableCell>
                     <TableCell>{formatDate(format.created_at)}</TableCell>
                     <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => handleEditFormat(format.id)}
-                        title="Edit format"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center space-x-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewFormat(format.id);
+                          }}
+                          title="View format"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditFormat(format.id);
+                          }}
+                          title="Edit format"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -347,6 +375,12 @@ const FormatsTable = () => {
         formatId={selectedFormatId}
         onOpenChange={setIsDialogOpen}
         onSuccess={handleDialogSuccess}
+      />
+
+      <FormatViewDialog
+        open={isViewDialogOpen}
+        formatId={viewFormatId}
+        onOpenChange={setIsViewDialogOpen}
       />
     </Card>
   );
