@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,11 @@ type StockItem = {
   product_isbn13: string | null;
   product_form: string | null;
   list_price: number | null;
+};
+
+// Extended type that includes the total_value property for CSV export
+type StockItemExport = StockItem & {
+  total_value: number | 'N/A';
 };
 
 const StockOnHandTable = () => {
@@ -97,7 +103,7 @@ const StockOnHandTable = () => {
   const handleDownloadCSV = () => {
     if (!stockItems || stockItems.length === 0) return;
     
-    const columns = [
+    const columns: { key: keyof StockItemExport; label: string }[] = [
       { key: 'product_title', label: 'Product' },
       { key: 'product_isbn13', label: 'ISBN' },
       { key: 'product_form', label: 'Format' },
@@ -105,9 +111,10 @@ const StockOnHandTable = () => {
       { key: 'warehouse_location', label: 'Location' },
       { key: 'list_price', label: 'Unit Price' },
       { key: 'quantity', label: 'Quantity' },
+      { key: 'total_value', label: 'Total Value' },
     ];
     
-    const csvData = stockItems.map(item => ({
+    const csvData: StockItemExport[] = stockItems.map(item => ({
       ...item,
       product_isbn13: item.product_isbn13 || 'N/A',
       product_form: item.product_form || 'N/A',
@@ -115,8 +122,6 @@ const StockOnHandTable = () => {
       list_price: item.list_price !== null ? item.list_price : 'N/A',
       total_value: item.list_price !== null ? (item.list_price * item.quantity) : 'N/A'
     }));
-    
-    columns.push({ key: 'total_value', label: 'Total Value' });
     
     const csvContent = objectsToCSV(csvData, columns);
     const today = new Date().toISOString().slice(0, 10);

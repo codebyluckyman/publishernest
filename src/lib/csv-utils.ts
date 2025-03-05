@@ -40,9 +40,10 @@ export function downloadCSV(csvContent: string, filename: string): void {
   const link = document.createElement('a');
   
   // Handle different browser supports
-  if (navigator.msSaveBlob) {
+  // Use type assertion for IE-specific API
+  if (navigator.hasOwnProperty('msSaveBlob') && typeof (navigator as any).msSaveBlob === 'function') {
     // IE 10+
-    navigator.msSaveBlob(blob, filename);
+    (navigator as any).msSaveBlob(blob, filename);
     return;
   }
   
