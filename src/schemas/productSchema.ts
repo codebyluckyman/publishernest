@@ -25,6 +25,7 @@ export const productSchema = z.object({
   thickness_measurement: z.coerce.number().optional().nullable(),
   weight_measurement: z.coerce.number().optional().nullable(),
   cover_image_url: z.string().optional(),
+  format_id: z.string().optional().nullable(),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
@@ -88,4 +89,5 @@ export const defaultProductValues: ProductFormValues = {
   thickness_measurement: null,
   weight_measurement: null,
   cover_image_url: "",
+  format_id: null,
 };

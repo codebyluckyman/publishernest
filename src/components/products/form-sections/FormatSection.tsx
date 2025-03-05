@@ -1,120 +1,140 @@
 
+import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { ProductFormValues, productFormOptions } from "@/schemas/productSchema";
+import { ProductFormValues } from "@/schemas/productSchema";
+import { supabase } from "@/integrations/supabase/client";
+import { useOrganization } from "@/context/OrganizationContext";
+import { toast } from "sonner";
+import FormatDialog from "../../FormatDialog";
+
+interface Format {
+  id: string;
+  format_name: string;
+  tps?: string;
+  extent?: string;
+  cover_stock_print?: string;
+  internal_stock_print?: string;
+}
 
 interface FormatSectionProps {
   form: UseFormReturn<ProductFormValues>;
 }
 
 export function FormatSection({ form }: FormatSectionProps) {
+  const { currentOrganization } = useOrganization();
+  const [formats, setFormats] = useState<Format[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
+
+  const fetchFormats = async () => {
+    if (!currentOrganization) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("formats")
+        .select("*")
+        .eq("organization_id", currentOrganization.id)
+        .order("format_name");
+        
+      if (error) {
+        throw error;
+      }
+      
+      setFormats(data || []);
+    } catch (error: any) {
+      toast.error("Failed to load formats: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFormats();
+  }, [currentOrganization]);
+
+  const handleAddFormat = () => {
+    setSelectedFormatId(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleFormatSuccess = () => {
+    fetchFormats();
+    setIsDialogOpen(false);
+  };
+
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-medium">Product Format</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="product_form"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product Format</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select format" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {productFormOptions.productForms.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="product_form_detail"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Format Details</FormLabel>
-              <FormControl>
-                <Input placeholder="Additional format details" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="product_availability_code"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Availability</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select availability" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {productFormOptions.availabilityCodes.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="language_code"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Language</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {productFormOptions.languageCodes.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Format</h3>
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm" 
+          onClick={handleAddFormat} 
+          className="gap-1"
+        >
+          <PlusCircle className="h-4 w-4" />
+          Add Format
+        </Button>
       </div>
+      <div className="grid grid-cols-1 gap-4">
+        <FormField
+          control={form.control}
+          name="format_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Select Format</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value || ""}
+                value={field.value || ""}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a format" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {formats.map((format) => (
+                    <SelectItem key={format.id} value={format.id}>
+                      {format.format_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {selectedFormatId && (
+          <div className="p-4 border rounded-md">
+            <h4 className="font-medium mb-2">Format Details</h4>
+            {formats.find(f => f.id === selectedFormatId) && (
+              <div className="space-y-2 text-sm">
+                <p><span className="font-medium">TPS:</span> {formats.find(f => f.id === selectedFormatId)?.tps || "N/A"}</p>
+                <p><span className="font-medium">Extent:</span> {formats.find(f => f.id === selectedFormatId)?.extent || "N/A"}</p>
+                <p><span className="font-medium">Cover Stock/Print:</span> {formats.find(f => f.id === selectedFormatId)?.cover_stock_print || "N/A"}</p>
+                <p><span className="font-medium">Internal Stock/Print:</span> {formats.find(f => f.id === selectedFormatId)?.internal_stock_print || "N/A"}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <FormatDialog
+        open={isDialogOpen}
+        formatId={selectedFormatId}
+        onOpenChange={setIsDialogOpen}
+        onSuccess={handleFormatSuccess}
+      />
     </div>
   );
 }

@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      formats: {
+        Row: {
+          cover_stock_print: string | null
+          created_at: string
+          extent: string | null
+          format_name: string
+          id: string
+          internal_stock_print: string | null
+          organization_id: string
+          tps: string | null
+          updated_at: string
+        }
+        Insert: {
+          cover_stock_print?: string | null
+          created_at?: string
+          extent?: string | null
+          format_name: string
+          id?: string
+          internal_stock_print?: string | null
+          organization_id: string
+          tps?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cover_stock_print?: string | null
+          created_at?: string
+          extent?: string | null
+          format_name?: string
+          id?: string
+          internal_stock_print?: string | null
+          organization_id?: string
+          tps?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formats_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           auth_user_id: string
@@ -74,6 +118,7 @@ export type Database = {
           created_at: string
           currency_code: string | null
           edition_number: number | null
+          format_id: string | null
           height_measurement: number | null
           id: string
           isbn10: string | null
@@ -103,6 +148,7 @@ export type Database = {
           created_at?: string
           currency_code?: string | null
           edition_number?: number | null
+          format_id?: string | null
           height_measurement?: number | null
           id?: string
           isbn10?: string | null
@@ -132,6 +178,7 @@ export type Database = {
           created_at?: string
           currency_code?: string | null
           edition_number?: number | null
+          format_id?: string | null
           height_measurement?: number | null
           id?: string
           isbn10?: string | null
@@ -157,6 +204,13 @@ export type Database = {
           width_measurement?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "formats"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_organization_id_fkey"
             columns: ["organization_id"]

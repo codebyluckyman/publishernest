@@ -49,6 +49,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               width_measurement: data.width_measurement !== null ? Number(data.width_measurement) : null,
               thickness_measurement: data.thickness_measurement !== null ? Number(data.thickness_measurement) : null,
               weight_measurement: data.weight_measurement !== null ? Number(data.weight_measurement) : null,
+              format_id: data.format_id || null,
             });
           }
         } catch (err: any) {
