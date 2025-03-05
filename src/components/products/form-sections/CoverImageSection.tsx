@@ -35,7 +35,7 @@ export function CoverImageSection({ form }: CoverImageSectionProps) {
           {form.watch('cover_image_url') && (
             <div className="mt-2">
               <p className="text-sm text-muted-foreground mb-2">Preview:</p>
-              <div className="border rounded overflow-hidden w-32 h-48">
+              <div className="border rounded overflow-hidden w-48 h-72">
                 <img 
                   src={form.watch('cover_image_url')} 
                   alt="Cover preview" 
