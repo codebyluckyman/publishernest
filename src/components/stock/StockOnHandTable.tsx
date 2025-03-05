@@ -192,12 +192,12 @@ const StockOnHandTable = () => {
         <div className="flex flex-wrap gap-3 items-center">
           <div className="flex flex-col space-y-1">
             <label className="text-sm font-medium">Warehouse</label>
-            <Select value={selectedWarehouse || ""} onValueChange={(value) => setSelectedWarehouse(value || null)}>
+            <Select value={selectedWarehouse || undefined} onValueChange={(value) => setSelectedWarehouse(value || null)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All warehouses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All warehouses</SelectItem>
+                <SelectItem value="all">All warehouses</SelectItem>
                 {warehouses?.map((warehouse) => (
                   <SelectItem key={warehouse.id} value={warehouse.id}>
                     {warehouse.name}
@@ -209,12 +209,12 @@ const StockOnHandTable = () => {
           
           <div className="flex flex-col space-y-1">
             <label className="text-sm font-medium">Product</label>
-            <Select value={selectedProduct || ""} onValueChange={(value) => setSelectedProduct(value || null)}>
+            <Select value={selectedProduct || undefined} onValueChange={(value) => setSelectedProduct(value || null)}>
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="All products" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All products</SelectItem>
+                <SelectItem value="all">All products</SelectItem>
                 {products?.map((product) => (
                   <SelectItem key={product.id} value={product.id}>
                     {product.title}
