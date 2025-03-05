@@ -1,9 +1,13 @@
 
+import { useState } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { ProductFormValues } from "@/schemas/productSchema";
-import { Image } from "lucide-react";
+import { Image, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useOrganization } from "@/context/OrganizationContext";
+import { toast } from "sonner";
 
 interface CoverImageSectionProps {
   form: UseFormReturn<ProductFormValues>;
@@ -11,7 +15,57 @@ interface CoverImageSectionProps {
 }
 
 export function CoverImageSection({ form, readOnly = false }: CoverImageSectionProps) {
+  const { currentOrganization } = useOrganization();
+  const [isUploading, setIsUploading] = useState(false);
   const coverImageUrl = form.watch("cover_image_url");
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    if (!currentOrganization) {
+      toast.error("No organization selected");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("File must be an image (JPEG, PNG, WebP, or GIF)");
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("organizationId", currentOrganization.id);
+      
+      const response = await fetch("/api/upload-product-image", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to upload image");
+      }
+      
+      const data = await response.json();
+      form.setValue("cover_image_url", data.url);
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image: " + (error as Error).message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -32,7 +86,7 @@ export function CoverImageSection({ form, readOnly = false }: CoverImageSectionP
           )}
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 space-y-4">
           <FormField
             control={form.control}
             name="cover_image_url"
@@ -51,6 +105,31 @@ export function CoverImageSection({ form, readOnly = false }: CoverImageSectionP
               </FormItem>
             )}
           />
+          
+          {!readOnly && (
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isUploading}
+                onClick={() => document.getElementById("cover-image-upload")?.click()}
+                className="w-full"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {isUploading ? "Uploading..." : "Upload Cover Image"}
+              </Button>
+              <input
+                id="cover-image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Maximum size: 5MB. Supported formats: JPEG, PNG, WebP, GIF
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
