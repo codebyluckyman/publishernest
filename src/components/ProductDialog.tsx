@@ -2,8 +2,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ProductForm from "./ProductForm";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 type ProductDialogProps = {
@@ -26,39 +24,12 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
     onOpenChange(false);
   };
 
-  const handleDelete = () => {
-    onSuccess();
-    onOpenChange(false);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>{isEditMode ? "Edit Product" : "Add New Product"}</DialogTitle>
           <div className="flex space-x-2">
-            {isEditMode && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" type="button" disabled={isLoading}>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete this product and cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
             <Button variant="outline" type="button" onClick={handleCancel} disabled={isLoading}>
               Cancel
             </Button>
@@ -76,7 +47,6 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
           productId={productId} 
           onSuccess={handleSuccess} 
           onCancel={handleCancel}
-          onDelete={handleDelete}
           formId="product-form"
           setIsLoading={setIsLoading}
           hideButtons={true}
