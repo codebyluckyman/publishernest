@@ -84,7 +84,12 @@ const ProductFilters = ({
   });
 
   const handleFilterChange = (field: keyof FilterOptions, value: string | null) => {
-    setFilters(prev => ({ ...prev, [field]: value === "all" ? null : value }));
+    // Fix: Create a new object instead of using a function that returns one
+    const newFilters: FilterOptions = { 
+      ...filters, 
+      [field]: value === "all" ? null : value 
+    };
+    setFilters(newFilters);
   };
 
   const resetFilters = () => {
