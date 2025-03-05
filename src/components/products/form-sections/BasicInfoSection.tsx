@@ -6,9 +6,10 @@ import { ProductFormValues } from "@/schemas/productSchema";
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<ProductFormValues>;
+  readOnly?: boolean;
 }
 
-export function BasicInfoSection({ form }: BasicInfoSectionProps) {
+export function BasicInfoSection({ form, readOnly = false }: BasicInfoSectionProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Basic Information</h3>
@@ -21,7 +22,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
               <FormItem>
                 <FormLabel>Title *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Product title" {...field} />
+                  <Input placeholder="Product title" disabled={readOnly} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -36,7 +37,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
             <FormItem>
               <FormLabel>Subtitle</FormLabel>
               <FormControl>
-                <Input placeholder="Subtitle" {...field} />
+                <Input placeholder="Subtitle" disabled={readOnly} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -50,7 +51,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
             <FormItem>
               <FormLabel>Publisher</FormLabel>
               <FormControl>
-                <Input placeholder="Publisher name" {...field} />
+                <Input placeholder="Publisher name" disabled={readOnly} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -64,7 +65,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
             <FormItem>
               <FormLabel>Series</FormLabel>
               <FormControl>
-                <Input placeholder="Series name" {...field} />
+                <Input placeholder="Series name" disabled={readOnly} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -81,6 +82,7 @@ export function BasicInfoSection({ form }: BasicInfoSectionProps) {
                 <Input 
                   type="number" 
                   placeholder="Edition number" 
+                  disabled={readOnly}
                   {...field}
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {

@@ -13,9 +13,10 @@ import { useState } from "react";
 
 interface PublicationSectionProps {
   form: UseFormReturn<ProductFormValues>;
+  readOnly?: boolean;
 }
 
-export function PublicationSection({ form }: PublicationSectionProps) {
+export function PublicationSection({ form, readOnly = false }: PublicationSectionProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   return (
@@ -36,7 +37,8 @@ export function PublicationSection({ form }: PublicationSectionProps) {
                       className={`w-full h-10 justify-start text-left font-normal ${
                         !field.value ? "text-muted-foreground" : ""
                       }`}
-                      onClick={() => setIsCalendarOpen(true)}
+                      onClick={() => !readOnly && setIsCalendarOpen(true)}
+                      disabled={readOnly}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {field.value ? format(field.value, "PPP") : "Pick a date"}
@@ -75,6 +77,7 @@ export function PublicationSection({ form }: PublicationSectionProps) {
                 <Input 
                   type="number" 
                   placeholder="Number of pages" 
+                  disabled={readOnly}
                   {...field}
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {
@@ -99,6 +102,7 @@ export function PublicationSection({ form }: PublicationSectionProps) {
                   type="number" 
                   step="0.01" 
                   placeholder="0.00" 
+                  disabled={readOnly}
                   {...field}
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {
@@ -122,6 +126,7 @@ export function PublicationSection({ form }: PublicationSectionProps) {
                 onValueChange={field.onChange}
                 defaultValue={field.value}
                 value={field.value}
+                disabled={readOnly}
               >
                 <FormControl>
                   <SelectTrigger>

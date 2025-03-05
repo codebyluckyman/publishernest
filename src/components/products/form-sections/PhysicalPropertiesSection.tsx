@@ -6,9 +6,10 @@ import { ProductFormValues } from "@/schemas/productSchema";
 
 interface PhysicalPropertiesSectionProps {
   form: UseFormReturn<ProductFormValues>;
+  readOnly?: boolean;
 }
 
-export function PhysicalPropertiesSection({ form }: PhysicalPropertiesSectionProps) {
+export function PhysicalPropertiesSection({ form, readOnly = false }: PhysicalPropertiesSectionProps) {
   return (
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Physical Properties</h3>
@@ -24,6 +25,7 @@ export function PhysicalPropertiesSection({ form }: PhysicalPropertiesSectionPro
                   type="number" 
                   step="0.1" 
                   placeholder="Height" 
+                  disabled={readOnly}
                   {...field}
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {
@@ -48,6 +50,7 @@ export function PhysicalPropertiesSection({ form }: PhysicalPropertiesSectionPro
                   type="number" 
                   step="0.1" 
                   placeholder="Width" 
+                  disabled={readOnly}
                   {...field}
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {
@@ -72,6 +75,7 @@ export function PhysicalPropertiesSection({ form }: PhysicalPropertiesSectionPro
                   type="number" 
                   step="0.1" 
                   placeholder="Thickness" 
+                  disabled={readOnly}
                   {...field}
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {
@@ -96,6 +100,7 @@ export function PhysicalPropertiesSection({ form }: PhysicalPropertiesSectionPro
                   type="number" 
                   step="0.1" 
                   placeholder="Weight" 
+                  disabled={readOnly}
                   {...field}
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {

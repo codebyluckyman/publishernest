@@ -22,9 +22,10 @@ interface Format {
 
 interface FormatSectionProps {
   form: UseFormReturn<ProductFormValues>;
+  readOnly?: boolean;
 }
 
-export function FormatSection({ form }: FormatSectionProps) {
+export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
   const { currentOrganization } = useOrganization();
   const [formats, setFormats] = useState<Format[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,16 +93,18 @@ export function FormatSection({ form }: FormatSectionProps) {
     <div className="space-y-2">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Format</h3>
-        <Button 
-          type="button" 
-          variant="outline" 
-          size="sm" 
-          onClick={handleAddFormat} 
-          className="gap-1"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Add Format
-        </Button>
+        {!readOnly && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddFormat} 
+            className="gap-1"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add Format
+          </Button>
+        )}
       </div>
       <div className="grid grid-cols-1 gap-4">
         <FormField
@@ -114,6 +117,7 @@ export function FormatSection({ form }: FormatSectionProps) {
                 onValueChange={field.onChange}
                 defaultValue={field.value || undefined}
                 value={field.value || undefined}
+                disabled={readOnly}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -137,15 +141,17 @@ export function FormatSection({ form }: FormatSectionProps) {
           <div className="p-4 border rounded-md">
             <div className="flex justify-between items-center mb-2">
               <h4 className="font-medium">Format Details</h4>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleEditFormat}
-                className="h-8 w-8 p-0"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+              {!readOnly && (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleEditFormat}
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
             </div>
             <div className="space-y-2 text-sm">
               <p><span className="font-medium">TPS:</span> {selectedFormat.tps || "N/A"}</p>
@@ -157,12 +163,14 @@ export function FormatSection({ form }: FormatSectionProps) {
         )}
       </div>
 
-      <FormatDialog
-        open={isDialogOpen}
-        formatId={selectedFormatId}
-        onOpenChange={setIsDialogOpen}
-        onSuccess={handleFormatSuccess}
-      />
+      {!readOnly && (
+        <FormatDialog
+          open={isDialogOpen}
+          formatId={selectedFormatId}
+          onOpenChange={setIsDialogOpen}
+          onSuccess={handleFormatSuccess}
+        />
+      )}
     </div>
   );
 }
