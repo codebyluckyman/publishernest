@@ -25,7 +25,7 @@ export default function FormatForm({ formatId, onSuccess, onCancel }: FormatForm
         <FormatFormFields form={form} />
         
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
+          <Button variant="destructive" type="button" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
           <Button type="submit" disabled={isLoading} variant="default">
