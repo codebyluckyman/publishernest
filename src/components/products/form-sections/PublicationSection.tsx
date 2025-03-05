@@ -26,14 +26,14 @@ export function PublicationSection({ form }: PublicationSectionProps) {
           control={form.control}
           name="publication_date"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
+            <FormItem>
               <FormLabel>Publication Date</FormLabel>
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant="outline"
-                      className={`w-full justify-start text-left font-normal ${
+                      className={`w-full h-10 justify-start text-left font-normal ${
                         !field.value ? "text-muted-foreground" : ""
                       }`}
                       onClick={() => setIsCalendarOpen(true)}
