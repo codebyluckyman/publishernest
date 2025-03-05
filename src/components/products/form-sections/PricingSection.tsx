@@ -193,7 +193,7 @@ export function PricingSection({ form, productId, readOnly = false }: PricingSec
       
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Product Prices</CardTitle>
+          <CardTitle className="text-base">Manage RRPs</CardTitle>
         </CardHeader>
         <CardContent>
           {prices.length > 0 ? (

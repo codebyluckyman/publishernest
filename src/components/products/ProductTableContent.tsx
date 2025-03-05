@@ -85,7 +85,7 @@ const ProductTableContent = ({
             <TableHead>Format</TableHead>
             <TableHead>Publisher</TableHead>
             <TableHead>Pub Date</TableHead>
-            <TableHead>Price</TableHead>
+            <TableHead>RRP</TableHead>
             <TableHead className="w-[120px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
