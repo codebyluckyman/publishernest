@@ -28,7 +28,7 @@ export default function FormatForm({ formatId, onSuccess, onCancel }: FormatForm
           <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} variant="default">
             {isLoading ? "Saving..." : isEditMode ? "Update Format" : "Create Format"}
           </Button>
         </div>

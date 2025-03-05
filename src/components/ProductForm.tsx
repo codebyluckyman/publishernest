@@ -34,7 +34,7 @@ export default function ProductForm({ productId, onSuccess, onCancel }: ProductF
           <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} variant="default">
             {isLoading ? "Saving..." : isEditMode ? "Update Product" : "Create Product"}
           </Button>
         </div>
