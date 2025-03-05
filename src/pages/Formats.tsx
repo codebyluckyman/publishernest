@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -21,33 +20,6 @@ type Format = {
   internal_stock_print: string | null;
   created_at: string;
   updated_at: string;
-};
-
-const FormatCategories = () => {
-  const formatCategories = [
-    { name: "Hardcover", count: 0, icon: Package, color: "text-emerald-500" },
-    { name: "Paperback", count: 0, icon: Package, color: "text-blue-500" },
-    { name: "Journal", count: 0, icon: FileText, color: "text-purple-500" },
-    { name: "Custom", count: 0, icon: FileText, color: "text-amber-500" },
-  ];
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {formatCategories.map((category) => (
-        <Card key={category.name} className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              {category.name}
-            </CardTitle>
-            <category.icon className={`w-5 h-5 ${category.color}`} />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{category.count}</div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
 };
 
 const FormatsTable = () => {
@@ -218,8 +190,6 @@ const Formats = () => {
         <h1 className="text-3xl font-bold text-primary mb-2">Formats</h1>
         <p className="text-gray-600">Manage your print formats and specifications</p>
       </div>
-
-      <FormatCategories />
 
       <FormatsTable />
     </div>
