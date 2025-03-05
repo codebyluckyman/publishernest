@@ -57,7 +57,7 @@ export default function FormatForm({ formatId, onSuccess, onCancel, onDelete }: 
               </AlertDialogContent>
             </AlertDialog>
           )}
-          <Button variant="destructive" type="button" onClick={onCancel} disabled={isLoading}>
+          <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
           <Button type="submit" disabled={isLoading} variant="default">
