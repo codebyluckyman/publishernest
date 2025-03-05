@@ -192,7 +192,7 @@ const FormatsTable = () => {
               />
             </div>
             <Button
-              variant={showFilters ? "secondary" : "outline"}
+              variant="outline"
               className="gap-1"
               onClick={toggleFilters}
             >
