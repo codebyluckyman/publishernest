@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OrganizationDetails } from "@/components/organizations/OrganizationDetails";
 import { MembersList } from "@/components/organizations/MembersList";
+import { WarehousesList } from "@/components/organizations/WarehousesList";
 
 type UserProfile = {
   id: string;
@@ -98,7 +99,10 @@ const Organizations = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <OrganizationDetails organization={currentOrganization} />
+        <div className="space-y-6">
+          <OrganizationDetails organization={currentOrganization} />
+          <WarehousesList organizationId={currentOrganization.id} />
+        </div>
         
         <MembersList
           organizationId={currentOrganization.id}
