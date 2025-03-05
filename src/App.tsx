@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Index";
 import Products from "./pages/Products";
+import Formats from "./pages/Formats";
 import Organizations from "./pages/Organizations";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,13 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Products />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/formats" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Formats />
                 </Layout>
               </ProtectedRoute>
             } />
