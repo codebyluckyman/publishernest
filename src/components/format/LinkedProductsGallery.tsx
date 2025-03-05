@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Image, Grid, List } from "lucide-react";
@@ -23,7 +22,7 @@ interface LinkedProductsGalleryProps {
 }
 
 export function LinkedProductsGallery({ formatId }: LinkedProductsGalleryProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("gallery");
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
 
   const fetchLinkedProducts = async () => {
     const { data, error } = await supabase
