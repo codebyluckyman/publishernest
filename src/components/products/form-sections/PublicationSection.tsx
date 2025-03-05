@@ -36,7 +36,7 @@ export function PublicationSection({ form, readOnly = false }: PublicationSectio
                       variant="outline"
                       className={`w-full h-10 justify-start text-left font-normal ${
                         !field.value ? "text-muted-foreground" : ""
-                      } ${readOnly ? "text-black opacity-100 hover:bg-background" : ""}`}
+                      } ${readOnly ? "text-black opacity-100 bg-gray-100 hover:bg-gray-100" : ""}`}
                       onClick={() => !readOnly && setIsCalendarOpen(true)}
                       disabled={readOnly}
                     >
