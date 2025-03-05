@@ -1,11 +1,13 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import OrganizationSwitcher from "./OrganizationSwitcher";
+import NotificationsPopover from "./NotificationsPopover";
+import HelpCenterPopover from "./HelpCenterPopover";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -101,7 +103,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           </SidebarContent>
         </Sidebar>
         <main className="flex-1 p-8 animate-fadeIn">
-          <SidebarTrigger className="mb-6" />
+          <div className="flex justify-between items-center mb-6">
+            <SidebarTrigger />
+            <div className="flex items-center gap-4">
+              <NotificationsPopover />
+              <HelpCenterPopover />
+            </div>
+          </div>
           {children}
         </main>
       </div>
