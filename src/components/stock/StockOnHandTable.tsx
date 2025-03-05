@@ -149,7 +149,6 @@ const StockOnHandTable = () => {
         <div className="flex justify-between items-center">
           <CardTitle>Stock On Hand</CardTitle>
           
-          {viewMode === "detailed" && (
             <Button 
               variant="outline" 
               size="sm"
@@ -159,7 +158,6 @@ const StockOnHandTable = () => {
               <Download className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
-          )}
         </div>
         
         <StockFilters 
