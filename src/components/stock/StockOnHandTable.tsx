@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StockFilters from "./StockFilters";
 import StockTable from "./StockTable";
+import StockGroupedTable from "./StockGroupedTable";
 
 type StockItem = {
   id: string;
@@ -25,6 +27,7 @@ const StockOnHandTable = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"detailed" | "grouped">("grouped");
 
   // Fetch stock on hand data with relationships
   const { data: stockItems, isLoading } = useQuery({
@@ -105,10 +108,21 @@ const StockOnHandTable = () => {
           selectedProduct={selectedProduct}
           setSelectedProduct={setSelectedProduct}
         />
+
+        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "detailed" | "grouped")} className="w-[400px]">
+          <TabsList>
+            <TabsTrigger value="grouped">Grouped by ISBN</TabsTrigger>
+            <TabsTrigger value="detailed">Detailed View</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </CardHeader>
       
       <CardContent>
-        <StockTable stockItems={stockItems} isLoading={isLoading} />
+        {viewMode === "grouped" ? (
+          <StockGroupedTable stockItems={stockItems} isLoading={isLoading} />
+        ) : (
+          <StockTable stockItems={stockItems} isLoading={isLoading} />
+        )}
       </CardContent>
     </Card>
   );
