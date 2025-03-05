@@ -1,6 +1,6 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: BarChart3, label: "Dashboard", path: "/" },
     { icon: Package, label: "Products", path: "/products" },
     { icon: BookOpen, label: "Formats", path: "/formats" },
+    { icon: Archive, label: "Stock", path: "/stock" },
     { icon: FileText, label: "Quotes", path: "/quotes" },
     { icon: ShoppingCart, label: "Purchase Orders", path: "/orders" },
     { icon: Truck, label: "Shipments", path: "/shipments" },
