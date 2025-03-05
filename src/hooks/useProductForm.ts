@@ -66,7 +66,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
   async function onSubmit(values: ProductFormValues) {
     if (!currentOrganization) {
       toast.error("No organization selected");
-      return;
+      return { success: false, productId: null };
     }
     
     setIsLoading(true);
@@ -80,6 +80,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       };
 
       let result;
+      let productId = isEditMode ? productId : null;
       
       if (isEditMode) {
         result = await supabase
@@ -89,7 +90,12 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       } else {
         result = await supabase
           .from("products")
-          .insert(formattedValues);
+          .insert(formattedValues)
+          .select();
+          
+        if (result.data && result.data.length > 0) {
+          productId = result.data[0].id;
+        }
       }
       
       if (result.error) {
@@ -98,8 +104,11 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       
       toast.success(isEditMode ? "Product updated successfully" : "Product created successfully");
       onSuccess();
+      
+      return { success: true, productId };
     } catch (error: any) {
       toast.error(`Failed to ${isEditMode ? "update" : "create"} product: ${error.message}`);
+      return { success: false, productId: null };
     } finally {
       setIsLoading(false);
     }
@@ -116,6 +125,17 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     console.log("Delete Product function called with productId:", productId);
     
     try {
+      // First delete associated stock records
+      const { error: stockError } = await supabase
+        .from("stock_on_hand")
+        .delete()
+        .eq("product_id", productId);
+        
+      if (stockError) {
+        console.error("Error deleting stock records:", stockError);
+      }
+      
+      // Then delete the product
       const { error } = await supabase
         .from("products")
         .delete()

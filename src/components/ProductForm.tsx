@@ -11,7 +11,11 @@ import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalProp
 import { DescriptionSection } from "./products/form-sections/DescriptionSection";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect, forwardRef, useImperativeHandle } from "react";
+import { Dispatch, SetStateAction, useEffect, forwardRef, useImperativeHandle, useState } from "react";
+import { StockTable } from "./products/form-sections/StockTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useOrganization } from "@/context/OrganizationContext";
 
 type ProductFormProps = {
   productId?: string;
@@ -34,6 +38,8 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
   hideButtons = false
 }, ref) => {
   const { form, isLoading, isEditMode, onSubmit, deleteProduct } = useProductForm(productId, onSuccess);
+  const { currentOrganization } = useOrganization();
+  const [stockQuantities, setStockQuantities] = useState<Record<string, number>>({});
 
   // Expose the deleteProduct method via ref
   useImperativeHandle(ref, () => ({
@@ -63,9 +69,45 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
     }
   };
 
+  const handleStockChange = (warehouseId: string, quantity: number) => {
+    setStockQuantities(prev => ({
+      ...prev,
+      [warehouseId]: quantity
+    }));
+  };
+
+  const handleFormSubmit = async (values: any) => {
+    try {
+      // First submit the product form
+      const result = await onSubmit(values);
+      
+      // Then update stock quantities if we have a product ID
+      if (result.productId && currentOrganization) {
+        // For each warehouse, upsert the stock quantity
+        const stockPromises = Object.entries(stockQuantities).map(([warehouseId, quantity]) => {
+          return supabase
+            .from("stock_on_hand")
+            .upsert({
+              product_id: result.productId,
+              warehouse_id: warehouseId,
+              organization_id: currentOrganization.id,
+              quantity
+            }, { onConflict: 'product_id, warehouse_id' });
+        });
+        
+        await Promise.all(stockPromises);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error saving product with stock:", error);
+      throw error;
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" id={formId}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6" id={formId}>
         <CoverImageSection form={form} />
         <BasicInfoSection form={form} />
         <IdentifiersSection form={form} />
@@ -73,6 +115,20 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
         <PublicationSection form={form} />
         <PhysicalPropertiesSection form={form} />
         <DescriptionSection form={form} />
+        
+        {productId && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Inventory</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StockTable 
+                productId={productId} 
+                onChange={handleStockChange}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {!hideButtons && (
           <div className="flex justify-end space-x-2">
