@@ -34,6 +34,11 @@ export default function FormatForm({
     onSuccess 
   });
 
+  // Debug log to check formatId
+  useEffect(() => {
+    console.log("FormatForm isEditMode:", isEditMode, "formatId:", formatId);
+  }, [isEditMode, formatId]);
+
   // Sync loading state with parent if provided
   useEffect(() => {
     if (setParentIsLoading) {
@@ -72,7 +77,7 @@ export default function FormatForm({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

@@ -34,6 +34,11 @@ export default function ProductForm({
 }: ProductFormProps) {
   const { form, isLoading, isEditMode, onSubmit, deleteProduct } = useProductForm(productId, onSuccess);
 
+  // Debug log to check productId
+  useEffect(() => {
+    console.log("ProductForm isEditMode:", isEditMode, "productId:", productId);
+  }, [isEditMode, productId]);
+
   // Sync loading state with parent if provided
   useEffect(() => {
     if (setParentIsLoading) {
@@ -78,7 +83,7 @@ export default function ProductForm({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

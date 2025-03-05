@@ -6,7 +6,7 @@ import { LinkedProductsGallery } from "./format/LinkedProductsGallery";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type FormatDialogProps = {
   open: boolean;
@@ -18,6 +18,11 @@ type FormatDialogProps = {
 const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogProps) => {
   const isEditMode = !!formatId;
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Debug log to check formatId
+  useEffect(() => {
+    console.log("FormatDialog isEditMode:", isEditMode, "formatId:", formatId);
+  }, [isEditMode, formatId]);
   
   const handleSuccess = () => {
     onSuccess();
@@ -56,7 +61,7 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

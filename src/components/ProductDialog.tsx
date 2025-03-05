@@ -4,7 +4,7 @@ import ProductForm from "./ProductForm";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type ProductDialogProps = {
   open: boolean;
@@ -16,6 +16,11 @@ type ProductDialogProps = {
 const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDialogProps) => {
   const isEditMode = !!productId;
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Debug log to check productId
+  useEffect(() => {
+    console.log("ProductDialog isEditMode:", isEditMode, "productId:", productId);
+  }, [isEditMode, productId]);
   
   const handleSuccess = () => {
     onSuccess();
@@ -54,7 +59,7 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
