@@ -1,0 +1,87 @@
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  // Handle CORS preflight request
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const formData = await req.formData();
+    const file = formData.get('file');
+    const organizationId = formData.get('organizationId');
+
+    if (!file || !organizationId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing file or organization ID' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Ensure organization-logos bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
+    if (!buckets?.find(bucket => bucket.name === 'organization-logos')) {
+      await supabase.storage.createBucket('organization-logos', {
+        public: true,
+        fileSizeLimit: 5242880, // 5MB
+      });
+      
+      // Set public policy for the bucket
+      await supabase.rpc('create_storage_policy', {
+        bucket_name: 'organization-logos',
+        definition: `bucket_id = 'organization-logos'`,
+      });
+    }
+
+    // Sanitize filename and generate a unique path
+    const fileName = file.name.replace(/[^\x00-\x7F]/g, '');
+    const fileExt = fileName.split('.').pop();
+    const sanitizedName = `org-logo-${organizationId}`;
+    const timestamp = new Date().getTime();
+    const filePath = `${organizationId}/${sanitizedName}_${timestamp}.${fileExt}`;
+
+    // Upload file to storage
+    const { data, error: uploadError } = await supabase.storage
+      .from('organization-logos')
+      .upload(filePath, file, {
+        contentType: file.type,
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to upload file', details: uploadError }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('organization-logos')
+      .getPublicUrl(filePath);
+
+    return new Response(
+      JSON.stringify({ url: publicUrl }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    );
+  } catch (error) {
+    console.error("Function error:", error);
+    return new Response(
+      JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
+  }
+});

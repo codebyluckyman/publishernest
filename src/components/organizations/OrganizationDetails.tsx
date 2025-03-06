@@ -23,32 +23,44 @@ export const OrganizationDetails = ({
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${organization.id}-logo.${fileExt}`;
-    const filePath = `${organization.id}/${fileName}`;
     
-    console.log("start uploading")
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+    
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("File must be an image (JPEG, PNG, WebP, or GIF)");
+      return;
+    }
+    
+    console.log("Start uploading organization logo");
     setUploading(true);
     
     try {
-      // Upload the file to Supabase storage
-      const { error: uploadError } = await supabase
-        .storage
-        .from('organization-logos')
-        .upload(filePath, file, { upsert: true });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("organizationId", organization.id);
       
-      if (uploadError) throw uploadError;
+      // Call the edge function to upload the logo
+      const { data, error } = await supabase.functions.invoke('upload-organization-logo', {
+        body: formData,
+        method: 'POST',
+      });
       
-      // Get the public URL of the uploaded file
-      const { data } = supabase
-        .storage
-        .from('organization-logos')
-        .getPublicUrl(filePath);
+      if (error) {
+        throw new Error(error.message || "Failed to upload logo");
+      }
+      
+      if (!data || !data.url) {
+        throw new Error("No URL returned from upload");
+      }
       
       // Update the organization record with the logo URL
       const { error: updateError } = await supabase
         .from('organizations')
-        .update({ logo_url: data.publicUrl })
+        .update({ logo_url: data.url })
         .eq('id', organization.id);
       
       if (updateError) throw updateError;
@@ -57,14 +69,14 @@ export const OrganizationDetails = ({
       if (onOrganizationUpdate) {
         onOrganizationUpdate({
           ...organization,
-          logo_url: data.publicUrl
+          logo_url: data.url
         });
       }
       
       toast.success("Organization logo updated successfully");
     } catch (error) {
       console.error("Error uploading logo:", error);
-      toast.error("Failed to upload organization logo");
+      toast.error("Failed to upload organization logo: " + (error as Error).message);
     } finally {
       setUploading(false);
     }
