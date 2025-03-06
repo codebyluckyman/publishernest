@@ -1,4 +1,3 @@
-
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -9,24 +8,53 @@ import { toast } from "sonner";
 import OrganizationSwitcher from "./OrganizationSwitcher";
 import NotificationsPopover from "./NotificationsPopover";
 import HelpCenterPopover from "./HelpCenterPopover";
-
-const Layout = ({ children }: { children: React.ReactNode }) => {
+const Layout = ({
+  children
+}: {
+  children: React.ReactNode;
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const { currentOrganization } = useOrganization();
-
-  const menuItems = [
-    { icon: BarChart3, label: "Dashboard", path: "/" },
-    { icon: Package, label: "Products", path: "/products" },
-    { icon: BookOpen, label: "Formats", path: "/formats" },
-    { icon: Archive, label: "Stock", path: "/stock" },
-    { icon: FileText, label: "Quotes", path: "/quotes" },
-    { icon: ShoppingCart, label: "Purchase Orders", path: "/orders" },
-    { icon: Truck, label: "Shipments", path: "/shipments" },
-    { icon: Building, label: "Organizations", path: "/organizations" },
-  ];
-
+  const {
+    user,
+    signOut
+  } = useAuth();
+  const {
+    currentOrganization
+  } = useOrganization();
+  const menuItems = [{
+    icon: BarChart3,
+    label: "Dashboard",
+    path: "/"
+  }, {
+    icon: Package,
+    label: "Products",
+    path: "/products"
+  }, {
+    icon: BookOpen,
+    label: "Formats",
+    path: "/formats"
+  }, {
+    icon: Archive,
+    label: "Stock",
+    path: "/stock"
+  }, {
+    icon: FileText,
+    label: "Quotes",
+    path: "/quotes"
+  }, {
+    icon: ShoppingCart,
+    label: "Purchase Orders",
+    path: "/orders"
+  }, {
+    icon: Truck,
+    label: "Shipments",
+    path: "/shipments"
+  }, {
+    icon: Building,
+    label: "Organizations",
+    path: "/organizations"
+  }];
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -37,9 +65,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       toast.error("Error signing out");
     }
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
         <Sidebar className="border-r border-gray-200">
           <SidebarContent>
@@ -48,41 +74,25 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <h1 className="text-xl font-bold text-primary">PublishFlow</h1>
               </div>
               <SidebarGroupContent>
-                {currentOrganization?.logo_url && (
-                  <div className="flex justify-center my-2">
-                    <img 
-                      src={currentOrganization.logo_url} 
-                      alt={`${currentOrganization.name} logo`} 
-                      className="h-12 w-auto object-contain rounded-sm"
-                    />
-                  </div>
-                )}
+                {currentOrganization?.logo_url && <div className="flex justify-center my-2">
+                    <img src={currentOrganization.logo_url} alt={`${currentOrganization.name} logo`} className="h-24 w-auto object-contain rounded-sm" />
+                  </div>}
                 <div className="px-3 mb-2">
                   <OrganizationSwitcher />
                 </div>
                 <SidebarMenu>
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.path}>
+                  {menuItems.map(item => <SidebarMenuItem key={item.path}>
                       <SidebarMenuButton asChild>
-                        <Link
-                          to={item.path}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === item.path
-                              ? "bg-accent text-white"
-                              : "hover:bg-gray-100"
-                          }`}
-                        >
+                        <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
                           <item.icon className="w-5 h-5" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                    </SidebarMenuItem>)}
                 </SidebarMenu>
               </SidebarGroupContent>
               
-              {user && (
-                <div className="mt-auto p-4 border-t border-gray-200">
+              {user && <div className="mt-auto p-4 border-t border-gray-200">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <User className="w-5 h-5 text-gray-500" />
@@ -92,25 +102,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start gap-2" 
-                      onClick={() => navigate('/profile')}
-                    >
+                    <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/profile')}>
                       <User className="w-4 h-4" />
                       Profile
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start gap-2" 
-                      onClick={handleSignOut}
-                    >
+                    <Button variant="outline" className="w-full justify-start gap-2" onClick={handleSignOut}>
                       <LogOut className="w-4 h-4" />
                       Sign Out
                     </Button>
                   </div>
-                </div>
-              )}
+                </div>}
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
@@ -125,8 +126,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           {children}
         </main>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default Layout;
