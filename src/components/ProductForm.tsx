@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useProductForm } from "@/hooks/useProductForm";
@@ -8,7 +7,6 @@ import { IdentifiersSection } from "./products/form-sections/IdentifiersSection"
 import { FormatSection } from "./products/form-sections/FormatSection";
 import { PublicationSection } from "./products/form-sections/PublicationSection";
 import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalPropertiesSection";
-import { DescriptionSection } from "./products/form-sections/DescriptionSection";
 import { CartonSection } from "./products/form-sections/CartonSection";
 import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSection";
 import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
@@ -31,7 +29,6 @@ type ProductFormProps = {
   hideButtons?: boolean;
 };
 
-// Define the component with forwardRef to expose methods
 const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFormProps>(({ 
   productId, 
   onSuccess, 
@@ -45,7 +42,6 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
   const { currentOrganization } = useOrganization();
   const [stockQuantities, setStockQuantities] = useState<Record<string, number>>({});
 
-  // Expose the deleteProduct method via ref
   useImperativeHandle(ref, () => ({
     deleteProduct: async () => {
       console.log("ProductForm deleteProduct called");
@@ -53,12 +49,10 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
     }
   }));
 
-  // Debug log to check productId
   useEffect(() => {
     console.log("ProductForm isEditMode:", isEditMode, "productId:", productId);
   }, [isEditMode, productId]);
 
-  // Sync loading state with parent if provided
   useEffect(() => {
     if (setParentIsLoading) {
       setParentIsLoading(isLoading);
@@ -82,12 +76,9 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
 
   const handleFormSubmit = async (values: any) => {
     try {
-      // First submit the product form
       const result = await onSubmit(values);
       
-      // Then update stock quantities if we have a product ID
       if (result.productId && currentOrganization) {
-        // For each warehouse, upsert the stock quantity
         const stockPromises = Object.entries(stockQuantities).map(([warehouseId, quantity]) => {
           return supabase
             .from("stock_on_hand")
@@ -119,11 +110,9 @@ const ProductForm = forwardRef<{ deleteProduct: () => Promise<void> }, ProductFo
         <PublicationSection form={form} />
         <PhysicalPropertiesSection form={form} />
         <CartonSection form={form} />
-        <DescriptionSection form={form} />
         <AdditionalInfoSection form={form} />
         <InternalImagesSection form={form} />
         
-        {/* Add the new Pricing Section */}
         {productId && (
           <PricingSection form={form} productId={productId} />
         )}

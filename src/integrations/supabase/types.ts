@@ -199,7 +199,6 @@ export type Database = {
           language_code: string | null
           license: string | null
           list_price: number | null
-          long_description: string | null
           organization_id: string
           page_count: number | null
           product_availability_code: string | null
@@ -208,7 +207,6 @@ export type Database = {
           publication_date: string | null
           publisher_name: string | null
           series_name: string | null
-          short_description: string | null
           subject_code: string | null
           subtitle: string | null
           synopsis: string | null
@@ -238,7 +236,6 @@ export type Database = {
           language_code?: string | null
           license?: string | null
           list_price?: number | null
-          long_description?: string | null
           organization_id: string
           page_count?: number | null
           product_availability_code?: string | null
@@ -247,7 +244,6 @@ export type Database = {
           publication_date?: string | null
           publisher_name?: string | null
           series_name?: string | null
-          short_description?: string | null
           subject_code?: string | null
           subtitle?: string | null
           synopsis?: string | null
@@ -277,7 +273,6 @@ export type Database = {
           language_code?: string | null
           license?: string | null
           list_price?: number | null
-          long_description?: string | null
           organization_id?: string
           page_count?: number | null
           product_availability_code?: string | null
@@ -286,7 +281,6 @@ export type Database = {
           publication_date?: string | null
           publisher_name?: string | null
           series_name?: string | null
-          short_description?: string | null
           subject_code?: string | null
           subtitle?: string | null
           synopsis?: string | null
