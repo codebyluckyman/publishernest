@@ -16,12 +16,12 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
       <div className="grid grid-cols-1 gap-4">
         <FormField
           control={form.control}
-          name="extent"
+          name="tps"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Dimensions</FormLabel>
+              <FormLabel>TPS (Total Page Count)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., 6x9 inches" {...field} disabled={readOnly} />
+                <Input placeholder="e.g., 240 pages" {...field} disabled={readOnly} />
               </FormControl>
               <FormMessage />
             </FormItem>

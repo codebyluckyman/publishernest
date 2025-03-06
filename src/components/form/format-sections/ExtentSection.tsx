@@ -16,12 +16,12 @@ export function ExtentSection({ form, readOnly = false }: ExtentSectionProps) {
       <div className="grid grid-cols-1 gap-4">
         <FormField
           control={form.control}
-          name="tps"
+          name="extent"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>TPS (Total Page Count)</FormLabel>
+              <FormLabel>Dimensions</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., 240 pages" {...field} disabled={readOnly} />
+                <Input placeholder="e.g., 6x9 inches" {...field} disabled={readOnly} />
               </FormControl>
               <FormMessage />
             </FormItem>
