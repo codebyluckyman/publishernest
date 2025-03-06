@@ -1,6 +1,7 @@
 
 import { useState } from "react";
-import { useOrganization, Organization } from "@/context/OrganizationContext";
+import { useOrganization } from "@/hooks/useOrganization";
+import { Organization } from "@/types/organization";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -55,12 +56,26 @@ const OrganizationSwitcher = () => {
     );
   }
 
+  // Display organization logo if available
+  const OrgIcon = () => {
+    if (currentOrganization.logo_url) {
+      return (
+        <img 
+          src={currentOrganization.logo_url} 
+          alt={`${currentOrganization.name} logo`} 
+          className="h-5 w-5 rounded-sm object-contain"
+        />
+      );
+    }
+    return <Building className="h-4 w-4" />;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="w-full justify-between">
           <div className="flex items-center gap-2 truncate">
-            <Building className="h-4 w-4" />
+            <OrgIcon />
             <span className="truncate">{currentOrganization.name}</span>
           </div>
           <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -78,7 +93,15 @@ const OrganizationSwitcher = () => {
               className="w-full justify-start gap-2"
               onClick={() => handleSwitchOrganization(org)}
             >
-              <Building className="h-4 w-4" />
+              {org.logo_url ? (
+                <img 
+                  src={org.logo_url} 
+                  alt={`${org.name} logo`} 
+                  className="h-4 w-4 rounded-sm object-contain" 
+                />
+              ) : (
+                <Building className="h-4 w-4" />
+              )}
               {org.name}
             </Button>
           ))}

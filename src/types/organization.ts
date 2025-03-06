@@ -4,6 +4,7 @@ export type Organization = {
   name: string;
   slug: string;
   created_at: string;
+  logo_url?: string | null;
 };
 
 export type OrganizationMember = {

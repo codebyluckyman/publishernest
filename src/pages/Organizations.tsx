@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { OrganizationDetails } from "@/components/organizations/OrganizationDetails";
 import { MembersList } from "@/components/organizations/MembersList";
 import { WarehousesList } from "@/components/organizations/WarehousesList";
+import { Organization } from "@/types/organization";
 
 type UserProfile = {
   id: string;
@@ -16,7 +17,14 @@ type UserProfile = {
 };
 
 const Organizations = () => {
-  const { currentOrganization, getOrganizationMembers, inviteMember, updateMemberRole, removeMember } = useOrganization();
+  const { 
+    currentOrganization, 
+    getOrganizationMembers, 
+    inviteMember, 
+    updateMemberRole, 
+    removeMember, 
+    switchOrganization 
+  } = useOrganization();
   const { user } = useAuth();
   const [members, setMembers] = useState<(OrganizationMember & { profile?: UserProfile })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +62,11 @@ const Organizations = () => {
     
     fetchMembers();
   }, [currentOrganization, getOrganizationMembers]);
+
+  const handleOrganizationUpdate = (updatedOrg: Organization) => {
+    // Update the current organization with new data (like logo)
+    switchOrganization(updatedOrg.id);
+  };
 
   const handleInviteMember = async (organizationId: string, email: string, role: "admin" | "member") => {
     await inviteMember(organizationId, email, role);
@@ -100,7 +113,10 @@ const Organizations = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <OrganizationDetails organization={currentOrganization} />
+          <OrganizationDetails 
+            organization={currentOrganization} 
+            onOrganizationUpdate={handleOrganizationUpdate}
+          />
           <WarehousesList organizationId={currentOrganization.id} />
         </div>
         

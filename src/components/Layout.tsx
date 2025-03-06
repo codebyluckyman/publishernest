@@ -46,6 +46,15 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <h1 className="text-xl font-bold text-primary">PublishFlow</h1>
               </div>
               <SidebarGroupContent>
+                {currentOrganization?.logo_url && (
+                  <div className="flex justify-center my-2">
+                    <img 
+                      src={currentOrganization.logo_url} 
+                      alt={`${currentOrganization.name} logo`} 
+                      className="h-12 w-auto object-contain rounded-sm"
+                    />
+                  </div>
+                )}
                 <div className="px-3 mb-2">
                   <OrganizationSwitcher />
                 </div>
