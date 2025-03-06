@@ -27,6 +27,7 @@ export const OrganizationDetails = ({
     const fileName = `${organization.id}-logo.${fileExt}`;
     const filePath = `${organization.id}/${fileName}`;
     
+    console.log("start uploading")
     setUploading(true);
     
     try {
