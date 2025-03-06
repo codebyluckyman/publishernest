@@ -13,6 +13,9 @@ export const formatSchema = z.object({
   extent: z.string().optional(),
   cover_stock_print: z.string().optional(),
   internal_stock_print: z.string().optional(),
+  cover_material: z.string().optional(),
+  internal_material: z.string().optional(),
+  binding_type: z.string().optional(),
 });
 
 export type FormatFormValues = z.infer<typeof formatSchema>;
@@ -23,6 +26,9 @@ export const defaultValues: FormatFormValues = {
   extent: "",
   cover_stock_print: "",
   internal_stock_print: "",
+  cover_material: "",
+  internal_material: "",
+  binding_type: "",
 };
 
 interface UseFormatFormProps {
@@ -65,6 +71,9 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
               extent: data.extent || "",
               cover_stock_print: data.cover_stock_print || "",
               internal_stock_print: data.internal_stock_print || "",
+              cover_material: data.cover_material || "",
+              internal_material: data.internal_material || "",
+              binding_type: data.binding_type || "",
             });
           }
         } catch (err: any) {
@@ -99,6 +108,9 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
         extent: values.extent,
         cover_stock_print: values.cover_stock_print,
         internal_stock_print: values.internal_stock_print,
+        cover_material: values.cover_material,
+        internal_material: values.internal_material,
+        binding_type: values.binding_type,
         organization_id: currentOrganization.id,
       };
 
