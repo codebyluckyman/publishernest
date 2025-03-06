@@ -22,8 +22,8 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
             <FormItem>
               <FormLabel>Orientation</FormLabel>
               <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value} 
+                onValueChange={field.onChange}
+                value={field.value || ""}
                 disabled={readOnly}
               >
                 <FormControl>
