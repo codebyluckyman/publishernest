@@ -15,7 +15,7 @@ const FormatViewDialog = ({ open, formatId, onOpenChange }: FormatViewDialogProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Format Details</DialogTitle>
         </DialogHeader>
