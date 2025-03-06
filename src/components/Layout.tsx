@@ -3,6 +3,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup,
 import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import OrganizationSwitcher from "./OrganizationSwitcher";
@@ -13,6 +14,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { currentOrganization } = useOrganization();
 
   const menuItems = [
     { icon: BarChart3, label: "Dashboard", path: "/" },
