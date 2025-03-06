@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { useAuth } from "@/context/AuthContext";
@@ -8,6 +7,7 @@ import { OrganizationDetails } from "@/components/organizations/OrganizationDeta
 import { MembersList } from "@/components/organizations/MembersList";
 import { WarehousesList } from "@/components/organizations/WarehousesList";
 import { Organization } from "@/types/organization";
+import { ensureOrganizationLogosBucket } from "@/lib/storage-utils";
 
 type UserProfile = {
   id: string;
@@ -28,6 +28,16 @@ const Organizations = () => {
   const { user } = useAuth();
   const [members, setMembers] = useState<(OrganizationMember & { profile?: UserProfile })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [storageBucketReady, setStorageBucketReady] = useState(false);
+
+  useEffect(() => {
+    ensureOrganizationLogosBucket()
+      .then(ready => setStorageBucketReady(ready))
+      .catch(err => {
+        console.error("Error ensuring storage bucket:", err);
+        setStorageBucketReady(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (!currentOrganization) return;
