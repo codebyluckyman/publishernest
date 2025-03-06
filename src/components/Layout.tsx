@@ -71,7 +71,7 @@ const Layout = ({
           <SidebarContent>
             <SidebarGroup>
               <div className="p-4">
-                <h1 className="text-xl font-bold text-primary">PublishFlow</h1>
+                
               </div>
               <SidebarGroupContent>
                 {currentOrganization?.logo_url && <div className="flex justify-center my-2">
