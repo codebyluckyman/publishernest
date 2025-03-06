@@ -14,6 +14,7 @@ export function CartonSection({ form, readOnly = false }: CartonSectionProps) {
     <div className="space-y-2">
       <h3 className="text-lg font-medium">Carton Information</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Move carton quantity and carton weight to be side by side */}
         <FormField
           control={form.control}
           name="carton_quantity"
@@ -29,6 +30,31 @@ export function CartonSection({ form, readOnly = false }: CartonSectionProps) {
                   value={field.value === null ? '' : field.value}
                   onChange={(e) => {
                     const value = e.target.value ? parseInt(e.target.value) : null;
+                    field.onChange(value);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="carton_weight_kg"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Carton Weight (kg)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  step="0.01"
+                  placeholder="Weight" 
+                  disabled={readOnly}
+                  {...field}
+                  value={field.value === null ? '' : field.value}
+                  onChange={(e) => {
+                    const value = e.target.value ? parseFloat(e.target.value) : null;
                     field.onChange(value);
                   }}
                 />
@@ -117,31 +143,6 @@ export function CartonSection({ form, readOnly = false }: CartonSectionProps) {
             />
           </div>
         </div>
-        
-        <FormField
-          control={form.control}
-          name="carton_weight_kg"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Carton Weight (kg)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  step="0.01"
-                  placeholder="Weight" 
-                  disabled={readOnly}
-                  {...field}
-                  value={field.value === null ? '' : field.value}
-                  onChange={(e) => {
-                    const value = e.target.value ? parseFloat(e.target.value) : null;
-                    field.onChange(value);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
     </div>
   );
