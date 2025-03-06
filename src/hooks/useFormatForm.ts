@@ -10,6 +10,7 @@ import { useOrganization } from "@/context/OrganizationContext";
 export const formatSchema = z.object({
   format_name: z.string().min(1, "Format name is required"),
   tps: z.string().optional(),
+  tps_case: z.string().optional(),
   extent: z.string().optional(),
   cover_stock_print: z.string().optional(),
   internal_stock_print: z.string().optional(),
@@ -23,6 +24,7 @@ export type FormatFormValues = z.infer<typeof formatSchema>;
 export const defaultValues: FormatFormValues = {
   format_name: "",
   tps: "",
+  tps_case: "",
   extent: "",
   cover_stock_print: "",
   internal_stock_print: "",
@@ -68,6 +70,7 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
             form.reset({
               format_name: data.format_name || "",
               tps: data.tps || "",
+              tps_case: data.tps_case || "",
               extent: data.extent || "",
               cover_stock_print: data.cover_stock_print || "",
               internal_stock_print: data.internal_stock_print || "",
@@ -105,6 +108,7 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
       const formattedValues = {
         format_name: values.format_name,
         tps: values.tps,
+        tps_case: values.tps_case,
         extent: values.extent,
         cover_stock_print: values.cover_stock_print,
         internal_stock_print: values.internal_stock_print,
