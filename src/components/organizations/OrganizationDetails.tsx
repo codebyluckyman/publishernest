@@ -30,18 +30,6 @@ export const OrganizationDetails = ({
     setUploading(true);
     
     try {
-      // Check if storage bucket exists, create if not
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const orgLogoBucket = buckets?.find(b => b.name === 'organization-logos');
-      
-      if (!orgLogoBucket) {
-        console.log("Creating organization-logos bucket");
-        // Bucket needs to be created first by admin/server
-        toast.error("Storage not properly configured. Please contact support.");
-        setUploading(false);
-        return;
-      }
-      
       // Upload the file to Supabase storage
       const { error: uploadError } = await supabase
         .storage
