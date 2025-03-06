@@ -11,33 +11,42 @@ export type Database = {
     Tables: {
       formats: {
         Row: {
+          binding_type: string | null
+          cover_material: string | null
           cover_stock_print: string | null
           created_at: string
           extent: string | null
           format_name: string
           id: string
+          internal_material: string | null
           internal_stock_print: string | null
           organization_id: string
           tps: string | null
           updated_at: string
         }
         Insert: {
+          binding_type?: string | null
+          cover_material?: string | null
           cover_stock_print?: string | null
           created_at?: string
           extent?: string | null
           format_name: string
           id?: string
+          internal_material?: string | null
           internal_stock_print?: string | null
           organization_id: string
           tps?: string | null
           updated_at?: string
         }
         Update: {
+          binding_type?: string | null
+          cover_material?: string | null
           cover_stock_print?: string | null
           created_at?: string
           extent?: string | null
           format_name?: string
           id?: string
+          internal_material?: string | null
           internal_stock_print?: string | null
           organization_id?: string
           tps?: string | null
