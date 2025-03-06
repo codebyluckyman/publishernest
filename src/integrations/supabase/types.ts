@@ -21,7 +21,9 @@ export type Database = {
           internal_material: string | null
           internal_stock_print: string | null
           organization_id: string
+          orientation: string | null
           tps: string | null
+          tps_case: string | null
           updated_at: string
         }
         Insert: {
@@ -35,7 +37,9 @@ export type Database = {
           internal_material?: string | null
           internal_stock_print?: string | null
           organization_id: string
+          orientation?: string | null
           tps?: string | null
+          tps_case?: string | null
           updated_at?: string
         }
         Update: {
@@ -49,7 +53,9 @@ export type Database = {
           internal_material?: string | null
           internal_stock_print?: string | null
           organization_id?: string
+          orientation?: string | null
           tps?: string | null
+          tps_case?: string | null
           updated_at?: string
         }
         Relationships: [
