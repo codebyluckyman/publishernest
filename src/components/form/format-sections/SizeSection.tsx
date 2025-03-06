@@ -33,7 +33,7 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
           name="tps"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>TPS (Total Pages)</FormLabel>
+              <FormLabel>TPS</FormLabel>
               <FormControl>
                 <Input placeholder="e.g., 240 pages" {...field} disabled={readOnly} />
               </FormControl>
