@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { FormatFormValues } from "@/hooks/useFormatForm";
 import { Separator } from "@/components/ui/separator";
 import { SizeSection } from "./format-sections/SizeSection";
+import { ExtentSection } from "./format-sections/ExtentSection";
 import { PrintingSection } from "./format-sections/PrintingSection";
 import { MaterialSection } from "./format-sections/MaterialSection";
 import { BindingSection } from "./format-sections/BindingSection";
@@ -33,6 +34,9 @@ export function FormatFormFields({ form, readOnly = false }: FormatFormFieldsPro
 
       <Separator />
       <SizeSection form={form} readOnly={readOnly} />
+      
+      <Separator />
+      <ExtentSection form={form} readOnly={readOnly} />
       
       <Separator />
       <PrintingSection form={form} readOnly={readOnly} />
