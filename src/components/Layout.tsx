@@ -1,13 +1,16 @@
+
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive, Menu } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import OrganizationSwitcher from "./OrganizationSwitcher";
 import NotificationsPopover from "./NotificationsPopover";
 import HelpCenterPopover from "./HelpCenterPopover";
+
 const Layout = ({
   children
 }: {
@@ -15,6 +18,7 @@ const Layout = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     user,
     signOut
@@ -22,39 +26,18 @@ const Layout = ({
   const {
     currentOrganization
   } = useOrganization();
-  const menuItems = [{
-    icon: BarChart3,
-    label: "Dashboard",
-    path: "/"
-  }, {
-    icon: Package,
-    label: "Products",
-    path: "/products"
-  }, {
-    icon: BookOpen,
-    label: "Formats",
-    path: "/formats"
-  }, {
-    icon: Archive,
-    label: "Stock",
-    path: "/stock"
-  }, {
-    icon: FileText,
-    label: "Quotes",
-    path: "/quotes"
-  }, {
-    icon: ShoppingCart,
-    label: "Purchase Orders",
-    path: "/orders"
-  }, {
-    icon: Truck,
-    label: "Shipments",
-    path: "/shipments"
-  }, {
-    icon: Building,
-    label: "Organizations",
-    path: "/organizations"
-  }];
+  
+  const menuItems = [
+    { icon: BarChart3, label: "Dashboard", path: "/" },
+    { icon: Package, label: "Products", path: "/products" },
+    { icon: BookOpen, label: "Formats", path: "/formats" },
+    { icon: Archive, label: "Stock", path: "/stock" },
+    { icon: FileText, label: "Quotes", path: "/quotes" },
+    { icon: ShoppingCart, label: "Purchase Orders", path: "/orders" },
+    { icon: Truck, label: "Shipments", path: "/shipments" },
+    { icon: Building, label: "Organizations", path: "/organizations" }
+  ];
+  
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -65,32 +48,38 @@ const Layout = ({
       toast.error("Error signing out");
     }
   };
-  return <SidebarProvider>
+  
+  return (
+    <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
         <Sidebar className="border-r border-gray-200">
           <SidebarContent>
             <SidebarGroup>
-              
               <SidebarGroupContent>
-                {currentOrganization?.logo_url && <div className="flex justify-center my-2">
+                {currentOrganization?.logo_url && (
+                  <div className="flex justify-center my-2">
                     <img src={currentOrganization.logo_url} alt={`${currentOrganization.name} logo`} className="h-24 w-auto object-contain rounded-sm" />
-                  </div>}
+                  </div>
+                )}
                 <div className="px-3 mb-2">
                   <OrganizationSwitcher />
                 </div>
                 <SidebarMenu>
-                  {menuItems.map(item => <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton asChild>
+                  {menuItems.map(item => (
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton asChild tooltip={isMobile ? undefined : item.label}>
                         <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
                           <item.icon className="w-5 h-5" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
-                    </SidebarMenuItem>)}
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
               
-              {user && <div className="mt-auto p-4 border-t border-gray-200">
+              {user && (
+                <div className="mt-auto p-4 border-t border-gray-200">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <User className="w-5 h-5 text-gray-500" />
@@ -109,13 +98,16 @@ const Layout = ({
                       Sign Out
                     </Button>
                   </div>
-                </div>}
+                </div>
+              )}
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
         <main className="flex-1 p-8 animate-fadeIn">
           <div className="flex justify-between items-center mb-6">
-            <SidebarTrigger />
+            <div className="flex items-center">
+              <SidebarTrigger className="text-primary" />
+            </div>
             <div className="flex items-center gap-4">
               <NotificationsPopover />
               <HelpCenterPopover />
@@ -124,6 +116,8 @@ const Layout = ({
           {children}
         </main>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 };
+
 export default Layout;
