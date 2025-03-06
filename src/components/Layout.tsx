@@ -70,9 +70,7 @@ const Layout = ({
         <Sidebar className="border-r border-gray-200">
           <SidebarContent>
             <SidebarGroup>
-              <div className="p-4">
-                
-              </div>
+              
               <SidebarGroupContent>
                 {currentOrganization?.logo_url && <div className="flex justify-center my-2">
                     <img src={currentOrganization.logo_url} alt={`${currentOrganization.name} logo`} className="h-24 w-auto object-contain rounded-sm" />
