@@ -50,9 +50,9 @@ const Layout = ({
   };
   
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-gray-50">
-        <Sidebar className="border-r border-gray-200">
+        <Sidebar className="border-r border-gray-200" collapsible={isMobile ? "offcanvas" : "icon"}>
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupContent>
@@ -67,7 +67,7 @@ const Layout = ({
                 <SidebarMenu>
                   {menuItems.map(item => (
                     <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton asChild tooltip={isMobile ? undefined : item.label}>
+                      <SidebarMenuButton asChild tooltip={item.label}>
                         <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
                           <item.icon className="w-5 h-5" />
                           <span>{item.label}</span>
@@ -106,7 +106,9 @@ const Layout = ({
         <main className="flex-1 p-8 animate-fadeIn">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
-              <SidebarTrigger className="text-primary" />
+              <SidebarTrigger className="text-primary">
+                <Menu className="w-6 h-6" />
+              </SidebarTrigger>
             </div>
             <div className="flex items-center gap-4">
               <NotificationsPopover />
