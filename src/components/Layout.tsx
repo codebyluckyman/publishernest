@@ -1,6 +1,6 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive, Menu, X } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive, Menu, X, ChevronDown } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useOrganization } from "@/hooks/useOrganization";
@@ -10,6 +10,15 @@ import { toast } from "sonner";
 import OrganizationSwitcher from "./OrganizationSwitcher";
 import NotificationsPopover from "./NotificationsPopover";
 import HelpCenterPopover from "./HelpCenterPopover";
+import { useState } from "react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Layout = ({
   children
@@ -26,6 +35,8 @@ const Layout = ({
   const {
     currentOrganization
   } = useOrganization();
+  
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const menuItems = [
     { icon: BarChart3, label: "Dashboard", path: "/" },
@@ -48,11 +59,102 @@ const Layout = ({
       toast.error("Error signing out");
     }
   };
+
+  const currentPageLabel = menuItems.find(item => item.path === location.pathname)?.label || "Dashboard";
+  
+  // Mobile navigation dropdown menu
+  const MobileNav = () => (
+    <div className="md:hidden">
+      <div className="flex items-center">
+        <button 
+          onClick={() => setMobileMenuOpen(true)}
+          className="p-2 mr-2 text-gray-700 hover:bg-gray-100 rounded-md"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <h1 className="text-xl font-bold">{currentPageLabel}</h1>
+      </div>
+      
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" className="w-[85%] p-0 bg-white">
+          <div className="flex flex-col h-full">
+            {/* Header with logo */}
+            <div className="p-4 border-b">
+              <div className="flex items-center justify-between mb-2">
+                <button onClick={() => setMobileMenuOpen(false)} className="p-1">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {currentOrganization?.logo_url && (
+                <img src={currentOrganization.logo_url} alt={`${currentOrganization.name} logo`} className="h-16 w-auto object-contain rounded-sm mx-auto mb-4" />
+              )}
+              <div className="mb-2">
+                <OrganizationSwitcher />
+              </div>
+            </div>
+            
+            {/* Menu items */}
+            <div className="flex-1 overflow-y-auto">
+              <nav className="px-2 py-4">
+                <ul className="space-y-1">
+                  {menuItems.map((item) => (
+                    <li key={item.path}>
+                      <Link 
+                        to={item.path}
+                        className={`flex items-center px-4 py-3 text-base rounded-md ${location.pathname === item.path ? 'bg-accent text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <item.icon className="w-5 h-5 mr-3" />
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+            
+            {/* User profile section */}
+            {user && (
+              <div className="p-4 border-t mt-auto">
+                <div className="flex items-center gap-2 mb-3">
+                  <User className="w-5 h-5 text-gray-500" />
+                  <span className="text-sm font-medium truncate">{user.email}</span>
+                </div>
+                <div className="space-y-2">
+                  <button 
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm rounded-md border hover:bg-gray-50"
+                    onClick={() => {
+                      navigate('/profile');
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <User className="w-4 h-4" />
+                    Profile
+                  </button>
+                  <button 
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm rounded-md border hover:bg-gray-50"
+                    onClick={() => {
+                      handleSignOut();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-gray-50">
-        <Sidebar className="border-r border-gray-200" collapsible={isMobile ? "offcanvas" : "icon"}>
+        {/* Desktop Sidebar - hidden on mobile */}
+        <Sidebar className="border-r border-gray-200 hidden md:flex" collapsible={isMobile ? "offcanvas" : "icon"}>
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupContent>
@@ -103,16 +205,16 @@ const Layout = ({
             </SidebarGroup>
           </SidebarContent>
         </Sidebar>
-        <main className="flex-1 p-8 animate-fadeIn">
+        <main className="flex-1 p-4 md:p-8 animate-fadeIn">
           <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
-              <SidebarTrigger className="mr-2 md:hidden">
-                <Menu className="w-6 h-6" />
-              </SidebarTrigger>
-              <h1 className="text-2xl font-bold">
-                {menuItems.find(item => item.path === location.pathname)?.label || "Dashboard"}
-              </h1>
-            </div>
+            {/* Mobile Navigation */}
+            <MobileNav />
+            
+            {/* Desktop Navigation Title - hidden on mobile */}
+            <h1 className="text-2xl font-bold hidden md:block">
+              {currentPageLabel}
+            </h1>
+            
             <div className="flex items-center gap-4">
               <NotificationsPopover />
               <HelpCenterPopover />
