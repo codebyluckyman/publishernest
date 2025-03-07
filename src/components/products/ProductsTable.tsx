@@ -9,6 +9,7 @@ import ProductDialog from "@/components/ProductDialog";
 import ProductViewDialog from "@/components/ProductViewDialog";
 import ProductTableContent from "./ProductTableContent";
 import ProductFilters from "./ProductFilters";
+import { ProductTableHeader } from "./ProductTableHeader";
 
 interface Product {
   id: string;
@@ -42,6 +43,7 @@ const ProductsTable = () => {
     product_form: null,
     publisher_name: null,
   });
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const fetchProducts = async () => {
     if (!currentOrganization) {
@@ -117,7 +119,7 @@ const ProductsTable = () => {
   };
 
   const { data: products, isLoading, error, refetch } = useQuery({
-    queryKey: ["products", currentOrganization?.id, searchQuery, filters],
+    queryKey: ["products", currentOrganization?.id, searchQuery, filters, refreshTrigger],
     queryFn: fetchProducts,
     enabled: !!currentOrganization,
   });
@@ -143,6 +145,7 @@ const ProductsTable = () => {
   };
 
   const handleDialogSuccess = () => {
+    setRefreshTrigger(prev => prev + 1);
     refetch();
   };
 
@@ -174,9 +177,30 @@ const ProductsTable = () => {
     return formMap[form] || form;
   };
 
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
+  const areFiltersActive = () => {
+    return filters.product_form !== null || 
+           filters.publisher_name !== null;
+  };
+
+  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+
   return (
     <Card>
       <CardHeader>
+        <ProductTableHeader 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          showFilters={showFilters}
+          toggleFilters={toggleFilters}
+          onAddProduct={handleAddProduct}
+          areFiltersActive={areFiltersActive}
+          activeFiltersCount={activeFiltersCount}
+        />
+
         <ProductFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
