@@ -4,6 +4,7 @@ import * as React from "react"
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
+  // Initialize with a check for window object and a reasonable default
   const [isMobile, setIsMobile] = React.useState<boolean>(
     typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT : false
   )
