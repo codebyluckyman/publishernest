@@ -44,20 +44,6 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
         
         <FormField
           control={form.control}
-          name="tps"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>TPS (Text)</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., 240 pages" {...field} disabled={readOnly} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
           name="tps_case"
           render={({ field }) => (
             <FormItem>

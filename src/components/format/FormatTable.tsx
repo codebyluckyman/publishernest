@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -47,9 +48,6 @@ export function FormatTable({
       query = query.ilike("format_name", `%${searchQuery}%`);
     }
 
-    if (filters.tps) {
-      query = query.eq("tps", filters.tps);
-    }
     if (filters.cover_stock_print) {
       query = query.eq("cover_stock_print", filters.cover_stock_print);
     }
@@ -82,10 +80,6 @@ export function FormatTable({
 
   useEffect(() => {
     if (formats && formats.length > 0) {
-      const tpsOptions = Array.from(
-        new Set(formats.map((format) => format.tps).filter(Boolean))
-      ) as string[];
-      
       const coverStockOptions = Array.from(
         new Set(formats.map((format) => format.cover_stock_print).filter(Boolean))
       ) as string[];
@@ -95,7 +89,7 @@ export function FormatTable({
       ) as string[];
 
       setFilterOptions({
-        tps: tpsOptions,
+        tps: [], // Empty array since tps column has been removed
         cover_stock_print: coverStockOptions,
         internal_stock_print: internalStockOptions,
       });
@@ -134,7 +128,6 @@ export function FormatTable({
         <TableHeader>
           <TableRow>
             <TableHead>Format Name</TableHead>
-            <TableHead>TPS</TableHead>
             <TableHead>Dimensions</TableHead>
             <TableHead>Extent</TableHead>
             <TableHead>Cover Stock/Print</TableHead>

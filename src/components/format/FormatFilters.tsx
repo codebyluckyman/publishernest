@@ -42,8 +42,7 @@ export function FormatFilters({
   };
 
   const areFiltersActive = () => {
-    return filters.tps !== null || 
-           filters.cover_stock_print !== null || 
+    return filters.cover_stock_print !== null || 
            filters.internal_stock_print !== null;
   };
 
@@ -51,27 +50,7 @@ export function FormatFilters({
 
   return (
     <div className="mt-4 space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {filterOptions.tps.length > 0 && (
-          <div>
-            <label className="text-sm font-medium mb-1 block">TPS</label>
-            <Select 
-              value={filters.tps || ""}
-              onValueChange={(value) => handleFilterChange("tps", value || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select TPS" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {filterOptions.tps.map((option) => (
-                  <SelectItem key={option} value={option}>{option}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filterOptions.cover_stock_print.length > 0 && (
           <div>
             <label className="text-sm font-medium mb-1 block">Cover Stock/Print</label>

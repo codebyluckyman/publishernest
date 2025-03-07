@@ -14,7 +14,6 @@ import FormatDialog from "../../FormatDialog";
 interface Format {
   id: string;
   format_name: string;
-  tps?: string;
   extent?: string;
   cover_stock_print?: string;
   internal_stock_print?: string;
@@ -154,7 +153,6 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
               )}
             </div>
             <div className="space-y-2 text-sm text-black">
-              <p><span className="font-medium">TPS:</span> {selectedFormat.tps || "N/A"}</p>
               <p><span className="font-medium">Extent:</span> {selectedFormat.extent || "N/A"}</p>
               <p><span className="font-medium">Cover Stock/Print:</span> {selectedFormat.cover_stock_print || "N/A"}</p>
               <p><span className="font-medium">Internal Stock/Print:</span> {selectedFormat.internal_stock_print || "N/A"}</p>
