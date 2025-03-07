@@ -30,8 +30,9 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate 
       return "N/A";
     }
     
-    const height = format.tps_text_height_mm || '-';
-    const width = format.tps_text_width_mm || '-';
+    const height = format.tps_text_height_mm || 'mm';
+    const width = format.tps_text_width_mm || 'mm';
+    const depth = format.tps_text_depth_mm || 'mm'
     
     // Only include depth if it has a value
     if (format.tps_text_depth_mm) {
