@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -74,7 +73,6 @@ export function FormatTable({
     enabled: !!organizationId,
   });
 
-  // Explicitly refetch data when refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger > 0) {
       console.log("Refresh trigger changed, refetching formats data");
@@ -137,7 +135,7 @@ export function FormatTable({
           <TableRow>
             <TableHead>Format Name</TableHead>
             <TableHead>TPS</TableHead>
-            <TableHead>tps (text)</TableHead>
+            <TableHead>Dimensions</TableHead>
             <TableHead>Extent</TableHead>
             <TableHead>Cover Stock/Print</TableHead>
             <TableHead>Internal Stock/Print</TableHead>
