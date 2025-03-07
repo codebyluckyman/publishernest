@@ -43,8 +43,8 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between">
+      <DialogContent className="sm:max-w-[1200px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex flex-row items-center justify-between sticky top-0 bg-background z-10 pb-2 border-b">
           <DialogTitle>{isEditMode ? "Edit Product" : "Add New Product"}</DialogTitle>
           <div className="flex space-x-2">
             {isEditMode && (
@@ -82,16 +82,19 @@ const ProductDialog = ({ open, productId, onOpenChange, onSuccess }: ProductDial
             </Button>
           </div>
         </DialogHeader>
-        <ProductForm 
-          productId={productId} 
-          onSuccess={handleSuccess} 
-          onCancel={handleCancel}
-          onDelete={handleDelete}
-          formId="product-form"
-          setIsLoading={setIsLoading}
-          hideButtons={true}
-          ref={productFormRef}
-        />
+        
+        <div className="overflow-y-auto flex-1 pt-4">
+          <ProductForm 
+            productId={productId} 
+            onSuccess={handleSuccess} 
+            onCancel={handleCancel}
+            onDelete={handleDelete}
+            formId="product-form"
+            setIsLoading={setIsLoading}
+            hideButtons={true}
+            ref={productFormRef}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

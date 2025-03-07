@@ -45,8 +45,8 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between">
+      <DialogContent className="sm:max-w-[1200px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex flex-row items-center justify-between sticky top-0 bg-background z-10 pb-2 border-b">
           <DialogTitle>{isEditMode ? "Edit Format" : "Add New Format"}</DialogTitle>
           <div className="flex space-x-2">
             {isEditMode && (
@@ -84,23 +84,26 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
             </Button>
           </div>
         </DialogHeader>
-        <FormatForm 
-          formatId={formatId || undefined} 
-          onSuccess={handleSuccess} 
-          onCancel={handleCancel}
-          onDelete={handleDelete}
-          formId="format-form"
-          setIsLoading={setIsLoading}
-          hideButtons={true}
-          ref={formatFormRef}
-        />
         
-        {isEditMode && formatId && (
-          <>
-            <Separator className="my-4" />
-            <LinkedProductsGallery formatId={formatId} />
-          </>
-        )}
+        <div className="overflow-y-auto flex-1 pt-4">
+          <FormatForm 
+            formatId={formatId || undefined} 
+            onSuccess={handleSuccess} 
+            onCancel={handleCancel}
+            onDelete={handleDelete}
+            formId="format-form"
+            setIsLoading={setIsLoading}
+            hideButtons={true}
+            ref={formatFormRef}
+          />
+          
+          {isEditMode && formatId && (
+            <>
+              <Separator className="my-4" />
+              <LinkedProductsGallery formatId={formatId} />
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
