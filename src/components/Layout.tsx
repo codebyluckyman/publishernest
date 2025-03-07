@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import DesktopSidebar from "./navigation/DesktopSidebar";
 import NavigationHeader from "./navigation/NavigationHeader";
+import BreadcrumbNavigation from "./navigation/BreadcrumbNavigation";
 import { getNavigationMenuItems } from "./navigation/NavigationMenuItems";
 
 const Layout = ({
@@ -25,6 +26,7 @@ const Layout = ({
         
         <main className="flex-1 p-4 md:p-8 animate-fadeIn">
           <NavigationHeader currentPageLabel={currentPageLabel} menuItems={menuItems} />
+          <BreadcrumbNavigation />
           {children}
         </main>
       </div>
