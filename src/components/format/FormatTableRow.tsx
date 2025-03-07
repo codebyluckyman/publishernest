@@ -1,4 +1,3 @@
-
 import { Eye, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableRow, TableCell } from "@/components/ui/table";
@@ -33,9 +32,14 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate 
     
     const height = format.tps_text_height_mm || '-';
     const width = format.tps_text_width_mm || '-';
-    const depth = format.tps_text_depth_mm || '-';
     
-    return `${height} × ${width} × ${depth}`;
+    // Only include depth if it has a value
+    if (format.tps_text_depth_mm) {
+      return `${height} × ${width} × ${format.tps_text_depth_mm}`;
+    }
+    
+    // Otherwise just show height and width
+    return `${height} × ${width}`;
   };
 
   return (
