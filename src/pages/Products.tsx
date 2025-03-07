@@ -1,6 +1,6 @@
 
 import ProductCategories from "@/components/products/ProductCategories";
-import ProductsTable from "@/components/products/ProductsTable";
+import { ProductTableContainer } from "@/components/products/ProductTableContainer";
 
 const Products = () => {
   return (
@@ -12,7 +12,7 @@ const Products = () => {
 
       <ProductCategories />
 
-      <ProductsTable />
+      <ProductTableContainer />
     </div>
   );
 };

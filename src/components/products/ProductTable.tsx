@@ -1,17 +1,12 @@
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrganization } from "@/context/OrganizationContext";
-import ProductDialog from "@/components/ProductDialog";
-import ProductViewDialog from "@/components/ProductViewDialog";
+import { Organization } from "@/types/organization";
 import ProductTableContent from "./ProductTableContent";
-import ProductFilters from "./ProductFilters";
-import { ProductTableHeader } from "./ProductTableHeader";
+import { ProductEmptyState } from "./ProductEmptyState";
 
-interface Product {
+export interface Product {
   id: string;
   title: string;
   isbn13: string | null;
@@ -27,24 +22,28 @@ interface Product {
   cover_image_url: string | null;
 }
 
-type FilterOptions = {
-  product_form: string | null;
-  publisher_name: string | null;
-};
+interface ProductTableProps {
+  searchQuery: string;
+  filters: {
+    product_form: string | null;
+    publisher_name: string | null;
+  };
+  currentOrganization: Organization | null;
+  onViewProduct: (productId: string) => void;
+  onEditProduct: (productId: string) => void;
+  onAddProduct: () => void;
+  refreshTrigger?: number;
+}
 
-const ProductsTable = () => {
-  const { currentOrganization } = useOrganization();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({
-    product_form: null,
-    publisher_name: null,
-  });
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
+const ProductTable = ({
+  searchQuery,
+  filters,
+  currentOrganization,
+  onViewProduct,
+  onEditProduct,
+  onAddProduct,
+  refreshTrigger = 0
+}: ProductTableProps) => {
   const fetchProducts = async () => {
     if (!currentOrganization) {
       return [];
@@ -118,7 +117,7 @@ const ProductsTable = () => {
     })) as unknown as Product[] : [];
   };
 
-  const { data: products, isLoading, error, refetch } = useQuery({
+  const { data: products, isLoading, error } = useQuery({
     queryKey: ["products", currentOrganization?.id, searchQuery, filters, refreshTrigger],
     queryFn: fetchProducts,
     enabled: !!currentOrganization,
@@ -128,26 +127,6 @@ const ProductsTable = () => {
   if (error) {
     toast.error("Failed to load products: " + (error as Error).message);
   }
-
-  const handleAddProduct = () => {
-    setSelectedProductId(undefined);
-    setIsDialogOpen(true);
-  };
-
-  const handleEditProduct = (productId: string) => {
-    setSelectedProductId(productId);
-    setIsDialogOpen(true);
-  };
-
-  const handleViewProduct = (productId: string) => {
-    setSelectedProductId(productId);
-    setIsViewDialogOpen(true);
-  };
-
-  const handleDialogSuccess = () => {
-    setRefreshTrigger(prev => prev + 1);
-    refetch();
-  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
@@ -177,67 +156,27 @@ const ProductsTable = () => {
     return formMap[form] || form;
   };
 
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-  };
+  if (isLoading) {
+    return null; // ProductTableContent handles loading state
+  }
 
-  const areFiltersActive = () => {
-    return filters.product_form !== null || 
-           filters.publisher_name !== null;
-  };
-
-  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+  if (!products || products.length === 0) {
+    return <ProductEmptyState hasOrganization={!!currentOrganization} onAddProduct={onAddProduct} />;
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <ProductTableHeader 
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          showFilters={showFilters}
-          toggleFilters={toggleFilters}
-          onAddProduct={handleAddProduct}
-          areFiltersActive={areFiltersActive}
-          activeFiltersCount={activeFiltersCount}
-        />
-
-        <ProductFilters
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          filters={filters}
-          setFilters={setFilters}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-        />
-      </CardHeader>
-      <CardContent>
-        <ProductTableContent 
-          products={products}
-          isLoading={isLoading}
-          currentOrganization={currentOrganization}
-          handleViewProduct={handleViewProduct}
-          handleEditProduct={handleEditProduct}
-          handleAddProduct={handleAddProduct}
-          formatDate={formatDate}
-          formatPrice={formatPrice}
-          getProductFormLabel={getProductFormLabel}
-        />
-      </CardContent>
-
-      <ProductDialog
-        open={isDialogOpen}
-        productId={selectedProductId}
-        onOpenChange={setIsDialogOpen}
-        onSuccess={handleDialogSuccess}
-      />
-
-      <ProductViewDialog
-        open={isViewDialogOpen}
-        productId={selectedProductId}
-        onOpenChange={setIsViewDialogOpen}
-      />
-    </Card>
+    <ProductTableContent 
+      products={products}
+      isLoading={isLoading}
+      currentOrganization={currentOrganization}
+      handleViewProduct={onViewProduct}
+      handleEditProduct={onEditProduct}
+      handleAddProduct={onAddProduct}
+      formatDate={formatDate}
+      formatPrice={formatPrice}
+      getProductFormLabel={getProductFormLabel}
+    />
   );
 };
 
-export default ProductsTable;
+export default ProductTable;
