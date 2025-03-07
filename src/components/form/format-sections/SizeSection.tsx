@@ -73,7 +73,7 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
         <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
-            name="tps_text_height_mm"
+            name="tps_height_mm"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Text Height (mm)</FormLabel>
@@ -92,7 +92,7 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
           
           <FormField
             control={form.control}
-            name="tps_text_width_mm"
+            name="tps_width_mm"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Text Width (mm)</FormLabel>
@@ -111,7 +111,7 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
           
           <FormField
             control={form.control}
-            name="tps_text_depth_mm"
+            name="tps_depth_mm"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Text Depth (mm)</FormLabel>
