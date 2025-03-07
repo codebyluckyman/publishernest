@@ -69,6 +69,65 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="tps_text_height_mm"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Text Height (mm)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="e.g., 210" 
+                    {...field} 
+                    disabled={readOnly} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="tps_text_width_mm"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Text Width (mm)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="e.g., 148" 
+                    {...field} 
+                    disabled={readOnly} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="tps_text_depth_mm"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Text Depth (mm)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="e.g., 15" 
+                    {...field} 
+                    disabled={readOnly} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
     </div>
   );

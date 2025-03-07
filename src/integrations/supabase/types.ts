@@ -24,6 +24,9 @@ export type Database = {
           orientation: string | null
           tps: string | null
           tps_case: string | null
+          tps_text_depth_mm: number | null
+          tps_text_height_mm: number | null
+          tps_text_width_mm: number | null
           updated_at: string
         }
         Insert: {
@@ -40,6 +43,9 @@ export type Database = {
           orientation?: string | null
           tps?: string | null
           tps_case?: string | null
+          tps_text_depth_mm?: number | null
+          tps_text_height_mm?: number | null
+          tps_text_width_mm?: number | null
           updated_at?: string
         }
         Update: {
@@ -56,6 +62,9 @@ export type Database = {
           orientation?: string | null
           tps?: string | null
           tps_case?: string | null
+          tps_text_depth_mm?: number | null
+          tps_text_height_mm?: number | null
+          tps_text_width_mm?: number | null
           updated_at?: string
         }
         Relationships: [
