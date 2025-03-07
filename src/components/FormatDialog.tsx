@@ -26,7 +26,9 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
   }, [isEditMode, formatId]);
   
   const handleSuccess = () => {
+    // Ensure onSuccess is called to trigger the table refresh
     onSuccess();
+    // Then close the dialog
     onOpenChange(false);
   };
 
@@ -39,6 +41,7 @@ const FormatDialog = ({ open, formatId, onOpenChange, onSuccess }: FormatDialogP
     if (formatFormRef.current) {
       await formatFormRef.current.deleteFormat();
     }
+    // Make sure onSuccess is called after deletion
     onSuccess();
     onOpenChange(false);
   };

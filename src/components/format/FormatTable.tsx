@@ -21,6 +21,7 @@ interface FormatTableProps {
     cover_stock_print: string[];
     internal_stock_print: string[];
   }>>;
+  refreshTrigger?: number;
 }
 
 export function FormatTable({
@@ -30,7 +31,8 @@ export function FormatTable({
   onViewFormat,
   onEditFormat,
   onAddFormat,
-  setFilterOptions
+  setFilterOptions,
+  refreshTrigger = 0
 }: FormatTableProps) {
   const fetchFormats = async () => {
     if (!organizationId) {
@@ -67,10 +69,18 @@ export function FormatTable({
   };
 
   const { data: formats, isLoading, error, refetch } = useQuery({
-    queryKey: ["formats", organizationId, searchQuery, filters],
+    queryKey: ["formats", organizationId, searchQuery, filters, refreshTrigger],
     queryFn: fetchFormats,
     enabled: !!organizationId,
   });
+
+  // Explicitly refetch data when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log("Refresh trigger changed, refetching formats data");
+      refetch();
+    }
+  }, [refreshTrigger, refetch]);
 
   useEffect(() => {
     if (formats && formats.length > 0) {

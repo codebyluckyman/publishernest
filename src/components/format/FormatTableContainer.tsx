@@ -30,6 +30,8 @@ export function FormatTableContainer() {
     internal_stock_print: [],
   });
   const [showFilters, setShowFilters] = useState(false);
+  // Add a refresh trigger state
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleViewFormat = (formatId: string) => {
     setViewFormatId(formatId);
@@ -47,8 +49,9 @@ export function FormatTableContainer() {
   };
 
   const handleDialogSuccess = () => {
-    // Trigger a refetch in the FormatTable component
-    setSearchQuery(searchQuery);
+    // Increment the refresh trigger to force a refetch
+    setRefreshTrigger(prev => prev + 1);
+    console.log("Format saved or deleted - refreshing data table");
   };
 
   const resetFilters = () => {
@@ -101,6 +104,7 @@ export function FormatTableContainer() {
           onEditFormat={handleEditFormat}
           onAddFormat={handleAddFormat}
           setFilterOptions={setFilterOptions}
+          refreshTrigger={refreshTrigger}
         />
       </CardContent>
 
