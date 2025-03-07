@@ -106,9 +106,12 @@ const Layout = ({
         <main className="flex-1 p-8 animate-fadeIn">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
-              <SidebarTrigger className="text-primary">
+              <SidebarTrigger className="mr-2 md:hidden">
                 <Menu className="w-6 h-6" />
               </SidebarTrigger>
+              <h1 className="text-2xl font-bold">
+                {menuItems.find(item => item.path === location.pathname)?.label || "Dashboard"}
+              </h1>
             </div>
             <div className="flex items-center gap-4">
               <NotificationsPopover />
