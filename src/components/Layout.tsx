@@ -1,6 +1,6 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive, Menu, X, ChevronDown } from "lucide-react";
+import { FileText, Printer, ShoppingCart, Truck, BarChart3, Package, LogOut, User, Building, BookOpen, BellRing, HelpCircle, Archive, Menu, X, ChevronDown, PanelLeft } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useOrganization } from "@/hooks/useOrganization";
@@ -211,9 +211,15 @@ const Layout = ({
             <MobileNav />
             
             {/* Desktop Navigation Title - hidden on mobile */}
-            <h1 className="text-2xl font-bold hidden md:block">
-              {currentPageLabel}
-            </h1>
+            <div className="hidden md:flex items-center gap-2">
+              {/* Desktop Sidebar Toggle Button */}
+              <SidebarTrigger className="text-gray-500 hover:bg-gray-100">
+                <PanelLeft className="w-5 h-5" />
+              </SidebarTrigger>
+              <h1 className="text-2xl font-bold">
+                {currentPageLabel}
+              </h1>
+            </div>
             
             <div className="flex items-center gap-4">
               <NotificationsPopover />
