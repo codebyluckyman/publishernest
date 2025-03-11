@@ -26,7 +26,7 @@ export default function FormatReadOnlyForm({ formatId }: FormatReadOnlyFormProps
   return (
     <Form {...form}>
       <div className="space-y-6">
-        <FormatFormFields form={form} readOnly={true} />
+        <FormatFormFields form={form} formatId={formatId} readOnly={true} />
       </div>
     </Form>
   );

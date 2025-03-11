@@ -9,6 +9,86 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      format_component_links: {
+        Row: {
+          component_id: string
+          created_at: string
+          format_id: string
+          id: string
+          notes: string | null
+          quantity: number
+          updated_at: string
+        }
+        Insert: {
+          component_id: string
+          created_at?: string
+          format_id: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          component_id?: string
+          created_at?: string
+          format_id?: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "format_component_links_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "format_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "format_component_links_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "formats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      format_components: {
+        Row: {
+          component_name: string
+          created_at: string
+          description: string | null
+          id: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          component_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          component_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "format_components_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       formats: {
         Row: {
           binding_type: string | null

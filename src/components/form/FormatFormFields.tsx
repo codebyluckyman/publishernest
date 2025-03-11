@@ -9,13 +9,15 @@ import { ExtentSection } from "./format-sections/ExtentSection";
 import { PrintingSection } from "./format-sections/PrintingSection";
 import { MaterialSection } from "./format-sections/MaterialSection";
 import { BindingSection } from "./format-sections/BindingSection";
+import { ComponentsSection } from "./format-sections/ComponentsSection";
 
 interface FormatFormFieldsProps {
   form: UseFormReturn<FormatFormValues>;
+  formatId?: string;
   readOnly?: boolean;
 }
 
-export function FormatFormFields({ form, readOnly = false }: FormatFormFieldsProps) {
+export function FormatFormFields({ form, formatId, readOnly = false }: FormatFormFieldsProps) {
   return (
     <div className="space-y-6">
       <FormField
@@ -46,6 +48,14 @@ export function FormatFormFields({ form, readOnly = false }: FormatFormFieldsPro
       
       <Separator />
       <BindingSection form={form} readOnly={readOnly} />
+
+      {/* Only show components section when the format has been saved */}
+      {formatId && (
+        <>
+          <Separator />
+          <ComponentsSection form={form} formatId={formatId} readOnly={readOnly} />
+        </>
+      )}
     </div>
   );
 }

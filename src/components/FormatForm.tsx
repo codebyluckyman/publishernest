@@ -66,7 +66,7 @@ const FormatForm = forwardRef<{ deleteFormat: () => Promise<void> }, FormatFormP
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" id={formId}>
-        <FormatFormFields form={form} />
+        <FormatFormFields form={form} formatId={formatId} />
         
         {!hideButtons && (
           <div className="flex justify-end space-x-2">
