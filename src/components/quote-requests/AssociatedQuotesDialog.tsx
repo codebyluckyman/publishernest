@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -8,6 +7,7 @@ import { QuoteRequest } from "@/types/quoteRequest";
 import { Organization } from "@/types/organization";
 import { X, ExternalLink } from "lucide-react";
 import { QuoteDialog } from "@/components/quotes/QuoteDialog";
+import { useQuoteRequestsApi } from '@/hooks/quote-requests/useQuoteRequestsApi';
 
 import {
   Dialog,

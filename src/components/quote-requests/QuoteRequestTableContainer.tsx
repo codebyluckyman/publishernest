@@ -7,7 +7,7 @@ import { QuoteRequestsTable } from "./QuoteRequestsTable";
 import { QuoteRequestEmptyState } from "./QuoteRequestEmptyState";
 import { QuoteRequestDialog } from "./QuoteRequestDialog";
 import { QuoteRequestFilters } from "./QuoteRequestFilters";
-import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { useQuoteRequestsApi } from "@/hooks/quote-requests/useQuoteRequestsApi";
 import { SortQuoteRequestField, SortDirection } from "@/types/quoteRequest";
 import { Skeleton } from "@/components/ui/skeleton";
 

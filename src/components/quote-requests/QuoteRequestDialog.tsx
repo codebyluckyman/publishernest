@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
-import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { useQuoteRequestsApi } from "@/hooks/quote-requests/useQuoteRequestsApi";
 import { Organization } from "@/types/organization";
 import { QuoteRequestForm } from "./QuoteRequestForm";
 import { supabase } from "@/integrations/supabase/client";

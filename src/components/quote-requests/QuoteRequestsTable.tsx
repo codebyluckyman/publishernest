@@ -7,7 +7,7 @@ import {
 import { QuoteRequest, SortQuoteRequestField, SortDirection } from '@/types/quoteRequest';
 import { QuoteRequestDialog } from './QuoteRequestDialog';
 import { Organization } from '@/types/organization';
-import { useQuoteRequestsApi } from '@/hooks/useQuoteRequestsApi';
+import { useQuoteRequestsApi } from '@/hooks/quote-requests/useQuoteRequestsApi';
 import { AssociatedQuotesDialog } from './AssociatedQuotesDialog';
 import { QuoteRequestTableHeader } from './table/QuoteRequestTableHeader';
 import { QuoteRequestTableRow } from './table/QuoteRequestTableRow';
