@@ -1,5 +1,15 @@
 
-import { FileText, LayoutDashboard, ShoppingCart } from "lucide-react";
+import { 
+  BarChart3, 
+  Package, 
+  BookOpen, 
+  Archive, 
+  FileText, 
+  ShoppingCart, 
+  Truck, 
+  Building,
+  LayoutDashboard
+} from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 export interface MenuItem {
@@ -18,8 +28,13 @@ export const navigationItems = [
   {
     title: "Products",
     href: "/products",
-    icon: <ShoppingCart className="h-5 w-5" />,
+    icon: <Package className="h-5 w-5" />,
   },
+  {
+    title: "Formats",
+    href: "/formats",
+    icon: <BookOpen className="h-5 w-5" />,
+  },  
   {
     title: "Quote Requests",
     href: "/quote-requests",
@@ -30,6 +45,21 @@ export const navigationItems = [
     href: "/quotes",
     icon: <FileText className="h-5 w-5" />,
   },
+  {
+    title: "Purchase Orders",
+    href: "/orders",
+    icon: <ShoppingCart className="h-5 w-5" />,
+  },
+  {
+    title: "Shipments",
+    href: "/shipments",
+    icon: <Truck className="h-5 w-5" />,
+  },  
+  {
+    title: "Organizations",
+    href: "/organizations",
+    icon: <Building className="h-5 w-5" />,
+  },  
 ];
 
 // Function to convert the navigation items to MenuItem objects for use in different components
