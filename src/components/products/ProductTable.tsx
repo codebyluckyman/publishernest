@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -158,26 +159,54 @@ const ProductTable = ({
         throw new Error("Failed to fetch product to copy");
       }
 
+      // Create a new object without id, created_at, and updated_at fields
       const newProductData = {
-        ...productToCopy,
-        id: undefined,
+        organization_id: productToCopy.organization_id,
         title: `${productToCopy.title} (Copy)`,
-        isbn13: null,
-        isbn10: null,
-        created_at: undefined,
-        updated_at: undefined
+        subtitle: productToCopy.subtitle,
+        isbn13: null, // ISBN must be unique
+        isbn10: null, // ISBN must be unique
+        product_form: productToCopy.product_form,
+        product_form_detail: productToCopy.product_form_detail,
+        series_name: productToCopy.series_name,
+        edition_number: productToCopy.edition_number,
+        language_code: productToCopy.language_code,
+        page_count: productToCopy.page_count,
+        publisher_name: productToCopy.publisher_name,
+        publication_date: productToCopy.publication_date,
+        list_price: productToCopy.list_price,
+        currency_code: productToCopy.currency_code,
+        product_availability_code: productToCopy.product_availability_code,
+        subject_code: productToCopy.subject_code,
+        height_measurement: productToCopy.height_measurement,
+        width_measurement: productToCopy.width_measurement,
+        thickness_measurement: productToCopy.thickness_measurement,
+        weight_measurement: productToCopy.weight_measurement,
+        cover_image_url: productToCopy.cover_image_url,
+        format_id: productToCopy.format_id,
+        internal_images: productToCopy.internal_images,
+        carton_quantity: productToCopy.carton_quantity,
+        carton_length_mm: productToCopy.carton_length_mm,
+        carton_width_mm: productToCopy.carton_width_mm,
+        carton_height_mm: productToCopy.carton_height_mm,
+        carton_weight_kg: productToCopy.carton_weight_kg,
+        age_range: productToCopy.age_range,
+        synopsis: productToCopy.synopsis,
+        license: productToCopy.license
       };
 
       const { data: newProduct, error: insertError } = await supabase
         .from("products")
-        .insert([newProductData])
+        .insert(newProductData)
         .select()
         .single();
 
       if (insertError || !newProduct) {
+        console.error("Error creating new product:", insertError);
         throw new Error("Failed to create new product");
       }
 
+      // Copy associated prices
       const { data: prices, error: pricesError } = await supabase
         .from("product_prices")
         .select("*")
@@ -185,11 +214,11 @@ const ProductTable = ({
 
       if (!pricesError && prices && prices.length > 0) {
         const newPrices = prices.map(price => ({
-          ...price,
-          id: undefined,
           product_id: newProduct.id,
-          created_at: undefined,
-          updated_at: undefined
+          organization_id: price.organization_id,
+          price: price.price,
+          currency_code: price.currency_code,
+          is_default: price.is_default
         }));
 
         await supabase.from("product_prices").insert(newPrices);
