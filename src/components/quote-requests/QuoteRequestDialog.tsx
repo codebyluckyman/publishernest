@@ -67,7 +67,10 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
         }
       }
       
-      onClose();
+      // Call onClose but prevent immediate state updates
+      setTimeout(() => {
+        onClose();
+      }, 0);
     } catch (error) {
       console.error("Error in quote request submission:", error);
       toast.error("Failed to save quote request");
@@ -76,8 +79,16 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
     }
   };
 
+  // Handle dialog close properly with a specific handler
+  const handleDialogClose = (open: boolean) => {
+    if (!open && !isSubmitting) {
+      // Only close if we're not in the middle of submitting
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{quoteRequest ? 'Edit Quote Request' : 'Create New Quote Request'}</DialogTitle>
