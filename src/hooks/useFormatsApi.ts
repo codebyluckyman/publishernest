@@ -1,7 +1,20 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
+
+// Define simple interface for Format
+interface Format {
+  id: string;
+  [key: string]: any;
+}
+
+// Define simple interface for FormatComponent
+interface FormatComponent {
+  id: string;
+  [key: string]: any;
+}
 
 export function useFormatsApi() {
   const queryClient = useQueryClient();
@@ -23,7 +36,7 @@ export function useFormatsApi() {
     }
   };
 
-  const getFormatComponents = async (formatId: string): Promise<any[]> => {
+  const getFormatComponents = async (formatId: string): Promise<FormatComponent[]> => {
     try {
       const { data, error } = await supabase
         .from("format_components")
@@ -131,7 +144,7 @@ export function useFormatsApi() {
       sortField: string;
       sortDirection: "asc" | "desc";
     }
-  ): Promise<any[]> => {
+  ): Promise<Format[]> => {
     const { currentOrganization, searchQuery, filters, sortField, sortDirection } = params;
 
     try {
