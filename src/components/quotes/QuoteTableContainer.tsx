@@ -48,17 +48,24 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
     queryKey: ['quoteRequests', currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) return [];
-      const { data, error } = await supabase
-        .from('quote_requests')
-        .select('id, title')
-        .eq('organization_id', currentOrganization.id)
-        .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching quote requests:', error);
+      try {
+        const { data, error } = await supabase
+          .from('quote_requests')
+          .select('id, title')
+          .eq('organization_id', currentOrganization.id)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching quote requests:', error);
+          return [];
+        }
+        
+        return data as unknown as Pick<QuoteRequest, 'id' | 'title'>[];
+      } catch (error) {
+        console.error('Error in QuoteTableContainer query:', error);
         return [];
       }
-      return data as unknown as Pick<QuoteRequest, 'id' | 'title'>[];
     },
     enabled: !!currentOrganization,
   });

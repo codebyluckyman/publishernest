@@ -16,32 +16,38 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
   const fetchQuoteRequests = async () => {
     if (!currentOrganization) return [];
 
-    let query = supabase
-      .from('quote_requests')
-      .select(`
-        *,
-        quotes_count:supplier_quotes(count)
-      `)
-      .eq('organization_id', currentOrganization.id)
-      .order(sortField, { ascending: sortDirection === 'asc' });
+    try {
+      let query = supabase
+        .from('quote_requests')
+        .select(`
+          *,
+          quotes_count:supplier_quotes(count)
+        `)
+        .eq('organization_id', currentOrganization.id)
+        .order(sortField, { ascending: sortDirection === 'asc' });
 
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
 
-    if (searchQuery) {
-      query = query.ilike('title', `%${searchQuery}%`);
-    }
+      if (searchQuery) {
+        query = query.ilike('title', `%${searchQuery}%`);
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (error) {
-      console.error('Error fetching quote requests:', error);
-      toast.error('Failed to load quote requests');
+      if (error) {
+        console.error('Error fetching quote requests:', error);
+        toast.error('Failed to load quote requests');
+        return [];
+      }
+
+      return data as unknown as QuoteRequest[];
+    } catch (error) {
+      console.error('Error in fetchQuoteRequests:', error);
+      toast.error('An unexpected error occurred');
       return [];
     }
-
-    return data as unknown as QuoteRequest[];
   };
 
   const { data: quoteRequests, isLoading, refetch } = useQuery({
@@ -54,17 +60,22 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
     mutationFn: async (quoteRequest: Omit<QuoteRequest, 'id' | 'created_at' | 'updated_at' | 'quotes_count'>) => {
       if (!currentOrganization) throw new Error('No organization selected');
 
-      const { data, error } = await supabase
-        .from('quote_requests')
-        .insert({
-          ...quoteRequest,
-          organization_id: currentOrganization.id
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('quote_requests')
+          .insert({
+            ...quoteRequest,
+            organization_id: currentOrganization.id
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data as unknown as QuoteRequest;
+        if (error) throw error;
+        return data as unknown as QuoteRequest;
+      } catch (error) {
+        console.error('Error in createQuoteRequest:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quoteRequests', currentOrganization?.id] });
@@ -78,13 +89,18 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
 
   const updateQuoteRequest = useMutation({
     mutationFn: async ({ id, ...quoteRequest }: Partial<QuoteRequest> & { id: string }) => {
-      const { error } = await supabase
-        .from('quote_requests')
-        .update(quoteRequest)
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('quote_requests')
+          .update(quoteRequest)
+          .eq('id', id);
 
-      if (error) throw error;
-      return id;
+        if (error) throw error;
+        return id;
+      } catch (error) {
+        console.error('Error in updateQuoteRequest:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quoteRequests', currentOrganization?.id] });
@@ -98,13 +114,18 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
 
   const deleteQuoteRequest = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('quote_requests')
-        .delete()
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('quote_requests')
+          .delete()
+          .eq('id', id);
 
-      if (error) throw error;
-      return id;
+        if (error) throw error;
+        return id;
+      } catch (error) {
+        console.error('Error in deleteQuoteRequest:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quoteRequests', currentOrganization?.id] });

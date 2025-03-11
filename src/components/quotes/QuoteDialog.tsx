@@ -41,18 +41,26 @@ export function QuoteDialog({
     queryKey: ['quoteRequestOptions', currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) return [];
-      const { data, error } = await supabase
-        .from('quote_requests')
-        .select('id, title, status')
-        .eq('organization_id', currentOrganization.id)
-        .in('status', ['draft', 'open'])
-        .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching quote requests:', error);
+      // Cast the result to the expected type
+      try {
+        const { data, error } = await supabase
+          .from('quote_requests')
+          .select('id, title, status')
+          .eq('organization_id', currentOrganization.id)
+          .in('status', ['draft', 'open'])
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching quote requests:', error);
+          return [];
+        }
+        
+        return data as unknown as Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
+      } catch (error) {
+        console.error('Error in QuoteDialog query:', error);
         return [];
       }
-      return data as unknown as Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
     },
     enabled: !!currentOrganization && isOpen,
   });

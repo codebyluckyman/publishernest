@@ -491,6 +491,47 @@ export type Database = {
           },
         ]
       }
+      quote_requests: {
+        Row: {
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          organization_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          organization_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          organization_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_on_hand: {
         Row: {
           created_at: string
@@ -554,6 +595,7 @@ export type Database = {
           organization_id: string
           quote_date: string
           quote_number: string | null
+          quote_request_id: string | null
           status: string
           supplier_name: string
           total_amount: number | null
@@ -570,6 +612,7 @@ export type Database = {
           organization_id: string
           quote_date?: string
           quote_number?: string | null
+          quote_request_id?: string | null
           status?: string
           supplier_name: string
           total_amount?: number | null
@@ -586,6 +629,7 @@ export type Database = {
           organization_id?: string
           quote_date?: string
           quote_number?: string | null
+          quote_request_id?: string | null
           status?: string
           supplier_name?: string
           total_amount?: number | null
@@ -598,6 +642,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
             referencedColumns: ["id"]
           },
         ]

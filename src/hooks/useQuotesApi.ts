@@ -17,43 +17,49 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
   const fetchQuotes = async () => {
     if (!currentOrganization) return [];
 
-    let query = supabase
-      .from('supplier_quotes')
-      .select(`
-        *,
-        items:quote_items(
+    try {
+      let query = supabase
+        .from('supplier_quotes')
+        .select(`
           *,
-          product:products(
-            title,
-            isbn13
-          )
-        ),
-        quote_request:quote_requests(title)
-      `)
-      .eq('organization_id', currentOrganization.id)
-      .order(sortField, { ascending: sortDirection === 'asc' });
+          items:quote_items(
+            *,
+            product:products(
+              title,
+              isbn13
+            )
+          ),
+          quote_request:quote_requests(title)
+        `)
+        .eq('organization_id', currentOrganization.id)
+        .order(sortField, { ascending: sortDirection === 'asc' });
 
-    if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
-    }
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
 
-    if (quoteRequestFilter) {
-      query = query.eq('quote_request_id', quoteRequestFilter);
-    }
+      if (quoteRequestFilter) {
+        query = query.eq('quote_request_id', quoteRequestFilter);
+      }
 
-    if (searchQuery) {
-      query = query.or(`supplier_name.ilike.%${searchQuery}%,quote_number.ilike.%${searchQuery}%`);
-    }
+      if (searchQuery) {
+        query = query.or(`supplier_name.ilike.%${searchQuery}%,quote_number.ilike.%${searchQuery}%`);
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (error) {
-      console.error('Error fetching quotes:', error);
-      toast.error('Failed to load quotes');
+      if (error) {
+        console.error('Error fetching quotes:', error);
+        toast.error('Failed to load quotes');
+        return [];
+      }
+
+      return data as unknown as SupplierQuote[];
+    } catch (error) {
+      console.error('Error in fetchQuotes:', error);
+      toast.error('An unexpected error occurred');
       return [];
     }
-
-    return data as unknown as SupplierQuote[];
   };
 
   const { data: quotes, isLoading, refetch } = useQuery({
@@ -66,34 +72,39 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
     mutationFn: async (quote: Omit<SupplierQuote, 'id' | 'created_at' | 'updated_at'> & { items: Omit<QuoteItem, 'id' | 'quote_id' | 'created_at' | 'updated_at'>[] }) => {
       if (!currentOrganization) throw new Error('No organization selected');
 
-      // Insert quote
-      const { data: quoteData, error: quoteError } = await supabase
-        .from('supplier_quotes')
-        .insert({
-          ...quote,
-          organization_id: currentOrganization.id
-        })
-        .select()
-        .single();
+      try {
+        // Insert quote
+        const { data: quoteData, error: quoteError } = await supabase
+          .from('supplier_quotes')
+          .insert({
+            ...quote,
+            organization_id: currentOrganization.id
+          })
+          .select()
+          .single();
 
-      if (quoteError) throw quoteError;
-      if (!quoteData) throw new Error('Failed to create quote');
+        if (quoteError) throw quoteError;
+        if (!quoteData) throw new Error('Failed to create quote');
 
-      // Insert quote items
-      if (quote.items && quote.items.length > 0) {
-        const { error: itemsError } = await supabase
-          .from('quote_items')
-          .insert(
-            quote.items.map(item => ({
-              ...item,
-              quote_id: quoteData.id
-            }))
-          );
+        // Insert quote items
+        if (quote.items && quote.items.length > 0) {
+          const { error: itemsError } = await supabase
+            .from('quote_items')
+            .insert(
+              quote.items.map(item => ({
+                ...item,
+                quote_id: quoteData.id
+              }))
+            );
 
-        if (itemsError) throw itemsError;
+          if (itemsError) throw itemsError;
+        }
+
+        return quoteData as unknown as SupplierQuote;
+      } catch (error) {
+        console.error('Error in createQuote:', error);
+        throw error;
       }
-
-      return quoteData as unknown as SupplierQuote;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes', currentOrganization?.id] });
@@ -107,13 +118,18 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
 
   const updateQuote = useMutation({
     mutationFn: async ({ id, ...quote }: Partial<SupplierQuote> & { id: string }) => {
-      const { error } = await supabase
-        .from('supplier_quotes')
-        .update(quote)
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('supplier_quotes')
+          .update(quote)
+          .eq('id', id);
 
-      if (error) throw error;
-      return id;
+        if (error) throw error;
+        return id;
+      } catch (error) {
+        console.error('Error in updateQuote:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes', currentOrganization?.id] });
@@ -127,13 +143,18 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
 
   const deleteQuote = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('supplier_quotes')
-        .delete()
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('supplier_quotes')
+          .delete()
+          .eq('id', id);
 
-      if (error) throw error;
-      return id;
+        if (error) throw error;
+        return id;
+      } catch (error) {
+        console.error('Error in deleteQuote:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes', currentOrganization?.id] });
