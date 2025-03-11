@@ -6,13 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { FormatBadge } from "../FormatBadge";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QuoteRequestDialog } from "../QuoteRequestDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "sonner";
 
 interface ViewQuoteRequestSheetProps {
   quoteRequest: QuoteRequest | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+interface ProductLine {
+  id: string;
+  product_title: string;
+  quantity: number;
+  notes: string | null;
 }
 
 export function ViewQuoteRequestSheet({
@@ -21,6 +31,49 @@ export function ViewQuoteRequestSheet({
   onOpenChange,
 }: ViewQuoteRequestSheetProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  useEffect(() => {
+    const fetchProductLines = async () => {
+      if (!quoteRequest?.id) return;
+      
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('quote_request_products')
+          .select(`
+            id, 
+            quantity, 
+            notes,
+            products:product_id (title)
+          `)
+          .eq('quote_request_id', quoteRequest.id);
+          
+        if (error) throw error;
+        
+        if (data) {
+          const formattedData = data.map(item => ({
+            id: item.id,
+            product_title: item.products?.title || 'Unknown Product',
+            quantity: item.quantity,
+            notes: item.notes
+          }));
+          
+          setProductLines(formattedData);
+        }
+      } catch (error) {
+        console.error('Error fetching product lines:', error);
+        toast.error('Failed to load product information');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (open && quoteRequest) {
+      fetchProductLines();
+    }
+  }, [quoteRequest, open]);
   
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
@@ -89,6 +142,39 @@ export function ViewQuoteRequestSheet({
                   <span className="text-muted-foreground text-sm">None</span>
                 )}
               </div>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                Product Lines
+              </h3>
+              {productLines.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {productLines.map((line) => (
+                      <TableRow key={line.id}>
+                        <TableCell>
+                          {line.product_title}
+                          {line.notes && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {line.notes}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">{line.quantity}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <span className="text-muted-foreground text-sm">No products</span>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

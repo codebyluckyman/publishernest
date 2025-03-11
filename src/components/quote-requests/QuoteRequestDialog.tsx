@@ -36,20 +36,20 @@ export function QuoteRequestDialog({ quoteRequest, open, onOpenChange, currentOr
     try {
       let quoteRequestId: string;
       
-      // Extract format_ids from the form data
-      const { format_ids, ...quoteRequestData } = data;
+      // Extract format_ids and product_lines from the form data
+      const { format_ids, product_lines, ...quoteRequestData } = data;
       
       if (quoteRequest) {
         // Update existing quote request
         await updateQuoteRequest.mutateAsync({
           id: quoteRequest.id,
-          ...quoteRequestData // Send data without format_ids
+          ...quoteRequestData // Send data without format_ids and product_lines
         });
         quoteRequestId = quoteRequest.id;
       } else {
         // Create new quote request
         const result = await createQuoteRequest.mutateAsync({
-          ...quoteRequestData, // Send data without format_ids
+          ...quoteRequestData, // Send data without format_ids and product_lines
           organization_id: currentOrganization.id
         });
         quoteRequestId = result.id;
@@ -76,6 +76,32 @@ export function QuoteRequestDialog({ quoteRequest, open, onOpenChange, currentOr
         if (error) {
           console.error("Error linking formats:", error);
           toast.error("Failed to link formats to the quote request");
+        }
+      }
+      
+      // Handle product lines
+      if (product_lines && product_lines.length > 0) {
+        // First, remove existing product lines
+        await supabase
+          .from('quote_request_products')
+          .delete()
+          .eq('quote_request_id', quoteRequestId);
+        
+        // Then, create new product lines
+        const productLines = product_lines.map((line: any) => ({
+          quote_request_id: quoteRequestId,
+          product_id: line.product_id,
+          quantity: line.quantity,
+          notes: line.notes || null
+        }));
+        
+        const { error } = await supabase
+          .from('quote_request_products')
+          .insert(productLines);
+          
+        if (error) {
+          console.error("Error adding product lines:", error);
+          toast.error("Failed to add product lines to the quote request");
         }
       }
       

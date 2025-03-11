@@ -13,6 +13,7 @@ import { BasicDetailsSection } from "./form/BasicDetailsSection";
 import { StatusSection } from "./form/StatusSection";
 import { DueDateSection } from "./form/DueDateSection";
 import { FormatSelection } from "./form/FormatSelection";
+import { ProductLinesSection } from "./form/ProductLinesSection";
 
 const quoteRequestSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -20,6 +21,14 @@ const quoteRequestSchema = z.object({
   status: z.enum(["draft", "open", "closed"]),
   due_date: z.date().nullable().optional(),
   format_ids: z.array(z.string()).optional(),
+  product_lines: z.array(
+    z.object({
+      product_id: z.string(),
+      product_title: z.string().optional(),
+      quantity: z.number().min(1),
+      notes: z.string().optional()
+    })
+  ).optional()
 });
 
 type QuoteRequestFormValues = z.infer<typeof quoteRequestSchema>;
@@ -43,6 +52,7 @@ export function QuoteRequestForm({ quoteRequest, onSubmit, isSubmitting }: Quote
       status: quoteRequest?.status || "draft",
       due_date: quoteRequest?.due_date ? new Date(quoteRequest.due_date) : null,
       format_ids: [],
+      product_lines: []
     },
   });
 
@@ -79,6 +89,10 @@ export function QuoteRequestForm({ quoteRequest, onSubmit, isSubmitting }: Quote
             organizationId={currentOrganization?.id} 
             initialFormatIds={initialFormatIds} 
           />
+          
+          {quoteRequest?.id && (
+            <ProductLinesSection quoteRequestId={quoteRequest.id} />
+          )}
 
           <div className="flex justify-end space-x-2">
             <Button type="submit" disabled={isSubmitting}>
