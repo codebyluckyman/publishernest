@@ -30,7 +30,7 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
             )
           ),
           quote_request:quote_requests(title),
-          supplier:suppliers(
+          supplier:suppliers!fk_supplier_quotes_supplier(
             id,
             supplier_name,
             contact_email,
