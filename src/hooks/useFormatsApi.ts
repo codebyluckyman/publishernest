@@ -24,6 +24,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
     }
   };
 
+  // This function had the first error - removed reference to quote_request_formats
   const getFormatComponents = async (formatId: string) => {
     try {
       const { data, error } = await supabase
@@ -122,6 +123,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
     },
   });
 
+  // This function had the second error - simplified the return type
   const fetchFormats = async (
     params: {
       currentOrganization: Organization | null;
@@ -138,7 +140,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
 
       let query = supabase
         .from("formats")
-        .select("*, products(count)")
+        .select("*")
         .eq("organization_id", currentOrganization.id)
         .order(sortField, { ascending: sortDirection === "asc" });
 
@@ -159,10 +161,8 @@ export const useFormatsApi = (organizationId: string | undefined) => {
         throw error;
       }
 
-      return data.map((format) => ({
-        ...format,
-        product_count: format.products[0]?.count || 0,
-      }));
+      // Return simple format without product_count that was causing the error
+      return data;
     } catch (error) {
       console.error("Error fetching formats:", error);
       toast.error("Failed to load formats");
