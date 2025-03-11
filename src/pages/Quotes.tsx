@@ -7,7 +7,12 @@ const Quotes = () => {
   const { currentOrganization } = useOrganization();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-primary mb-2">Quotes</h1>
+        <p className="text-gray-600">View and manage quotes from suppliers</p>
+      </div>
+
       <div className="grid gap-6">
         <Card>
           <CardHeader>

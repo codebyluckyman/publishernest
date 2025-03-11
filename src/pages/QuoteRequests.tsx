@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,13 +8,10 @@ const QuoteRequests = () => {
   const { currentOrganization } = useOrganization();
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">Quote Requests</h2>
-        <Button className="flex items-center gap-1">
-          <PlusCircle className="w-4 h-4" />
-          <span>New Request</span>
-        </Button>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-primary mb-2">Quote Requests</h1>
+        <p className="text-gray-600">Create and manage quote requests to suppliers</p>
       </div>
       
       <div className="grid gap-6">
