@@ -45,17 +45,14 @@ export function PublicationSection({ form, readOnly = false }: PublicationSectio
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-50" align="start">
                   <Calendar
                     mode="single"
                     selected={field.value || undefined}
                     onSelect={(date) => {
                       field.onChange(date);
-                      // Only close after a successful selection
                       if (date) {
-                        setTimeout(() => {
-                          setIsCalendarOpen(false);
-                        }, 100);
+                        setIsCalendarOpen(false);
                       }
                     }}
                     initialFocus
