@@ -24,24 +24,27 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
     try {
       let quoteRequestId: string;
       
+      // Extract format_ids from the form data
+      const { format_ids, ...quoteRequestData } = data;
+      
       if (quoteRequest) {
         // Update existing quote request
         await updateQuoteRequest.mutateAsync({
           id: quoteRequest.id,
-          ...data
+          ...quoteRequestData // Send data without format_ids
         });
         quoteRequestId = quoteRequest.id;
       } else {
         // Create new quote request
         const result = await createQuoteRequest.mutateAsync({
-          ...data,
+          ...quoteRequestData, // Send data without format_ids
           organization_id: currentOrganization?.id as string
         });
         quoteRequestId = result.id;
       }
       
       // Handle format relationships
-      if (data.format_ids && data.format_ids.length > 0) {
+      if (format_ids && format_ids.length > 0) {
         // First, remove existing links
         await supabase
           .from('quote_request_formats')
@@ -49,7 +52,7 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
           .eq('quote_request_id', quoteRequestId);
         
         // Then, create new links
-        const formatLinks = data.format_ids.map((formatId: string) => ({
+        const formatLinks = format_ids.map((formatId: string) => ({
           quote_request_id: quoteRequestId,
           format_id: formatId
         }));
