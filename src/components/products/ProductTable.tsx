@@ -227,6 +227,8 @@ const ProductTable = ({
       refetch();
 
       toast.success("Product copied successfully");
+      
+      // Return the new product ID so it can be used to open the edit form
       return newProduct.id;
     } catch (error) {
       console.error("Error copying product:", error);

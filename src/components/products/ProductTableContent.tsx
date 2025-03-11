@@ -1,3 +1,4 @@
+
 import { BookOpen, Pencil, Eye, Image, PlusCircle, ArrowUpDown, ChevronUp, ChevronDown, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
@@ -80,6 +81,11 @@ const ProductTableContent = ({
       const newProductId = await handleCopyProduct(copyingProductId);
       setIsCopyDialogOpen(false);
       setCopyingProductId(null);
+      
+      // Open the edit form for the newly created product
+      if (newProductId) {
+        handleEditProduct(newProductId);
+      }
     } catch (error) {
       console.error("Error copying product:", error);
     } finally {
