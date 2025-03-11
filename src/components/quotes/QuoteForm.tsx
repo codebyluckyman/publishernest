@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -128,7 +127,7 @@ export function QuoteForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">No quote request</SelectItem>
-                {quoteRequests.map((request) => (
+                {quoteRequests && quoteRequests.map((request) => (
                   <SelectItem key={request.id} value={request.id}>
                     {request.title} ({request.status})
                   </SelectItem>
