@@ -39,6 +39,13 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               ? new Date(data.publication_date) 
               : null;
               
+            // Parse format_extras from JSON if it exists, otherwise use default
+            const formatExtras = data.format_extras 
+              ? (typeof data.format_extras === 'string' 
+                  ? JSON.parse(data.format_extras) 
+                  : data.format_extras)
+              : defaultProductValues.format_extras;
+              
             form.reset({
               ...data,
               publication_date: publicationDate,
@@ -60,6 +67,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               age_range: data.age_range || "",
               synopsis: data.synopsis || "",
               license: data.license || "",
+              format_extras: formatExtras,
               format_extra_comments: data.format_extra_comments || null,
             });
           }
