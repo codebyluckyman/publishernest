@@ -7,10 +7,12 @@ import { FormatBadge } from '../FormatBadge';
 
 interface QuoteRequestTableRowProps {
   quoteRequest: QuoteRequest;
+  onSelect: (quoteRequest: QuoteRequest) => void;
 }
 
 export const QuoteRequestTableRow = ({
-  quoteRequest
+  quoteRequest,
+  onSelect
 }: QuoteRequestTableRowProps) => {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -31,7 +33,11 @@ export const QuoteRequestTableRow = ({
   };
 
   return (
-    <TableRow key={quoteRequest.id}>
+    <TableRow 
+      key={quoteRequest.id} 
+      onClick={() => onSelect(quoteRequest)}
+      className="cursor-pointer"
+    >
       <TableCell className="font-medium">{quoteRequest.title}</TableCell>
       <TableCell>
         <div className="flex flex-wrap">
