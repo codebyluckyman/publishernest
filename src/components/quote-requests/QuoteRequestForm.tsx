@@ -90,9 +90,9 @@ export function QuoteRequestForm({ quoteRequest, onSubmit, isSubmitting }: Quote
             initialFormatIds={initialFormatIds} 
           />
           
-          {quoteRequest?.id && (
-            <ProductLinesSection quoteRequestId={quoteRequest.id} />
-          )}
+          <ProductLinesSection 
+            quoteRequestId={quoteRequest?.id} 
+          />
 
           <div className="flex justify-end space-x-2">
             <Button type="submit" disabled={isSubmitting}>

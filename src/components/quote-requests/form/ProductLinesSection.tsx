@@ -70,6 +70,7 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
           }));
           
           setProductLines(formattedData);
+          setValue('product_lines', formattedData);
         }
       } catch (error) {
         console.error('Error fetching product lines:', error);
@@ -78,7 +79,7 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
     };
     
     fetchProductLines();
-  }, [quoteRequestId]);
+  }, [quoteRequestId, setValue]);
 
   // Search for products
   const handleSearch = async (query: string) => {
