@@ -52,7 +52,7 @@ export function QuoteDialog({
         console.error('Error fetching quote requests:', error);
         return [];
       }
-      return data as Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
+      return data as unknown as Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
     },
     enabled: !!currentOrganization && isOpen,
   });

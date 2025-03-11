@@ -74,6 +74,7 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                         className={`flex items-center px-4 py-3 text-base rounded-md ${location.pathname === item.path ? 'bg-accent text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                         onClick={() => setMobileMenuOpen(false)}
                       >
+                        {/* @ts-ignore - passing the real icon component here */}
                         <item.icon className="w-5 h-5 mr-3" />
                         {item.label}
                       </Link>

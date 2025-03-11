@@ -1,4 +1,13 @@
+
 import { FileText, LayoutDashboard, ShoppingCart } from "lucide-react";
+import { LucideIcon } from "lucide-react";
+
+export interface MenuItem {
+  title: string;
+  label: string;
+  path: string;
+  icon: LucideIcon;
+}
 
 export const navigationItems = [
   {
@@ -22,3 +31,13 @@ export const navigationItems = [
     icon: <FileText className="h-5 w-5" />,
   },
 ];
+
+// Function to convert the navigation items to MenuItem objects for use in different components
+export function getNavigationMenuItems(): MenuItem[] {
+  return navigationItems.map(item => ({
+    title: item.title,
+    label: item.title, // Using title as label
+    path: item.href,
+    icon: item.icon.type
+  }));
+}

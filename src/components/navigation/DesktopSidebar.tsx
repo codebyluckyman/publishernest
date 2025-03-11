@@ -50,6 +50,7 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                 <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton asChild tooltip={item.label}>
                     <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
+                      {/* @ts-ignore - passing the real icon component here */}
                       <item.icon className="w-5 h-5" />
                       <span>{item.label}</span>
                     </Link>

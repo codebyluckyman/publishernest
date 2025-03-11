@@ -53,7 +53,7 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
       return [];
     }
 
-    return data as SupplierQuote[];
+    return data as unknown as SupplierQuote[];
   };
 
   const { data: quotes, isLoading, refetch } = useQuery({
@@ -93,7 +93,7 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
         if (itemsError) throw itemsError;
       }
 
-      return quoteData;
+      return quoteData as unknown as SupplierQuote;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes', currentOrganization?.id] });

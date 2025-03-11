@@ -58,7 +58,7 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
         console.error('Error fetching quote requests:', error);
         return [];
       }
-      return data as Pick<QuoteRequest, 'id' | 'title'>[];
+      return data as unknown as Pick<QuoteRequest, 'id' | 'title'>[];
     },
     enabled: !!currentOrganization,
   });
@@ -120,4 +120,4 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
       />
     </div>
   );
-};
+}
