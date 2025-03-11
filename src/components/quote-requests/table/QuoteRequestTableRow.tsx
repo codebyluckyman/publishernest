@@ -4,15 +4,21 @@ import { QuoteRequest } from '@/types/quoteRequest';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { FormatBadge } from '../FormatBadge';
+import { Button } from "@/components/ui/button";
+import { Eye, Pencil, Trash } from "lucide-react";
 
 interface QuoteRequestTableRowProps {
   quoteRequest: QuoteRequest;
   onSelect: (quoteRequest: QuoteRequest) => void;
+  onEdit: (quoteRequest: QuoteRequest) => void;
+  onDelete: (quoteRequest: QuoteRequest) => void;
 }
 
 export const QuoteRequestTableRow = ({
   quoteRequest,
-  onSelect
+  onSelect,
+  onEdit,
+  onDelete
 }: QuoteRequestTableRowProps) => {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -33,12 +39,13 @@ export const QuoteRequestTableRow = ({
   };
 
   return (
-    <TableRow 
-      key={quoteRequest.id} 
-      onClick={() => onSelect(quoteRequest)}
-      className="cursor-pointer hover:bg-muted/50"
-    >
-      <TableCell className="font-medium">{quoteRequest.title}</TableCell>
+    <TableRow key={quoteRequest.id} className="hover:bg-muted/50">
+      <TableCell 
+        className="font-medium cursor-pointer" 
+        onClick={() => onSelect(quoteRequest)}
+      >
+        {quoteRequest.title}
+      </TableCell>
       <TableCell>
         <div className="flex flex-wrap gap-1">
           {quoteRequest.formats && quoteRequest.formats.length > 0 ? (
@@ -54,6 +61,43 @@ export const QuoteRequestTableRow = ({
       <TableCell>{formatDate(quoteRequest.due_date)}</TableCell>
       <TableCell>{quoteRequest.quotes_count || 0}</TableCell>
       <TableCell>{formatDate(quoteRequest.created_at)}</TableCell>
+      <TableCell>
+        <div className="flex items-center justify-end space-x-1">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(quoteRequest);
+            }}
+            title="View quote request"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(quoteRequest);
+            }}
+            title="Edit quote request"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(quoteRequest);
+            }}
+            title="Delete quote request"
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
     </TableRow>
   );
 }

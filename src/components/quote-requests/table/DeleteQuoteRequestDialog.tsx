@@ -9,42 +9,43 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { QuoteRequest } from "@/types/quoteRequest";
 
 interface DeleteQuoteRequestDialogProps {
-  isOpen: boolean;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  quoteRequest: QuoteRequest | null;
+  onConfirmDelete: () => void;
+  isDeleting: boolean;
 }
 
-export const DeleteQuoteRequestDialog = ({ 
-  isOpen, 
-  onOpenChange, 
-  onConfirm,
-  quoteRequest
-}: DeleteQuoteRequestDialogProps) => {
+export function DeleteQuoteRequestDialog({
+  open,
+  onOpenChange,
+  onConfirmDelete,
+  isDeleting,
+}: DeleteQuoteRequestDialogProps) {
   return (
-    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogTitle>Delete Quote Request</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete the quote request
-            {quoteRequest?.title && <strong> "{quoteRequest.title}"</strong>}. 
-            This action cannot be undone.
+            Are you sure you want to delete this quote request? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={onConfirm} 
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              onConfirmDelete();
+            }}
+            disabled={isDeleting}
+            className="bg-destructive hover:bg-destructive/90"
           >
-            Delete
+            {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
-};
+}
