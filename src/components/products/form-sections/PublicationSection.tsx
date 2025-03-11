@@ -18,6 +18,7 @@ interface PublicationSectionProps {
 
 export function PublicationSection({ form, readOnly = false }: PublicationSectionProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const publicationDate = form.watch('publication_date');
 
   return (
     <div className="space-y-2">
@@ -55,6 +56,7 @@ export function PublicationSection({ form, readOnly = false }: PublicationSectio
                         setIsCalendarOpen(false);
                       }
                     }}
+                    defaultMonth={field.value || undefined}
                     initialFocus
                   />
                 </PopoverContent>
