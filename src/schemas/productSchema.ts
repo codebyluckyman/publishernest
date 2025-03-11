@@ -34,6 +34,21 @@ export const productSchema = z.object({
   age_range: z.string().optional(),
   synopsis: z.string().optional(),
   license: z.string().optional(),
+  format_extras: z.object({
+    foil: z.boolean().default(false),
+    spot_uv: z.boolean().default(false),
+    glitter: z.boolean().default(false),
+    embossing: z.boolean().default(false),
+    die_cut: z.boolean().default(false),
+    holographic: z.boolean().default(false),
+  }).optional().default({
+    foil: false,
+    spot_uv: false,
+    glitter: false,
+    embossing: false,
+    die_cut: false,
+    holographic: false,
+  }),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
@@ -106,4 +121,12 @@ export const defaultProductValues: ProductFormValues = {
   age_range: "",
   synopsis: "",
   license: "",
+  format_extras: {
+    foil: false,
+    spot_uv: false,
+    glitter: false,
+    embossing: false,
+    die_cut: false,
+    holographic: false,
+  },
 };

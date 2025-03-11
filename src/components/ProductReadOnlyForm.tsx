@@ -5,6 +5,7 @@ import { CoverImageSection } from "./products/form-sections/CoverImageSection";
 import { BasicInfoSection } from "./products/form-sections/BasicInfoSection";
 import { IdentifiersSection } from "./products/form-sections/IdentifiersSection";
 import { FormatSection } from "./products/form-sections/FormatSection";
+import { FormatExtrasSection } from "./products/form-sections/FormatExtrasSection";
 import { PublicationSection } from "./products/form-sections/PublicationSection";
 import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalPropertiesSection";
 import { CartonSection } from "./products/form-sections/CartonSection";
@@ -38,6 +39,7 @@ export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormPr
         <BasicInfoSection form={form} readOnly />
         <IdentifiersSection form={form} readOnly />
         <FormatSection form={form} readOnly />
+        <FormatExtrasSection form={form} readOnly />
         <PublicationSection form={form} readOnly />
         <PhysicalPropertiesSection form={form} readOnly />
         <CartonSection form={form} readOnly />

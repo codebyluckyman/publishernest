@@ -13,6 +13,14 @@ export interface Product {
   created_at: string;
   updated_at: string;
   cover_image_url: string | null;
+  format_extras?: {
+    foil: boolean;
+    spot_uv: boolean;
+    glitter: boolean;
+    embossing: boolean;
+    die_cut: boolean;
+    holographic: boolean;
+  };
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';
