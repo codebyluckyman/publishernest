@@ -12,6 +12,7 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [quoteRequestFilter, setQuoteRequestFilter] = useState<string | null>(null);
 
   const fetchQuotes = async () => {
     if (!currentOrganization) return [];
@@ -26,13 +27,18 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
             title,
             isbn13
           )
-        )
+        ),
+        quote_request:quote_requests(title)
       `)
       .eq('organization_id', currentOrganization.id)
       .order(sortField, { ascending: sortDirection === 'asc' });
 
     if (statusFilter !== 'all') {
       query = query.eq('status', statusFilter);
+    }
+
+    if (quoteRequestFilter) {
+      query = query.eq('quote_request_id', quoteRequestFilter);
     }
 
     if (searchQuery) {
@@ -51,7 +57,7 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
   };
 
   const { data: quotes, isLoading, refetch } = useQuery({
-    queryKey: ['quotes', currentOrganization?.id, sortField, sortDirection, statusFilter, searchQuery],
+    queryKey: ['quotes', currentOrganization?.id, sortField, sortDirection, statusFilter, searchQuery, quoteRequestFilter],
     queryFn: fetchQuotes,
     enabled: !!currentOrganization,
   });
@@ -161,6 +167,8 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
     statusFilter,
     setStatusFilter,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    quoteRequestFilter,
+    setQuoteRequestFilter
   };
 };

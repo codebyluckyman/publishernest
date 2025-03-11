@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Organization } from "@/types/organization";
 import { QuoteEmptyState } from "./QuoteEmptyState";
 import { QuoteTableHeader } from "./QuoteTableHeader";
@@ -7,6 +7,10 @@ import { QuoteFilters } from "./QuoteFilters";
 import { QuotesTable } from "./QuotesTable";
 import { QuoteDialog } from "./QuoteDialog";
 import { useQuotesApi } from "@/hooks/useQuotesApi";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { QuoteRequest } from "@/types/quoteRequest";
+import { useSearchParams } from "react-router-dom";
 
 interface QuoteTableContainerProps {
   currentOrganization: Organization | null;
@@ -14,6 +18,8 @@ interface QuoteTableContainerProps {
 
 export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainerProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const initialRequestId = searchParams.get('requestId');
   
   const {
     quotes,
@@ -25,8 +31,37 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
     statusFilter,
     setStatusFilter,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    quoteRequestFilter,
+    setQuoteRequestFilter
   } = useQuotesApi(currentOrganization);
+
+  // Set initial quote request filter from URL
+  useEffect(() => {
+    if (initialRequestId) {
+      setQuoteRequestFilter(initialRequestId);
+    }
+  }, [initialRequestId]);
+
+  // Fetch quote requests for dropdown
+  const { data: quoteRequests } = useQuery({
+    queryKey: ['quoteRequests', currentOrganization?.id],
+    queryFn: async () => {
+      if (!currentOrganization) return [];
+      const { data, error } = await supabase
+        .from('quote_requests')
+        .select('id, title')
+        .eq('organization_id', currentOrganization.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching quote requests:', error);
+        return [];
+      }
+      return data as Pick<QuoteRequest, 'id' | 'title'>[];
+    },
+    enabled: !!currentOrganization,
+  });
 
   const handleAddQuote = () => {
     setIsAddDialogOpen(true);
@@ -61,6 +96,9 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
             setSearchQuery={setSearchQuery}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
+            quoteRequestFilter={quoteRequestFilter}
+            setQuoteRequestFilter={setQuoteRequestFilter}
+            quoteRequests={quoteRequests || []}
           />
           
           <QuotesTable
@@ -78,6 +116,7 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
         currentOrganization={currentOrganization}
+        initialQuoteRequestId={quoteRequestFilter}
       />
     </div>
   );

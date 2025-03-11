@@ -1,30 +1,24 @@
+import { FileText, LayoutDashboard, ShoppingCart } from "lucide-react";
 
-import { 
-  BarChart3, 
-  Package, 
-  BookOpen, 
-  Archive, 
-  FileText, 
-  ShoppingCart, 
-  Truck, 
-  Building 
-} from "lucide-react";
-
-export interface MenuItem {
-  icon: typeof BarChart3;
-  label: string;
-  path: string;
-}
-
-export const getNavigationMenuItems = (): MenuItem[] => {
-  return [
-    { icon: BarChart3, label: "Dashboard", path: "/" },
-    { icon: Package, label: "Products", path: "/products" },
-    { icon: BookOpen, label: "Formats", path: "/formats" },
-    { icon: Archive, label: "Stock", path: "/stock" },
-    { icon: FileText, label: "Quotes", path: "/quotes" },
-    { icon: ShoppingCart, label: "Purchase Orders", path: "/orders" },
-    { icon: Truck, label: "Shipments", path: "/shipments" },
-    { icon: Building, label: "Organizations", path: "/organizations" }
-  ];
-};
+export const navigationItems = [
+  {
+    title: "Dashboard",
+    href: "/",
+    icon: <LayoutDashboard className="h-5 w-5" />,
+  },
+  {
+    title: "Products",
+    href: "/products",
+    icon: <ShoppingCart className="h-5 w-5" />,
+  },
+  {
+    title: "Quote Requests",
+    href: "/quote-requests",
+    icon: <FileText className="h-5 w-5" />,
+  },
+  {
+    title: "Quotes",
+    href: "/quotes",
+    icon: <FileText className="h-5 w-5" />,
+  },
+];

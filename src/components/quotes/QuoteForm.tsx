@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { SupplierQuote, QuoteItem } from "@/types/quote";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { QuoteRequest } from "@/types/quoteRequest";
 
 const quoteItemSchema = z.object({
   product_id: z.string().nullable(),
@@ -43,9 +44,19 @@ interface QuoteFormProps {
   quote?: SupplierQuote;
   onSubmit: (data: QuoteFormValues) => void;
   isSubmitting: boolean;
+  quoteRequests: Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
+  quoteRequestId: string | null;
+  setQuoteRequestId: (id: string | null) => void;
 }
 
-export function QuoteForm({ quote, onSubmit, isSubmitting }: QuoteFormProps) {
+export function QuoteForm({ 
+  quote, 
+  onSubmit, 
+  isSubmitting, 
+  quoteRequests, 
+  quoteRequestId, 
+  setQuoteRequestId 
+}: QuoteFormProps) {
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(quoteSchema),
     defaultValues: {
@@ -103,6 +114,29 @@ export function QuoteForm({ quote, onSubmit, isSubmitting }: QuoteFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
+          {/* Quote Request Selection */}
+          <div className="md:col-span-2">
+            <div className="flex items-center mb-2">
+              <label className="text-sm font-medium">Quote Request</label>
+            </div>
+            <Select
+              value={quoteRequestId || ''}
+              onValueChange={(value) => setQuoteRequestId(value || null)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a quote request (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No quote request</SelectItem>
+                {quoteRequests.map((request) => (
+                  <SelectItem key={request.id} value={request.id}>
+                    {request.title} ({request.status})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <FormField
             control={form.control}
             name="supplier_name"

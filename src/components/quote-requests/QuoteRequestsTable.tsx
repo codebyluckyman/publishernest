@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Edit, Trash2, EyeIcon, Link } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit, Trash2, EyeIcon, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   Table, 
@@ -26,88 +26,77 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { SupplierQuote, SortQuoteField, SortDirection } from "@/types/quote";
+import { QuoteRequest, SortQuoteRequestField, SortDirection } from "@/types/quoteRequest";
 import { format } from "date-fns";
-import { QuoteDialog } from "./QuoteDialog";
+import { QuoteRequestDialog } from "./QuoteRequestDialog";
 import { Organization } from "@/types/organization";
-import { useQuotesApi } from "@/hooks/useQuotesApi";
-import { Badge } from "@/components/ui/badge";
+import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { useNavigate } from "react-router-dom";
 
-interface QuotesTableProps {
-  quotes: SupplierQuote[];
-  sortField: SortQuoteField;
+interface QuoteRequestsTableProps {
+  quoteRequests: QuoteRequest[];
+  sortField: SortQuoteRequestField;
   sortDirection: SortDirection;
-  onSort: (field: SortQuoteField) => void;
+  onSort: (field: SortQuoteRequestField) => void;
   currentOrganization: Organization | null;
 }
 
-export const QuotesTable = ({
-  quotes,
+export const QuoteRequestsTable = ({
+  quoteRequests,
   sortField,
   sortDirection,
   onSort,
   currentOrganization
-}: QuotesTableProps) => {
-  const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+}: QuoteRequestsTableProps) => {
+  const [selectedQuoteRequest, setSelectedQuoteRequest] = useState<QuoteRequest | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null);
+  const [quoteRequestToDelete, setQuoteRequestToDelete] = useState<string | null>(null);
   
-  const { deleteQuote } = useQuotesApi(currentOrganization);
+  const { deleteQuoteRequest } = useQuoteRequestsApi(currentOrganization);
+  const navigate = useNavigate();
 
-  const handleSort = (field: SortQuoteField) => {
+  const handleSort = (field: SortQuoteRequestField) => {
     onSort(field);
   };
 
-  const SortIcon = ({ field }: { field: SortQuoteField }) => {
+  const SortIcon = ({ field }: { field: SortQuoteRequestField }) => {
     if (sortField !== field) return null;
     return sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />;
   };
 
   const getStatusBadgeClasses = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'accepted':
+      case 'draft':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'open':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
+      case 'closed':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const formatCurrency = (amount: number | null, currency: string) => {
-    if (amount === null) return '-';
-    
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
-
-  const handleViewQuote = (quote: SupplierQuote) => {
-    setSelectedQuote(quote);
-    setIsViewDialogOpen(true);
-  };
-
-  const handleEditQuote = (quote: SupplierQuote) => {
-    setSelectedQuote(quote);
+  const handleEditQuoteRequest = (quoteRequest: QuoteRequest) => {
+    setSelectedQuoteRequest(quoteRequest);
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteClick = (quoteId: string) => {
-    setQuoteToDelete(quoteId);
+  const handleDeleteClick = (quoteRequestId: string) => {
+    setQuoteRequestToDelete(quoteRequestId);
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewQuotes = (quoteRequestId: string) => {
+    navigate(`/quotes?requestId=${quoteRequestId}`);
+  };
+
   const confirmDelete = async () => {
-    if (quoteToDelete) {
-      await deleteQuote.mutateAsync(quoteToDelete);
+    if (quoteRequestToDelete) {
+      await deleteQuoteRequest.mutateAsync(quoteRequestToDelete);
       setIsDeleteDialogOpen(false);
-      setQuoteToDelete(null);
+      setQuoteRequestToDelete(null);
     }
   };
 
@@ -119,33 +108,32 @@ export const QuotesTable = ({
             <TableRow>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort('supplier_name')}
+                onClick={() => handleSort('title')}
               >
                 <div className="flex items-center">
-                  Supplier
-                  <SortIcon field="supplier_name" />
+                  Title
+                  <SortIcon field="title" />
                 </div>
               </TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort('quote_date')}
+                onClick={() => handleSort('created_at')}
               >
                 <div className="flex items-center">
-                  Quote Date
-                  <SortIcon field="quote_date" />
+                  Created
+                  <SortIcon field="created_at" />
                 </div>
               </TableHead>
-              <TableHead>Quote #</TableHead>
-              <TableHead>Quote Request</TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => handleSort('total_amount')}
+                onClick={() => handleSort('due_date')}
               >
                 <div className="flex items-center">
-                  Amount
-                  <SortIcon field="total_amount" />
+                  Due Date
+                  <SortIcon field="due_date" />
                 </div>
               </TableHead>
+              <TableHead>Quotes</TableHead>
               <TableHead
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => handleSort('status')}
@@ -159,29 +147,19 @@ export const QuotesTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {quotes.map((quote) => (
-              <TableRow key={quote.id}>
-                <TableCell className="font-medium">{quote.supplier_name}</TableCell>
+            {quoteRequests.map((quoteRequest) => (
+              <TableRow key={quoteRequest.id}>
+                <TableCell className="font-medium">{quoteRequest.title}</TableCell>
                 <TableCell>
-                  {quote.quote_date ? format(new Date(quote.quote_date), 'MMM d, yyyy') : '-'}
-                </TableCell>
-                <TableCell>{quote.quote_number || '-'}</TableCell>
-                <TableCell>
-                  {quote.quote_request_id ? (
-                    <Badge variant="outline" className="flex items-center gap-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                      <Link className="h-3 w-3" />
-                      {quote.quote_request?.title || quote.quote_request_id}
-                    </Badge>
-                  ) : (
-                    '-'
-                  )}
+                  {quoteRequest.created_at ? format(new Date(quoteRequest.created_at), 'MMM d, yyyy') : '-'}
                 </TableCell>
                 <TableCell>
-                  {formatCurrency(quote.total_amount, quote.currency_code)}
+                  {quoteRequest.due_date ? format(new Date(quoteRequest.due_date), 'MMM d, yyyy') : '-'}
                 </TableCell>
+                <TableCell>{quoteRequest.quotes_count || 0}</TableCell>
                 <TableCell>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(quote.status)}`}>
-                    {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClasses(quoteRequest.status)}`}>
+                    {quoteRequest.status.charAt(0).toUpperCase() + quoteRequest.status.slice(1)}
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
@@ -193,17 +171,17 @@ export const QuotesTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleViewQuote(quote)}>
-                        <EyeIcon className="mr-2 h-4 w-4" />
-                        View Details
+                      <DropdownMenuItem onClick={() => handleViewQuotes(quoteRequest.id)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        View Quotes
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleEditQuote(quote)}>
+                      <DropdownMenuItem onClick={() => handleEditQuoteRequest(quoteRequest)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit Quote
+                        Edit Request
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         className="text-red-600"
-                        onClick={() => handleDeleteClick(quote.id)}
+                        onClick={() => handleDeleteClick(quoteRequest.id)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
@@ -218,13 +196,13 @@ export const QuotesTable = ({
       </div>
 
       {/* Edit Dialog */}
-      {selectedQuote && (
-        <QuoteDialog
-          quote={selectedQuote}
+      {selectedQuoteRequest && (
+        <QuoteRequestDialog
+          quoteRequest={selectedQuoteRequest}
           isOpen={isEditDialogOpen}
           onClose={() => {
             setIsEditDialogOpen(false);
-            setSelectedQuote(null);
+            setSelectedQuoteRequest(null);
           }}
           currentOrganization={currentOrganization}
         />
@@ -236,7 +214,7 @@ export const QuotesTable = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the supplier quote and all its items.
+              This action cannot be undone. This will permanently delete the quote request and may affect associated quotes.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
