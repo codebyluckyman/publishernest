@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -23,6 +22,7 @@ interface FormatTableProps {
     internal_stock_print: string[];
   }>>;
   refreshTrigger?: number;
+  triggerRefresh?: () => void;
 }
 
 type SortField = 'format_name' | 'created_at' | 'extent_pages';
@@ -36,17 +36,16 @@ export function FormatTable({
   onEditFormat,
   onAddFormat,
   setFilterOptions,
-  refreshTrigger = 0
+  refreshTrigger = 0,
+  triggerRefresh
 }: FormatTableProps) {
   const [sortField, setSortField] = useState<SortField>('format_name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
-      // Toggle direction if clicking the same field
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      // Set new field and default to ascending
       setSortField(field);
       setSortDirection('asc');
     }
@@ -73,7 +72,6 @@ export function FormatTable({
       query = query.eq("internal_stock_print", filters.internal_stock_print);
     }
 
-    // Apply sorting based on current sort field and direction
     const { data, error } = await query.order(sortField, { ascending: sortDirection === 'asc' });
 
     if (error) {
@@ -123,6 +121,14 @@ export function FormatTable({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleFormatCopied = () => {
+    if (triggerRefresh) {
+      triggerRefresh();
+    } else {
+      refetch();
+    }
   };
 
   const renderSortIcon = (field: SortField) => {
@@ -199,6 +205,7 @@ export function FormatTable({
               onViewFormat={onViewFormat}
               onEditFormat={onEditFormat}
               formatDate={formatDate}
+              onFormatCopied={handleFormatCopied}
             />
           ))}
         </TableBody>

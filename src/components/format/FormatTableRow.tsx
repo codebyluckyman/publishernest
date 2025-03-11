@@ -1,6 +1,10 @@
-import { Eye, Pencil } from "lucide-react";
+import { Eye, Pencil, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableRow, TableCell } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface Format {
   id: string;
@@ -23,9 +27,12 @@ interface FormatTableRowProps {
   onViewFormat: (formatId: string) => void;
   onEditFormat: (formatId: string) => void;
   formatDate: (dateString: string | null) => string;
+  onFormatCopied?: () => void;
 }
 
-export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate }: FormatTableRowProps) {
+export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate, onFormatCopied }: FormatTableRowProps) {
+  const [isCopying, setIsCopying] = useState(false);
+  
   // Format text dimensions in HxWxD format
   const formatTextDimensions = () => {
     if (!format.tps_height_mm && !format.tps_width_mm && !format.tps_depth_mm) {
@@ -60,6 +67,54 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate 
     
     // Otherwise just show height and width
     return `${height} × ${width}`;
+  };
+
+  const copyFormat = async () => {
+    setIsCopying(true);
+    try {
+      // 1. Get the current format data
+      const { data: formatData, error: fetchError } = await supabase
+        .from("formats")
+        .select("*")
+        .eq("id", format.id)
+        .single();
+        
+      if (fetchError) throw fetchError;
+      
+      if (!formatData) {
+        throw new Error("Format not found");
+      }
+      
+      // 2. Create a new format with the same data but a different name
+      const newFormatData = {
+        ...formatData,
+        id: undefined, // Let Supabase generate a new ID
+        format_name: `${formatData.format_name} (Copy)`,
+        created_at: undefined, // Let Supabase set this
+        updated_at: undefined, // Let Supabase set this
+      };
+      
+      // 3. Insert the new format
+      const { data: newFormat, error: insertError } = await supabase
+        .from("formats")
+        .insert(newFormatData)
+        .select()
+        .single();
+        
+      if (insertError) throw insertError;
+      
+      toast.success(`Format "${format.format_name}" copied successfully`);
+      
+      // 4. Notify parent component to refresh the list
+      if (onFormatCopied) {
+        onFormatCopied();
+      }
+    } catch (error: any) {
+      toast.error(`Failed to copy format: ${error.message}`);
+      console.error("Error copying format:", error);
+    } finally {
+      setIsCopying(false);
+    }
   };
 
   return (
@@ -99,6 +154,42 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate 
           >
             <Pencil className="h-4 w-4" />
           </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                title="Copy format"
+                disabled={isCopying}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Copy Format</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to create a copy of "{format.format_name}"? A new format will be created with all the same properties.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    copyFormat();
+                  }}
+                  disabled={isCopying}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {isCopying ? "Copying..." : "Copy Format"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </TableCell>
     </TableRow>
