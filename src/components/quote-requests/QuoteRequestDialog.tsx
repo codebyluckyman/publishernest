@@ -22,7 +22,6 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
   // Reset submitting state when dialog opens/closes
   useEffect(() => {
     if (!isOpen) {
-      // Reset submission state when dialog closes
       setIsSubmitting(false);
     }
   }, [isOpen]);
@@ -80,14 +79,13 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
         }
       }
       
-      // Complete all operations before closing the dialog
-      setIsSubmitting(false);
       toast.success(`Quote request ${quoteRequest ? 'updated' : 'created'} successfully`);
       
-      // Delayed closing to ensure state is updated
+      // Delayed closing to ensure state is fully updated
       setTimeout(() => {
+        setIsSubmitting(false);
         onClose();
-      }, 100);
+      }, 300);
     } catch (error) {
       console.error("Error in quote request submission:", error);
       toast.error("Failed to save quote request");

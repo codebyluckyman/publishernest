@@ -25,11 +25,11 @@ export function QuoteRequestTableContainer({
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [filters, setFilters] = useState({
-    status: null,
-    dueDate: null,
+    status: null as string | null,
+    dueDate: null as string | null,
   });
   const [filterOptions, setFilterOptions] = useState({
-    status: [],
+    status: [] as string[],
   });
   
   const {
@@ -50,8 +50,10 @@ export function QuoteRequestTableContainer({
 
   const handleDialogClose = useCallback(() => {
     setIsDialogOpen(false);
-    // Trigger a refresh when dialog closes
-    setRefreshTrigger(prev => prev + 1);
+    // Wait until the dialog is fully closed before refreshing to avoid rendering issues
+    setTimeout(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 300);
   }, []);
 
   const handleSort = (field: SortQuoteRequestField) => {
@@ -78,9 +80,9 @@ export function QuoteRequestTableContainer({
     setShowFilters(!showFilters);
   };
 
-  const areFiltersActive = useCallback(() => {
-    return filters.status !== null || filters.dueDate !== null;
-  }, [filters]);
+  const areFiltersActive = () => {
+    return !!filters.status || !!filters.dueDate;
+  };
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
@@ -132,7 +134,8 @@ export function QuoteRequestTableContainer({
           </div>
         ) : !quoteRequests || quoteRequests.length === 0 ? (
           <QuoteRequestEmptyState 
-            onAddQuoteRequest={handleAddQuoteRequest} 
+            onAddQuoteRequest={handleAddQuoteRequest}
+            hasOrganization={!!currentOrganization}
           />
         ) : (
           <QuoteRequestsTable

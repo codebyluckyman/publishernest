@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { FileQuestion } from "lucide-react";
 
 interface QuoteRequestEmptyStateProps {
-  hasOrganization: boolean;
   onAddQuoteRequest: () => void;
+  hasOrganization: boolean;
 }
 
-export function QuoteRequestEmptyState({ hasOrganization, onAddQuoteRequest }: QuoteRequestEmptyStateProps) {
+export function QuoteRequestEmptyState({ onAddQuoteRequest, hasOrganization }: QuoteRequestEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4 border border-dashed rounded-lg">
       <FileQuestion className="h-12 w-12 text-muted-foreground mb-4" />

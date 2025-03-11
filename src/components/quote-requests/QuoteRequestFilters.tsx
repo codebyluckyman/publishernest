@@ -27,7 +27,7 @@ export function QuoteRequestFilters({
   resetFilters
 }: QuoteRequestFiltersProps) {
   const handleStatusChange = (value: string) => {
-    setFilters(prev => ({ ...prev, status: value }));
+    setFilters(prev => ({ ...prev, status: value || null }));
   };
 
   const handleDueDateChange = (date: Date | undefined) => {
@@ -104,7 +104,6 @@ export function QuoteRequestFilters({
           variant="ghost"
           size="sm"
           onClick={resetFilters}
-          className="ml-auto"
         >
           Reset Filters
         </Button>

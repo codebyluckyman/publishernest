@@ -1,5 +1,5 @@
 
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CardTitle, CardDescription } from "@/components/ui/card";
@@ -50,6 +50,15 @@ export function QuoteRequestTableHeader({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          title="Refresh"
+        >
+          <RotateCw className="h-4 w-4" />
+        </Button>
         <Button
           variant="outline"
           className="gap-1"
