@@ -1,3 +1,4 @@
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,6 +16,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { OrganizationProvider } from "./context/OrganizationProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import QuoteRequests from "./pages/QuoteRequests";
+import Suppliers from "./pages/Suppliers";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +55,13 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <Formats />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/suppliers" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Suppliers />
                     </Layout>
                   </ProtectedRoute>
                 } />

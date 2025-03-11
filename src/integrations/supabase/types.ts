@@ -692,6 +692,51 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          organization_id: string
+          status: string | null
+          supplier_name: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          status?: string | null
+          supplier_name: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          status?: string | null
+          supplier_name?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       warehouses: {
         Row: {
           created_at: string

@@ -8,7 +8,8 @@ import {
   ShoppingCart, 
   Truck, 
   Building,
-  LayoutDashboard
+  LayoutDashboard,
+  Store
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -44,6 +45,11 @@ export const navigationItems = [
     title: "Quotes",
     href: "/quotes",
     icon: <FileText className="h-5 w-5" />,
+  },
+  {
+    title: "Suppliers",
+    href: "/suppliers",
+    icon: <Store className="h-5 w-5" />,
   },
   {
     title: "Purchase Orders",

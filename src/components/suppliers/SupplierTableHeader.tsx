@@ -1,0 +1,60 @@
+
+import { PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { CardTitle, CardDescription } from "@/components/ui/card";
+
+interface SupplierTableHeaderProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  showFilters: boolean;
+  toggleFilters: () => void;
+  onAddSupplier: () => void;
+  areFiltersActive: () => boolean;
+  activeFiltersCount: number;
+}
+
+export function SupplierTableHeader({
+  searchQuery,
+  setSearchQuery,
+  showFilters,
+  toggleFilters,
+  onAddSupplier,
+  areFiltersActive,
+  activeFiltersCount
+}: SupplierTableHeaderProps) {
+  return (
+    <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+      <div>
+        <CardTitle>Suppliers</CardTitle>
+        <CardDescription>Manage your suppliers</CardDescription>
+      </div>
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="relative">
+          <Input
+            type="search"
+            placeholder="Search suppliers..."
+            className="w-full md:w-[260px]"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <Button
+          variant="outline"
+          className="gap-1"
+          onClick={toggleFilters}
+        >
+          Filters {areFiltersActive() && (
+            <span className="ml-1 text-xs bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center">
+              {activeFiltersCount}
+            </span>
+          )}
+        </Button>
+        <Button className="gap-1" onClick={onAddSupplier}>
+          <PlusCircle className="h-4 w-4" />
+          Add Supplier
+        </Button>
+      </div>
+    </div>
+  );
+}
