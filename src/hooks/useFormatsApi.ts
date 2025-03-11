@@ -1,10 +1,9 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
 
-export const useFormatsApi = (organizationId: string | undefined) => {
+export function useFormatsApi() {
   const queryClient = useQueryClient();
 
   const getFormatById = async (formatId: string) => {
@@ -24,17 +23,20 @@ export const useFormatsApi = (organizationId: string | undefined) => {
     }
   };
 
-  // Fixed type instantiation error by adding explicit return type
-  const getFormatComponents = async (formatId: string): Promise<any[]> => {
+  const getFormatComponents = async (formatId: string): Promise<Array<{[key: string]: any}>> => {
     try {
       const { data, error } = await supabase
         .from("format_components")
         .select("*")
         .eq("format_id", formatId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching format components:", error);
+        return [];
+      }
+
       return data || [];
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching format components:", error);
       return [];
     }
@@ -95,13 +97,11 @@ export const useFormatsApi = (organizationId: string | undefined) => {
   const deleteFormat = useMutation({
     mutationFn: async (id: string) => {
       try {
-        // First delete related components
         await supabase
           .from("format_components")
           .delete()
           .eq("format_id", id);
 
-        // Then delete the format
         const { error } = await supabase
           .from("formats")
           .delete()
@@ -123,7 +123,6 @@ export const useFormatsApi = (organizationId: string | undefined) => {
     },
   });
 
-  // Fixed type instantiation error by adding explicit return type and simplifying params
   const fetchFormats = async (
     params: {
       currentOrganization: Organization | null;
@@ -132,7 +131,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
       sortField: string;
       sortDirection: "asc" | "desc";
     }
-  ): Promise<any[]> => {
+  ): Promise<Array<{[key: string]: any}>> => {
     const { currentOrganization, searchQuery, filters, sortField, sortDirection } = params;
 
     try {
@@ -148,7 +147,6 @@ export const useFormatsApi = (organizationId: string | undefined) => {
         query = query.ilike("format_name", `%${searchQuery}%`);
       }
 
-      // Add any additional filters
       Object.entries(filters).forEach(([key, value]) => {
         if (value) {
           query = query.eq(key, value);
@@ -161,8 +159,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
         throw error;
       }
 
-      // Return simple format without product_count
-      return data;
+      return data || [];
     } catch (error) {
       console.error("Error fetching formats:", error);
       toast.error("Failed to load formats");
@@ -178,4 +175,4 @@ export const useFormatsApi = (organizationId: string | undefined) => {
     deleteFormat,
     fetchFormats,
   };
-};
+}

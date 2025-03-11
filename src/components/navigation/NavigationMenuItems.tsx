@@ -8,7 +8,9 @@ import {
   Truck, 
   Building,
   LayoutDashboard,
-  Store
+  Store,
+  FileText,
+  MessageSquarePlus
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -17,6 +19,7 @@ export interface MenuItem {
   label: string;
   path: string;
   icon: LucideIcon;
+  submenu?: MenuItem[];
 }
 
 export const navigationItems = [
@@ -41,6 +44,23 @@ export const navigationItems = [
     icon: <Store className="h-5 w-5" />,
   },
   {
+    title: "Quotes",
+    href: "/quotes",
+    icon: <FileText className="h-5 w-5" />,
+    submenu: [
+      {
+        title: "Quote Requests",
+        href: "/quote-requests",
+        icon: <MessageSquarePlus className="h-5 w-5" />,
+      },
+      {
+        title: "Quotes",
+        href: "/quotes",
+        icon: <FileText className="h-5 w-5" />,
+      }
+    ]
+  },
+  {
     title: "Purchase Orders",
     href: "/orders",
     icon: <ShoppingCart className="h-5 w-5" />,
@@ -63,6 +83,12 @@ export function getNavigationMenuItems(): MenuItem[] {
     title: item.title,
     label: item.title, // Using title as label
     path: item.href,
-    icon: item.icon.type
+    icon: item.icon.type,
+    submenu: item.submenu ? item.submenu.map(subItem => ({
+      title: subItem.title,
+      label: subItem.title,
+      path: subItem.href,
+      icon: subItem.icon.type
+    })) : undefined
   }));
 }

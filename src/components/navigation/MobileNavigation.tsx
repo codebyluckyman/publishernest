@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, ChevronDown, ChevronRight } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
@@ -17,10 +17,18 @@ interface MobileNavigationProps {
 
 const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { currentOrganization } = useOrganization();
+
+  const toggleSubmenu = (title: string) => {
+    setOpenSubmenus(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
 
   const handleSignOut = async () => {
     try {
@@ -69,15 +77,52 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                 <ul className="space-y-1">
                   {menuItems.map((item) => (
                     <li key={item.path}>
-                      <Link 
-                        to={item.path}
-                        className={`flex items-center px-4 py-3 text-base rounded-md ${location.pathname === item.path ? 'bg-accent text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {/* @ts-ignore - passing the real icon component here */}
-                        <item.icon className="w-5 h-5 mr-3" />
-                        {item.label}
-                      </Link>
+                      {item.submenu ? (
+                        <div className="flex flex-col w-full">
+                          <button 
+                            className="flex items-center justify-between w-full px-4 py-3 text-base rounded-md text-gray-700 hover:bg-gray-100"
+                            onClick={() => toggleSubmenu(item.title)}
+                          >
+                            <div className="flex items-center">
+                              {/* @ts-ignore - passing the real icon component here */}
+                              <item.icon className="w-5 h-5 mr-3" />
+                              {item.label}
+                            </div>
+                            {openSubmenus[item.title] ? (
+                              <ChevronDown className="w-4 h-4" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4" />
+                            )}
+                          </button>
+                          
+                          {openSubmenus[item.title] && (
+                            <div className="ml-8 pl-2 border-l border-gray-200 mt-1">
+                              {item.submenu.map(subItem => (
+                                <Link
+                                  key={subItem.path}
+                                  to={subItem.path}
+                                  className={`flex items-center px-4 py-3 text-base rounded-md ${location.pathname === subItem.path ? 'bg-accent text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                >
+                                  {/* @ts-ignore - passing the real icon component here */}
+                                  <subItem.icon className="w-5 h-5 mr-3" />
+                                  {subItem.label}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Link 
+                          to={item.path}
+                          className={`flex items-center px-4 py-3 text-base rounded-md ${location.pathname === item.path ? 'bg-accent text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {/* @ts-ignore - passing the real icon component here */}
+                          <item.icon className="w-5 h-5 mr-3" />
+                          {item.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

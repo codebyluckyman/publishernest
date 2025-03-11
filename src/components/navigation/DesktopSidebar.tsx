@@ -1,6 +1,6 @@
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { User, LogOut, Building } from "lucide-react";
+import { User, LogOut, Building, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import OrganizationSwitcher from "../OrganizationSwitcher";
 import { MenuItem } from "./NavigationMenuItems";
+import { useState } from "react";
 
 interface DesktopSidebarProps {
   menuItems: MenuItem[];
@@ -20,6 +21,16 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
   const isMobile = useIsMobile();
   const { user, signOut } = useAuth();
   const { currentOrganization } = useOrganization();
+  
+  // Track open submenus
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+
+  const toggleSubmenu = (title: string) => {
+    setOpenSubmenus(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
 
   const handleSignOut = async () => {
     try {
@@ -48,13 +59,50 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
             <SidebarMenu>
               {menuItems.map(item => (
                 <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton asChild tooltip={item.label}>
-                    <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
-                      {/* @ts-ignore - passing the real icon component here */}
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                  {item.submenu ? (
+                    <div className="flex flex-col w-full">
+                      <button 
+                        className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-gray-100 w-full text-left`}
+                        onClick={() => toggleSubmenu(item.title)}
+                      >
+                        <div className="flex items-center gap-3">
+                          {/* @ts-ignore - passing the real icon component here */}
+                          <item.icon className="w-5 h-5" />
+                          <span>{item.label}</span>
+                        </div>
+                        {openSubmenus[item.title] ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </button>
+                      
+                      {openSubmenus[item.title] && (
+                        <div className="ml-6 pl-2 border-l border-gray-200 mt-1">
+                          {item.submenu.map(subItem => (
+                            <SidebarMenuButton key={subItem.path} asChild tooltip={subItem.label}>
+                              <Link 
+                                to={subItem.path} 
+                                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === subItem.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}
+                              >
+                                {/* @ts-ignore - passing the real icon component here */}
+                                <subItem.icon className="w-5 h-5" />
+                                <span>{subItem.label}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <SidebarMenuButton asChild tooltip={item.label}>
+                      <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
+                        {/* @ts-ignore - passing the real icon component here */}
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
