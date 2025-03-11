@@ -123,11 +123,15 @@ export function FormatTable({
     return new Date(dateString).toLocaleDateString();
   };
 
-  const handleFormatCopied = () => {
+  const handleFormatCopied = (newFormatId?: string) => {
     if (triggerRefresh) {
       triggerRefresh();
     } else {
       refetch();
+    }
+    
+    if (newFormatId) {
+      onEditFormat(newFormatId);
     }
   };
 

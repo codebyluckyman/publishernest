@@ -1,3 +1,4 @@
+
 import { Eye, Pencil, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableRow, TableCell } from "@/components/ui/table";
@@ -27,11 +28,12 @@ interface FormatTableRowProps {
   onViewFormat: (formatId: string) => void;
   onEditFormat: (formatId: string) => void;
   formatDate: (dateString: string | null) => string;
-  onFormatCopied?: () => void;
+  onFormatCopied?: (newFormatId?: string) => void;
 }
 
 export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate, onFormatCopied }: FormatTableRowProps) {
   const [isCopying, setIsCopying] = useState(false);
+  const [copyDialogOpen, setCopyDialogOpen] = useState(false);
   
   // Format text dimensions in HxWxD format
   const formatTextDimensions = () => {
@@ -105,9 +107,12 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
       
       toast.success(`Format "${format.format_name}" copied successfully`);
       
-      // 4. Notify parent component to refresh the list
-      if (onFormatCopied) {
-        onFormatCopied();
+      // Close the copy dialog
+      setCopyDialogOpen(false);
+      
+      // 4. Notify parent component to refresh the list and open the edit form
+      if (onFormatCopied && newFormat) {
+        onFormatCopied(newFormat.id);
       }
     } catch (error: any) {
       toast.error(`Failed to copy format: ${error.message}`);
@@ -154,13 +159,14 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
           >
             <Pencil className="h-4 w-4" />
           </Button>
-          <AlertDialog>
+          <AlertDialog open={copyDialogOpen} onOpenChange={setCopyDialogOpen}>
             <AlertDialogTrigger asChild>
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
+                  setCopyDialogOpen(true);
                 }}
                 title="Copy format"
                 disabled={isCopying}
@@ -176,7 +182,7 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => setCopyDialogOpen(false)}>Cancel</AlertDialogCancel>
                 <AlertDialogAction 
                   onClick={(e) => {
                     e.preventDefault();
