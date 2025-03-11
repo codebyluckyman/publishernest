@@ -69,7 +69,6 @@ export const QuoteRequestTableHeader = ({
             Created {renderSortIcon('created_at')}
           </Button>
         </TableHead>
-        <TableHead className="w-[120px]">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );

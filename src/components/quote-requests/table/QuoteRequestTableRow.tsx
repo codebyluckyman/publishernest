@@ -1,30 +1,16 @@
 
 import { format } from "date-fns";
-import { MoreHorizontal, FileEdit, Trash2, MessageSquare } from 'lucide-react';
 import { QuoteRequest } from '@/types/quoteRequest';
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
 import { FormatBadge } from '../FormatBadge';
 
 interface QuoteRequestTableRowProps {
   quoteRequest: QuoteRequest;
-  onEdit: (quoteRequest: QuoteRequest) => void;
-  onDelete: (quoteRequest: QuoteRequest) => void;
-  onViewQuotes: (quoteRequest: QuoteRequest) => void;
 }
 
 export const QuoteRequestTableRow = ({
-  quoteRequest,
-  onEdit,
-  onDelete,
-  onViewQuotes
+  quoteRequest
 }: QuoteRequestTableRowProps) => {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -62,33 +48,6 @@ export const QuoteRequestTableRow = ({
       <TableCell>{formatDate(quoteRequest.due_date)}</TableCell>
       <TableCell>{quoteRequest.quotes_count || 0}</TableCell>
       <TableCell>{formatDate(quoteRequest.created_at)}</TableCell>
-      <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-white">
-            <DropdownMenuItem onClick={() => onViewQuotes(quoteRequest)}>
-              <MessageSquare className="mr-2 h-4 w-4" />
-              View Quotes
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(quoteRequest)}>
-              <FileEdit className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => onDelete(quoteRequest)}
-              className="text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
     </TableRow>
   );
 };
