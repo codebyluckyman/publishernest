@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { MoreHorizontal, FileEdit, Trash2, ArrowUpDown, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
@@ -189,7 +190,7 @@ export function QuoteRequestsTable({
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="bg-white">
                       <DropdownMenuItem onClick={() => handleViewQuotes(quoteRequest)}>
                         <MessageSquare className="mr-2 h-4 w-4" />
                         View Quotes
