@@ -23,7 +23,7 @@ export function useFormatsApi() {
     }
   };
 
-  const getFormatComponents = async (formatId: string): Promise<Array<{[key: string]: any}>> => {
+  const getFormatComponents = async (formatId: string): Promise<any[]> => {
     try {
       const { data, error } = await supabase
         .from("format_components")
@@ -131,7 +131,7 @@ export function useFormatsApi() {
       sortField: string;
       sortDirection: "asc" | "desc";
     }
-  ): Promise<Array<{[key: string]: any}>> => {
+  ): Promise<any[]> => {
     const { currentOrganization, searchQuery, filters, sortField, sortDirection } = params;
 
     try {

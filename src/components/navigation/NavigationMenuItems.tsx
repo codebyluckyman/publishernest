@@ -79,16 +79,21 @@ export const navigationItems = [
 
 // Function to convert the navigation items to MenuItem objects for use in different components
 export function getNavigationMenuItems(): MenuItem[] {
-  return navigationItems.map(item => ({
-    title: item.title,
-    label: item.title, // Using title as label
-    path: item.href,
-    icon: item.icon.type,
-    submenu: item.submenu ? item.submenu.map(subItem => ({
-      title: subItem.title,
-      label: subItem.title,
-      path: subItem.href,
-      icon: subItem.icon.type
-    })) : undefined
-  }));
+  return navigationItems.map(item => {
+    // Create the MenuItem object
+    const menuItem: MenuItem = {
+      title: item.title,
+      label: item.title, // Using title as label
+      path: item.href,
+      icon: item.icon.type,
+      submenu: item.submenu ? item.submenu.map(subItem => ({
+        title: subItem.title,
+        label: subItem.title,
+        path: subItem.href,
+        icon: subItem.icon.type
+      })) : undefined
+    };
+    
+    return menuItem;
+  });
 }
