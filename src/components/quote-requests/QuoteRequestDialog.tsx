@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
@@ -18,6 +18,14 @@ interface QuoteRequestDialogProps {
 export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrganization }: QuoteRequestDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createQuoteRequest, updateQuoteRequest } = useQuoteRequestsApi(currentOrganization);
+  
+  // Reset submitting state when dialog opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset submission state when dialog closes
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -67,10 +75,8 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
         }
       }
       
-      // Call onClose but prevent immediate state updates
-      setTimeout(() => {
-        onClose();
-      }, 0);
+      // Close dialog only after all operations are complete
+      onClose();
     } catch (error) {
       console.error("Error in quote request submission:", error);
       toast.error("Failed to save quote request");
@@ -79,10 +85,9 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
     }
   };
 
-  // Handle dialog close properly with a specific handler
+  // Simple dialog close handler that respects the submission state
   const handleDialogClose = (open: boolean) => {
     if (!open && !isSubmitting) {
-      // Only close if we're not in the middle of submitting
       onClose();
     }
   };
