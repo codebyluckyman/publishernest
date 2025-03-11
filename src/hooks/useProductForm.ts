@@ -91,13 +91,19 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     setIsLoading(true);
     
     try {
+      // Clean up the format_id field - if it's an empty string, set it to null
+      const cleanedFormatId = values.format_id === "" ? null : values.format_id;
+      
       const formattedValues = {
         ...values,
         title: values.title,
         publication_date: values.publication_date ? values.publication_date.toISOString().split('T')[0] : null,
         organization_id: currentOrganization.id,
+        format_id: cleanedFormatId, // Use the cleaned format_id
       };
 
+      console.log("Submitting product with values:", formattedValues);
+      
       let result;
       let submittedProductId = isEditMode ? productId : null;
       
