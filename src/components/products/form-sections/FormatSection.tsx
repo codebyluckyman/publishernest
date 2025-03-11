@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,6 +16,12 @@ interface Format {
   extent?: string;
   cover_stock_print?: string;
   internal_stock_print?: string;
+  tps_height_mm?: number;
+  tps_width_mm?: number;
+  tps_depth_mm?: number;
+  tps_plc_height_mm?: number;
+  tps_plc_width_mm?: number;
+  tps_plc_depth_mm?: number;
 }
 
 interface FormatSectionProps {
@@ -88,6 +93,42 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
     setIsDialogOpen(false);
   };
 
+  // Format dimensions in HxWxD format
+  const formatTextDimensions = (format: Format) => {
+    if (!format.tps_height_mm && !format.tps_width_mm && !format.tps_depth_mm) {
+      return "N/A";
+    }
+    
+    const height = format.tps_height_mm + 'mm';
+    const width = format.tps_width_mm + 'mm';
+    
+    // Only include depth if it has a value
+    if (format.tps_depth_mm) {
+      return `${height} × ${width} × ${format.tps_depth_mm}mm`;
+    }
+    
+    // Otherwise just show height and width
+    return `${height} × ${width}`;
+  };
+
+  // Format PLC dimensions in HxWxD format
+  const formatPlcDimensions = (format: Format) => {
+    if (!format.tps_plc_height_mm && !format.tps_plc_width_mm && !format.tps_plc_depth_mm) {
+      return "N/A";
+    }
+    
+    const height = format.tps_plc_height_mm + 'mm';
+    const width = format.tps_plc_width_mm + 'mm';
+    
+    // Only include depth if it has a value
+    if (format.tps_plc_depth_mm) {
+      return `${height} × ${width} × ${format.tps_plc_depth_mm}mm`;
+    }
+    
+    // Otherwise just show height and width
+    return `${height} × ${width}`;
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
@@ -154,6 +195,8 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
             </div>
             <div className="space-y-2 text-sm text-black">
               <p><span className="font-medium">Extent:</span> {selectedFormat.extent || "N/A"}</p>
+              <p><span className="font-medium">Text Dimensions:</span> {formatTextDimensions(selectedFormat)}</p>
+              <p><span className="font-medium">PLC Dimensions:</span> {formatPlcDimensions(selectedFormat)}</p>
               <p><span className="font-medium">Cover Stock/Print:</span> {selectedFormat.cover_stock_print || "N/A"}</p>
               <p><span className="font-medium">Internal Stock/Print:</span> {selectedFormat.internal_stock_print || "N/A"}</p>
             </div>

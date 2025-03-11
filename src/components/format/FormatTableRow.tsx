@@ -5,10 +5,13 @@ import { TableRow, TableCell } from "@/components/ui/table";
 export interface Format {
   id: string;
   format_name: string;
-  tps: string | null;
+  tps_case: string | null;
   tps_height_mm: number | null;
   tps_width_mm: number | null;
   tps_depth_mm: number | null;
+  tps_plc_height_mm: number | null;
+  tps_plc_width_mm: number | null;
+  tps_plc_depth_mm: number | null;
   extent: string | null;
   cover_stock_print: string | null;
   internal_stock_print: string | null;
@@ -24,8 +27,8 @@ interface FormatTableRowProps {
 }
 
 export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate }: FormatTableRowProps) {
-  // Format dimensions in HxWxD format
-  const formatDimensions = () => {
+  // Format text dimensions in HxWxD format
+  const formatTextDimensions = () => {
     if (!format.tps_height_mm && !format.tps_width_mm && !format.tps_depth_mm) {
       return "N/A";
     }
@@ -42,6 +45,24 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate 
     return `${height} × ${width}`;
   };
 
+  // Format PLC dimensions in HxWxD format
+  const formatPlcDimensions = () => {
+    if (!format.tps_plc_height_mm && !format.tps_plc_width_mm && !format.tps_plc_depth_mm) {
+      return "N/A";
+    }
+    
+    const height = format.tps_plc_height_mm + 'mm';
+    const width = format.tps_plc_width_mm + 'mm';
+    
+    // Only include depth if it has a value
+    if (format.tps_plc_depth_mm) {
+      return `${height} × ${width} × ${format.tps_plc_depth_mm}mm`;
+    }
+    
+    // Otherwise just show height and width
+    return `${height} × ${width}`;
+  };
+
   return (
     <TableRow 
       key={format.id}
@@ -49,8 +70,9 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate 
       onClick={() => onViewFormat(format.id)}
     >
       <TableCell className="font-medium">{format.format_name}</TableCell>
-      <TableCell>{format.tps || "N/A"}</TableCell>
-      <TableCell>{formatDimensions()}</TableCell>
+      <TableCell>{format.tps_case || "N/A"}</TableCell>
+      <TableCell>{formatTextDimensions()}</TableCell>
+      <TableCell>{formatPlcDimensions()}</TableCell>
       <TableCell>{format.extent || "N/A"}</TableCell>
       <TableCell>{format.cover_stock_print || "N/A"}</TableCell>
       <TableCell>{format.internal_stock_print || "N/A"}</TableCell>

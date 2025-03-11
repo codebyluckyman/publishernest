@@ -25,6 +25,9 @@ export type Database = {
           tps_case: string | null
           tps_depth_mm: number | null
           tps_height_mm: number | null
+          tps_plc_depth_mm: number | null
+          tps_plc_height_mm: number | null
+          tps_plc_width_mm: number | null
           tps_width_mm: number | null
           updated_at: string
         }
@@ -43,6 +46,9 @@ export type Database = {
           tps_case?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
+          tps_plc_depth_mm?: number | null
+          tps_plc_height_mm?: number | null
+          tps_plc_width_mm?: number | null
           tps_width_mm?: number | null
           updated_at?: string
         }
@@ -61,6 +67,9 @@ export type Database = {
           tps_case?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
+          tps_plc_depth_mm?: number | null
+          tps_plc_height_mm?: number | null
+          tps_plc_width_mm?: number | null
           tps_width_mm?: number | null
           updated_at?: string
         }

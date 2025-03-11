@@ -11,13 +11,11 @@ import {
 } from "@/components/ui/select";
 
 export type FilterOptions = {
-  tps: string | null;
   cover_stock_print: string | null;
   internal_stock_print: string | null;
 };
 
 type FilterOptionsValues = {
-  tps: string[];
   cover_stock_print: string[];
   internal_stock_print: string[];
 };
