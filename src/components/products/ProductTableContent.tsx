@@ -3,7 +3,7 @@ import { BookOpen, Pencil, Eye, Image, PlusCircle, ArrowUpDown, ChevronUp, Chevr
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SortDirection, SortField } from "./ProductTable";
+import { SortDirection, SortField } from "@/types/product";
 import { useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 

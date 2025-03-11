@@ -4,6 +4,10 @@ import ProductTableContent from "./ProductTableContent";
 import { ProductEmptyState } from "./ProductEmptyState";
 import { useProductTableState } from "@/hooks/useProductTableState";
 import { formatDate, formatPrice, getProductFormLabel } from "@/utils/productUtils";
+import { SortDirection, SortField } from "@/types/product";
+
+// Re-export these types so ProductTableContent can use them
+export type { SortDirection, SortField };
 
 interface ProductTableProps {
   searchQuery: string;
