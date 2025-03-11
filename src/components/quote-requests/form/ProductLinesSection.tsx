@@ -30,7 +30,7 @@ interface ProductSearchResult {
 
 export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: string }) {
   const { currentOrganization } = useOrganization();
-  const { setValue, getValues } = useFormContext();
+  const { setValue, getValues, watch } = useFormContext();
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ProductSearchResult[]>([]);
@@ -40,6 +40,9 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
   const [quantity, setQuantity] = useState<number>(1);
   const [notes, setNotes] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Watch format_ids to filter products by selected formats
+  const selectedFormatIds = watch('format_ids') || [];
 
   // Fetch existing product lines for this quote request
   useEffect(() => {
@@ -81,7 +84,7 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
     fetchProductLines();
   }, [quoteRequestId, setValue]);
 
-  // Search for products
+  // Search for products, filtering by selected formats if any are chosen
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     
@@ -90,19 +93,30 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
       return;
     }
     
+    setIsLoading(true);
+    
     try {
-      const { data, error } = await supabase
+      let queryBuilder = supabase
         .from('products')
         .select('id, title, isbn13')
         .eq('organization_id', currentOrganization.id)
-        .ilike('title', `%${query}%`)
-        .limit(10);
+        .ilike('title', `%${query}%`);
+      
+      // Filter by format_ids if any are selected
+      if (selectedFormatIds && selectedFormatIds.length > 0) {
+        queryBuilder = queryBuilder.in('format_id', selectedFormatIds);
+      }
+      
+      const { data, error } = await queryBuilder.limit(10);
         
       if (error) throw error;
       setSearchResults(data || []);
     } catch (error) {
       console.error('Error searching products:', error);
       toast.error('Failed to search products');
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -168,31 +182,45 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
                     {selectedProductId ? selectedProductTitle : "Select a product"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0" side="bottom" align="start" alignOffset={0}>
+                <PopoverContent className="p-0" side="bottom" align="start">
                   <Command>
                     <CommandInput 
-                      placeholder="Search products..." 
+                      placeholder={selectedFormatIds.length > 0 
+                        ? "Search products matching selected formats..." 
+                        : "Search products..."}
                       value={searchQuery}
                       onValueChange={handleSearch}
                     />
                     <CommandList>
-                      <CommandEmpty>No products found</CommandEmpty>
-                      <CommandGroup>
-                        {searchResults.map((product) => (
-                          <CommandItem 
-                            key={product.id} 
-                            value={product.id}
-                            onSelect={() => handleSelectProduct(product)}
-                          >
-                            <div className="flex flex-col">
-                              <span>{product.title}</span>
-                              {product.isbn13 && (
-                                <span className="text-xs text-muted-foreground">ISBN: {product.isbn13}</span>
-                              )}
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
+                      {isLoading ? (
+                        <div className="flex items-center justify-center py-6">
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        </div>
+                      ) : (
+                        <>
+                          <CommandEmpty>
+                            {selectedFormatIds.length > 0 
+                              ? "No products found matching the selected formats" 
+                              : "No products found"}
+                          </CommandEmpty>
+                          <CommandGroup>
+                            {searchResults.map((product) => (
+                              <CommandItem 
+                                key={product.id} 
+                                value={product.id}
+                                onSelect={() => handleSelectProduct(product)}
+                              >
+                                <div className="flex flex-col">
+                                  <span>{product.title}</span>
+                                  {product.isbn13 && (
+                                    <span className="text-xs text-muted-foreground">ISBN: {product.isbn13}</span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </>
+                      )}
                     </CommandList>
                   </Command>
                 </PopoverContent>
