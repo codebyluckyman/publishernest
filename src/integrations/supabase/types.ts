@@ -22,7 +22,6 @@ export type Database = {
           internal_stock_print: string | null
           organization_id: string
           orientation: string | null
-          tps_case: string | null
           tps_depth_mm: number | null
           tps_height_mm: number | null
           tps_plc_depth_mm: number | null
@@ -43,7 +42,6 @@ export type Database = {
           internal_stock_print?: string | null
           organization_id: string
           orientation?: string | null
-          tps_case?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null
@@ -64,7 +62,6 @@ export type Database = {
           internal_stock_print?: string | null
           organization_id?: string
           orientation?: string | null
-          tps_case?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null

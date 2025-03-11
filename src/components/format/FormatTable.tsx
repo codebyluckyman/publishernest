@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -125,7 +126,8 @@ export function FormatTable({
         <TableHeader>
           <TableRow>
             <TableHead>Format Name</TableHead>
-            <TableHead>Dimensions</TableHead>
+            <TableHead>Text Dimensions</TableHead>
+            <TableHead>PLC Dimensions</TableHead>
             <TableHead>Extent</TableHead>
             <TableHead>Cover Stock/Print</TableHead>
             <TableHead>Internal Stock/Print</TableHead>

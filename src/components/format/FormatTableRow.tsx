@@ -5,7 +5,6 @@ import { TableRow, TableCell } from "@/components/ui/table";
 export interface Format {
   id: string;
   format_name: string;
-  tps_case: string | null;
   tps_height_mm: number | null;
   tps_width_mm: number | null;
   tps_depth_mm: number | null;
@@ -70,7 +69,6 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate 
       onClick={() => onViewFormat(format.id)}
     >
       <TableCell className="font-medium">{format.format_name}</TableCell>
-      <TableCell>{format.tps_case || "N/A"}</TableCell>
       <TableCell>{formatTextDimensions()}</TableCell>
       <TableCell>{formatPlcDimensions()}</TableCell>
       <TableCell>{format.extent || "N/A"}</TableCell>

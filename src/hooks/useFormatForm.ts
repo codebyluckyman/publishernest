@@ -10,7 +10,6 @@ import { useOrganization } from "@/context/OrganizationContext";
 export const formatSchema = z.object({
   format_name: z.string().min(1, "Format name is required"),
   orientation: z.string().optional(),
-  tps_case: z.string().optional(),
   tps_height_mm: z.string().optional(),
   tps_width_mm: z.string().optional(),
   tps_depth_mm: z.string().optional(),
@@ -30,7 +29,6 @@ export type FormatFormValues = z.infer<typeof formatSchema>;
 export const defaultValues: FormatFormValues = {
   format_name: "",
   orientation: "",
-  tps_case: "",
   tps_height_mm: "",
   tps_width_mm: "",
   tps_depth_mm: "",
@@ -82,7 +80,6 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
             form.reset({
               format_name: data.format_name || "",
               orientation: data.orientation || "",
-              tps_case: data.tps_case || "",
               tps_height_mm: data.tps_height_mm?.toString() || "",
               tps_width_mm: data.tps_width_mm?.toString() || "",
               tps_depth_mm: data.tps_depth_mm?.toString() || "",
@@ -126,7 +123,6 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
       const formattedValues = {
         format_name: values.format_name,
         orientation: values.orientation,
-        tps_case: values.tps_case,
         tps_height_mm: values.tps_height_mm ? parseFloat(values.tps_height_mm) : null,
         tps_width_mm: values.tps_width_mm ? parseFloat(values.tps_width_mm) : null,
         tps_depth_mm: values.tps_depth_mm ? parseFloat(values.tps_depth_mm) : null,

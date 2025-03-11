@@ -42,20 +42,6 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
             </FormItem>
           )}
         />
-        
-        <FormField
-          control={form.control}
-          name="tps_case"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>TPS (Case/PLC)</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., 120 pages" {...field} disabled={readOnly} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <Separator className="my-2" />
         <h4 className="text-md font-medium">Text Dimensions</h4>
