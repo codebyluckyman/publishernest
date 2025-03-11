@@ -11,16 +11,16 @@ import { QuoteRequest } from "@/types/quoteRequest";
 
 interface QuoteDialogProps {
   quote?: SupplierQuote;
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   currentOrganization: Organization | null;
   initialQuoteRequestId?: string | null;
 }
 
 export function QuoteDialog({ 
   quote, 
-  isOpen, 
-  onClose, 
+  open, 
+  onOpenChange, 
   currentOrganization, 
   initialQuoteRequestId = null 
 }: QuoteDialogProps) {
@@ -61,7 +61,7 @@ export function QuoteDialog({
         return [];
       }
     },
-    enabled: !!currentOrganization && isOpen,
+    enabled: !!currentOrganization && open,
   });
 
   const handleSubmit = async (data: any) => {
@@ -81,22 +81,19 @@ export function QuoteDialog({
         });
       }
       setIsSubmitting(false);
-      onClose();
+      onOpenChange(false);
     } catch (error) {
       setIsSubmitting(false);
       console.error("Error submitting quote:", error);
     }
   };
 
-  // Safe dialog close handler
-  const handleDialogChange = (open: boolean) => {
-    if (!open && !isSubmitting) {
-      onClose();
-    }
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleDialogChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!newOpen && !isSubmitting) {
+        onOpenChange(newOpen);
+      }
+    }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{quote ? 'Edit Quote' : 'Create New Quote'}</DialogTitle>

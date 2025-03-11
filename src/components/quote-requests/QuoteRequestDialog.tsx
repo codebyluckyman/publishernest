@@ -10,21 +10,21 @@ import { toast } from "sonner";
 
 interface QuoteRequestDialogProps {
   quoteRequest?: QuoteRequest | null;
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   currentOrganization: Organization | null;
 }
 
-export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrganization }: QuoteRequestDialogProps) {
+export function QuoteRequestDialog({ quoteRequest, open, onOpenChange, currentOrganization }: QuoteRequestDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createQuoteRequest, updateQuoteRequest, refetch } = useQuoteRequestsApi(currentOrganization);
   
   // Reset submitting state when dialog opens/closes
   useEffect(() => {
-    if (!isOpen) {
+    if (!open) {
       setIsSubmitting(false);
     }
-  }, [isOpen]);
+  }, [open]);
 
   const handleSubmit = async (data: any) => {
     if (!currentOrganization) {
@@ -81,7 +81,7 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
       
       toast.success(`Quote request ${quoteRequest ? 'updated' : 'created'} successfully`);
       setIsSubmitting(false);
-      onClose();
+      onOpenChange(false);
     } catch (error) {
       console.error("Error in quote request submission:", error);
       toast.error("Failed to save quote request");
@@ -89,16 +89,13 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
     }
   };
 
-  // Dialog close handler that prevents closing during submission
-  const handleDialogOpenChange = (open: boolean) => {
-    if (!open && !isSubmitting) {
-      refetch();
-      onClose();
-    }
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!newOpen && !isSubmitting) {
+        refetch();
+        onOpenChange(newOpen);
+      }
+    }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{quoteRequest ? 'Edit Quote Request' : 'Create New Quote Request'}</DialogTitle>
