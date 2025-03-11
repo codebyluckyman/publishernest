@@ -114,34 +114,40 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
           }
         }
 
+        // Extract items for separate insertion
+        const quoteItems = quote.items;
+        
+        // Remove items property from quote object before inserting to supplier_quotes
+        const { items, ...quoteData } = quote;
+
         // Insert quote
-        const { data: quoteData, error: quoteError } = await supabase
+        const { data: quoteData2, error: quoteError } = await supabase
           .from('supplier_quotes')
           .insert({
-            ...quote,
+            ...quoteData,
             organization_id: currentOrganization.id
           })
           .select()
           .single();
 
         if (quoteError) throw quoteError;
-        if (!quoteData) throw new Error('Failed to create quote');
+        if (!quoteData2) throw new Error('Failed to create quote');
 
         // Insert quote items
-        if (quote.items && quote.items.length > 0) {
+        if (quoteItems && quoteItems.length > 0) {
           const { error: itemsError } = await supabase
             .from('quote_items')
             .insert(
-              quote.items.map(item => ({
+              quoteItems.map(item => ({
                 ...item,
-                quote_id: quoteData.id
+                quote_id: quoteData2.id
               }))
             );
 
           if (itemsError) throw itemsError;
         }
 
-        return quoteData as SupplierQuote;
+        return quoteData2 as SupplierQuote;
       } catch (error) {
         console.error('Error in createQuote:', error);
         throw error;

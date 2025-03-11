@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { QuoteFormValues } from "./quoteFormSchema";
+import { useEffect } from "react";
 
 interface QuoteItemsSectionProps {
   form: UseFormReturn<QuoteFormValues>;
@@ -13,6 +14,25 @@ interface QuoteItemsSectionProps {
 }
 
 export function QuoteItemsSection({ form, addItem, removeItem }: QuoteItemsSectionProps) {
+  // Calculate subtotal when quantity or unit price changes
+  const items = form.watch("items");
+  
+  useEffect(() => {
+    items.forEach((item, index) => {
+      const quantity = parseFloat(item.quantity.toString()) || 0;
+      const unitPrice = parseFloat(item.unit_price.toString()) || 0;
+      const subtotal = quantity * unitPrice;
+      
+      if (subtotal !== item.subtotal) {
+        form.setValue(`items.${index}.subtotal`, subtotal);
+      }
+    });
+    
+    // Calculate total amount
+    const totalAmount = items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    form.setValue("total_amount", totalAmount);
+  }, [items, form]);
+  
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
