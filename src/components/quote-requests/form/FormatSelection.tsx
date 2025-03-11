@@ -75,10 +75,10 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
       console.error("no format to remove") 
       return;
     }
-        
+
     // Get the current quote request id from the form
     const quoteRequestId = form.getValues('id');
-    
+    console.log(`quote request id: ${quoteRequestId}`);
     if (quoteRequestId) {
       try {
         // Delete the record from the database
