@@ -14,26 +14,27 @@ export function QuoteRequestSelection({
   setQuoteRequestId 
 }: QuoteRequestSelectionProps) {
   return (
-    <div className="md:col-span-2">
-      <div className="flex items-center mb-2">
-        <label className="text-sm font-medium">Quote Request</label>
-      </div>
-      <Select
-        value={quoteRequestId || "none"}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">Quote Request</label>
+      <Select 
+        value={quoteRequestId || "none"} 
         onValueChange={(value) => setQuoteRequestId(value === "none" ? null : value)}
       >
-        <SelectTrigger>
-          <SelectValue placeholder="Select a quote request (optional)" />
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select quote request (optional)" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">No quote request</SelectItem>
-          {quoteRequests && quoteRequests.map((request) => (
+          {quoteRequests.map((request) => (
             <SelectItem key={request.id} value={request.id}>
               {request.title} ({request.status})
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+      <p className="text-sm text-muted-foreground">
+        Link this quote to an existing quote request
+      </p>
     </div>
   );
 }

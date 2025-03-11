@@ -1,58 +1,45 @@
 
-import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { QuoteStatus } from "@/types/quote";
 import { QuoteRequest } from "@/types/quoteRequest";
-import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { QuoteStatus } from "@/types/quote";
 
 interface QuoteFiltersProps {
   searchQuery: string;
-  setSearchQuery: (value: string) => void;
+  setSearchQuery: (query: string) => void;
   statusFilter: QuoteStatus | 'all';
-  setStatusFilter: (value: QuoteStatus | 'all') => void;
+  setStatusFilter: (status: QuoteStatus | 'all') => void;
   quoteRequestFilter: string | null;
-  setQuoteRequestFilter: (value: string | null) => void;
+  setQuoteRequestFilter: (id: string | null) => void;
   quoteRequests: Pick<QuoteRequest, 'id' | 'title'>[];
 }
 
-export function QuoteFilters({ 
-  searchQuery, 
-  setSearchQuery, 
-  statusFilter, 
+export function QuoteFilters({
+  searchQuery,
+  setSearchQuery,
+  statusFilter,
   setStatusFilter,
   quoteRequestFilter,
   setQuoteRequestFilter,
   quoteRequests
 }: QuoteFiltersProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  // Handle URL parameters
-  useEffect(() => {
-    const requestId = searchParams.get('requestId');
-    if (requestId) {
-      setQuoteRequestFilter(requestId);
-    }
-  }, [searchParams]);
-
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="flex flex-col gap-4 md:flex-row md:items-center">
+      <div className="flex-1">
         <Input
-          placeholder="Search quotes..."
-          className="pl-9"
+          placeholder="Search by supplier or quote number..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
         />
       </div>
-      <div className="w-full sm:w-48">
-        <Select 
-          value={statusFilter} 
+      
+      <div className="flex flex-col md:flex-row gap-2 md:items-center">
+        <Select
+          value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as QuoteStatus | 'all')}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -62,25 +49,16 @@ export function QuoteFilters({
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-      <div className="w-full sm:w-64">
-        <Select 
-          value={quoteRequestFilter || ''} 
-          onValueChange={(value) => {
-            setQuoteRequestFilter(value || null);
-            if (value) {
-              setSearchParams({ requestId: value });
-            } else {
-              searchParams.delete('requestId');
-              setSearchParams(searchParams);
-            }
-          }}
+        
+        <Select
+          value={quoteRequestFilter || "none"}
+          onValueChange={(value) => setQuoteRequestFilter(value === "none" ? null : value)}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Filter by quote request" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Quote Requests</SelectItem>
+            <SelectItem value="none">All Quote Requests</SelectItem>
             {quoteRequests.map((request) => (
               <SelectItem key={request.id} value={request.id}>
                 {request.title}
