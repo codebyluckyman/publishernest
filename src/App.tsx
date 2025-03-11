@@ -9,6 +9,7 @@ import Formats from "./pages/Formats";
 import Organizations from "./pages/Organizations";
 import Profile from "./pages/Profile";
 import Stock from "./pages/Stock";
+import Quotes from "./pages/Quotes";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./context/AuthContext";
@@ -70,7 +71,7 @@ const App = () => (
             <Route path="/quotes" element={
               <ProtectedRoute>
                 <Layout>
-                  <Dashboard />
+                  <Quotes />
                 </Layout>
               </ProtectedRoute>
             } />

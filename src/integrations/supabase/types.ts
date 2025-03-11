@@ -440,6 +440,57 @@ export type Database = {
           },
         ]
       }
+      quote_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          product_id: string | null
+          quantity: number
+          quote_id: string
+          subtotal: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          quote_id: string
+          subtotal: number
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          quote_id?: string
+          subtotal?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_on_hand: {
         Row: {
           created_at: string
@@ -488,6 +539,65 @@ export type Database = {
             columns: ["warehouse_id"]
             isOneToOne: false
             referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_quotes: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          currency_code: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          quote_date: string
+          quote_number: string | null
+          status: string
+          supplier_name: string
+          total_amount: number | null
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency_code?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          quote_date?: string
+          quote_number?: string | null
+          status?: string
+          supplier_name: string
+          total_amount?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency_code?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          quote_date?: string
+          quote_number?: string | null
+          status?: string
+          supplier_name?: string
+          total_amount?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quotes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
