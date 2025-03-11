@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { MoreHorizontal, FileEdit, Trash2, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { MoreHorizontal, FileEdit, Trash2, ArrowUpDown, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { QuoteRequest, SortQuoteRequestField, SortDirection } from '@/types/quoteRequest';
 import { 
@@ -24,6 +24,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Organization } from '@/types/organization';
 import { useQuoteRequestsApi } from '@/hooks/useQuoteRequestsApi';
 import { FormatBadge } from './FormatBadge';
+import { AssociatedQuotesDialog } from './AssociatedQuotesDialog';
 
 interface QuoteRequestsTableProps {
   quoteRequests: QuoteRequest[];
@@ -42,6 +43,7 @@ export function QuoteRequestsTable({
 }: QuoteRequestsTableProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isQuotesDialogOpen, setIsQuotesDialogOpen] = useState(false);
   const [selectedQuoteRequest, setSelectedQuoteRequest] = useState<QuoteRequest | null>(null);
   
   const { deleteQuoteRequest, refetch } = useQuoteRequestsApi(currentOrganization);
@@ -69,12 +71,21 @@ export function QuoteRequestsTable({
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewQuotes = (quoteRequest: QuoteRequest) => {
+    setSelectedQuoteRequest(quoteRequest);
+    setIsQuotesDialogOpen(true);
+  };
+
   const handleEditDialogClose = () => {
     requestAnimationFrame(() => {
       setIsEditDialogOpen(false);
       setSelectedQuoteRequest(null);
       refetch();
     });
+  };
+
+  const handleQuotesDialogClose = () => {
+    setIsQuotesDialogOpen(false);
   };
 
   const confirmDelete = async () => {
@@ -184,6 +195,10 @@ export function QuoteRequestsTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleViewQuotes(quoteRequest)}>
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        View Quotes
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleEdit(quoteRequest)}>
                         <FileEdit className="mr-2 h-4 w-4" />
                         Edit
@@ -210,6 +225,16 @@ export function QuoteRequestsTable({
           quoteRequest={selectedQuoteRequest}
           isOpen={isEditDialogOpen}
           onClose={handleEditDialogClose}
+          currentOrganization={currentOrganization}
+        />
+      )}
+
+      {/* Associated Quotes Dialog */}
+      {selectedQuoteRequest && (
+        <AssociatedQuotesDialog
+          quoteRequest={selectedQuoteRequest}
+          isOpen={isQuotesDialogOpen}
+          onClose={handleQuotesDialogClose}
           currentOrganization={currentOrganization}
         />
       )}
