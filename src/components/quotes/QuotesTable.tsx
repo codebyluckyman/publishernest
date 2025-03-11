@@ -118,6 +118,22 @@ export const QuotesTable = ({
     }
   };
 
+  const handleCloseViewSheet = () => {
+    setIsViewDialogOpen(false);
+    // Allow time for the sheet to close properly before clearing selection
+    setTimeout(() => {
+      setSelectedQuote(null);
+    }, 300);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    // Allow time for the dialog to close properly before clearing selection
+    setTimeout(() => {
+      setSelectedQuote(null);
+    }, 300);
+  };
+
   return (
     <>
       <div className="border rounded-md overflow-hidden">
@@ -225,14 +241,11 @@ export const QuotesTable = ({
       </div>
 
       {/* Edit Dialog */}
-      {selectedQuote && (
+      {selectedQuote && isEditDialogOpen && (
         <QuoteDialog
           quote={selectedQuote}
           isOpen={isEditDialogOpen}
-          onClose={() => {
-            setIsEditDialogOpen(false);
-            setSelectedQuote(null);
-          }}
+          onClose={handleCloseEditDialog}
           currentOrganization={currentOrganization}
         />
       )}
@@ -368,4 +381,3 @@ export const QuotesTable = ({
     </>
   );
 };
-

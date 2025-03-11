@@ -80,14 +80,23 @@ export function QuoteDialog({
           organization_id: currentOrganization?.id as string
         });
       }
-      onClose();
-    } finally {
       setIsSubmitting(false);
+      onClose();
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error("Error submitting quote:", error);
+    }
+  };
+
+  // Safe dialog close handler
+  const handleDialogChange = (open: boolean) => {
+    if (!open && !isSubmitting) {
+      onClose();
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={handleDialogChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{quote ? 'Edit Quote' : 'Create New Quote'}</DialogTitle>

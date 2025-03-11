@@ -80,12 +80,8 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
       }
       
       toast.success(`Quote request ${quoteRequest ? 'updated' : 'created'} successfully`);
-      
-      // Delayed closing to ensure state is fully updated
-      setTimeout(() => {
-        setIsSubmitting(false);
-        onClose();
-      }, 300);
+      setIsSubmitting(false);
+      onClose();
     } catch (error) {
       console.error("Error in quote request submission:", error);
       toast.error("Failed to save quote request");
@@ -96,7 +92,6 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
   // Dialog close handler that prevents closing during submission
   const handleDialogOpenChange = (open: boolean) => {
     if (!open && !isSubmitting) {
-      // Trigger a data refresh when dialog closes
       refetch();
       onClose();
     }

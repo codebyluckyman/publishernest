@@ -78,12 +78,19 @@ export function QuoteRequestsTable({
 
   const handleEditDialogClose = () => {
     setIsEditDialogOpen(false);
-    setSelectedQuoteRequest(null);
-    refetch();
+    // Allow time for the dialog to close properly before clearing selection
+    setTimeout(() => {
+      setSelectedQuoteRequest(null);
+      refetch();
+    }, 300);
   };
 
   const handleQuotesDialogClose = () => {
     setIsQuotesDialogOpen(false);
+    // Allow time for the dialog to close properly before clearing selection
+    setTimeout(() => {
+      setSelectedQuoteRequest(null);
+    }, 300);
   };
 
   const confirmDelete = async () => {
@@ -215,7 +222,8 @@ export function QuoteRequestsTable({
         </Table>
       </div>
 
-      {selectedQuoteRequest && (
+      {/* Edit Dialog */}
+      {selectedQuoteRequest && isEditDialogOpen && (
         <QuoteRequestDialog
           quoteRequest={selectedQuoteRequest}
           isOpen={isEditDialogOpen}
@@ -224,7 +232,8 @@ export function QuoteRequestsTable({
         />
       )}
 
-      {selectedQuoteRequest && (
+      {/* Associated Quotes Dialog */}
+      {selectedQuoteRequest && isQuotesDialogOpen && (
         <AssociatedQuotesDialog
           quoteRequest={selectedQuoteRequest}
           isOpen={isQuotesDialogOpen}
@@ -233,6 +242,7 @@ export function QuoteRequestsTable({
         />
       )}
 
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
