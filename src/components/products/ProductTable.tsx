@@ -131,7 +131,7 @@ const ProductTable = ({
     })) as unknown as Product[] : [];
   };
 
-  const { data: products, isLoading, error } = useQuery({
+  const { data: products, isLoading, error, refetch } = useQuery({
     queryKey: ["products", currentOrganization?.id, searchQuery, filters, refreshTrigger, sortField, sortDirection],
     queryFn: fetchProducts,
     enabled: !!currentOrganization,
@@ -140,6 +140,71 @@ const ProductTable = ({
   if (error) {
     toast.error("Failed to load products: " + (error as Error).message);
   }
+
+  const copyProduct = async (productId: string): Promise<string> => {
+    if (!currentOrganization) {
+      toast.error("No organization selected");
+      throw new Error("No organization selected");
+    }
+
+    try {
+      const { data: productToCopy, error: fetchError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
+
+      if (fetchError || !productToCopy) {
+        throw new Error("Failed to fetch product to copy");
+      }
+
+      const newProductData = {
+        ...productToCopy,
+        id: undefined,
+        title: `${productToCopy.title} (Copy)`,
+        isbn13: null,
+        isbn10: null,
+        created_at: undefined,
+        updated_at: undefined
+      };
+
+      const { data: newProduct, error: insertError } = await supabase
+        .from("products")
+        .insert([newProductData])
+        .select()
+        .single();
+
+      if (insertError || !newProduct) {
+        throw new Error("Failed to create new product");
+      }
+
+      const { data: prices, error: pricesError } = await supabase
+        .from("product_prices")
+        .select("*")
+        .eq("product_id", productId);
+
+      if (!pricesError && prices && prices.length > 0) {
+        const newPrices = prices.map(price => ({
+          ...price,
+          id: undefined,
+          product_id: newProduct.id,
+          created_at: undefined,
+          updated_at: undefined
+        }));
+
+        await supabase.from("product_prices").insert(newPrices);
+      }
+
+      refetch();
+
+      toast.success("Product copied successfully");
+      return newProduct.id;
+    } catch (error) {
+      console.error("Error copying product:", error);
+      toast.error("Failed to copy product: " + (error as Error).message);
+      throw error;
+    }
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
@@ -185,6 +250,7 @@ const ProductTable = ({
       handleViewProduct={onViewProduct}
       handleEditProduct={onEditProduct}
       handleAddProduct={onAddProduct}
+      handleCopyProduct={copyProduct}
       formatDate={formatDate}
       formatPrice={formatPrice}
       getProductFormLabel={getProductFormLabel}
