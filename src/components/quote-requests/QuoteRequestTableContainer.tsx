@@ -32,6 +32,15 @@ export const QuoteRequestTableContainer = ({ currentOrganization }: QuoteRequest
     setIsAddDialogOpen(true);
   };
 
+  const handleDialogClose = () => {
+    // Use requestAnimationFrame to ensure proper state update cycle
+    requestAnimationFrame(() => {
+      setIsAddDialogOpen(false);
+      // Force a refetch to get the latest data
+      refetch();
+    });
+  };
+
   const handleRefresh = () => {
     refetch();
   };
@@ -76,7 +85,7 @@ export const QuoteRequestTableContainer = ({ currentOrganization }: QuoteRequest
       {/* Add Dialog */}
       <QuoteRequestDialog
         isOpen={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
+        onClose={handleDialogClose}
         currentOrganization={currentOrganization}
       />
     </div>

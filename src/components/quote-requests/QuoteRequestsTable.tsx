@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { MoreHorizontal, FileEdit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -44,7 +43,7 @@ export function QuoteRequestsTable({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedQuoteRequest, setSelectedQuoteRequest] = useState<QuoteRequest | null>(null);
   
-  const { deleteQuoteRequest } = useQuoteRequestsApi(currentOrganization);
+  const { deleteQuoteRequest, refetch } = useQuoteRequestsApi(currentOrganization);
 
   const getSortIcon = (field: SortQuoteRequestField) => {
     if (sortField !== field) return null;
@@ -61,10 +60,21 @@ export function QuoteRequestsTable({
     setIsDeleteDialogOpen(true);
   };
 
+  const handleEditDialogClose = () => {
+    requestAnimationFrame(() => {
+      setIsEditDialogOpen(false);
+      setSelectedQuoteRequest(null);
+      refetch();
+    });
+  };
+
   const confirmDelete = async () => {
     if (selectedQuoteRequest) {
       await deleteQuoteRequest.mutateAsync(selectedQuoteRequest.id);
-      setIsDeleteDialogOpen(false);
+      requestAnimationFrame(() => {
+        setIsDeleteDialogOpen(false);
+        setSelectedQuoteRequest(null);
+      });
     }
   };
 
@@ -174,7 +184,7 @@ export function QuoteRequestsTable({
         <QuoteRequestDialog
           quoteRequest={selectedQuoteRequest}
           isOpen={isEditDialogOpen}
-          onClose={() => setIsEditDialogOpen(false)}
+          onClose={handleEditDialogClose}
           currentOrganization={currentOrganization}
         />
       )}

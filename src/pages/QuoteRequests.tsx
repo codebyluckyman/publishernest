@@ -7,7 +7,10 @@ const QuoteRequests = () => {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <QuoteRequestTableContainer currentOrganization={currentOrganization} />
+      <QuoteRequestTableContainer 
+        key={`quote-requests-${currentOrganization?.id || 'none'}`} 
+        currentOrganization={currentOrganization} 
+      />
     </div>
   );
 };

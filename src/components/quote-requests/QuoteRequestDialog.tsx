@@ -75,20 +75,26 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
         }
       }
       
-      // Close dialog only after all operations are complete
-      onClose();
+      // Complete all operations before closing the dialog
+      setIsSubmitting(false);
+      // Use requestAnimationFrame to ensure state is updated before closing
+      requestAnimationFrame(() => {
+        onClose();
+      });
     } catch (error) {
       console.error("Error in quote request submission:", error);
       toast.error("Failed to save quote request");
-    } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Simple dialog close handler that respects the submission state
+  // Dialog close handler that prevents closing during submission
   const handleDialogClose = (open: boolean) => {
     if (!open && !isSubmitting) {
-      onClose();
+      // Use requestAnimationFrame to ensure proper event cleanup
+      requestAnimationFrame(() => {
+        onClose();
+      });
     }
   };
 
