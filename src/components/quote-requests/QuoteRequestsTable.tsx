@@ -35,6 +35,14 @@ export function QuoteRequestsTable({
     setSheetOpen(true);
   };
 
+  const handleSheetOpenChange = (open: boolean) => {
+    setSheetOpen(open);
+    if (!open) {
+      // Refresh data when sheet is closed to get any updates
+      refetch();
+    }
+  };
+
   return (
     <div className="rounded-md border overflow-hidden">
       <Table>
@@ -57,7 +65,7 @@ export function QuoteRequestsTable({
       <ViewQuoteRequestSheet
         quoteRequest={selectedQuoteRequest}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={handleSheetOpenChange}
       />
     </div>
   );

@@ -36,11 +36,11 @@ export const QuoteRequestTableRow = ({
     <TableRow 
       key={quoteRequest.id} 
       onClick={() => onSelect(quoteRequest)}
-      className="cursor-pointer"
+      className="cursor-pointer hover:bg-muted/50"
     >
       <TableCell className="font-medium">{quoteRequest.title}</TableCell>
       <TableCell>
-        <div className="flex flex-wrap">
+        <div className="flex flex-wrap gap-1">
           {quoteRequest.formats && quoteRequest.formats.length > 0 ? (
             quoteRequest.formats.map(format => (
               <FormatBadge key={format.id} format={format} />
@@ -56,4 +56,4 @@ export const QuoteRequestTableRow = ({
       <TableCell>{formatDate(quoteRequest.created_at)}</TableCell>
     </TableRow>
   );
-};
+}
