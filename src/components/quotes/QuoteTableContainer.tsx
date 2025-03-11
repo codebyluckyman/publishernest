@@ -120,8 +120,8 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
 
       {/* Add Dialog */}
       <QuoteDialog
-        isOpen={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
         currentOrganization={currentOrganization}
         initialQuoteRequestId={quoteRequestFilter}
       />

@@ -244,8 +244,8 @@ export const QuotesTable = ({
       {selectedQuote && isEditDialogOpen && (
         <QuoteDialog
           quote={selectedQuote}
-          isOpen={isEditDialogOpen}
-          onClose={handleCloseEditDialog}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
           currentOrganization={currentOrganization}
         />
       )}

@@ -226,8 +226,8 @@ export function QuoteRequestsTable({
       {selectedQuoteRequest && isEditDialogOpen && (
         <QuoteRequestDialog
           quoteRequest={selectedQuoteRequest}
-          isOpen={isEditDialogOpen}
-          onClose={handleEditDialogClose}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
           currentOrganization={currentOrganization}
         />
       )}

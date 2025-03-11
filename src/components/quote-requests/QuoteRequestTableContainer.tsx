@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Organization } from "@/types/organization";
@@ -146,8 +147,8 @@ export function QuoteRequestTableContainer({
 
       <QuoteRequestDialog
         quoteRequest={null}
-        isOpen={isDialogOpen}
-        onClose={handleDialogClose}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
         currentOrganization={currentOrganization}
       />
     </Card>

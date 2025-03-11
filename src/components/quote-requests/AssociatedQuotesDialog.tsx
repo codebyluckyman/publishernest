@@ -175,8 +175,8 @@ export function AssociatedQuotesDialog({
       {selectedQuote && (
         <QuoteDialog
           quote={selectedQuote}
-          isOpen={isQuoteDialogOpen}
-          onClose={handleQuoteDialogClose}
+          open={isQuoteDialogOpen}
+          onOpenChange={setIsQuoteDialogOpen}
           currentOrganization={currentOrganization}
         />
       )}
