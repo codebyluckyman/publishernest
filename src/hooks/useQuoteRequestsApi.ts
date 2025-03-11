@@ -42,7 +42,7 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
         return [];
       }
 
-      return data as unknown as QuoteRequest[];
+      return data as QuoteRequest[];
     } catch (error) {
       console.error('Error in fetchQuoteRequests:', error);
       toast.error('An unexpected error occurred');
@@ -71,7 +71,7 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
           .single();
 
         if (error) throw error;
-        return data as unknown as QuoteRequest;
+        return data as QuoteRequest;
       } catch (error) {
         console.error('Error in createQuoteRequest:', error);
         throw error;

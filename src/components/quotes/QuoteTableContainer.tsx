@@ -41,7 +41,7 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
     if (initialRequestId) {
       setQuoteRequestFilter(initialRequestId);
     }
-  }, [initialRequestId]);
+  }, [initialRequestId, setQuoteRequestFilter]);
 
   // Fetch quote requests for dropdown
   const { data: quoteRequests } = useQuery({
@@ -61,7 +61,7 @@ export const QuoteTableContainer = ({ currentOrganization }: QuoteTableContainer
           return [];
         }
         
-        return data as unknown as Pick<QuoteRequest, 'id' | 'title'>[];
+        return data as Pick<QuoteRequest, 'id' | 'title'>[];
       } catch (error) {
         console.error('Error in QuoteTableContainer query:', error);
         return [];

@@ -54,7 +54,7 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
         return [];
       }
 
-      return data as unknown as SupplierQuote[];
+      return data as SupplierQuote[];
     } catch (error) {
       console.error('Error in fetchQuotes:', error);
       toast.error('An unexpected error occurred');
@@ -100,7 +100,7 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
           if (itemsError) throw itemsError;
         }
 
-        return quoteData as unknown as SupplierQuote;
+        return quoteData as SupplierQuote;
       } catch (error) {
         console.error('Error in createQuote:', error);
         throw error;

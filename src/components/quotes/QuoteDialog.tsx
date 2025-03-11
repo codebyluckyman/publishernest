@@ -42,7 +42,6 @@ export function QuoteDialog({
     queryFn: async () => {
       if (!currentOrganization) return [];
       
-      // Cast the result to the expected type
       try {
         const { data, error } = await supabase
           .from('quote_requests')
@@ -56,7 +55,7 @@ export function QuoteDialog({
           return [];
         }
         
-        return data as unknown as Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
+        return data as Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
       } catch (error) {
         console.error('Error in QuoteDialog query:', error);
         return [];
