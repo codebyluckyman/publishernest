@@ -4,7 +4,6 @@ import {
   Package, 
   BookOpen, 
   Archive, 
-  FileText, 
   ShoppingCart, 
   Truck, 
   Building,
@@ -36,16 +35,6 @@ export const navigationItems = [
     href: "/formats",
     icon: <BookOpen className="h-5 w-5" />,
   },  
-  {
-    title: "Quote Requests",
-    href: "/quote-requests",
-    icon: <FileText className="h-5 w-5" />,
-  },
-  {
-    title: "Quotes",
-    href: "/quotes",
-    icon: <FileText className="h-5 w-5" />,
-  },
   {
     title: "Suppliers",
     href: "/suppliers",
