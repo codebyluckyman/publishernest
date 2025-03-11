@@ -18,24 +18,23 @@ interface FormatSelectionProps {
 
 export function FormatSelection({ organizationId, initialFormatIds }: FormatSelectionProps) {
   const { formats, isLoadingFormats } = useFormatsApi({ id: organizationId } as Organization | null);
-  const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>(initialFormatIds);
+  const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>(initialFormatIds || []);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const form = useFormContext();
 
-  // Update selectedFormatIds when initialFormatIds changes
+  // Initialize selected formats when component mounts or initialFormatIds changes
   useEffect(() => {
-    setSelectedFormatIds(initialFormatIds);
-    form.setValue('format_ids', initialFormatIds);
+    if (initialFormatIds?.length > 0) {
+      setSelectedFormatIds(initialFormatIds);
+      form.setValue('format_ids', initialFormatIds);
+    }
   }, [initialFormatIds, form]);
 
-  // Sync local state with form state
+  // Update form value when selectedFormatIds changes
   useEffect(() => {
-    const formFormatIds = form.getValues('format_ids') || [];
-    if (JSON.stringify(formFormatIds) !== JSON.stringify(selectedFormatIds)) {
-      setSelectedFormatIds(formFormatIds);
-    }
-  }, [form.getValues('format_ids'), form]);
+    form.setValue('format_ids', selectedFormatIds);
+  }, [selectedFormatIds, form]);
 
   const filteredFormats = formats.filter(format => 
     format.format_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -47,14 +46,12 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
       : [...selectedFormatIds, formatId];
     
     setSelectedFormatIds(updatedFormatIds);
-    form.setValue('format_ids', updatedFormatIds);
     setSearchQuery("");
   };
 
   const removeFormat = (formatId: string) => {
     const updatedFormatIds = selectedFormatIds.filter(id => id !== formatId);
     setSelectedFormatIds(updatedFormatIds);
-    form.setValue('format_ids', updatedFormatIds);
   };
 
   const getFormatName = (formatId: string): string => {

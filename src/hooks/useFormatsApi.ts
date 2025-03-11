@@ -27,7 +27,9 @@ export const useFormatsApi = (currentOrganization: Organization | null) => {
     }
   };
 
-  const fetchQuoteRequestFormats = async (quoteRequestId: string) => {
+  const fetchQuoteRequestFormats = async (quoteRequestId: string | undefined) => {
+    if (!quoteRequestId) return [];
+    
     try {
       const { data, error } = await supabase
         .from('quote_request_formats')
@@ -35,7 +37,7 @@ export const useFormatsApi = (currentOrganization: Organization | null) => {
         .eq('quote_request_id', quoteRequestId);
 
       if (error) throw error;
-      return data.map(item => item.format_id);
+      return data?.map(item => item.format_id) || [];
     } catch (error) {
       console.error('Error fetching quote request formats:', error);
       return [];
