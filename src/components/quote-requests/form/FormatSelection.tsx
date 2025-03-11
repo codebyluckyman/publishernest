@@ -30,7 +30,7 @@ interface FormatSelectionProps {
 }
 
 export function FormatSelection({ organizationId, initialFormatIds, quoteRequestId }: FormatSelectionProps) {
-  const { formats, isLoadingFormats } = useFormatsApi({ id: organizationId } as Organization | null);
+  const { formats, isLoadingFormats, fetchQuoteRequestFormats } = useFormatsApi({ id: organizationId } as Organization | null);
   const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>(initialFormatIds || []);
   const [searchQuery, setSearchQuery] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -39,6 +39,7 @@ export function FormatSelection({ organizationId, initialFormatIds, quoteRequest
   // For confirmation dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formatToRemove, setFormatToRemove] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Initialize selected formats when component mounts or initialFormatIds changes
   useEffect(() => {
@@ -52,6 +53,19 @@ export function FormatSelection({ organizationId, initialFormatIds, quoteRequest
   useEffect(() => {
     form.setValue('format_ids', selectedFormatIds);
   }, [selectedFormatIds, form]);
+
+  // Refresh quote request formats when needed
+  useEffect(() => {
+    const refreshFormats = async () => {
+      if (quoteRequestId) {
+        const formatIds = await fetchQuoteRequestFormats(quoteRequestId);
+        setSelectedFormatIds(formatIds);
+        form.setValue('format_ids', formatIds);
+      }
+    };
+
+    refreshFormats();
+  }, [quoteRequestId, refreshTrigger, fetchQuoteRequestFormats, form]);
 
   const filteredFormats = formats.filter(format => 
     format.format_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -102,6 +116,8 @@ export function FormatSelection({ organizationId, initialFormatIds, quoteRequest
         toast.error("Failed to remove format");
       } else {
         toast.success("Format removed successfully");
+        // Trigger a refresh after successful removal
+        setRefreshTrigger(prev => prev + 1);
       }
     } catch (error) {
       console.error("Error in removeFormat:", error);
