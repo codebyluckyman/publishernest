@@ -21,7 +21,14 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
         .from('quote_requests')
         .select(`
           *,
-          quotes_count:supplier_quotes(count)
+          quotes_count:supplier_quotes(count),
+          formats:quote_request_formats(
+            format_id,
+            format:formats(
+              id,
+              format_name
+            )
+          )
         `)
         .eq('organization_id', currentOrganization.id)
         .order(sortField, { ascending: sortDirection === 'asc' });
@@ -43,10 +50,10 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
       }
 
       // Transform the data to match our expected type
-      // The quotes_count is returned as an array with a single object containing the count
       return data.map(item => ({
         ...item,
-        quotes_count: item.quotes_count?.length > 0 ? item.quotes_count[0].count : 0
+        quotes_count: item.quotes_count?.length > 0 ? item.quotes_count[0].count : 0,
+        formats: item.formats?.map((f: any) => f.format) || []
       })) as QuoteRequest[];
     } catch (error) {
       console.error('Error in fetchQuoteRequests:', error);
@@ -62,7 +69,7 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
   });
 
   const createQuoteRequest = useMutation({
-    mutationFn: async (quoteRequest: Omit<QuoteRequest, 'id' | 'created_at' | 'updated_at' | 'quotes_count'>) => {
+    mutationFn: async (quoteRequest: Omit<QuoteRequest, 'id' | 'created_at' | 'updated_at' | 'quotes_count' | 'formats'>) => {
       if (!currentOrganization) throw new Error('No organization selected');
 
       try {
