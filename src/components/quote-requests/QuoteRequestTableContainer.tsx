@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Organization } from "@/types/organization";
@@ -50,11 +49,8 @@ export function QuoteRequestTableContainer({
 
   const handleDialogClose = useCallback(() => {
     setIsDialogOpen(false);
-    // Wait until the dialog is fully closed before refreshing to avoid rendering issues
-    setTimeout(() => {
-      setRefreshTrigger(prev => prev + 1);
-    }, 300);
-  }, []);
+    refetch();
+  }, [refetch]);
 
   const handleSort = (field: SortQuoteRequestField) => {
     if (field === sortField) {

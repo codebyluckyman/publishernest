@@ -17,7 +17,7 @@ interface QuoteRequestDialogProps {
 
 export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrganization }: QuoteRequestDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createQuoteRequest, updateQuoteRequest } = useQuoteRequestsApi(currentOrganization);
+  const { createQuoteRequest, updateQuoteRequest, refetch } = useQuoteRequestsApi(currentOrganization);
   
   // Reset submitting state when dialog opens/closes
   useEffect(() => {
@@ -96,6 +96,8 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
   // Dialog close handler that prevents closing during submission
   const handleDialogOpenChange = (open: boolean) => {
     if (!open && !isSubmitting) {
+      // Trigger a data refresh when dialog closes
+      refetch();
       onClose();
     }
   };

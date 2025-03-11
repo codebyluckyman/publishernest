@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { MoreHorizontal, FileEdit, Trash2, ArrowUpDown, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
@@ -77,11 +76,9 @@ export function QuoteRequestsTable({
   };
 
   const handleEditDialogClose = () => {
-    requestAnimationFrame(() => {
-      setIsEditDialogOpen(false);
-      setSelectedQuoteRequest(null);
-      refetch();
-    });
+    setIsEditDialogOpen(false);
+    setSelectedQuoteRequest(null);
+    refetch();
   };
 
   const handleQuotesDialogClose = () => {
@@ -91,10 +88,8 @@ export function QuoteRequestsTable({
   const confirmDelete = async () => {
     if (selectedQuoteRequest) {
       await deleteQuoteRequest.mutateAsync(selectedQuoteRequest.id);
-      requestAnimationFrame(() => {
-        setIsDeleteDialogOpen(false);
-        setSelectedQuoteRequest(null);
-      });
+      setIsDeleteDialogOpen(false);
+      setSelectedQuoteRequest(null);
     }
   };
 
@@ -219,7 +214,6 @@ export function QuoteRequestsTable({
         </Table>
       </div>
 
-      {/* Edit Dialog */}
       {selectedQuoteRequest && (
         <QuoteRequestDialog
           quoteRequest={selectedQuoteRequest}
@@ -229,7 +223,6 @@ export function QuoteRequestsTable({
         />
       )}
 
-      {/* Associated Quotes Dialog */}
       {selectedQuoteRequest && (
         <AssociatedQuotesDialog
           quoteRequest={selectedQuoteRequest}
@@ -239,7 +232,6 @@ export function QuoteRequestsTable({
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
