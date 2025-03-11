@@ -7,6 +7,7 @@ import { Building, Upload, X } from "lucide-react";
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface OrganizationDetailsProps {
   organization: Organization;
@@ -107,6 +108,19 @@ export const OrganizationDetails = ({
     }
   };
 
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'publisher':
+        return 'bg-blue-100 text-blue-800';
+      case 'printer':
+        return 'bg-green-100 text-green-800';
+      case 'customer':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -166,6 +180,16 @@ export const OrganizationDetails = ({
             <label className="text-sm font-medium">Organization Name</label>
             <Input value={organization.name} disabled />
           </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Organization Type</label>
+            <div>
+              <Badge className={getTypeColor(organization.organization_type)}>
+                {organization.organization_type.charAt(0).toUpperCase() + organization.organization_type.slice(1)}
+              </Badge>
+            </div>
+          </div>
+          
           <div className="space-y-2">
             <label className="text-sm font-medium">Organization Slug</label>
             <Input value={organization.slug} disabled />

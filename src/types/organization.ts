@@ -5,6 +5,7 @@ export type Organization = {
   slug: string;
   created_at: string;
   logo_url?: string | null;
+  organization_type: "publisher" | "printer" | "customer";
 };
 
 export type OrganizationMember = {
@@ -19,7 +20,7 @@ export type OrganizationContextType = {
   currentOrganization: Organization | null;
   organizations: Organization[];
   isLoading: boolean;
-  createOrganization: (name: string) => Promise<Organization | null>;
+  createOrganization: (name: string, type: "publisher" | "printer" | "customer") => Promise<Organization | null>;
   switchOrganization: (organizationId: string) => Promise<void>;
   getOrganizationMembers: (organizationId: string) => Promise<OrganizationMember[]>;
   inviteMember: (organizationId: string, email: string, role: "admin" | "member") => Promise<void>;

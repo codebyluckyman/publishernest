@@ -64,13 +64,13 @@ export const useOrganizationApi = (userId: string | undefined) => {
     }
   };
 
-  const createNewOrganization = async (name: string): Promise<Organization | null> => {
+  const createNewOrganization = async (name: string, type: "publisher" | "printer" | "customer" = "publisher"): Promise<Organization | null> => {
     try {
       const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       
       const { data: org, error: orgError } = await supabase
         .from('organizations')
-        .insert({ name, slug })
+        .insert({ name, slug, organization_type: type })
         .select()
         .single();
 

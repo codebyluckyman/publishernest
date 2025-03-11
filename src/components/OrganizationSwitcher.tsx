@@ -5,21 +5,36 @@ import { Organization } from "@/types/organization";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Building, ChevronDown, Plus } from "lucide-react";
+import { useForm } from "react-hook-form";
+
+type OrganizationType = "publisher" | "printer" | "customer";
+
+type OrgFormValues = {
+  name: string;
+  type: OrganizationType;
+};
 
 const OrganizationSwitcher = () => {
   const { currentOrganization, organizations, createOrganization, switchOrganization } = useOrganization();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [newOrgName, setNewOrgName] = useState("");
+  
+  const form = useForm<OrgFormValues>({
+    defaultValues: {
+      name: "",
+      type: "publisher"
+    }
+  });
 
-  const handleCreateOrganization = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newOrgName.trim()) return;
+  const handleCreateOrganization = async (values: OrgFormValues) => {
+    if (!values.name.trim()) return;
     
-    const result = await createOrganization(newOrgName);
+    const result = await createOrganization(values.name, values.type);
     if (result) {
-      setNewOrgName("");
+      form.reset();
       setIsCreating(false);
       setIsOpen(false);
     }
@@ -43,14 +58,49 @@ const OrganizationSwitcher = () => {
           <DialogHeader>
             <DialogTitle>Create a new organization</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleCreateOrganization} className="space-y-4">
-            <Input
-              placeholder="Organization name"
-              value={newOrgName}
-              onChange={(e) => setNewOrgName(e.target.value)}
-            />
-            <Button type="submit" className="w-full">Create</Button>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleCreateOrganization)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organization name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Organization name" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organization type</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => field.onChange(value as OrganizationType)}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select organization type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="publisher">Publisher</SelectItem>
+                        <SelectItem value="printer">Printer</SelectItem>
+                        <SelectItem value="customer">Customer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              
+              <Button type="submit" className="w-full">Create</Button>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     );
@@ -103,6 +153,9 @@ const OrganizationSwitcher = () => {
                 <Building className="h-4 w-4" />
               )}
               {org.name}
+              <span className="ml-auto text-xs opacity-70">
+                {org.organization_type.charAt(0).toUpperCase() + org.organization_type.slice(1)}
+              </span>
             </Button>
           ))}
           
@@ -117,14 +170,49 @@ const OrganizationSwitcher = () => {
               <DialogHeader>
                 <DialogTitle>Create a new organization</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleCreateOrganization} className="space-y-4">
-                <Input
-                  placeholder="Organization name"
-                  value={newOrgName}
-                  onChange={(e) => setNewOrgName(e.target.value)}
-                />
-                <Button type="submit" className="w-full">Create</Button>
-              </form>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleCreateOrganization)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Organization name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Organization name" {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Organization type</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => field.onChange(value as OrganizationType)}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select organization type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="publisher">Publisher</SelectItem>
+                            <SelectItem value="printer">Printer</SelectItem>
+                            <SelectItem value="customer">Customer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button type="submit" className="w-full">Create</Button>
+                </form>
+              </Form>
             </DialogContent>
           </Dialog>
         </div>

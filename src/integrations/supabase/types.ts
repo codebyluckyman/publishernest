@@ -201,6 +201,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          organization_type: string
           slug: string
           updated_at: string
         }
@@ -209,6 +210,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          organization_type?: string
           slug: string
           updated_at?: string
         }
@@ -217,6 +219,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          organization_type?: string
           slug?: string
           updated_at?: string
         }

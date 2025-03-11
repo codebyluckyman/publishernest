@@ -53,14 +53,14 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
     fetchOrganizations();
   }, [user]);
 
-  const createOrganization = async (name: string): Promise<Organization | null> => {
+  const createOrganization = async (name: string, type: "publisher" | "printer" | "customer" = "publisher"): Promise<Organization | null> => {
     if (!user) {
       toast.error("You must be logged in to create an organization");
       return null;
     }
 
     try {
-      const org = await api.createNewOrganization(name);
+      const org = await api.createNewOrganization(name, type);
       
       setOrganizations(prev => [...prev, org]);
       setCurrentOrganization(org);
