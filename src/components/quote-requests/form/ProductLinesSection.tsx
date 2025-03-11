@@ -21,12 +21,19 @@ interface ProductLine {
   notes: string;
 }
 
+// Define a simpler type for search results that matches what we get from the DB query
+interface ProductSearchResult {
+  id: string;
+  title: string;
+  isbn13: string | null;
+}
+
 export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: string }) {
   const { currentOrganization } = useOrganization();
   const { setValue, getValues } = useFormContext();
   const [productLines, setProductLines] = useState<ProductLine[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchResults, setSearchResults] = useState<ProductSearchResult[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedProductTitle, setSelectedProductTitle] = useState<string>("");
@@ -135,7 +142,7 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
   };
 
   // Select product from search results
-  const handleSelectProduct = (product: Product) => {
+  const handleSelectProduct = (product: ProductSearchResult) => {
     setSelectedProductId(product.id);
     setSelectedProductTitle(product.title);
     setIsSearchOpen(false);
@@ -154,14 +161,13 @@ export function ProductLinesSection({ quoteRequestId }: { quoteRequestId?: strin
                 <PopoverTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="w-full justify-start" 
-                    onClick={() => setIsSearchOpen(true)}
+                    className="w-full justify-start"
                   >
                     <Search className="mr-2 h-4 w-4" />
                     {selectedProductId ? selectedProductTitle : "Select a product"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0" side="bottom" align="start" alignOffset={0} className="w-[300px]">
+                <PopoverContent className="p-0" side="bottom" align="start" alignOffset={0}>
                   <Command>
                     <CommandInput 
                       placeholder="Search products..." 
