@@ -42,7 +42,12 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
         return [];
       }
 
-      return data as QuoteRequest[];
+      // Transform the data to match our expected type
+      // The quotes_count is returned as an array with a single object containing the count
+      return data.map(item => ({
+        ...item,
+        quotes_count: item.quotes_count?.length > 0 ? item.quotes_count[0].count : 0
+      })) as QuoteRequest[];
     } catch (error) {
       console.error('Error in fetchQuoteRequests:', error);
       toast.error('An unexpected error occurred');
