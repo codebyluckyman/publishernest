@@ -1,77 +1,151 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Organization } from "@/types/organization";
-import { QuoteRequestEmptyState } from "./QuoteRequestEmptyState";
 import { QuoteRequestTableHeader } from "./QuoteRequestTableHeader";
-import { QuoteRequestFilters } from "./QuoteRequestFilters";
 import { QuoteRequestsTable } from "./QuoteRequestsTable";
+import { QuoteRequestEmptyState } from "./QuoteRequestEmptyState";
 import { QuoteRequestDialog } from "./QuoteRequestDialog";
+import { QuoteRequestFilters } from "./QuoteRequestFilters";
 import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { SortQuoteRequestField, SortDirection } from "@/types/quoteRequest";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface QuoteRequestTableContainerProps {
   currentOrganization: Organization | null;
 }
 
-export const QuoteRequestTableContainer = ({ currentOrganization }: QuoteRequestTableContainerProps) => {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+export function QuoteRequestTableContainer({
+  currentOrganization
+}: QuoteRequestTableContainerProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortField, setSortField] = useState<SortQuoteRequestField>("created_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [filters, setFilters] = useState({
+    status: null,
+    dueDate: null,
+  });
+  const [filterOptions, setFilterOptions] = useState({
+    status: [],
+  });
   
   const {
     quoteRequests,
     isLoading,
-    refetch,
+    error,
+    refetch
+  } = useQuoteRequestsApi(currentOrganization, {
+    searchQuery,
+    filters,
     sortField,
     sortDirection,
-    handleSort,
-    statusFilter,
-    setStatusFilter,
-    searchQuery,
-    setSearchQuery
-  } = useQuoteRequestsApi(currentOrganization);
+    refreshTrigger
+  });
 
   const handleAddQuoteRequest = () => {
-    setIsAddDialogOpen(true);
+    setIsDialogOpen(true);
   };
 
   const handleDialogClose = () => {
-    // Use requestAnimationFrame to ensure proper state update cycle
-    requestAnimationFrame(() => {
-      setIsAddDialogOpen(false);
-      // Force a refetch to get the latest data
-      refetch();
-    });
+    setIsDialogOpen(false);
+    // Trigger a refresh when dialog closes
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleSort = (field: SortQuoteRequestField) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
   };
 
   const handleRefresh = () => {
-    refetch();
+    setRefreshTrigger(prev => prev + 1);
   };
 
-  return (
-    <div className="space-y-6">
-      <QuoteRequestTableHeader
-        currentOrganization={currentOrganization}
-        handleAddQuoteRequest={handleAddQuoteRequest}
-        handleRefresh={handleRefresh}
-        isLoading={isLoading}
-      />
+  const resetFilters = () => {
+    setFilters({
+      status: null,
+      dueDate: null,
+    });
+  };
 
-      {isLoading ? (
-        <div className="h-96 flex items-center justify-center">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-        </div>
-      ) : !quoteRequests || quoteRequests.length === 0 ? (
-        <QuoteRequestEmptyState
-          hasOrganization={!!currentOrganization}
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
+  const areFiltersActive = () => {
+    return filters.status !== null || filters.dueDate !== null;
+  };
+
+  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+
+  useEffect(() => {
+    if (quoteRequests && quoteRequests.length > 0) {
+      const statusOptions = Array.from(
+        new Set(quoteRequests.map((req) => req.status).filter(Boolean))
+      );
+
+      setFilterOptions({
+        status: statusOptions as string[],
+      });
+    }
+  }, [quoteRequests]);
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-destructive">Error loading quote requests: {error.message}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <QuoteRequestTableHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          showFilters={showFilters}
+          toggleFilters={toggleFilters}
           onAddQuoteRequest={handleAddQuoteRequest}
+          areFiltersActive={areFiltersActive}
+          activeFiltersCount={activeFiltersCount}
+          currentOrganization={currentOrganization}
+          isLoading={isLoading}
+          handleRefresh={handleRefresh}
         />
-      ) : (
-        <div className="space-y-4">
+
+        {showFilters && (
           <QuoteRequestFilters
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
+            filters={filters}
+            setFilters={setFilters}
+            filterOptions={filterOptions}
+            resetFilters={resetFilters}
           />
-          
+        )}
+      </CardHeader>
+      
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        ) : !quoteRequests || quoteRequests.length === 0 ? (
+          <QuoteRequestEmptyState 
+            onAddQuoteRequest={handleAddQuoteRequest} 
+            currentOrganization={currentOrganization}
+          />
+        ) : (
           <QuoteRequestsTable
             quoteRequests={quoteRequests}
             sortField={sortField}
@@ -79,15 +153,15 @@ export const QuoteRequestTableContainer = ({ currentOrganization }: QuoteRequest
             onSort={handleSort}
             currentOrganization={currentOrganization}
           />
-        </div>
-      )}
+        )}
+      </CardContent>
 
-      {/* Add Dialog */}
       <QuoteRequestDialog
-        isOpen={isAddDialogOpen}
+        quoteRequest={null}
+        isOpen={isDialogOpen}
         onClose={handleDialogClose}
         currentOrganization={currentOrganization}
       />
-    </div>
+    </Card>
   );
-};
+}

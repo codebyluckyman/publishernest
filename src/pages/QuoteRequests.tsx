@@ -6,7 +6,12 @@ const QuoteRequests = () => {
   const { currentOrganization } = useOrganization();
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-primary mb-2">Quote Requests</h1>
+        <p className="text-gray-600">Manage your quote requests and submissions</p>
+      </div>
+
       <QuoteRequestTableContainer 
         key={`quote-requests-${currentOrganization?.id || 'none'}`} 
         currentOrganization={currentOrganization} 

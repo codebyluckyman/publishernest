@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { MoreHorizontal, FileEdit, Trash2 } from 'lucide-react';
+import { MoreHorizontal, FileEdit, Trash2, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { QuoteRequest, SortQuoteRequestField, SortDirection } from '@/types/quoteRequest';
 import { 
@@ -45,9 +46,17 @@ export function QuoteRequestsTable({
   
   const { deleteQuoteRequest, refetch } = useQuoteRequestsApi(currentOrganization);
 
-  const getSortIcon = (field: SortQuoteRequestField) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? '↑' : '↓';
+  const handleSort = (field: SortQuoteRequestField) => {
+    onSort(field);
+  };
+
+  const renderSortIcon = (field: SortQuoteRequestField) => {
+    if (field !== sortField) {
+      return <ArrowUpDown className="ml-1 h-4 w-4" />;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="ml-1 h-4 w-4" /> : 
+      <ChevronDown className="ml-1 h-4 w-4" />;
   };
 
   const handleEdit = (quoteRequest: QuoteRequest) => {
@@ -98,37 +107,53 @@ export function QuoteRequestsTable({
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead 
-                className="w-[25%] cursor-pointer"
-                onClick={() => onSort('title')}
-              >
-                Title {getSortIcon('title')}
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-1 -ml-3 font-medium flex items-center"
+                  onClick={() => handleSort('title')}
+                >
+                  Title {renderSortIcon('title')}
+                </Button>
               </TableHead>
               <TableHead>Formats</TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => onSort('status')}
-              >
-                Status {getSortIcon('status')}
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-1 -ml-3 font-medium flex items-center"
+                  onClick={() => handleSort('status')}
+                >
+                  Status {renderSortIcon('status')}
+                </Button>
               </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => onSort('due_date')}
-              >
-                Due Date {getSortIcon('due_date')}
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-1 -ml-3 font-medium flex items-center"
+                  onClick={() => handleSort('due_date')}
+                >
+                  Due Date {renderSortIcon('due_date')}
+                </Button>
               </TableHead>
               <TableHead>Quotes</TableHead>
-              <TableHead 
-                className="text-right cursor-pointer"
-                onClick={() => onSort('created_at')}
-              >
-                Created {getSortIcon('created_at')}
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-1 -ml-3 font-medium flex items-center"
+                  onClick={() => handleSort('created_at')}
+                >
+                  Created {renderSortIcon('created_at')}
+                </Button>
               </TableHead>
-              <TableHead className="w-[80px]"></TableHead>
+              <TableHead className="w-[120px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -149,7 +174,7 @@ export function QuoteRequestsTable({
                 <TableCell>{getStatusBadge(quoteRequest.status)}</TableCell>
                 <TableCell>{formatDate(quoteRequest.due_date)}</TableCell>
                 <TableCell>{quoteRequest.quotes_count || 0}</TableCell>
-                <TableCell className="text-right">{formatDate(quoteRequest.created_at)}</TableCell>
+                <TableCell>{formatDate(quoteRequest.created_at)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

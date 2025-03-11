@@ -1,47 +1,73 @@
 
-import { Plus, RefreshCw } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { CardTitle, CardDescription } from "@/components/ui/card";
 import { Organization } from "@/types/organization";
 
 interface QuoteRequestTableHeaderProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  showFilters: boolean;
+  toggleFilters: () => void;
+  onAddQuoteRequest: () => void;
+  areFiltersActive: () => boolean;
+  activeFiltersCount: number;
   currentOrganization: Organization | null;
-  handleAddQuoteRequest: () => void;
-  handleRefresh: () => void;
   isLoading: boolean;
+  handleRefresh: () => void;
 }
 
 export function QuoteRequestTableHeader({
+  searchQuery,
+  setSearchQuery,
+  showFilters,
+  toggleFilters,
+  onAddQuoteRequest,
+  areFiltersActive,
+  activeFiltersCount,
   currentOrganization,
-  handleAddQuoteRequest,
-  handleRefresh,
-  isLoading
+  isLoading,
+  handleRefresh
 }: QuoteRequestTableHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+    <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Quote Requests</h1>
-        <p className="text-muted-foreground">
+        <CardTitle>Quote Requests</CardTitle>
+        <CardDescription>
           {currentOrganization
             ? `Manage quote requests for ${currentOrganization.name}`
             : "Select an organization to manage quote requests"}
-        </p>
+        </CardDescription>
       </div>
-      <div className="flex gap-2 self-end sm:self-auto">
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="relative">
+          <Input
+            type="search"
+            placeholder="Search quote requests..."
+            className="w-full md:w-[260px]"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
         <Button
           variant="outline"
-          size="icon"
-          onClick={handleRefresh}
-          disabled={isLoading}
+          className="gap-1"
+          onClick={toggleFilters}
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          <span className="sr-only">Refresh</span>
+          Filters {areFiltersActive() && (
+            <span className="ml-1 text-xs bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center">
+              {activeFiltersCount}
+            </span>
+          )}
         </Button>
-        <Button
-          onClick={handleAddQuoteRequest}
+        <Button 
+          className="gap-1" 
+          onClick={onAddQuoteRequest} 
           disabled={!currentOrganization}
         >
-          <Plus className="h-4 w-4 mr-2" />
-          New Quote Request
+          <PlusCircle className="h-4 w-4" />
+          Add Quote Request
         </Button>
       </div>
     </div>
