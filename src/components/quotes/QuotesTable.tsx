@@ -199,7 +199,7 @@ export const QuotesTable = ({
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="bg-white">
                       <DropdownMenuItem onClick={() => handleViewQuote(quote)}>
                         <EyeIcon className="mr-2 h-4 w-4" />
                         View Details
