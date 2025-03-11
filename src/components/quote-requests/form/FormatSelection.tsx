@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, X } from "lucide-react";
+import { Search, X, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -10,6 +10,18 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { useFormatsApi } from "@/hooks/useFormatsApi";
 import { Organization } from "@/types/organization";
 import { useFormContext } from "react-hook-form";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface FormatSelectionProps {
   organizationId: string | undefined;
@@ -22,6 +34,10 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
   const [searchQuery, setSearchQuery] = useState("");
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const form = useFormContext();
+  
+  // For confirmation dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formatToRemove, setFormatToRemove] = useState<string | null>(null);
 
   // Initialize selected formats when component mounts or initialFormatIds changes
   useEffect(() => {
@@ -49,9 +65,45 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
     setSearchQuery("");
   };
 
-  const removeFormat = (formatId: string) => {
-    const updatedFormatIds = selectedFormatIds.filter(id => id !== formatId);
+  const openRemoveConfirmation = (formatId: string) => {
+    setFormatToRemove(formatId);
+    setIsDialogOpen(true);
+  };
+
+  const handleRemoveFormat = async () => {
+    if (!formatToRemove) return;
+    
+    // Get the current quote request id from the form
+    const quoteRequestId = form.getValues('id');
+    
+    if (quoteRequestId) {
+      try {
+        // Delete the record from the database
+        const { error } = await supabase
+          .from('quote_request_formats')
+          .delete()
+          .eq('quote_request_id', quoteRequestId)
+          .eq('format_id', formatToRemove);
+
+        if (error) {
+          console.error("Error removing format:", error);
+          toast.error("Failed to remove format");
+        } else {
+          toast.success("Format removed successfully");
+        }
+      } catch (error) {
+        console.error("Error in removeFormat:", error);
+        toast.error("Failed to remove format");
+      }
+    }
+    
+    // Update local state
+    const updatedFormatIds = selectedFormatIds.filter(id => id !== formatToRemove);
     setSelectedFormatIds(updatedFormatIds);
+    
+    // Close dialog and reset
+    setIsDialogOpen(false);
+    setFormatToRemove(null);
   };
 
   const getFormatName = (formatId: string): string => {
@@ -60,87 +112,109 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
   };
 
   return (
-    <FormField
-      control={form.control}
-      name="format_ids"
-      render={() => (
-        <FormItem>
-          <FormLabel>Formats</FormLabel>
-          <div className="space-y-4">
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
-                  <Search className="mr-2 h-4 w-4" />
-                  Search and select formats
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0" side="bottom" align="start">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search formats..." 
-                    value={searchQuery}
-                    onValueChange={setSearchQuery}
-                  />
-                  <CommandList>
-                    {isLoadingFormats ? (
-                      <div className="flex items-center justify-center py-6">
-                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                      </div>
-                    ) : (
-                      <>
-                        <CommandEmpty>No formats found</CommandEmpty>
-                        <CommandGroup>
-                          {filteredFormats.map((format) => (
-                            <CommandItem 
-                              key={format.id} 
-                              value={format.format_name}
-                              onSelect={() => handleFormatSelect(format.id)}
-                            >
-                              <div className="flex items-center gap-2">
-                                <Checkbox 
-                                  checked={selectedFormatIds.includes(format.id)}
-                                />
-                                <span>{format.format_name}</span>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </>
-                    )}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+    <>
+      <FormField
+        control={form.control}
+        name="format_ids"
+        render={() => (
+          <FormItem>
+            <FormLabel>Formats</FormLabel>
+            <div className="space-y-4">
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    Search and select formats
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0" side="bottom" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder="Search formats..." 
+                      value={searchQuery}
+                      onValueChange={setSearchQuery}
+                    />
+                    <CommandList>
+                      {isLoadingFormats ? (
+                        <div className="flex items-center justify-center py-6">
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                        </div>
+                      ) : (
+                        <>
+                          <CommandEmpty>No formats found</CommandEmpty>
+                          <CommandGroup>
+                            {filteredFormats.map((format) => (
+                              <CommandItem 
+                                key={format.id} 
+                                value={format.format_name}
+                                onSelect={() => handleFormatSelect(format.id)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Checkbox 
+                                    checked={selectedFormatIds.includes(format.id)}
+                                  />
+                                  <span>{format.format_name}</span>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
 
-            {selectedFormatIds.length > 0 ? (
-              <div className="flex flex-wrap gap-2 p-4 border rounded-md">
-                {selectedFormatIds.map((formatId) => (
-                  <Badge key={formatId} variant="secondary" className="flex items-center gap-1">
-                    {getFormatName(formatId)}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 w-5 p-0"
-                      onClick={() => removeFormat(formatId)}
-                    >
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove</span>
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 border rounded-md text-center text-muted-foreground">
-                No formats selected
-              </div>
-            )}
-          </div>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+              {selectedFormatIds.length > 0 ? (
+                <div className="flex flex-wrap gap-2 p-4 border rounded-md">
+                  {selectedFormatIds.map((formatId) => (
+                    <Badge key={formatId} variant="secondary" className="flex items-center gap-1">
+                      {getFormatName(formatId)}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 w-5 p-0"
+                        onClick={() => openRemoveConfirmation(formatId)}
+                      >
+                        <X className="h-3 w-3" />
+                        <span className="sr-only">Remove</span>
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 border rounded-md text-center text-muted-foreground">
+                  No formats selected
+                </div>
+              )}
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Remove Format
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this format? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemoveFormat}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
