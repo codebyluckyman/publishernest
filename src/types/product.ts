@@ -21,6 +21,7 @@ export interface Product {
     die_cut: boolean;
     holographic: boolean;
   };
+  format_extra_comments?: string | null;
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';

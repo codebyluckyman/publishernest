@@ -13,4 +13,5 @@ export type Product = {
     die_cut: boolean;
     holographic: boolean;
   };
+  format_extra_comments?: string | null;
 };

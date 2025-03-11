@@ -285,6 +285,7 @@ export type Database = {
           created_at: string
           currency_code: string | null
           edition_number: number | null
+          format_extra_comments: string | null
           format_extras: Json | null
           format_id: string | null
           height_measurement: number | null
@@ -323,6 +324,7 @@ export type Database = {
           created_at?: string
           currency_code?: string | null
           edition_number?: number | null
+          format_extra_comments?: string | null
           format_extras?: Json | null
           format_id?: string | null
           height_measurement?: number | null
@@ -361,6 +363,7 @@ export type Database = {
           created_at?: string
           currency_code?: string | null
           edition_number?: number | null
+          format_extra_comments?: string | null
           format_extras?: Json | null
           format_id?: string | null
           height_measurement?: number | null

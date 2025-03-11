@@ -1,7 +1,8 @@
 
 import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { ProductFormValues } from "@/schemas/productSchema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -25,7 +26,7 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
       <CardHeader>
         <CardTitle>Format Extras</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {formatExtras.map((extra) => (
             <FormField
@@ -54,6 +55,29 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
             />
           ))}
         </div>
+
+        <FormField
+          control={form.control}
+          name="format_extra_comments"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Format Extra Comments</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Describe extra requirements, i.e. 50% glitter"
+                  className="min-h-20"
+                  {...field}
+                  value={field.value || ""}
+                  disabled={readOnly}
+                />
+              </FormControl>
+              <FormDescription>
+                Use this field to provide specific details about your format extras.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </CardContent>
     </Card>
   );

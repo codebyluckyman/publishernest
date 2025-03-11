@@ -49,6 +49,7 @@ export const productSchema = z.object({
     die_cut: false,
     holographic: false,
   }),
+  format_extra_comments: z.string().optional().nullable(),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
@@ -129,4 +130,5 @@ export const defaultProductValues: ProductFormValues = {
     die_cut: false,
     holographic: false,
   },
+  format_extra_comments: null,
 };

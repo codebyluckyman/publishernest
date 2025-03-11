@@ -60,6 +60,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               age_range: data.age_range || "",
               synopsis: data.synopsis || "",
               license: data.license || "",
+              format_extra_comments: data.format_extra_comments || null,
             });
           }
         } catch (err: any) {
