@@ -44,14 +44,14 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
         />
 
         <Separator className="my-2" />
-        <h4 className="text-md font-medium">Text Dimensions</h4>
+        <h4 className="text-md font-medium">TPS Dimensions</h4>
         <div className="grid grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="tps_height_mm"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Text Height (mm)</FormLabel>
+                <FormLabel>TPS Height (mm)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -70,7 +70,7 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
             name="tps_width_mm"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Text Width (mm)</FormLabel>
+                <FormLabel>TPS Width (mm)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -89,7 +89,7 @@ export function SizeSection({ form, readOnly = false }: SizeSectionProps) {
             name="tps_depth_mm"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Text Depth (mm)</FormLabel>
+                <FormLabel>TPS Depth (mm)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 

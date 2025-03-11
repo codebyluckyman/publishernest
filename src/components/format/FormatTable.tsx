@@ -126,7 +126,7 @@ export function FormatTable({
         <TableHeader>
           <TableRow>
             <TableHead>Format Name</TableHead>
-            <TableHead>Text Dimensions</TableHead>
+            <TableHead>TPS Dimensions</TableHead>
             <TableHead>PLC Dimensions</TableHead>
             <TableHead>Extent</TableHead>
             <TableHead>Cover Stock/Print</TableHead>

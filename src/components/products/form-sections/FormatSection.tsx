@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -195,7 +196,7 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
             </div>
             <div className="space-y-2 text-sm text-black">
               <p><span className="font-medium">Extent:</span> {selectedFormat.extent || "N/A"}</p>
-              <p><span className="font-medium">Text Dimensions:</span> {formatTextDimensions(selectedFormat)}</p>
+              <p><span className="font-medium">TPS Dimensions:</span> {formatTextDimensions(selectedFormat)}</p>
               <p><span className="font-medium">PLC Dimensions:</span> {formatPlcDimensions(selectedFormat)}</p>
               <p><span className="font-medium">Cover Stock/Print:</span> {selectedFormat.cover_stock_print || "N/A"}</p>
               <p><span className="font-medium">Internal Stock/Print:</span> {selectedFormat.internal_stock_print || "N/A"}</p>
