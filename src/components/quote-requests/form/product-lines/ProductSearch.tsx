@@ -48,6 +48,7 @@ export function ProductSearch({
       
       // Filter by format_ids if any are selected
       if (selectedFormatIds && selectedFormatIds.length > 0) {
+        // This is the key change: use format_id to filter products
         queryBuilder = queryBuilder.in('format_id', selectedFormatIds);
       }
       
