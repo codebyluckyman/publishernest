@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface QuoteRequestDialogProps {
-  quoteRequest?: QuoteRequest;
+  quoteRequest?: QuoteRequest | null;
   isOpen: boolean;
   onClose: () => void;
   currentOrganization: Organization | null;
@@ -28,6 +28,11 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
   }, [isOpen]);
 
   const handleSubmit = async (data: any) => {
+    if (!currentOrganization) {
+      toast.error("No organization selected");
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       let quoteRequestId: string;
@@ -46,7 +51,7 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
         // Create new quote request
         const result = await createQuoteRequest.mutateAsync({
           ...quoteRequestData, // Send data without format_ids
-          organization_id: currentOrganization?.id as string
+          organization_id: currentOrganization.id
         });
         quoteRequestId = result.id;
       }
@@ -77,10 +82,12 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
       
       // Complete all operations before closing the dialog
       setIsSubmitting(false);
-      // Use requestAnimationFrame to ensure state is updated before closing
-      requestAnimationFrame(() => {
+      toast.success(`Quote request ${quoteRequest ? 'updated' : 'created'} successfully`);
+      
+      // Delayed closing to ensure state is updated
+      setTimeout(() => {
         onClose();
-      });
+      }, 100);
     } catch (error) {
       console.error("Error in quote request submission:", error);
       toast.error("Failed to save quote request");
@@ -91,10 +98,7 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
   // Dialog close handler that prevents closing during submission
   const handleDialogClose = (open: boolean) => {
     if (!open && !isSubmitting) {
-      // Use requestAnimationFrame to ensure proper event cleanup
-      requestAnimationFrame(() => {
-        onClose();
-      });
+      onClose();
     }
   };
 
@@ -111,7 +115,7 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
         </DialogHeader>
         
         <QuoteRequestForm
-          quoteRequest={quoteRequest}
+          quoteRequest={quoteRequest || undefined}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
         />

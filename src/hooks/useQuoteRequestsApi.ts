@@ -6,12 +6,37 @@ import { toast } from 'sonner';
 import { QuoteRequest, SortQuoteRequestField, SortDirection } from '@/types/quoteRequest';
 import { Organization } from '@/types/organization';
 
-export const useQuoteRequestsApi = (currentOrganization: Organization | null) => {
+interface FilterOptions {
+  status: null | string;
+  dueDate: null | string;
+  [key: string]: any;
+}
+
+interface UseQuoteRequestsOptions {
+  searchQuery?: string;
+  filters?: FilterOptions;
+  sortField?: SortQuoteRequestField;
+  sortDirection?: SortDirection;
+  refreshTrigger?: number;
+}
+
+export const useQuoteRequestsApi = (
+  currentOrganization: Organization | null, 
+  options: UseQuoteRequestsOptions = {}
+) => {
+  const { 
+    searchQuery = '', 
+    filters = { status: null, dueDate: null },
+    sortField: initialSortField = 'created_at',
+    sortDirection: initialSortDirection = 'desc',
+    refreshTrigger = 0
+  } = options;
+  
   const queryClient = useQueryClient();
-  const [sortField, setSortField] = useState<SortQuoteRequestField>('created_at');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [statusFilter, setStatusFilter] = useState<'draft' | 'open' | 'closed' | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<SortQuoteRequestField>(initialSortField);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(initialSortDirection);
+  const [statusFilter, setStatusFilter] = useState<string | null>(filters.status);
+  const [searchQueryState, setSearchQuery] = useState(searchQuery);
 
   const fetchQuoteRequests = async () => {
     if (!currentOrganization) return [];
@@ -33,12 +58,12 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
         .eq('organization_id', currentOrganization.id)
         .order(sortField, { ascending: sortDirection === 'asc' });
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+      if (filters.status) {
+        query = query.eq('status', filters.status);
       }
 
-      if (searchQuery) {
-        query = query.ilike('title', `%${searchQuery}%`);
+      if (searchQueryState) {
+        query = query.ilike('title', `%${searchQueryState}%`);
       }
 
       const { data, error } = await query;
@@ -63,7 +88,7 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
   };
 
   const { data: quoteRequests, isLoading, refetch } = useQuery({
-    queryKey: ['quoteRequests', currentOrganization?.id, sortField, sortDirection, statusFilter, searchQuery],
+    queryKey: ['quoteRequests', currentOrganization?.id, sortField, sortDirection, statusFilter, searchQueryState, refreshTrigger],
     queryFn: fetchQuoteRequests,
     enabled: !!currentOrganization,
   });
@@ -170,7 +195,7 @@ export const useQuoteRequestsApi = (currentOrganization: Organization | null) =>
     handleSort,
     statusFilter,
     setStatusFilter,
-    searchQuery,
+    searchQuery: searchQueryState,
     setSearchQuery
   };
 };

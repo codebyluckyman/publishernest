@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Organization } from "@/types/organization";
 import { QuoteRequestTableHeader } from "./QuoteRequestTableHeader";
@@ -35,7 +35,6 @@ export function QuoteRequestTableContainer({
   const {
     quoteRequests,
     isLoading,
-    error,
     refetch
   } = useQuoteRequestsApi(currentOrganization, {
     searchQuery,
@@ -49,11 +48,11 @@ export function QuoteRequestTableContainer({
     setIsDialogOpen(true);
   };
 
-  const handleDialogClose = () => {
+  const handleDialogClose = useCallback(() => {
     setIsDialogOpen(false);
     // Trigger a refresh when dialog closes
     setRefreshTrigger(prev => prev + 1);
-  };
+  }, []);
 
   const handleSort = (field: SortQuoteRequestField) => {
     if (field === sortField) {
@@ -79,9 +78,9 @@ export function QuoteRequestTableContainer({
     setShowFilters(!showFilters);
   };
 
-  const areFiltersActive = () => {
+  const areFiltersActive = useCallback(() => {
     return filters.status !== null || filters.dueDate !== null;
-  };
+  }, [filters]);
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
@@ -96,16 +95,6 @@ export function QuoteRequestTableContainer({
       });
     }
   }, [quoteRequests]);
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-destructive">Error loading quote requests: {error.message}</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card>
@@ -125,7 +114,8 @@ export function QuoteRequestTableContainer({
 
         {showFilters && (
           <QuoteRequestFilters
-            filters={filters}
+            status={filters.status}
+            dueDate={filters.dueDate}
             setFilters={setFilters}
             filterOptions={filterOptions}
             resetFilters={resetFilters}
@@ -143,7 +133,6 @@ export function QuoteRequestTableContainer({
         ) : !quoteRequests || quoteRequests.length === 0 ? (
           <QuoteRequestEmptyState 
             onAddQuoteRequest={handleAddQuoteRequest} 
-            currentOrganization={currentOrganization}
           />
         ) : (
           <QuoteRequestsTable
