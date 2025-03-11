@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Edit, Trash2, EyeIcon, Link } from "lucide-react";
+import { MoreHorizontal, ChevronDown, ChevronUp, Edit, Trash2, EyeIcon, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   Table, 
@@ -189,7 +189,7 @@ export const QuotesTable = ({
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
                         <span className="sr-only">Open menu</span>
-                        <EyeIcon className="h-4 w-4" />
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
