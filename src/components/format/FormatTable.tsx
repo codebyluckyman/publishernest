@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,7 +16,6 @@ interface FormatTableProps {
   onEditFormat: (formatId: string) => void;
   onAddFormat: () => void;
   setFilterOptions: React.Dispatch<React.SetStateAction<{
-    tps: string[];
     cover_stock_print: string[];
     internal_stock_print: string[];
   }>>;
@@ -89,7 +87,6 @@ export function FormatTable({
       ) as string[];
 
       setFilterOptions({
-        tps: [], // Empty array since tps column has been removed
         cover_stock_print: coverStockOptions,
         internal_stock_print: internalStockOptions,
       });

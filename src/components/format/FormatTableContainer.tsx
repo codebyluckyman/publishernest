@@ -16,16 +16,13 @@ export function FormatTableContainer() {
   const [selectedFormatId, setSelectedFormatId] = useState<string | undefined>(undefined);
   const [viewFormatId, setViewFormatId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
-    tps: null,
     cover_stock_print: null,
     internal_stock_print: null,
   });
   const [filterOptions, setFilterOptions] = useState<{
-    tps: string[];
     cover_stock_print: string[];
     internal_stock_print: string[];
   }>({
-    tps: [],
     cover_stock_print: [],
     internal_stock_print: [],
   });
@@ -56,7 +53,6 @@ export function FormatTableContainer() {
 
   const resetFilters = () => {
     setFilters({
-      tps: null,
       cover_stock_print: null,
       internal_stock_print: null,
     });
@@ -67,8 +63,7 @@ export function FormatTableContainer() {
   };
 
   const areFiltersActive = () => {
-    return filters.tps !== null || 
-           filters.cover_stock_print !== null || 
+    return filters.cover_stock_print !== null || 
            filters.internal_stock_print !== null;
   };
 
