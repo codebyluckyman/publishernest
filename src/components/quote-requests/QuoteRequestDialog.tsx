@@ -94,14 +94,14 @@ export function QuoteRequestDialog({ quoteRequest, isOpen, onClose, currentOrgan
   };
 
   // Dialog close handler that prevents closing during submission
-  const handleDialogClose = (open: boolean) => {
+  const handleDialogOpenChange = (open: boolean) => {
     if (!open && !isSubmitting) {
       onClose();
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{quoteRequest ? 'Edit Quote Request' : 'Create New Quote Request'}</DialogTitle>
