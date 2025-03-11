@@ -4,7 +4,7 @@ import { Organization, OrganizationMember } from "@/types/organization";
 import { toast } from "sonner";
 
 export const useOrganizationApi = (userId: string | undefined) => {
-  const fetchUserOrganizations = async () => {
+  const fetchUserOrganizations = async (): Promise<Organization[]> => {
     try {
       const { data: memberships, error: membershipError } = await supabase
         .from('organization_members')
@@ -22,7 +22,12 @@ export const useOrganizationApi = (userId: string | undefined) => {
           .in('id', orgIds);
 
         if (orgsError) throw orgsError;
-        return orgs || [];
+        
+        // Cast organization_type to proper type
+        return (orgs || []).map(org => ({
+          ...org,
+          organization_type: org.organization_type as "publisher" | "printer" | "customer"
+        })) as Organization[];
       }
       
       return [];
@@ -64,7 +69,7 @@ export const useOrganizationApi = (userId: string | undefined) => {
     }
   };
 
-  const createNewOrganization = async (name: string, type: "publisher" | "printer" | "customer" = "publisher"): Promise<Organization | null> => {
+  const createNewOrganization = async (name: string, type: "publisher" | "printer" | "customer" = "publisher"): Promise<Organization> => {
     try {
       const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       
@@ -89,7 +94,11 @@ export const useOrganizationApi = (userId: string | undefined) => {
 
       await updateCurrentOrganization(org.id);
       
-      return org;
+      // Cast organization_type to ensure it matches the expected type
+      return {
+        ...org,
+        organization_type: org.organization_type as "publisher" | "printer" | "customer"
+      } as Organization;
     } catch (error: any) {
       console.error("Error creating organization:", error);
       throw error;
