@@ -29,7 +29,13 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
               isbn13
             )
           ),
-          quote_request:quote_requests(title)
+          quote_request:quote_requests(title),
+          supplier:suppliers(
+            id,
+            supplier_name,
+            contact_email,
+            contact_phone
+          )
         `)
         .eq('organization_id', currentOrganization.id)
         .order(sortField, { ascending: sortDirection === 'asc' });
@@ -73,6 +79,41 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
       if (!currentOrganization) throw new Error('No organization selected');
 
       try {
+        // If this is a new supplier (no supplier_id but has supplier_name)
+        if (!quote.supplier_id && quote.supplier_name) {
+          // Check if we need to create a new supplier
+          const { data: existingSuppliers, error: supplierCheckError } = await supabase
+            .from('suppliers')
+            .select('id')
+            .eq('organization_id', currentOrganization.id)
+            .eq('supplier_name', quote.supplier_name)
+            .limit(1);
+            
+          if (supplierCheckError) throw supplierCheckError;
+          
+          // If no existing supplier with this name, create one
+          if (!existingSuppliers || existingSuppliers.length === 0) {
+            const { data: newSupplier, error: createSupplierError } = await supabase
+              .from('suppliers')
+              .insert({
+                organization_id: currentOrganization.id,
+                supplier_name: quote.supplier_name,
+                contact_email: quote.contact_email,
+                contact_phone: quote.contact_phone,
+                status: 'active'
+              })
+              .select()
+              .single();
+              
+            if (createSupplierError) throw createSupplierError;
+            if (newSupplier) {
+              quote.supplier_id = newSupplier.id;
+            }
+          } else {
+            quote.supplier_id = existingSuppliers[0].id;
+          }
+        }
+
         // Insert quote
         const { data: quoteData, error: quoteError } = await supabase
           .from('supplier_quotes')
@@ -119,6 +160,41 @@ export const useQuotesApi = (currentOrganization: Organization | null) => {
   const updateQuote = useMutation({
     mutationFn: async ({ id, ...quote }: Partial<SupplierQuote> & { id: string }) => {
       try {
+        // If this is a new supplier (no supplier_id but has supplier_name)
+        if (!quote.supplier_id && quote.supplier_name) {
+          // Check if we need to create a new supplier
+          const { data: existingSuppliers, error: supplierCheckError } = await supabase
+            .from('suppliers')
+            .select('id')
+            .eq('organization_id', currentOrganization?.id as string)
+            .eq('supplier_name', quote.supplier_name)
+            .limit(1);
+            
+          if (supplierCheckError) throw supplierCheckError;
+          
+          // If no existing supplier with this name, create one
+          if (!existingSuppliers || existingSuppliers.length === 0) {
+            const { data: newSupplier, error: createSupplierError } = await supabase
+              .from('suppliers')
+              .insert({
+                organization_id: currentOrganization?.id as string,
+                supplier_name: quote.supplier_name,
+                contact_email: quote.contact_email,
+                contact_phone: quote.contact_phone,
+                status: 'active'
+              })
+              .select()
+              .single();
+              
+            if (createSupplierError) throw createSupplierError;
+            if (newSupplier) {
+              quote.supplier_id = newSupplier.id;
+            }
+          } else {
+            quote.supplier_id = existingSuppliers[0].id;
+          }
+        }
+
         const { error } = await supabase
           .from('supplier_quotes')
           .update(quote)

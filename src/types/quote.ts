@@ -3,6 +3,7 @@ export interface SupplierQuote {
   id: string;
   organization_id: string;
   quote_request_id: string | null;
+  supplier_id: string | null;
   supplier_name: string;
   contact_email: string | null;
   contact_phone: string | null;
@@ -18,6 +19,12 @@ export interface SupplierQuote {
   items?: QuoteItem[];
   quote_request?: {
     title: string;
+  };
+  supplier?: {
+    id: string;
+    supplier_name: string;
+    contact_email: string | null;
+    contact_phone: string | null;
   };
 }
 

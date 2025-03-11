@@ -636,7 +636,8 @@ export type Database = {
           quote_number: string | null
           quote_request_id: string | null
           status: string
-          supplier_name: string
+          supplier_id: string | null
+          supplier_name: string | null
           total_amount: number | null
           updated_at: string
           valid_until: string | null
@@ -653,7 +654,8 @@ export type Database = {
           quote_number?: string | null
           quote_request_id?: string | null
           status?: string
-          supplier_name: string
+          supplier_id?: string | null
+          supplier_name?: string | null
           total_amount?: number | null
           updated_at?: string
           valid_until?: string | null
@@ -670,12 +672,20 @@ export type Database = {
           quote_number?: string | null
           quote_request_id?: string | null
           status?: string
-          supplier_name?: string
+          supplier_id?: string | null
+          supplier_name?: string | null
           total_amount?: number | null
           updated_at?: string
           valid_until?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_supplier_quotes_supplier"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "supplier_quotes_organization_id_fkey"
             columns: ["organization_id"]
@@ -688,6 +698,13 @@ export type Database = {
             columns: ["quote_request_id"]
             isOneToOne: false
             referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]

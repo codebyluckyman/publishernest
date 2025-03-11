@@ -10,6 +10,7 @@ export const quoteItemSchema = z.object({
 });
 
 export const quoteSchema = z.object({
+  supplier_id: z.string().nullable().optional(),
   supplier_name: z.string().min(1, "Supplier name is required"),
   contact_email: z.string().email("Invalid email").nullable().optional(),
   contact_phone: z.string().nullable().optional(),

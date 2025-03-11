@@ -3,26 +3,23 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { QuoteFormValues } from "./quoteFormSchema";
+import { Organization } from "@/types/organization";
+import { SupplierSelection } from "./SupplierSelection";
+import { Supplier } from "@/types/supplier";
 
 interface SupplierInfoFieldsProps {
   form: UseFormReturn<QuoteFormValues>;
+  currentOrganization: Organization | null;
+  onSupplierSelect: (supplier: Supplier | null) => void;
 }
 
-export function SupplierInfoFields({ form }: SupplierInfoFieldsProps) {
+export function SupplierInfoFields({ form, currentOrganization, onSupplierSelect }: SupplierInfoFieldsProps) {
   return (
-    <>
-      <FormField
-        control={form.control}
-        name="supplier_name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Supplier Name</FormLabel>
-            <FormControl>
-              <Input placeholder="Supplier name" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+    <div className="space-y-4">
+      <SupplierSelection 
+        form={form} 
+        currentOrganization={currentOrganization} 
+        onSupplierSelect={onSupplierSelect}
       />
 
       <FormField
@@ -32,7 +29,7 @@ export function SupplierInfoFields({ form }: SupplierInfoFieldsProps) {
           <FormItem>
             <FormLabel>Contact Email</FormLabel>
             <FormControl>
-              <Input placeholder="contact@example.com" {...field} value={field.value || ''} />
+              <Input {...field} type="email" value={field.value || ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -46,7 +43,7 @@ export function SupplierInfoFields({ form }: SupplierInfoFieldsProps) {
           <FormItem>
             <FormLabel>Contact Phone</FormLabel>
             <FormControl>
-              <Input placeholder="+1 (555) 123-4567" {...field} value={field.value || ''} />
+              <Input {...field} type="tel" value={field.value || ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -60,12 +57,12 @@ export function SupplierInfoFields({ form }: SupplierInfoFieldsProps) {
           <FormItem>
             <FormLabel>Quote Number</FormLabel>
             <FormControl>
-              <Input placeholder="QT-12345" {...field} value={field.value || ''} />
+              <Input {...field} value={field.value || ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 }

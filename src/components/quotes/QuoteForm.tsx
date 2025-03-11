@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { StatusAndCurrencyFields } from "./StatusAndCurrencyFields";
 import { NotesField } from "./NotesField";
 import { QuoteItemsSection } from "./QuoteItemsSection";
 import { quoteSchema, QuoteFormValues } from "./quoteFormSchema";
+import { Organization } from "@/types/organization";
+import { Supplier } from "@/types/supplier";
 
 interface QuoteFormProps {
   quote?: SupplierQuote;
@@ -21,6 +23,7 @@ interface QuoteFormProps {
   quoteRequests: Pick<QuoteRequest, 'id' | 'title' | 'status'>[];
   quoteRequestId: string | null;
   setQuoteRequestId: (id: string | null) => void;
+  currentOrganization: Organization | null;
 }
 
 export function QuoteForm({ 
@@ -29,11 +32,15 @@ export function QuoteForm({
   isSubmitting, 
   quoteRequests, 
   quoteRequestId, 
-  setQuoteRequestId 
+  setQuoteRequestId,
+  currentOrganization 
 }: QuoteFormProps) {
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(quoteSchema),
     defaultValues: {
+      supplier_id: quote?.supplier_id || null,
       supplier_name: quote?.supplier_name || "",
       contact_email: quote?.contact_email || "",
       contact_phone: quote?.contact_phone || "",
@@ -69,6 +76,13 @@ export function QuoteForm({
     form.setValue("total_amount", totalAmount);
   }, [items.map(item => `${item.quantity}-${item.unit_price}`).join(",")]);
 
+  const handleSupplierSelect = (supplier: Supplier | null) => {
+    setSelectedSupplier(supplier);
+    if (supplier) {
+      form.setValue("supplier_name", supplier.supplier_name);
+    }
+  };
+
   const addItem = () => {
     const currentItems = form.getValues("items");
     form.setValue("items", [
@@ -96,7 +110,11 @@ export function QuoteForm({
           />
 
           {/* Supplier Information Fields */}
-          <SupplierInfoFields form={form} />
+          <SupplierInfoFields 
+            form={form} 
+            currentOrganization={currentOrganization}
+            onSupplierSelect={handleSupplierSelect}
+          />
 
           {/* Date Fields */}
           <DateFields form={form} />

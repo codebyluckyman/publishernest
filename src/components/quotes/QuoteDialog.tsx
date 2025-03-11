@@ -105,6 +105,7 @@ export function QuoteDialog({
           quoteRequests={quoteRequests || []}
           quoteRequestId={quoteRequestId}
           setQuoteRequestId={setQuoteRequestId}
+          currentOrganization={currentOrganization}
         />
       </DialogContent>
     </Dialog>
