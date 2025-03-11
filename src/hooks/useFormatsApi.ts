@@ -24,8 +24,8 @@ export const useFormatsApi = (organizationId: string | undefined) => {
     }
   };
 
-  // This function had the first error - removed reference to quote_request_formats
-  const getFormatComponents = async (formatId: string) => {
+  // Fixed type instantiation error by adding explicit return type
+  const getFormatComponents = async (formatId: string): Promise<any[]> => {
     try {
       const { data, error } = await supabase
         .from("format_components")
@@ -123,7 +123,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
     },
   });
 
-  // This function had the second error - simplified the return type
+  // Fixed type instantiation error by adding explicit return type and simplifying params
   const fetchFormats = async (
     params: {
       currentOrganization: Organization | null;
@@ -132,7 +132,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
       sortField: string;
       sortDirection: "asc" | "desc";
     }
-  ) => {
+  ): Promise<any[]> => {
     const { currentOrganization, searchQuery, filters, sortField, sortDirection } = params;
 
     try {
@@ -161,7 +161,7 @@ export const useFormatsApi = (organizationId: string | undefined) => {
         throw error;
       }
 
-      // Return simple format without product_count that was causing the error
+      // Return simple format without product_count
       return data;
     } catch (error) {
       console.error("Error fetching formats:", error);
