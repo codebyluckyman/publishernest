@@ -26,9 +26,10 @@ import { toast } from "sonner";
 interface FormatSelectionProps {
   organizationId: string | undefined;
   initialFormatIds: string[];
+  quoteRequestId?: string; // Add this prop to explicitly pass the ID
 }
 
-export function FormatSelection({ organizationId, initialFormatIds }: FormatSelectionProps) {
+export function FormatSelection({ organizationId, initialFormatIds, quoteRequestId }: FormatSelectionProps) {
   const { formats, isLoadingFormats } = useFormatsApi({ id: organizationId } as Organization | null);
   const [selectedFormatIds, setSelectedFormatIds] = useState<string[]>(initialFormatIds || []);
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,28 +77,35 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
       return;
     }
 
-    // Get the current quote request id from the form
-    const quoteRequestId = form.getValues('id');
-    console.log(`quote request id: ${quoteRequestId}`);
-    if (quoteRequestId) {
-      try {
-        // Delete the record from the database
-        const { error } = await supabase
-          .from('quote_request_formats')
-          .delete()
-          .eq('quote_request_id', quoteRequestId)
-          .eq('format_id', formatToRemove);
+    // Get the current quote request id - using the passed prop first, then falling back to the form value
+    const currentQuoteRequestId = quoteRequestId || form.getValues('id');
+    console.log(`quote request id: ${currentQuoteRequestId}`);
+    
+    if (!currentQuoteRequestId) {
+      console.error("Quote request ID is undefined");
+      toast.error("Cannot remove format: Quote request ID is missing");
+      setIsDialogOpen(false);
+      setFormatToRemove(null);
+      return;
+    }
 
-        if (error) {
-          console.error("Error removing format:", error);
-          toast.error("Failed to remove format");
-        } else {
-          toast.success("Format removed successfully");
-        }
-      } catch (error) {
-        console.error("Error in removeFormat:", error);
+    try {
+      // Delete the record from the database
+      const { error } = await supabase
+        .from('quote_request_formats')
+        .delete()
+        .eq('quote_request_id', currentQuoteRequestId)
+        .eq('format_id', formatToRemove);
+
+      if (error) {
+        console.error("Error removing format:", error);
         toast.error("Failed to remove format");
+      } else {
+        toast.success("Format removed successfully");
       }
+    } catch (error) {
+      console.error("Error in removeFormat:", error);
+      toast.error("Failed to remove format");
     }
     
     // Update local state

@@ -87,7 +87,8 @@ export function QuoteRequestForm({ quoteRequest, onSubmit, isSubmitting }: Quote
           <DueDateSection />
           <FormatSelection 
             organizationId={currentOrganization?.id} 
-            initialFormatIds={initialFormatIds} 
+            initialFormatIds={initialFormatIds}
+            quoteRequestId={quoteRequest?.id} // Pass the quote request ID explicitly
           />
           
           <ProductLinesSection 
