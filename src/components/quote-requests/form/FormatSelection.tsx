@@ -71,7 +71,9 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
   };
 
   const handleRemoveFormat = async () => {
-    if (!formatToRemove) return;
+    if (!formatToRemove) 
+      console.error("no format to remove");
+      return;
     
     // Get the current quote request id from the form
     const quoteRequestId = form.getValues('id');
