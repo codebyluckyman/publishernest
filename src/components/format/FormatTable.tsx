@@ -54,7 +54,8 @@ export function FormatTable({
       query = query.eq("internal_stock_print", filters.internal_stock_print);
     }
 
-    const { data, error } = await query.order("created_at", { ascending: false });
+    // Sort by format_name alphabetically
+    const { data, error } = await query.order("format_name", { ascending: true });
 
     if (error) {
       console.error("Error fetching formats:", error);

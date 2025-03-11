@@ -67,7 +67,8 @@ const ProductTable = ({
       queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
     }
 
-    const { data: productsData, error } = await queryBuilder.order("created_at", { ascending: false });
+    // Sort by title alphabetically
+    const { data: productsData, error } = await queryBuilder.order("title", { ascending: true });
 
     if (error) {
       console.error("Error fetching products:", error);
