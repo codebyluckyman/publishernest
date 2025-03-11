@@ -2,13 +2,11 @@
 import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Format } from "@/types/quoteRequest";
 import { useFormatsApi } from "@/hooks/useFormatsApi";
 import { Organization } from "@/types/organization";
 import { useFormContext } from "react-hook-form";
@@ -25,9 +23,19 @@ export function FormatSelection({ organizationId, initialFormatIds }: FormatSele
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const form = useFormContext();
 
+  // Update selectedFormatIds when initialFormatIds changes
   useEffect(() => {
     setSelectedFormatIds(initialFormatIds);
-  }, [initialFormatIds]);
+    form.setValue('format_ids', initialFormatIds);
+  }, [initialFormatIds, form]);
+
+  // Sync local state with form state
+  useEffect(() => {
+    const formFormatIds = form.getValues('format_ids') || [];
+    if (JSON.stringify(formFormatIds) !== JSON.stringify(selectedFormatIds)) {
+      setSelectedFormatIds(formFormatIds);
+    }
+  }, [form.getValues('format_ids'), form]);
 
   const filteredFormats = formats.filter(format => 
     format.format_name.toLowerCase().includes(searchQuery.toLowerCase())
