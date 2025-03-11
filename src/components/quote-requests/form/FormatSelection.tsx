@@ -40,6 +40,7 @@ export function FormatSelection({ organizationId, initialFormatIds, quoteRequest
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formatToRemove, setFormatToRemove] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Initialize selected formats when component mounts or initialFormatIds changes
   useEffect(() => {
@@ -57,14 +58,30 @@ export function FormatSelection({ organizationId, initialFormatIds, quoteRequest
   // Refresh quote request formats when needed
   useEffect(() => {
     const refreshFormats = async () => {
-      if (quoteRequestId) {
-        const formatIds = await fetchQuoteRequestFormats(quoteRequestId);
-        setSelectedFormatIds(formatIds);
-        form.setValue('format_ids', formatIds);
+      // Only attempt to fetch if we have a valid quoteRequestId and we're not already refreshing
+      if (quoteRequestId && !isRefreshing) {
+        try {
+          setIsRefreshing(true);
+          const formatIds = await fetchQuoteRequestFormats(quoteRequestId);
+          // Only update if this is still a valid request (component still mounted and same quoteRequestId)
+          setSelectedFormatIds(formatIds);
+          form.setValue('format_ids', formatIds);
+        } catch (error) {
+          console.error("Error refreshing formats:", error);
+          // Don't show error toast here as it's likely to be annoying to users
+          // Instead, we'll rely on the initial values already set
+        } finally {
+          setIsRefreshing(false);
+        }
       }
     };
 
     refreshFormats();
+    
+    // Cleanup function
+    return () => {
+      // Cleanup logic if needed
+    };
   }, [quoteRequestId, refreshTrigger, fetchQuoteRequestFormats, form]);
 
   const filteredFormats = formats.filter(format => 
@@ -116,6 +133,10 @@ export function FormatSelection({ organizationId, initialFormatIds, quoteRequest
         toast.error("Failed to remove format");
       } else {
         toast.success("Format removed successfully");
+        // Update local state immediately to show change without waiting for refresh
+        const updatedFormatIds = selectedFormatIds.filter(id => id !== formatToRemove);
+        setSelectedFormatIds(updatedFormatIds);
+        form.setValue('format_ids', updatedFormatIds);
         // Trigger a refresh after successful removal
         setRefreshTrigger(prev => prev + 1);
       }
@@ -123,10 +144,6 @@ export function FormatSelection({ organizationId, initialFormatIds, quoteRequest
       console.error("Error in removeFormat:", error);
       toast.error("Failed to remove format");
     }
-    
-    // Update local state
-    const updatedFormatIds = selectedFormatIds.filter(id => id !== formatToRemove);
-    setSelectedFormatIds(updatedFormatIds);
     
     // Close dialog and reset
     setIsDialogOpen(false);
