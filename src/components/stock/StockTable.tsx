@@ -1,5 +1,8 @@
 
+import { useState } from "react";
+import { ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -22,12 +25,18 @@ type StockItem = {
   list_price: number | null;
 };
 
+type SortField = 'product_title' | 'warehouse_name' | 'quantity' | 'list_price';
+type SortDirection = 'asc' | 'desc';
+
 type StockTableProps = {
   stockItems: StockItem[] | undefined;
   isLoading: boolean;
 };
 
 const StockTable = ({ stockItems, isLoading }: StockTableProps) => {
+  const [sortField, setSortField] = useState<SortField>('product_title');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
   const formatCurrency = (price: number | null) => {
     if (price === null) return "N/A";
     return new Intl.NumberFormat("en-US", {
@@ -51,17 +60,94 @@ const StockTable = ({ stockItems, isLoading }: StockTableProps) => {
     return formMap[form] || form;
   };
 
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      // Toggle direction if clicking the same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const renderSortIcon = (field: SortField) => {
+    if (field !== sortField) {
+      return <ArrowUpDown className="ml-1 h-4 w-4" />;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="ml-1 h-4 w-4" /> : 
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
+  // Sort locally since we have all the data
+  const sortedItems = [...(stockItems || [])].sort((a, b) => {
+    // Handle different field types for proper comparison
+    let comparison = 0;
+    
+    if (sortField === 'product_title') {
+      comparison = (a.product_title || '').localeCompare(b.product_title || '');
+    } else if (sortField === 'warehouse_name') {
+      comparison = (a.warehouse_name || '').localeCompare(b.warehouse_name || '');
+    } else if (sortField === 'quantity') {
+      comparison = a.quantity - b.quantity;
+    } else if (sortField === 'list_price') {
+      const priceA = a.list_price || 0;
+      const priceB = b.list_price || 0;
+      comparison = priceA - priceB;
+    }
+    
+    // Invert for descending
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Product</TableHead>
+          <TableHead>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-1 -ml-3 font-medium flex items-center"
+              onClick={() => handleSort('product_title')}
+            >
+              Product {renderSortIcon('product_title')}
+            </Button>
+          </TableHead>
           <TableHead>ISBN</TableHead>
           <TableHead>Format</TableHead>
-          <TableHead>Warehouse</TableHead>
+          <TableHead>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-1 -ml-3 font-medium flex items-center"
+              onClick={() => handleSort('warehouse_name')}
+            >
+              Warehouse {renderSortIcon('warehouse_name')}
+            </Button>
+          </TableHead>
           <TableHead>Location</TableHead>
-          <TableHead className="text-right">Unit Price</TableHead>
-          <TableHead className="text-right">Quantity</TableHead>
+          <TableHead className="text-right">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-1 -ml-3 font-medium flex items-center justify-end ml-auto"
+              onClick={() => handleSort('list_price')}
+            >
+              Unit Price {renderSortIcon('list_price')}
+            </Button>
+          </TableHead>
+          <TableHead className="text-right">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-1 -ml-3 font-medium flex items-center justify-end ml-auto"
+              onClick={() => handleSort('quantity')}
+            >
+              Quantity {renderSortIcon('quantity')}
+            </Button>
+          </TableHead>
           <TableHead className="text-right">Value</TableHead>
         </TableRow>
       </TableHeader>
@@ -70,12 +156,12 @@ const StockTable = ({ stockItems, isLoading }: StockTableProps) => {
           <TableRow>
             <TableCell colSpan={8} className="text-center py-8">Loading stock information...</TableCell>
           </TableRow>
-        ) : stockItems?.length === 0 ? (
+        ) : sortedItems.length === 0 ? (
           <TableRow>
             <TableCell colSpan={8} className="text-center py-8">No stock records found</TableCell>
           </TableRow>
         ) : (
-          stockItems?.map((item) => (
+          sortedItems.map((item) => (
             <TableRow key={item.id}>
               <TableCell className="font-medium">{item.product_title}</TableCell>
               <TableCell>{item.product_isbn13 || "—"}</TableCell>

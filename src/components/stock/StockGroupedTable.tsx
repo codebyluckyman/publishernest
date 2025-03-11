@@ -1,7 +1,8 @@
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowUpDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -32,6 +33,9 @@ type GroupedStockItem = {
   productTitles: string[];
 };
 
+type SortField = 'isbn13' | 'totalQuantity' | 'totalValue';
+type SortDirection = 'asc' | 'desc';
+
 type StockGroupedTableProps = {
   stockItems: StockItem[] | undefined;
   isLoading: boolean;
@@ -39,6 +43,8 @@ type StockGroupedTableProps = {
 
 const StockGroupedTable = ({ stockItems, isLoading }: StockGroupedTableProps) => {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [sortField, setSortField] = useState<SortField>('isbn13');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const formatCurrency = (price: number | null) => {
     if (price === null) return "N/A";
@@ -61,6 +67,26 @@ const StockGroupedTable = ({ stockItems, isLoading }: StockGroupedTableProps) =>
     };
     
     return formMap[form] || form;
+  };
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      // Toggle direction if clicking the same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const renderSortIcon = (field: SortField) => {
+    if (field !== sortField) {
+      return <ArrowUpDown className="ml-1 h-4 w-4" />;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="ml-1 h-4 w-4" /> : 
+      <ChevronDown className="ml-1 h-4 w-4" />;
   };
 
   // Group stock items by ISBN
@@ -94,11 +120,25 @@ const StockGroupedTable = ({ stockItems, isLoading }: StockGroupedTableProps) =>
       }
     });
     
-    // Convert to array and sort by ISBN
-    return Object.values(groups).sort((a, b) => {
-      const isbnA = a.isbn13 || "";
-      const isbnB = b.isbn13 || "";
-      return isbnA.localeCompare(isbnB);
+    // Convert to array
+    const groupsArray = Object.values(groups);
+
+    // Sort based on the current sort field and direction
+    return groupsArray.sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortField === 'isbn13') {
+        const isbnA = a.isbn13 || '';
+        const isbnB = b.isbn13 || '';
+        comparison = isbnA.localeCompare(isbnB);
+      } else if (sortField === 'totalQuantity') {
+        comparison = a.totalQuantity - b.totalQuantity;
+      } else if (sortField === 'totalValue') {
+        comparison = a.totalValue - b.totalValue;
+      }
+      
+      // Invert for descending
+      return sortDirection === 'asc' ? comparison : -comparison;
     });
   };
 
@@ -115,10 +155,37 @@ const StockGroupedTable = ({ stockItems, isLoading }: StockGroupedTableProps) =>
       <TableHeader>
         <TableRow>
           <TableHead className="w-6"></TableHead>
-          <TableHead>ISBN</TableHead>
+          <TableHead>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-1 -ml-3 font-medium flex items-center"
+              onClick={() => handleSort('isbn13')}
+            >
+              ISBN {renderSortIcon('isbn13')}
+            </Button>
+          </TableHead>
           <TableHead>Products</TableHead>
-          <TableHead className="text-right">Total Quantity</TableHead>
-          <TableHead className="text-right">Total Value</TableHead>
+          <TableHead className="text-right">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-1 -ml-3 font-medium flex items-center justify-end ml-auto"
+              onClick={() => handleSort('totalQuantity')}
+            >
+              Total Quantity {renderSortIcon('totalQuantity')}
+            </Button>
+          </TableHead>
+          <TableHead className="text-right">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-1 -ml-3 font-medium flex items-center justify-end ml-auto"
+              onClick={() => handleSort('totalValue')}
+            >
+              Total Value {renderSortIcon('totalValue')}
+            </Button>
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

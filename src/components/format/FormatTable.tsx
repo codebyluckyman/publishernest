@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Format, FormatTableRow } from "./FormatTableRow";
 import { FormatEmptyState } from "./FormatEmptyState";
 import { FilterOptions } from "./FormatFilters";
+import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FormatTableProps {
   searchQuery: string;
@@ -23,6 +25,9 @@ interface FormatTableProps {
   refreshTrigger?: number;
 }
 
+type SortField = 'format_name' | 'created_at' | 'extent_pages';
+type SortDirection = 'asc' | 'desc';
+
 export function FormatTable({
   searchQuery,
   filters,
@@ -33,6 +38,20 @@ export function FormatTable({
   setFilterOptions,
   refreshTrigger = 0
 }: FormatTableProps) {
+  const [sortField, setSortField] = useState<SortField>('format_name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      // Toggle direction if clicking the same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   const fetchFormats = async () => {
     if (!organizationId) {
       return [];
@@ -54,8 +73,8 @@ export function FormatTable({
       query = query.eq("internal_stock_print", filters.internal_stock_print);
     }
 
-    // Sort by format_name alphabetically
-    const { data, error } = await query.order("format_name", { ascending: true });
+    // Apply sorting based on current sort field and direction
+    const { data, error } = await query.order(sortField, { ascending: sortDirection === 'asc' });
 
     if (error) {
       console.error("Error fetching formats:", error);
@@ -66,7 +85,7 @@ export function FormatTable({
   };
 
   const { data: formats, isLoading, error, refetch } = useQuery({
-    queryKey: ["formats", organizationId, searchQuery, filters, refreshTrigger],
+    queryKey: ["formats", organizationId, searchQuery, filters, refreshTrigger, sortField, sortDirection],
     queryFn: fetchFormats,
     enabled: !!organizationId,
   });
@@ -106,6 +125,15 @@ export function FormatTable({
     return new Date(dateString).toLocaleDateString();
   };
 
+  const renderSortIcon = (field: SortField) => {
+    if (field !== sortField) {
+      return <ArrowUpDown className="ml-1 h-4 w-4" />;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="ml-1 h-4 w-4" /> : 
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -126,13 +154,40 @@ export function FormatTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Format Name</TableHead>
+            <TableHead>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-1 -ml-3 font-medium flex items-center"
+                onClick={() => handleSort('format_name')}
+              >
+                Format Name {renderSortIcon('format_name')}
+              </Button>
+            </TableHead>
             <TableHead>TPS Dimensions</TableHead>
             <TableHead>PLC Dimensions</TableHead>
-            <TableHead>Extent</TableHead>
+            <TableHead>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-1 -ml-3 font-medium flex items-center"
+                onClick={() => handleSort('extent_pages')}
+              >
+                Extent {renderSortIcon('extent_pages')}
+              </Button>
+            </TableHead>
             <TableHead>Cover Stock/Print</TableHead>
             <TableHead>Internal Stock/Print</TableHead>
-            <TableHead>Created</TableHead>
+            <TableHead>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-1 -ml-3 font-medium flex items-center"
+                onClick={() => handleSort('created_at')}
+              >
+                Created {renderSortIcon('created_at')}
+              </Button>
+            </TableHead>
             <TableHead className="w-[120px]">Actions</TableHead>
           </TableRow>
         </TableHeader>

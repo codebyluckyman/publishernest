@@ -1,8 +1,9 @@
 
-import { BookOpen, Pencil, Eye, Image, PlusCircle } from "lucide-react";
+import { BookOpen, Pencil, Eye, Image, PlusCircle, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SortDirection, SortField } from "./ProductTable";
 
 interface Product {
   id: string;
@@ -30,6 +31,9 @@ interface ProductTableContentProps {
   formatDate: (date: string | null) => string;
   formatPrice: (price: number | null, currencyCode?: string | null) => string;
   getProductFormLabel: (form: string | null) => string;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
 }
 
 const ProductTableContent = ({
@@ -41,8 +45,20 @@ const ProductTableContent = ({
   handleAddProduct,
   formatDate,
   formatPrice,
-  getProductFormLabel
+  getProductFormLabel,
+  sortField,
+  sortDirection,
+  onSort
 }: ProductTableContentProps) => {
+  const renderSortIcon = (field: SortField) => {
+    if (field !== sortField) {
+      return <ArrowUpDown className="ml-1 h-4 w-4" />;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="ml-1 h-4 w-4" /> : 
+      <ChevronDown className="ml-1 h-4 w-4" />;
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -80,12 +96,48 @@ const ProductTableContent = ({
         <TableHeader>
           <TableRow>
             <TableHead className="w-[70px]">Cover</TableHead>
-            <TableHead>Title</TableHead>
+            <TableHead>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-1 -ml-3 font-medium flex items-center"
+                onClick={() => onSort('title')}
+              >
+                Title {renderSortIcon('title')}
+              </Button>
+            </TableHead>
             <TableHead>ISBN</TableHead>
             <TableHead>Format</TableHead>
-            <TableHead>Publisher</TableHead>
-            <TableHead>Pub Date</TableHead>
-            <TableHead>RRP</TableHead>
+            <TableHead>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-1 -ml-3 font-medium flex items-center"
+                onClick={() => onSort('publisher_name')}
+              >
+                Publisher {renderSortIcon('publisher_name')}
+              </Button>
+            </TableHead>
+            <TableHead>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-1 -ml-3 font-medium flex items-center"
+                onClick={() => onSort('publication_date')}
+              >
+                Pub Date {renderSortIcon('publication_date')}
+              </Button>
+            </TableHead>
+            <TableHead>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-1 -ml-3 font-medium flex items-center"
+                onClick={() => onSort('list_price')}
+              >
+                RRP {renderSortIcon('list_price')}
+              </Button>
+            </TableHead>
             <TableHead className="w-[120px]">Actions</TableHead>
           </TableRow>
         </TableHeader>

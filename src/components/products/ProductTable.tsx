@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +35,9 @@ interface ProductTableProps {
   refreshTrigger?: number;
 }
 
+export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';
+export type SortDirection = 'asc' | 'desc';
+
 const ProductTable = ({
   searchQuery,
   filters,
@@ -44,12 +47,23 @@ const ProductTable = ({
   onAddProduct,
   refreshTrigger = 0
 }: ProductTableProps) => {
+  const [sortField, setSortField] = useState<SortField>('title');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   const fetchProducts = async () => {
     if (!currentOrganization) {
       return [];
     }
 
-    // First, fetch the basic product data
     let queryBuilder = supabase
       .from("products")
       .select("*")
@@ -67,15 +81,13 @@ const ProductTable = ({
       queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
     }
 
-    // Sort by title alphabetically
-    const { data: productsData, error } = await queryBuilder.order("title", { ascending: true });
+    const { data: productsData, error } = await queryBuilder.order(sortField, { ascending: sortDirection === 'asc' });
 
     if (error) {
       console.error("Error fetching products:", error);
       throw new Error(error.message);
     }
 
-    // If there are products, fetch their default prices
     if (productsData && productsData.length > 0) {
       const productIds = productsData.map(product => product.id);
       
@@ -87,10 +99,13 @@ const ProductTable = ({
 
       if (pricesError) {
         console.error("Error fetching product prices:", pricesError);
-        // Continue with products but without prices
+        return productsData.map(product => ({
+          ...product,
+          default_price: product.list_price,
+          default_currency: "USD"
+        })) as unknown as Product[];
       }
 
-      // Create a map of product_id to default price info
       const priceMap: Record<string, { price: number; currency: string }> = {};
       
       if (pricesData) {
@@ -102,7 +117,6 @@ const ProductTable = ({
         });
       }
 
-      // Add default price information to products and ensure type safety
       return productsData.map(product => ({
         ...product,
         default_price: priceMap[product.id]?.price ?? product.list_price,
@@ -110,7 +124,6 @@ const ProductTable = ({
       })) as unknown as Product[];
     }
 
-    // If no products, return an empty array with the correct type
     return productsData ? productsData.map(product => ({
       ...product,
       default_price: product.list_price,
@@ -119,12 +132,11 @@ const ProductTable = ({
   };
 
   const { data: products, isLoading, error } = useQuery({
-    queryKey: ["products", currentOrganization?.id, searchQuery, filters, refreshTrigger],
+    queryKey: ["products", currentOrganization?.id, searchQuery, filters, refreshTrigger, sortField, sortDirection],
     queryFn: fetchProducts,
     enabled: !!currentOrganization,
   });
 
-  // Handle error from React Query
   if (error) {
     toast.error("Failed to load products: " + (error as Error).message);
   }
@@ -158,7 +170,7 @@ const ProductTable = ({
   };
 
   if (isLoading) {
-    return null; // ProductTableContent handles loading state
+    return null;
   }
 
   if (!products || products.length === 0) {
@@ -176,6 +188,9 @@ const ProductTable = ({
       formatDate={formatDate}
       formatPrice={formatPrice}
       getProductFormLabel={getProductFormLabel}
+      sortField={sortField}
+      sortDirection={sortDirection}
+      onSort={handleSort}
     />
   );
 };
