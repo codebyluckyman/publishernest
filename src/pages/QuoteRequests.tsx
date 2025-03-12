@@ -45,13 +45,7 @@ const QuoteRequests = () => {
       <div className="grid gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Quote Requests</CardTitle>
-              <CardDescription>
-                Create and manage quote requests to suppliers
-              </CardDescription>
-            </div>
-            <QuoteRequestDialog suppliers={suppliers} onSuccess={handleQuoteRequestSuccess} />
+          <QuoteRequestDialog suppliers={suppliers} onSuccess={handleQuoteRequestSuccess} />
           </CardHeader>
           <CardContent>
             <div className="mb-4">
