@@ -28,9 +28,9 @@ import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
-import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useFormatsForSelect, FormatForSelect } from "@/hooks/useFormatsForSelect";
+import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface QuoteRequestFormProps {
@@ -56,7 +56,7 @@ const formSchema = z.object({
 
 export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteRequestFormProps) {
   const { currentOrganization } = useOrganization();
-  const { useCreateQuoteRequest } = useQuoteRequestsApi();
+  const { useCreateQuoteRequest } = useQuoteRequests();
   const createMutation = useCreateQuoteRequest();
   const { data: formats = [], isLoading: isFormatsLoading } = useFormatsForSelect(currentOrganization);
   

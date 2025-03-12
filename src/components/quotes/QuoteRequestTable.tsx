@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import {
   Sheet,
   SheetContent,
@@ -34,7 +34,7 @@ interface QuoteRequestTableProps {
 }
 
 export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTableProps) {
-  const { useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequestsApi();
+  const { useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
   const updateStatusMutation = useUpdateQuoteRequestStatus();
   const deleteMutation = useDeleteQuoteRequest();
   const [selectedRequest, setSelectedRequest] = useState<QuoteRequest | null>(null);

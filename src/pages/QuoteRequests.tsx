@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useSuppliersApi } from "@/hooks/useSuppliersApi";
 import { QuoteRequestTable } from "@/components/quotes/QuoteRequestTable";
 import { QuoteRequestDialog } from "@/components/quotes/QuoteRequestDialog";
@@ -14,10 +14,10 @@ const QuoteRequests = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
   
-  const { useQuoteRequests } = useQuoteRequestsApi();
+  const { useQuoteRequestsList } = useQuoteRequests();
   const { data: suppliers = [], isLoading: isSuppliersLoading } = useSuppliersApi(currentOrganization);
   
-  const { data: quoteRequests = [], isLoading: isQuoteRequestsLoading, refetch } = useQuoteRequests(
+  const { data: quoteRequests = [], isLoading: isQuoteRequestsLoading, refetch } = useQuoteRequestsList(
     currentOrganization,
     activeTab !== "all" ? activeTab : undefined,
     searchQuery
