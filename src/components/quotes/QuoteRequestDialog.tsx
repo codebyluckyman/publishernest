@@ -33,15 +33,17 @@ export function QuoteRequestDialog({ suppliers, onSuccess }: QuoteRequestDialogP
           New Quote Request
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Create New Quote Request</DialogTitle>
         </DialogHeader>
-        <QuoteRequestForm 
-          suppliers={suppliers} 
-          onSuccess={handleSuccess} 
-          onCancel={() => setOpen(false)} 
-        />
+        <div className="overflow-y-auto pr-1">
+          <QuoteRequestForm 
+            suppliers={suppliers} 
+            onSuccess={handleSuccess} 
+            onCancel={() => setOpen(false)} 
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
