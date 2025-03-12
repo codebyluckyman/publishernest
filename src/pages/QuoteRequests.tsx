@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrganization } from "@/hooks/useOrganization";
@@ -17,19 +17,23 @@ const QuoteRequests = () => {
   const { useQuoteRequests } = useQuoteRequestsApi();
   const { data: suppliers = [], isLoading: isSuppliersLoading } = useSuppliersApi(currentOrganization);
   
-  const { data: quoteRequests = [], isLoading: isQuoteRequestsLoading } = useQuoteRequests(
+  const { data: quoteRequests = [], isLoading: isQuoteRequestsLoading, refetch } = useQuoteRequests(
     currentOrganization,
     activeTab !== "all" ? activeTab : undefined,
     searchQuery
   );
 
-  const handleTabChange = (value: string) => {
+  const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
-  };
+  }, []);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-  };
+  }, []);
+
+  const handleQuoteRequestSuccess = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return (
     <div className="space-y-8">
@@ -47,7 +51,7 @@ const QuoteRequests = () => {
                 Create and manage quote requests to suppliers
               </CardDescription>
             </div>
-            <QuoteRequestDialog suppliers={suppliers} />
+            <QuoteRequestDialog suppliers={suppliers} onSuccess={handleQuoteRequestSuccess} />
           </CardHeader>
           <CardContent>
             <div className="mb-4">
