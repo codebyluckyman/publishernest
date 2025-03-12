@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
+import { QuoteRequestFormValues } from "@/types/quoteRequest";
 
 /**
  * Creates a new quote request
@@ -9,7 +9,7 @@ export async function createQuoteRequest(
   formData: QuoteRequestFormValues,
   organizationId: string,
   userId: string
-): Promise<QuoteRequest | null> {
+) {
   try {
     if (!userId) {
       throw new Error("User not authenticated");
@@ -58,7 +58,7 @@ export async function createQuoteRequest(
       }
     }
 
-    return quoteRequestData as QuoteRequest;
+    return quoteRequestData;
   } catch (error: any) {
     console.error("Error creating quote request:", error);
     throw error;

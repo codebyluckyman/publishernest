@@ -39,12 +39,17 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
   const deleteMutation = useDeleteQuoteRequest();
   const [selectedRequest, setSelectedRequest] = useState<QuoteRequest | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState<Record<string, boolean>>({});
 
   const handleStatusChange = useCallback((id: string, status: 'approved' | 'declined' | 'pending') => {
+    // Close dropdown menu after selecting an action
+    setIsMenuOpen(prev => ({ ...prev, [id]: false }));
     updateStatusMutation.mutate({ id, status });
   }, [updateStatusMutation]);
 
   const handleDelete = useCallback((id: string) => {
+    // Close dropdown menu after selecting an action
+    setIsMenuOpen(prev => ({ ...prev, [id]: false }));
     if (window.confirm("Are you sure you want to delete this quote request?")) {
       deleteMutation.mutate(id);
     }
@@ -61,6 +66,10 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     setTimeout(() => {
       setSelectedRequest(null);
     }, 300);
+  }, []);
+
+  const toggleMenu = useCallback((id: string, isOpen: boolean) => {
+    setIsMenuOpen(prev => ({ ...prev, [id]: isOpen }));
   }, []);
 
   const getStatusBadge = (status: string) => {
@@ -134,7 +143,10 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
                 )}
               </TableCell>
               <TableCell className="text-right">
-                <DropdownMenu>
+                <DropdownMenu 
+                  open={isMenuOpen[request.id]} 
+                  onOpenChange={(open) => toggleMenu(request.id, open)}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
                       <span className="sr-only">Open menu</span>
