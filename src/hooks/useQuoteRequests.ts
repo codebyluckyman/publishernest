@@ -31,8 +31,10 @@ export function useQuoteRequests() {
       queryKey: ["quoteRequests", currentOrganization?.id, status, searchQuery],
       queryFn: () => fetchQuoteRequests({ currentOrganization, status, searchQuery }),
       enabled: !!currentOrganization,
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to load quote requests");
+      meta: {
+        onError: (error: any) => {
+          toast.error(error.message || "Failed to load quote requests");
+        }
       }
     });
   };

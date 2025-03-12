@@ -1,0 +1,19 @@
+
+import { z } from "zod";
+
+export const quoteRequestFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  supplier_id: z.string().min(1, "Supplier is required"),
+  description: z.string().optional(),
+  expected_delivery_date: z.date().optional(),
+  notes: z.string().optional(),
+  formats: z.array(
+    z.object({
+      format_id: z.string().min(1, "Format is required"),
+      quantity: z.number().min(1, "Quantity must be at least 1"),
+      notes: z.string().optional(),
+    })
+  ).optional(),
+});
+
+export type QuoteRequestFormValues = z.infer<typeof quoteRequestFormSchema>;
