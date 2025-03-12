@@ -26,7 +26,7 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
   const createMutation = useCreateQuoteRequest();
   const { data: formats = [], isLoading: isFormatsLoading } = useFormatsForSelect(currentOrganization);
   
-  const form = useForm({
+  const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
       title: "",
@@ -37,16 +37,14 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
     },
   });
 
-  const onSubmit = async (values: typeof form.getValues) => {
+  const onSubmit = async (values: QuoteRequestFormValues) => {
     if (!currentOrganization) return;
 
     const formData: QuoteRequestFormValues = {
       title: values.title,
       supplier_id: values.supplier_id,
       description: values.description,
-      expected_delivery_date: values.expected_delivery_date 
-        ? format(values.expected_delivery_date, "yyyy-MM-dd") 
-        : undefined,
+      expected_delivery_date: values.expected_delivery_date,
       notes: values.notes,
       formats: values.formats?.map(f => ({
         format_id: f.format_id,

@@ -10,7 +10,7 @@ import {
   updateQuoteRequest,
   updateQuoteRequestStatus,
   deleteQuoteRequest
-} from "@/api/quoteRequestsApi";
+} from "@/api/quoteRequests";
 
 /**
  * Custom hook for managing quote requests with React Query
