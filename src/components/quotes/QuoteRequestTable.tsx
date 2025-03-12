@@ -60,6 +60,13 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     setDetailsOpen(true);
   }, []);
 
+  const viewDetailsFromDropDown = useCallback((request: QuoteRequest) => {
+    setSelectedRequest(request);
+    setDetailsOpen(true);
+    setIsMenuOpen(prev => ({ ...prev, [id]: false }));
+  }, []);
+
+
   const closeDetails = useCallback(() => {
     setDetailsOpen(false);
     // Give time for animation to complete before clearing the data
@@ -155,7 +162,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => viewDetails(request)}>
+                    <DropdownMenuItem onClick={() => viewDetailsFromDropDown(request)}>
                       <Eye className="mr-2 h-4 w-4" />
                       <span>View Details</span>
                     </DropdownMenuItem>
