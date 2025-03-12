@@ -1,11 +1,38 @@
+
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle } from "lucide-react";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
+import { useSuppliersApi } from "@/hooks/useSuppliersApi";
+import { QuoteRequestTable } from "@/components/quotes/QuoteRequestTable";
+import { QuoteRequestDialog } from "@/components/quotes/QuoteRequestDialog";
+import { Input } from "@/components/ui/input";
 
 const QuoteRequests = () => {
   const { currentOrganization } = useOrganization();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("pending");
+  
+  const { useQuoteRequests } = useQuoteRequestsApi();
+  const { useSuppliers } = useSuppliersApi();
+  
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = useSuppliers(currentOrganization);
+  const { data: quoteRequests = [], isLoading: isQuoteRequestsLoading } = useQuoteRequests(
+    currentOrganization,
+    activeTab !== "all" ? activeTab : undefined,
+    searchQuery
+  );
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <div className="space-y-8">
@@ -16,14 +43,25 @@ const QuoteRequests = () => {
       
       <div className="grid gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Quote Requests</CardTitle>
-            <CardDescription>
-              Create and manage quote requests to suppliers
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Quote Requests</CardTitle>
+              <CardDescription>
+                Create and manage quote requests to suppliers
+              </CardDescription>
+            </div>
+            <QuoteRequestDialog suppliers={suppliers} />
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="pending" className="space-y-4">
+            <div className="mb-4">
+              <Input
+                placeholder="Search quote requests..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="max-w-sm"
+              />
+            </div>
+            <Tabs defaultValue="pending" className="space-y-4" onValueChange={handleTabChange}>
               <TabsList>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
                 <TabsTrigger value="approved">Approved</TabsTrigger>
@@ -31,44 +69,28 @@ const QuoteRequests = () => {
                 <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
               <TabsContent value="pending" className="space-y-4">
-                <div className="flex items-center justify-center h-64 border border-dashed rounded-lg">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium">No pending quote requests</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Create a new quote request to get started
-                    </p>
-                  </div>
-                </div>
+                <QuoteRequestTable 
+                  quoteRequests={quoteRequests} 
+                  isLoading={isQuoteRequestsLoading} 
+                />
               </TabsContent>
               <TabsContent value="approved" className="space-y-4">
-                <div className="flex items-center justify-center h-64 border border-dashed rounded-lg">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium">No approved quote requests</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Approved quote requests will appear here
-                    </p>
-                  </div>
-                </div>
+                <QuoteRequestTable 
+                  quoteRequests={quoteRequests} 
+                  isLoading={isQuoteRequestsLoading} 
+                />
               </TabsContent>
               <TabsContent value="declined" className="space-y-4">
-                <div className="flex items-center justify-center h-64 border border-dashed rounded-lg">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium">No declined quote requests</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Declined quote requests will appear here
-                    </p>
-                  </div>
-                </div>
+                <QuoteRequestTable 
+                  quoteRequests={quoteRequests} 
+                  isLoading={isQuoteRequestsLoading} 
+                />
               </TabsContent>
               <TabsContent value="all" className="space-y-4">
-                <div className="flex items-center justify-center h-64 border border-dashed rounded-lg">
-                  <div className="text-center">
-                    <h3 className="text-lg font-medium">No quote requests found</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Create a new quote request to get started
-                    </p>
-                  </div>
-                </div>
+                <QuoteRequestTable 
+                  quoteRequests={quoteRequests} 
+                  isLoading={isQuoteRequestsLoading} 
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
