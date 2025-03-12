@@ -21,7 +21,9 @@ export interface Format {
   tps_plc_depth_mm?: number;
   created_at?: string;
   updated_at?: string;
-  [key: string]: any;
+  binding_type?: string;
+  cover_material?: string;
+  internal_material?: string;
 }
 
 export interface FormatQueryParams {
@@ -52,7 +54,7 @@ export function useFormatQuery({
       refreshTrigger,
     ],
     queryFn: async () => {
-      if (!currentOrganization) return [];
+      if (!currentOrganization) return [] as Format[];
 
       let query = supabase
         .from("formats")

@@ -7,8 +7,19 @@ import { Format } from "./useFormatQuery";
 export interface FormatFormData {
   id?: string;
   format_name: string;
-  organization_id?: string;
-  [key: string]: any;
+  organization_id: string; // Make this required
+  binding_type?: string;
+  cover_material?: string;
+  cover_stock_print?: string;
+  extent?: string;
+  internal_material?: string;
+  internal_stock_print?: string;
+  tps_height_mm?: number;
+  tps_width_mm?: number;
+  tps_depth_mm?: number;
+  tps_plc_height_mm?: number;
+  tps_plc_width_mm?: number;
+  tps_plc_depth_mm?: number;
 }
 
 export function useFormatMutations() {

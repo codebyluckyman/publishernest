@@ -1,9 +1,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle } from "lucide-react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
 import { useSuppliersApi } from "@/hooks/useSuppliersApi";
@@ -17,9 +15,8 @@ const QuoteRequests = () => {
   const [activeTab, setActiveTab] = useState("pending");
   
   const { useQuoteRequests } = useQuoteRequestsApi();
-  const suppliersApi = useSuppliersApi(currentOrganization);
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = useSuppliersApi(currentOrganization);
   
-  const { data: suppliers = [], isLoading: isSuppliersLoading } = suppliersApi;
   const { data: quoteRequests = [], isLoading: isQuoteRequestsLoading } = useQuoteRequests(
     currentOrganization,
     activeTab !== "all" ? activeTab : undefined,

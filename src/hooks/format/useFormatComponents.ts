@@ -11,14 +11,14 @@ export interface FormatComponent {
   description?: string;
   created_at?: string;
   updated_at?: string;
-  [key: string]: any;
+  organization_id: string;
 }
 
 export const useFormatComponents = (formatId?: string | null) => {
   return useQuery({
     queryKey: ["format-components", formatId],
     queryFn: async () => {
-      if (!formatId) return [];
+      if (!formatId) return [] as FormatComponent[];
       
       try {
         const { data, error } = await supabase
@@ -28,13 +28,14 @@ export const useFormatComponents = (formatId?: string | null) => {
 
         if (error) {
           console.error("Error fetching format components:", error);
-          return [];
+          return [] as FormatComponent[];
         }
 
-        return data as FormatComponent[];
+        // Cast the data to ensure it matches our expected type
+        return (data || []) as FormatComponent[];
       } catch (error) {
         console.error("Error fetching format components:", error);
-        return [];
+        return [] as FormatComponent[];
       }
     },
     enabled: !!formatId,

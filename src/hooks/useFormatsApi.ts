@@ -1,8 +1,8 @@
 
+import { Organization } from "@/types/organization";
 import { useFormatQuery, useFormatById, Format } from "./format/useFormatQuery";
 import { useFormatComponents, FormatComponent } from "./format/useFormatComponents";
 import { useFormatMutations, FormatFormData } from "./format/useFormatMutations";
-import { Organization } from "@/types/organization";
 
 interface FormatApiOptions {
   currentOrganization: Organization | null;
@@ -19,33 +19,24 @@ export function useFormatsApi(options?: FormatApiOptions) {
   const { createFormat, updateFormat, deleteFormat } = useFormatMutations();
 
   // Function to get format by ID
-  const getFormatById = async (formatId: string): Promise<Format | null> => {
-    const { data } = useFormatById(formatId);
-    return data || null;
+  const getFormatById = (formatId: string) => {
+    return useFormatById(formatId);
   };
 
   // Function to get format components
-  const getFormatComponents = async (formatId: string): Promise<FormatComponent[]> => {
-    const { data } = useFormatComponents(formatId);
-    return data || [];
-  };
-
-  // Function to fetch formats with dynamic parameters
-  const fetchFormats = async (params: FormatApiOptions): Promise<Format[]> => {
-    const { data } = useFormatQuery(params);
-    return data || [];
+  const getFormatComponents = (formatId: string) => {
+    return useFormatComponents(formatId);
   };
 
   return {
+    formats,
+    isLoading,
+    error,
+    refetch,
     getFormatById,
     getFormatComponents,
     createFormat,
     updateFormat,
-    deleteFormat,
-    fetchFormats,
-    formats,
-    isLoading,
-    error,
-    refetch
+    deleteFormat
   };
 }
