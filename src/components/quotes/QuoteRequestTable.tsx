@@ -62,7 +62,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
 
   const viewDetailsFromDropDown = useCallback((id: string) => {
     setIsMenuOpen(prev => ({ ...prev, [id]: false }));
-    setSelectedRequest(request);
+    setSelectedRequest(id);
     setDetailsOpen(true);
   }, []);
 
