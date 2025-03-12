@@ -37,5 +37,5 @@ export interface QuoteRequestFormValues {
   products?: Record<string, any>;
   quantities?: Record<string, any>;
   notes?: string;
-  formats?: { format_id: string; quantity: number; notes?: string }[]; // Added field
+  formats?: { format_id: string; quantity: number; notes?: string }[];
 }

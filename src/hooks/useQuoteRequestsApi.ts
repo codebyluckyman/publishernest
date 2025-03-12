@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
-import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
+import { QuoteRequest, QuoteRequestFormValues, QuoteRequestFormat } from "@/types/quoteRequest";
 import { useAuth } from "@/context/AuthContext";
 
 export function useQuoteRequestsApi() {
@@ -54,15 +54,24 @@ export function useQuoteRequestsApi() {
 
       if (error) throw error;
 
-      // Transform the data to include supplier_name directly and format the formats array
-      return (data || []).map(item => ({
-        ...item,
-        supplier_name: item.suppliers?.supplier_name || 'Unknown',
-        formats: item.quote_request_formats?.map(f => ({
-          ...f,
+      // Transform the data to make it compatible with our QuoteRequest type
+      return (data || []).map(item => {
+        // Map quote_request_formats to our expected formats structure
+        const formats: QuoteRequestFormat[] = (item.quote_request_formats || []).map((f: any) => ({
+          id: f.id,
+          quote_request_id: item.id,
+          format_id: f.format_id,
+          quantity: f.quantity,
+          notes: f.notes,
           format_name: f.formats?.format_name
-        })) || []
-      })) as QuoteRequest[];
+        }));
+
+        return {
+          ...item,
+          supplier_name: item.suppliers?.supplier_name || 'Unknown',
+          formats: formats
+        } as QuoteRequest;
+      });
     } catch (error: any) {
       console.error("Error fetching quote requests:", error);
       toast.error("Failed to load quote requests");
