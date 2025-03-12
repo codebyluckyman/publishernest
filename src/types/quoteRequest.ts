@@ -33,7 +33,7 @@ export interface QuoteRequestFormValues {
   title: string;
   supplier_id: string;
   description?: string;
-  expected_delivery_date?: string;
+  expected_delivery_date?: Date;
   products?: Record<string, any>;
   quantities?: Record<string, any>;
   notes?: string;

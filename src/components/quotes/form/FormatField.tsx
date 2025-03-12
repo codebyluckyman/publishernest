@@ -5,13 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
-import { z } from "zod";
-import { quoteRequestFormSchema } from "./schema";
-
-type FormValues = z.infer<typeof quoteRequestFormSchema>;
+import { QuoteRequestFormValues } from "./schema";
 
 interface FormatFieldProps {
-  control: Control<FormValues>;
+  control: Control<QuoteRequestFormValues>;
   index: number;
   formats: FormatForSelect[];
   isFormatsLoading: boolean;

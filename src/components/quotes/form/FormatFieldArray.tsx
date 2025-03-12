@@ -6,13 +6,10 @@ import { Plus, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FormatField } from "./FormatField";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
-import { z } from "zod";
-import { quoteRequestFormSchema } from "./schema";
-
-type FormValues = z.infer<typeof quoteRequestFormSchema>;
+import { QuoteRequestFormValues } from "./schema";
 
 interface FormatFieldArrayProps {
-  control: Control<FormValues>;
+  control: Control<QuoteRequestFormValues>;
   formats: FormatForSelect[];
   isFormatsLoading: boolean;
 }

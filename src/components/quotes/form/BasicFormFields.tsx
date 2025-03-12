@@ -11,13 +11,10 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@/types/supplier";
-import { z } from "zod";
-import { quoteRequestFormSchema } from "./schema";
-
-type FormValues = z.infer<typeof quoteRequestFormSchema>;
+import { QuoteRequestFormValues } from "./schema";
 
 interface BasicFormFieldsProps {
-  control: Control<FormValues>;
+  control: Control<QuoteRequestFormValues>;
   suppliers: Supplier[];
 }
 

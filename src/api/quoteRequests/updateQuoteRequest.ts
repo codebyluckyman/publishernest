@@ -10,9 +10,17 @@ export async function updateQuoteRequest(
   updates: Partial<QuoteRequestFormValues>
 ): Promise<QuoteRequest | null> {
   try {
+    // Convert Date object to ISO string if present
+    const formattedUpdates = {
+      ...updates,
+      expected_delivery_date: updates.expected_delivery_date 
+        ? updates.expected_delivery_date.toISOString().split('T')[0] 
+        : undefined
+    };
+
     const { data, error } = await supabase
       .from("quote_requests")
-      .update(updates)
+      .update(formattedUpdates)
       .eq("id", id)
       .select()
       .single();
