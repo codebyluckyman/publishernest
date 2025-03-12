@@ -2,12 +2,31 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Format } from "./useFormatQuery";
+
+export interface Format {
+  id: string;
+  format_name: string;
+  organization_id: string;
+  binding_type?: string;
+  cover_material?: string;
+  cover_stock_print?: string;
+  extent?: string;
+  internal_material?: string;
+  internal_stock_print?: string;
+  tps_height_mm?: number;
+  tps_width_mm?: number;
+  tps_depth_mm?: number;
+  tps_plc_height_mm?: number;
+  tps_plc_width_mm?: number;
+  tps_plc_depth_mm?: number;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export interface FormatFormData {
   id?: string;
   format_name: string;
-  organization_id: string; // Make this required
+  organization_id: string;
   binding_type?: string;
   cover_material?: string;
   cover_stock_print?: string;

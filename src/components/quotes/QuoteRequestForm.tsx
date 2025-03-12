@@ -32,6 +32,8 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
       description: "",
       notes: "",
       formats: [],
+      products: {},
+      quantities: {},
     },
   });
 

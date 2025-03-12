@@ -14,6 +14,8 @@ export const quoteRequestFormSchema = z.object({
       notes: z.string().optional(),
     })
   ).optional(),
+  products: z.record(z.any()).optional(),
+  quantities: z.record(z.any()).optional(),
 });
 
 export type QuoteRequestFormValues = z.infer<typeof quoteRequestFormSchema>;
