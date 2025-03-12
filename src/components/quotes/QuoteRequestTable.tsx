@@ -162,7 +162,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => viewDetailsFromDropDown(request.id)}>
+                    <DropdownMenuItem onClick={() => viewDetailsFromDropDown(request)}>
                       <Eye className="mr-2 h-4 w-4" />
                       <span>View Details</span>
                     </DropdownMenuItem>
