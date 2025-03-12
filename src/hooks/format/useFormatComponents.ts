@@ -31,7 +31,6 @@ export const useFormatComponents = (formatId?: string | null) => {
           return [] as FormatComponent[];
         }
 
-        // Cast the data to ensure it matches our expected type
         return (data || []) as FormatComponent[];
       } catch (error) {
         console.error("Error fetching format components:", error);
