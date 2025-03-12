@@ -29,7 +29,14 @@ export function useQuoteRequestsApi() {
         .from("quote_requests")
         .select(`
           *,
-          suppliers:supplier_id (supplier_name)
+          suppliers:supplier_id (supplier_name),
+          quote_request_formats(
+            id,
+            format_id,
+            quantity,
+            notes,
+            formats:format_id(format_name)
+          )
         `)
         .eq("organization_id", currentOrganization.id);
 
@@ -47,10 +54,14 @@ export function useQuoteRequestsApi() {
 
       if (error) throw error;
 
-      // Transform the data to include supplier_name directly
+      // Transform the data to include supplier_name directly and format the formats array
       return (data || []).map(item => ({
         ...item,
-        supplier_name: item.suppliers?.supplier_name || 'Unknown'
+        supplier_name: item.suppliers?.supplier_name || 'Unknown',
+        formats: item.quote_request_formats?.map(f => ({
+          ...f,
+          format_name: f.formats?.format_name
+        })) || []
       })) as QuoteRequest[];
     } catch (error: any) {
       console.error("Error fetching quote requests:", error);
@@ -82,16 +93,36 @@ export function useQuoteRequestsApi() {
         notes: formData.notes || null
       };
 
-      const { data, error } = await supabase
+      // Insert the quote request
+      const { data: quoteRequestData, error: quoteRequestError } = await supabase
         .from("quote_requests")
         .insert(newQuoteRequest)
         .select()
         .single();
 
-      if (error) throw error;
+      if (quoteRequestError) throw quoteRequestError;
+
+      // If formats were provided, insert them
+      if (formData.formats && formData.formats.length > 0 && quoteRequestData) {
+        const formatEntries = formData.formats.map(format => ({
+          quote_request_id: quoteRequestData.id,
+          format_id: format.format_id,
+          quantity: format.quantity,
+          notes: format.notes || null
+        }));
+
+        const { error: formatsError } = await supabase
+          .from("quote_request_formats")
+          .insert(formatEntries);
+
+        if (formatsError) {
+          console.error("Error inserting formats:", formatsError);
+          toast.error("Quote request created but formats couldn't be added");
+        }
+      }
 
       toast.success("Quote request created successfully");
-      return data as QuoteRequest;
+      return quoteRequestData as QuoteRequest;
     } catch (error: any) {
       console.error("Error creating quote request:", error);
       toast.error(error.message || "Failed to create quote request");

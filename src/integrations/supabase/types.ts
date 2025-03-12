@@ -449,6 +449,51 @@ export type Database = {
           },
         ]
       }
+      quote_request_formats: {
+        Row: {
+          created_at: string
+          format_id: string
+          id: string
+          notes: string | null
+          quantity: number
+          quote_request_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          format_id: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+          quote_request_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          format_id?: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+          quote_request_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_request_formats_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "formats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_request_formats_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_requests: {
         Row: {
           description: string | null

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -24,12 +24,14 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { useQuoteRequestsApi } from "@/hooks/useQuoteRequestsApi";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useFormatsForSelect, FormatForSelect } from "@/hooks/useFormatsForSelect";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface QuoteRequestFormProps {
   suppliers: Supplier[];
@@ -43,12 +45,20 @@ const formSchema = z.object({
   description: z.string().optional(),
   expected_delivery_date: z.date().optional(),
   notes: z.string().optional(),
+  formats: z.array(
+    z.object({
+      format_id: z.string().min(1, "Format is required"),
+      quantity: z.number().min(1, "Quantity must be at least 1"),
+      notes: z.string().optional(),
+    })
+  ).optional(),
 });
 
 export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteRequestFormProps) {
   const { currentOrganization } = useOrganization();
   const { useCreateQuoteRequest } = useQuoteRequestsApi();
   const createMutation = useCreateQuoteRequest();
+  const { data: formats = [], isLoading: isFormatsLoading } = useFormatsForSelect(currentOrganization);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,7 +67,13 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
       supplier_id: "",
       description: "",
       notes: "",
+      formats: [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "formats",
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -70,7 +86,12 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
       expected_delivery_date: values.expected_delivery_date 
         ? format(values.expected_delivery_date, "yyyy-MM-dd") 
         : undefined,
-      notes: values.notes
+      notes: values.notes,
+      formats: values.formats?.map(f => ({
+        format_id: f.format_id,
+        quantity: f.quantity,
+        notes: f.notes,
+      })),
     };
 
     createMutation.mutate(
@@ -84,6 +105,14 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
         },
       }
     );
+  };
+
+  const addFormat = () => {
+    append({
+      format_id: "",
+      quantity: 1,
+      notes: "",
+    });
   };
 
   return (
@@ -190,6 +219,114 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
             </FormItem>
           )}
         />
+
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">Formats</h3>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              onClick={addFormat}
+              className="flex items-center"
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add Format
+            </Button>
+          </div>
+
+          {fields.length === 0 && (
+            <div className="text-center p-4 border border-dashed rounded-md">
+              <p className="text-sm text-muted-foreground">
+                No formats added yet. Click 'Add Format' to include formats in this quote request.
+              </p>
+            </div>
+          )}
+
+          {fields.map((field, index) => (
+            <Card key={field.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="text-sm font-medium">Format {index + 1}</h4>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => remove(index)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name={`formats.${index}.format_id`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Format</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a format" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {formats.map((format) => (
+                              <SelectItem key={format.id} value={format.id}>
+                                {format.format_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`formats.${index}.quantity`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Quantity</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="1"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`formats.${index}.notes`}
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Notes (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Any specific notes about this format"
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         <FormField
           control={form.control}
