@@ -60,8 +60,8 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     setDetailsOpen(true);
   }, []);
 
-  const viewDetailsFromDropDown = useCallback((request: QuoteRequest) => {
-    setIsMenuOpen(prev => ({ ...prev, [request.id]: false }));
+  const viewDetailsFromDropDown = useCallback((request: QuoteRequest, id: string) => {
+    setIsMenuOpen(prev => ({ ...prev, [id]: false }));
     setSelectedRequest(request);
     setDetailsOpen(true);
   }, []);
@@ -162,7 +162,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => viewDetailsFromDropDown(request)}>
+                    <DropdownMenuItem onClick={() => viewDetailsFromDropDown(request, request.id)}>
                       <Eye className="mr-2 h-4 w-4" />
                       <span>View Details</span>
                     </DropdownMenuItem>
