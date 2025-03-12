@@ -17,9 +17,9 @@ const QuoteRequests = () => {
   const [activeTab, setActiveTab] = useState("pending");
   
   const { useQuoteRequests } = useQuoteRequestsApi();
-  const { useSuppliers } = useSuppliersApi();
+  const suppliersApi = useSuppliersApi(currentOrganization);
   
-  const { data: suppliers = [], isLoading: isSuppliersLoading } = useSuppliers(currentOrganization);
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = suppliersApi;
   const { data: quoteRequests = [], isLoading: isQuoteRequestsLoading } = useQuoteRequests(
     currentOrganization,
     activeTab !== "all" ? activeTab : undefined,

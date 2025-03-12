@@ -64,10 +64,13 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
     if (!currentOrganization) return;
 
     const formData: QuoteRequestFormValues = {
-      ...values,
+      title: values.title,
+      supplier_id: values.supplier_id,
+      description: values.description,
       expected_delivery_date: values.expected_delivery_date 
         ? format(values.expected_delivery_date, "yyyy-MM-dd") 
         : undefined,
+      notes: values.notes
     };
 
     createMutation.mutate(

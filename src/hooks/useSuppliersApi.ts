@@ -1,4 +1,3 @@
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Supplier, SupplierFormValues } from "@/types/supplier";
@@ -27,12 +26,7 @@ export const useSuppliersApi = (
   } = options || {};
 
   // Fetch all suppliers
-  const {
-    data: suppliers,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
+  const result = useQuery({
     queryKey: [
       "suppliers",
       currentOrganization?.id,
@@ -156,13 +150,14 @@ export const useSuppliersApi = (
   });
 
   return {
-    suppliers,
-    isLoading,
-    error,
-    refetch,
+    suppliers: result.data || [],
+    isLoading: result.isLoading,
+    error: result.error,
+    refetch: result.refetch,
     getSupplier,
     createSupplier,
     updateSupplier,
     deleteSupplier,
+    data: result.data || [],
   };
 };
