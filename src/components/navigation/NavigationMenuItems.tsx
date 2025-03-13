@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   Store,
   FileText,
-  MessageSquarePlus
+  MessageSquarePlus,
+  Warehouse
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -70,6 +71,11 @@ export const navigationItems = [
     href: "/shipments",
     icon: <Truck className="h-5 w-5" />,
   },  
+  {
+    title: "Stock Management",
+    href: "/stock",
+    icon: <Warehouse className="h-5 w-5" />,
+  },    
   {
     title: "Organizations",
     href: "/organizations",
