@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Truck, DollarSign, CircleDollarSign } from "lucide-react";
+import { Package, Truck, CircleDollarSign } from "lucide-react";
 
 const StockOnHandOverview = () => {
   const { currentOrganization } = useOrganization();
@@ -81,7 +81,7 @@ const StockOnHandOverview = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Stock Value</CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
