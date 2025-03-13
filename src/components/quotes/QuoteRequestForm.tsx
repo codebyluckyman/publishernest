@@ -34,7 +34,7 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
       formats: [],
       products: {},
       quantities: {},
-    },
+    } as QuoteRequestFormValues, // Add type assertion to ensure it matches QuoteRequestFormValues
   });
 
   const onSubmit = async (values: QuoteRequestFormValues) => {

@@ -57,6 +57,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
                 min="1"
                 {...field}
                 onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
