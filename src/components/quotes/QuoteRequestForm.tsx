@@ -27,14 +27,14 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
-      title: "", // This is required, so we provide an empty string as default
-      supplier_ids: [], // Ensure this is initialized as an empty array
+      title: "",
+      supplier_id: "",
       description: "",
       notes: "",
       formats: [],
       products: {},
       quantities: {},
-    } as QuoteRequestFormValues, // Add type assertion to ensure it matches QuoteRequestFormValues
+    } as QuoteRequestFormValues,
   });
 
   const onSubmit = async (values: QuoteRequestFormValues) => {

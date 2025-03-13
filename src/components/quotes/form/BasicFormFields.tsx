@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequestFormValues } from "./schema";
@@ -37,10 +37,10 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
 
       <FormField
         control={control}
-        name="supplier_ids"
+        name="supplier_id"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Suppliers</FormLabel>
+            <FormLabel>Supplier</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -49,12 +49,12 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                     role="combobox"
                     className={cn(
                       "w-full justify-between",
-                      !field.value?.length && "text-muted-foreground"
+                      !field.value && "text-muted-foreground"
                     )}
                   >
-                    {Array.isArray(field.value) && field.value.length > 0
-                      ? `${field.value.length} supplier${field.value.length > 1 ? "s" : ""} selected`
-                      : "Select suppliers"}
+                    {field.value && suppliers && suppliers.length > 0
+                      ? suppliers.find((supplier) => supplier.id === field.value)?.supplier_name || "Select supplier"
+                      : "Select supplier"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
@@ -70,24 +70,9 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                           value={supplier.supplier_name}
                           key={supplier.id}
                           onSelect={() => {
-                            const currentValues = Array.isArray(field.value) ? field.value : [];
-                            const isSelected = currentValues.includes(supplier.id);
-                            
-                            if (isSelected) {
-                              field.onChange(currentValues.filter((id) => id !== supplier.id));
-                            } else {
-                              field.onChange([...currentValues, supplier.id]);
-                            }
+                            field.onChange(supplier.id);
                           }}
                         >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              field.value && Array.isArray(field.value) && field.value.includes(supplier.id) 
-                                ? "opacity-100" 
-                                : "opacity-0"
-                            )}
-                          />
                           {supplier.supplier_name}
                         </CommandItem>
                       ))}
