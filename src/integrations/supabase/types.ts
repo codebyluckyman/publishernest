@@ -507,6 +507,7 @@ export type Database = {
           requested_by: string
           status: string
           supplier_id: string
+          supplier_ids: string[] | null
           title: string
           updated_at: string
         }
@@ -522,6 +523,7 @@ export type Database = {
           requested_by: string
           status?: string
           supplier_id: string
+          supplier_ids?: string[] | null
           title: string
           updated_at?: string
         }
@@ -537,6 +539,7 @@ export type Database = {
           requested_by?: string
           status?: string
           supplier_id?: string
+          supplier_ids?: string[] | null
           title?: string
           updated_at?: string
         }
