@@ -148,7 +148,8 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Supplier(s)</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead>Date Requested</TableHead>
+            <TableHead>Due Date</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Formats</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -161,6 +162,11 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
               <TableCell>{formatSupplierDisplay(request)}</TableCell>
               <TableCell>
                 {format(new Date(request.requested_at), "MMM d, yyyy")}
+              </TableCell>
+              <TableCell>
+                {request.expected_delivery_date 
+                  ? format(new Date(request.expected_delivery_date), "MMM d, yyyy") 
+                  : "Not set"}
               </TableCell>
               <TableCell>{getStatusBadge(request.status)}</TableCell>
               <TableCell>
@@ -271,13 +277,13 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Requested Date</h3>
+                <h3 className="text-sm font-medium text-muted-foreground">Date Requested</h3>
                 <p className="mt-1">{selectedRequest.requested_at ? format(new Date(selectedRequest.requested_at), "PPP") : 'N/A'}</p>
               </div>
               
               {selectedRequest.expected_delivery_date && (
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Expected Delivery Date</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground">Due Date</h3>
                   <p className="mt-1">{format(new Date(selectedRequest.expected_delivery_date), "PPP")}</p>
                 </div>
               )}
