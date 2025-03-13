@@ -30,13 +30,5 @@ export interface QuoteRequestFormat {
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name';
 export type SortDirection = 'asc' | 'desc';
 
-export interface QuoteRequestFormValues {
-  title: string;
-  supplier_ids: string[];
-  description?: string;
-  expected_delivery_date?: Date;
-  products?: Record<string, any>;
-  quantities?: Record<string, any>;
-  notes?: string;
-  formats?: { format_id: string; quantity: number; notes?: string }[];
-}
+// Remove the duplicate interface definition to avoid confusion
+// We'll use the type from schema.ts instead

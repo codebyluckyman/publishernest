@@ -27,7 +27,7 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
-      title: "",
+      title: "", // Title must be provided as a non-optional default value
       supplier_ids: [],
       description: "",
       notes: "",
