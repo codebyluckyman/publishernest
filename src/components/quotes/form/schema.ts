@@ -6,7 +6,7 @@ export const quoteRequestFormSchema = z.object({
   supplier_id: z.string().optional(), // Keep for backward compatibility
   supplier_ids: z.array(z.string()).min(1, "At least one supplier is required"),
   description: z.string().optional(),
-  due_date: z.date().optional(), // Renamed from expected_delivery_date
+  due_date: z.date().optional(),
   notes: z.string().optional(),
   formats: z.array(
     z.object({

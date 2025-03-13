@@ -497,7 +497,7 @@ export type Database = {
       quote_requests: {
         Row: {
           description: string | null
-          expected_delivery_date: string | null
+          due_date: string | null
           id: string
           notes: string | null
           organization_id: string
@@ -513,7 +513,7 @@ export type Database = {
         }
         Insert: {
           description?: string | null
-          expected_delivery_date?: string | null
+          due_date?: string | null
           id?: string
           notes?: string | null
           organization_id: string
@@ -529,7 +529,7 @@ export type Database = {
         }
         Update: {
           description?: string | null
-          expected_delivery_date?: string | null
+          due_date?: string | null
           id?: string
           notes?: string | null
           organization_id?: string
