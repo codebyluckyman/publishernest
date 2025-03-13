@@ -29,6 +29,7 @@ export interface QuoteRequestFormat {
 }
 
 export interface QuoteRequestFormValues {
+  id?: string;
   title: string;
   supplier_id?: string; // Keep for backward compatibility
   supplier_ids: string[];
