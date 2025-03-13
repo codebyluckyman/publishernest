@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequestFormValues } from "./schema";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 
 interface BasicFormFieldsProps {
   control: Control<QuoteRequestFormValues>;
@@ -37,10 +38,10 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
 
       <FormField
         control={control}
-        name="supplier_id"
+        name="supplier_ids"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Supplier</FormLabel>
+            <FormLabel>Suppliers</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -49,12 +50,12 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                     role="combobox"
                     className={cn(
                       "w-full justify-between",
-                      !field.value && "text-muted-foreground"
+                      !field.value?.length && "text-muted-foreground"
                     )}
                   >
-                    {field.value && suppliers && suppliers.length > 0
-                      ? suppliers.find((supplier) => supplier.id === field.value)?.supplier_name || "Select supplier"
-                      : "Select supplier"}
+                    {field.value?.length 
+                      ? `${field.value.length} supplier(s) selected`
+                      : "Select suppliers"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
@@ -70,10 +71,23 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                           value={supplier.supplier_name}
                           key={supplier.id}
                           onSelect={() => {
-                            field.onChange(supplier.id);
+                            const newValue = [...field.value];
+                            // Toggle selection
+                            if (newValue.includes(supplier.id)) {
+                              field.onChange(newValue.filter(id => id !== supplier.id));
+                            } else {
+                              field.onChange([...newValue, supplier.id]);
+                            }
                           }}
                         >
-                          {supplier.supplier_name}
+                          <div className="flex items-center justify-between w-full">
+                            {supplier.supplier_name}
+                            {field.value.includes(supplier.id) && (
+                              <div className="flex-shrink-0 ml-2">
+                                <Badge variant="outline">Selected</Badge>
+                              </div>
+                            )}
+                          </div>
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -81,6 +95,24 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                 </Command>
               </PopoverContent>
             </Popover>
+            {field.value.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {field.value.map(supplierId => {
+                  const supplier = suppliers.find(s => s.id === supplierId);
+                  return (
+                    <Badge key={supplierId} variant="secondary" className="flex items-center gap-1">
+                      {supplier?.supplier_name || 'Unknown'}
+                      <X 
+                        className="h-3 w-3 cursor-pointer" 
+                        onClick={() => {
+                          field.onChange(field.value.filter(id => id !== supplierId));
+                        }}
+                      />
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
             <FormMessage />
           </FormItem>
         )}

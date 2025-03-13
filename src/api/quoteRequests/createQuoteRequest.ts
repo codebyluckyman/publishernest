@@ -15,13 +15,14 @@ export async function createQuoteRequest(
       throw new Error("User not authenticated");
     }
 
-    if (!formData.supplier_id) {
-      throw new Error("No supplier selected");
+    if (formData.supplier_ids.length === 0) {
+      throw new Error("No suppliers selected");
     }
 
     const newQuoteRequest = {
       organization_id: organizationId,
-      supplier_id: formData.supplier_id,
+      supplier_ids: formData.supplier_ids,
+      supplier_id: formData.supplier_ids[0], // Keep backward compatibility
       title: formData.title,
       description: formData.description || null,
       status: "pending",

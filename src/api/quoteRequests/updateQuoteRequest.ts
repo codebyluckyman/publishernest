@@ -15,6 +15,10 @@ export async function updateQuoteRequest(
       ...updates,
       expected_delivery_date: updates.expected_delivery_date 
         ? updates.expected_delivery_date.toISOString().split('T')[0] 
+        : undefined,
+      // If supplier_ids is updated, update supplier_id for backward compatibility
+      supplier_id: updates.supplier_ids && updates.supplier_ids.length > 0 
+        ? updates.supplier_ids[0] 
         : undefined
     };
 

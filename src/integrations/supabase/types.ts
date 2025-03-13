@@ -506,7 +506,8 @@ export type Database = {
           requested_at: string
           requested_by: string
           status: string
-          supplier_id: string
+          supplier_id: string | null
+          supplier_ids: string[] | null
           title: string
           updated_at: string
         }
@@ -521,7 +522,8 @@ export type Database = {
           requested_at?: string
           requested_by: string
           status?: string
-          supplier_id: string
+          supplier_id?: string | null
+          supplier_ids?: string[] | null
           title: string
           updated_at?: string
         }
@@ -536,7 +538,8 @@ export type Database = {
           requested_at?: string
           requested_by?: string
           status?: string
-          supplier_id?: string
+          supplier_id?: string | null
+          supplier_ids?: string[] | null
           title?: string
           updated_at?: string
         }

@@ -2,7 +2,8 @@
 export interface QuoteRequest {
   id: string;
   organization_id: string;
-  supplier_id: string;
+  supplier_id: string | null;
+  supplier_ids: string[];
   title: string;
   description: string | null;
   status: 'pending' | 'approved' | 'declined';
@@ -28,7 +29,8 @@ export interface QuoteRequestFormat {
 
 export interface QuoteRequestFormValues {
   title: string;
-  supplier_id: string;
+  supplier_id?: string; // Keep for backward compatibility
+  supplier_ids: string[];
   description?: string;
   expected_delivery_date?: Date;
   notes?: string;
