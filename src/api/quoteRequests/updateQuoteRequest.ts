@@ -13,8 +13,8 @@ export async function updateQuoteRequest(
     // Convert Date object to ISO string if present
     const formattedUpdates = {
       ...updates,
-      expected_delivery_date: updates.expected_delivery_date 
-        ? updates.expected_delivery_date.toISOString().split('T')[0] 
+      due_date: updates.due_date 
+        ? updates.due_date.toISOString().split('T')[0] 
         : undefined,
       // If supplier_ids is updated, update supplier_id for backward compatibility
       supplier_id: updates.supplier_ids && updates.supplier_ids.length > 0 

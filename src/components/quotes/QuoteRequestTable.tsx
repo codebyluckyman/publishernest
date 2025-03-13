@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Badge } from "@/components/ui/badge";
@@ -43,13 +42,11 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
   const [isMenuOpen, setIsMenuOpen] = useState<Record<string, boolean>>({});
 
   const handleStatusChange = useCallback((id: string, status: 'approved' | 'declined' | 'pending') => {
-    // Close dropdown menu after selecting an action
     setIsMenuOpen(prev => ({ ...prev, [id]: false }));
     updateStatusMutation.mutate({ id, status });
   }, [updateStatusMutation]);
 
   const handleDelete = useCallback((id: string) => {
-    // Close dropdown menu after selecting an action
     setIsMenuOpen(prev => ({ ...prev, [id]: false }));
     if (window.confirm("Are you sure you want to delete this quote request?")) {
       deleteMutation.mutate(id);
@@ -69,7 +66,6 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
 
   const closeDetails = useCallback(() => {
     setDetailsOpen(false);
-    // Give time for animation to complete before clearing the data
     setTimeout(() => {
       setSelectedRequest(null);
     }, 300);
@@ -93,7 +89,6 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
   };
 
   const formatSupplierDisplay = (request: QuoteRequest) => {
-    // Handle case when supplier_ids array exists and has multiple entries
     if (request.supplier_ids && request.supplier_ids.length > 1) {
       return (
         <Popover>
@@ -114,7 +109,6 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
       );
     }
     
-    // Single supplier or fall back to supplier_name
     return request.supplier_names && request.supplier_names.length > 0 
       ? request.supplier_names[0] 
       : request.supplier_name || 'Unknown';
@@ -164,8 +158,8 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
                 {format(new Date(request.requested_at), "MMM d, yyyy")}
               </TableCell>
               <TableCell>
-                {request.expected_delivery_date 
-                  ? format(new Date(request.expected_delivery_date), "MMM d, yyyy") 
+                {request.due_date 
+                  ? format(new Date(request.due_date), "MMM d, yyyy") 
                   : "Not set"}
               </TableCell>
               <TableCell>{getStatusBadge(request.status)}</TableCell>
@@ -237,7 +231,6 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
         </TableBody>
       </Table>
 
-      {/* Details Sheet */}
       <Sheet open={detailsOpen} onOpenChange={closeDetails}>
         <SheetContent className="w-full sm:max-w-md overflow-y-auto">
           <SheetHeader>
@@ -281,10 +274,10 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
                 <p className="mt-1">{selectedRequest.requested_at ? format(new Date(selectedRequest.requested_at), "PPP") : 'N/A'}</p>
               </div>
               
-              {selectedRequest.expected_delivery_date && (
+              {selectedRequest.due_date && (
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Due Date</h3>
-                  <p className="mt-1">{format(new Date(selectedRequest.expected_delivery_date), "PPP")}</p>
+                  <p className="mt-1">{format(new Date(selectedRequest.due_date), "PPP")}</p>
                 </div>
               )}
               

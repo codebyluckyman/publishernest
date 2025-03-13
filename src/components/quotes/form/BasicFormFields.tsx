@@ -113,10 +113,10 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
 
       <FormField
         control={control}
-        name="expected_delivery_date"
+        name="due_date"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Expected Delivery Date</FormLabel>
+            <FormLabel>Due Date</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>

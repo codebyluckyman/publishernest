@@ -45,7 +45,7 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
       title: values.title, // This is required
       supplier_ids: values.supplier_ids, // This is required
       description: values.description,
-      expected_delivery_date: values.expected_delivery_date,
+      due_date: values.due_date,
       notes: values.notes,
       formats: values.formats,
       products: values.products,

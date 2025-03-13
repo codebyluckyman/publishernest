@@ -10,7 +10,7 @@ export interface QuoteRequest {
   requested_by: string;
   requested_at: string;
   updated_at: string;
-  expected_delivery_date: string | null;
+  due_date: string | null; // Renamed from expected_delivery_date
   products: Record<string, any> | null;
   quantities: Record<string, any> | null;
   notes: string | null;
@@ -33,7 +33,7 @@ export interface QuoteRequestFormValues {
   supplier_id?: string; // Keep for backward compatibility
   supplier_ids: string[];
   description?: string;
-  expected_delivery_date?: Date;
+  due_date?: Date; // Renamed from expected_delivery_date
   notes?: string;
   formats?: {
     format_id: string;

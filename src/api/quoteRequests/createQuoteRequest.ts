@@ -27,8 +27,8 @@ export async function createQuoteRequest(
       description: formData.description || null,
       status: "pending",
       requested_by: userId,
-      expected_delivery_date: formData.expected_delivery_date 
-        ? formData.expected_delivery_date.toISOString().split('T')[0] 
+      due_date: formData.due_date 
+        ? formData.due_date.toISOString().split('T')[0] 
         : null,
       products: formData.products || null,
       quantities: formData.quantities || null,

@@ -95,8 +95,12 @@ export async function fetchQuoteRequests(
         ? item.supplier_ids.map((id: string) => suppliersMap[id] || 'Unknown')
         : [];
 
+      // Rename expected_delivery_date to due_date
+      const { expected_delivery_date, ...rest } = item;
+      
       return {
-        ...item,
+        ...rest,
+        due_date: expected_delivery_date, // Map the database field to our new field name
         supplier_name: item.suppliers?.supplier_name || (supplier_names.length > 0 ? supplier_names[0] : 'Unknown'),
         supplier_names: supplier_names,
         formats: formats
