@@ -1,103 +1,56 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { Supplier } from "@/types/supplier";
-import { useQuoteRequests } from "@/hooks/useQuoteRequests";
-import { useOrganization } from "@/hooks/useOrganization";
-import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
+import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
 import { BasicFormFields } from "./form/BasicFormFields";
 import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
-import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
+import { Supplier } from "@/types/supplier";
 
 interface QuoteRequestFormProps {
+  onSubmit: (data: QuoteRequestFormValues) => void;
   suppliers: Supplier[];
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  initialValues?: Partial<QuoteRequestFormValues>;
+  isSubmitting: boolean;
+  onCancel: () => void;
 }
 
-export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteRequestFormProps) {
-  const { currentOrganization } = useOrganization();
-  const { useCreateQuoteRequest } = useQuoteRequests();
-  const createMutation = useCreateQuoteRequest();
-  const { data: formats = [], isLoading: isFormatsLoading } = useFormatsForSelect(currentOrganization);
-  
+export function QuoteRequestForm({
+  onSubmit,
+  suppliers,
+  initialValues,
+  isSubmitting,
+  onCancel,
+}: QuoteRequestFormProps) {
+  // Create form with validation schema and default values
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
-      title: "", // Title is required, so we need to initialize it with an empty string
-      supplier_ids: [], // Array of supplier IDs is required
-      description: "",
-      notes: "",
-      formats: [],
-      products: {},
-      quantities: {},
+      title: initialValues?.title || "",
+      supplier_ids: initialValues?.supplier_ids || [],
+      description: initialValues?.description || "",
+      due_date: initialValues?.due_date,
+      notes: initialValues?.notes || "",
+      formats: initialValues?.formats || [],
+      products: initialValues?.products || {},
+      quantities: initialValues?.quantities || {},
+      supplier_id: initialValues?.supplier_id, // For backward compatibility
     },
   });
 
-  const onSubmit = async (values: QuoteRequestFormValues) => {
-    if (!currentOrganization) return;
-
-    // Make sure we're passing a complete object that matches QuoteRequestFormValues
-    const formData: QuoteRequestFormValues = {
-      title: values.title, // This is required
-      supplier_ids: values.supplier_ids, // This is required
-      description: values.description,
-      due_date: values.due_date,
-      notes: values.notes,
-      formats: values.formats,
-      products: values.products,
-      quantities: values.quantities,
-    };
-
-    createMutation.mutate(
-      { 
-        formData, 
-        organizationId: currentOrganization.id 
-      },
-      {
-        onSuccess: () => {
-          if (onSuccess) onSuccess();
-        },
-      }
-    );
+  const handleFormSubmit = (data: QuoteRequestFormValues) => {
+    onSubmit(data);
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <BasicFormFields control={form.control} suppliers={suppliers} />
-
-        <FormatFieldArray 
-          control={form.control} 
-          formats={formats} 
-          isFormatsLoading={isFormatsLoading} 
-        />
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Additional Notes</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Any additional information" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormActions 
-          isPending={createMutation.isPending} 
-          onCancel={onCancel} 
-        />
-      </form>
-    </Form>
+    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <BasicFormFields form={form} suppliers={suppliers} />
+      <FormatFieldArray form={form} />
+      <FormActions
+        form={form}
+        onCancel={onCancel}
+        isSubmitting={isSubmitting}
+      />
+    </form>
   );
 }
