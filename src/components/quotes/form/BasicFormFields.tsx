@@ -11,7 +11,7 @@ import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequestFormValues } from "./schema";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 interface BasicFormFieldsProps {
   control: Control<QuoteRequestFormValues>;
@@ -52,7 +52,7 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                       !field.value?.length && "text-muted-foreground"
                     )}
                   >
-                    {field.value && field.value.length > 0
+                    {Array.isArray(field.value) && field.value.length > 0
                       ? `${field.value.length} supplier${field.value.length > 1 ? "s" : ""} selected`
                       : "Select suppliers"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -63,34 +63,36 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                 <Command>
                   <CommandInput placeholder="Search suppliers..." />
                   <CommandEmpty>No supplier found.</CommandEmpty>
-                  <CommandGroup className="max-h-60 overflow-auto">
-                    {suppliers.map((supplier) => (
-                      <CommandItem
-                        value={supplier.supplier_name}
-                        key={supplier.id}
-                        onSelect={() => {
-                          const currentValues = Array.isArray(field.value) ? field.value : [];
-                          const isSelected = currentValues.includes(supplier.id);
-                          
-                          if (isSelected) {
-                            field.onChange(currentValues.filter((id) => id !== supplier.id));
-                          } else {
-                            field.onChange([...currentValues, supplier.id]);
-                          }
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            field.value && Array.isArray(field.value) && field.value.includes(supplier.id) 
-                              ? "opacity-100" 
-                              : "opacity-0"
-                          )}
-                        />
-                        {supplier.supplier_name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
+                  <CommandList>
+                    <CommandGroup className="max-h-60 overflow-auto">
+                      {suppliers && suppliers.length > 0 && suppliers.map((supplier) => (
+                        <CommandItem
+                          value={supplier.supplier_name}
+                          key={supplier.id}
+                          onSelect={() => {
+                            const currentValues = Array.isArray(field.value) ? field.value : [];
+                            const isSelected = currentValues.includes(supplier.id);
+                            
+                            if (isSelected) {
+                              field.onChange(currentValues.filter((id) => id !== supplier.id));
+                            } else {
+                              field.onChange([...currentValues, supplier.id]);
+                            }
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              field.value && Array.isArray(field.value) && field.value.includes(supplier.id) 
+                                ? "opacity-100" 
+                                : "opacity-0"
+                            )}
+                          />
+                          {supplier.supplier_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
                 </Command>
               </PopoverContent>
             </Popover>
