@@ -25,7 +25,7 @@ export const QuoteRequestRow = ({
   return (
     <TableRow key={request.id}>
       <TableCell className="font-medium">{request.title}</TableCell>
-      <TableCell><SupplierDisplay request={request} /></TableCell>
+      <TableCell><SupplierDisplay request={request} onClick={onViewDetails} /></TableCell>
       <TableCell>
         {format(new Date(request.requested_at), "MMM d, yyyy")}
       </TableCell>
