@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -53,7 +52,7 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                       !field.value?.length && "text-muted-foreground"
                     )}
                   >
-                    {field.value?.length
+                    {field.value && field.value.length > 0
                       ? `${field.value.length} supplier${field.value.length > 1 ? "s" : ""} selected`
                       : "Select suppliers"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -70,20 +69,22 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
                         value={supplier.supplier_name}
                         key={supplier.id}
                         onSelect={() => {
-                          const selectedValues = field.value || [];
-                          const isSelected = selectedValues.includes(supplier.id);
+                          const currentValues = Array.isArray(field.value) ? field.value : [];
+                          const isSelected = currentValues.includes(supplier.id);
                           
                           if (isSelected) {
-                            field.onChange(selectedValues.filter((id) => id !== supplier.id));
+                            field.onChange(currentValues.filter((id) => id !== supplier.id));
                           } else {
-                            field.onChange([...selectedValues, supplier.id]);
+                            field.onChange([...currentValues, supplier.id]);
                           }
                         }}
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            field.value?.includes(supplier.id) ? "opacity-100" : "opacity-0"
+                            field.value && Array.isArray(field.value) && field.value.includes(supplier.id) 
+                              ? "opacity-100" 
+                              : "opacity-0"
                           )}
                         />
                         {supplier.supplier_name}
