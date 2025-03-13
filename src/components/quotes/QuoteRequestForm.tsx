@@ -8,11 +8,12 @@ import { FormActions } from "./form/FormActions";
 import { Supplier } from "@/types/supplier";
 import { Form } from "@/components/ui/form";
 import { QuoteRequest } from "@/types/quoteRequest";
+import { useEffect } from "react";
 
 interface QuoteRequestFormProps {
   onSubmit: (data: QuoteRequestFormValues) => void;
   suppliers: Supplier[];
-  initialValues?: Partial<QuoteRequestFormValues & { id?: string }>;
+  initialValues?: Partial<QuoteRequestFormValues>;
   isSubmitting: boolean;
   onCancel: () => void;
 }
@@ -40,6 +41,11 @@ export function QuoteRequestForm({
       supplier_id: initialValues?.supplier_id, // For backward compatibility
     },
   });
+
+  // Log the form values for debugging
+  useEffect(() => {
+    console.log("Initial form values:", form.getValues());
+  }, [form]);
 
   const handleFormSubmit = (data: QuoteRequestFormValues) => {
     onSubmit(data);

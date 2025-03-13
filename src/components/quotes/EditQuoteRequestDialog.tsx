@@ -36,6 +36,7 @@ export function EditQuoteRequestDialog({
       description: request.description || "",
       due_date: request.due_date ? new Date(request.due_date) : undefined,
       notes: request.notes || "",
+      // Ensure formats are properly mapped from the database
       formats: request.formats?.map(format => ({
         format_id: format.format_id,
         quantity: format.quantity,
@@ -43,7 +44,7 @@ export function EditQuoteRequestDialog({
       })) || [],
       products: request.products || {},
       quantities: request.quantities || {},
-      supplier_id: request.supplier_id
+      supplier_id: request.supplier_id || undefined
     };
   };
 

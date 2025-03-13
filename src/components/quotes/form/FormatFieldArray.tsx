@@ -7,14 +7,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FormatField } from "./FormatField";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { QuoteRequestFormValues } from "./schema";
+import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface FormatFieldArrayProps {
   form: UseFormReturn<QuoteRequestFormValues>;
-  formats?: FormatForSelect[];
-  isFormatsLoading?: boolean;
 }
 
-export function FormatFieldArray({ form, formats = [], isFormatsLoading = false }: FormatFieldArrayProps) {
+export function FormatFieldArray({ form }: FormatFieldArrayProps) {
+  const { currentOrganization } = useOrganization();
+  const { data: formats = [], isLoading: isFormatsLoading } = useFormatsForSelect(currentOrganization);
+  
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "formats",
