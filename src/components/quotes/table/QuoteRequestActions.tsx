@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Button } from "@/components/ui/button";
-import { Eye, MoreHorizontal, CheckCircle, XCircle } from "lucide-react";
+import { Eye, MoreHorizontal, CheckCircle, XCircle, Edit } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,13 +16,15 @@ type QuoteRequestActionsProps = {
   onStatusChange: (id: string, status: 'approved' | 'declined' | 'pending') => void;
   onDelete: (id: string) => void;
   onViewDetails: (request: QuoteRequest) => void;
+  onEdit: (request: QuoteRequest) => void;
 };
 
 export const QuoteRequestActions = ({ 
   request, 
   onStatusChange, 
   onDelete, 
-  onViewDetails 
+  onViewDetails,
+  onEdit
 }: QuoteRequestActionsProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -41,6 +43,11 @@ export const QuoteRequestActions = ({
     onViewDetails(request);
   }, [request, onViewDetails]);
 
+  const handleEdit = useCallback(() => {
+    setIsMenuOpen(false);
+    onEdit(request);
+  }, [request, onEdit]);
+
   return (
     <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <DropdownMenuTrigger asChild>
@@ -54,6 +61,10 @@ export const QuoteRequestActions = ({
         <DropdownMenuItem onClick={handleViewDetails}>
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleEdit}>
+          <Edit className="mr-2 h-4 w-4" />
+          <span>Edit</span>
         </DropdownMenuItem>
         {request.status !== "approved" && (
           <DropdownMenuItem onClick={() => handleStatusChange("approved")}>

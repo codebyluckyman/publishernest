@@ -1,5 +1,5 @@
 
-import { Control } from "react-hook-form";
+import { Control, UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,11 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 
 interface BasicFormFieldsProps {
-  control: Control<QuoteRequestFormValues>;
+  form: UseFormReturn<QuoteRequestFormValues>;
   suppliers: Supplier[];
 }
 
-export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
+export function BasicFormFields({ form, suppliers }: BasicFormFieldsProps) {
+  const control = form.control;
+
   return (
     <>
       <FormField

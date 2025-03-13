@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from "react";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
 import {
   Table,
   TableBody,
@@ -10,8 +10,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useQuoteRequests } from "@/hooks/useQuoteRequests";
+import { useSuppliersApi } from "@/hooks/useSuppliersApi";
+import { useOrganization } from "@/hooks/useOrganization";
 import { QuoteRequestRow } from "./table/QuoteRequestRow";
 import { QuoteDetailsSheet } from "./table/QuoteDetailsSheet";
+import { EditQuoteRequestDialog } from "./EditQuoteRequestDialog";
 import { EmptyState } from "./table/EmptyState";
 
 interface QuoteRequestTableProps {
@@ -20,11 +23,16 @@ interface QuoteRequestTableProps {
 }
 
 export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTableProps) {
-  const { useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
+  const { currentOrganization } = useOrganization();
+  const { useUpdateQuoteRequestStatus, useDeleteQuoteRequest, useUpdateQuoteRequest } = useQuoteRequests();
   const updateStatusMutation = useUpdateQuoteRequestStatus();
   const deleteMutation = useDeleteQuoteRequest();
+  const updateMutation = useUpdateQuoteRequest();
+  const { data: suppliers = [] } = useSuppliersApi(currentOrganization);
+
   const [selectedRequest, setSelectedRequest] = useState<QuoteRequest | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const handleStatusChange = useCallback((id: string, status: 'approved' | 'declined' | 'pending') => {
     updateStatusMutation.mutate({ id, status });
@@ -40,6 +48,22 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     setSelectedRequest(request);
     setDetailsOpen(true);
   }, []);
+
+  const editRequest = useCallback((request: QuoteRequest) => {
+    setSelectedRequest(request);
+    setEditOpen(true);
+  }, []);
+
+  const handleUpdateRequest = useCallback((id: string, data: QuoteRequestFormValues) => {
+    updateMutation.mutate(
+      { id, updates: data },
+      {
+        onSuccess: () => {
+          setEditOpen(false);
+        }
+      }
+    );
+  }, [updateMutation]);
 
   const closeDetails = useCallback(() => {
     setDetailsOpen(false);
@@ -74,6 +98,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
               onStatusChange={handleStatusChange}
               onDelete={handleDelete}
               onViewDetails={viewDetails}
+              onEdit={editRequest}
             />
           ))}
         </TableBody>
@@ -83,6 +108,15 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
         isOpen={detailsOpen}
         onOpenChange={closeDetails}
         selectedRequest={selectedRequest}
+      />
+
+      <EditQuoteRequestDialog
+        isOpen={editOpen}
+        onOpenChange={setEditOpen}
+        quoteRequest={selectedRequest}
+        suppliers={suppliers}
+        onSubmit={handleUpdateRequest}
+        isSubmitting={updateMutation.isPending}
       />
     </>
   );

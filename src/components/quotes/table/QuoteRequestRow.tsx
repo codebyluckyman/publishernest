@@ -12,13 +12,15 @@ type QuoteRequestRowProps = {
   onStatusChange: (id: string, status: 'approved' | 'declined' | 'pending') => void;
   onDelete: (id: string) => void;
   onViewDetails: (request: QuoteRequest) => void;
+  onEdit: (request: QuoteRequest) => void;
 };
 
 export const QuoteRequestRow = ({
   request,
   onStatusChange,
   onDelete,
-  onViewDetails
+  onViewDetails,
+  onEdit
 }: QuoteRequestRowProps) => {
   return (
     <TableRow key={request.id}>
@@ -45,8 +47,9 @@ export const QuoteRequestRow = ({
           onStatusChange={onStatusChange}
           onDelete={onDelete}
           onViewDetails={onViewDetails}
+          onEdit={onEdit}
         />
       </TableCell>
     </TableRow>
   );
-};
+}

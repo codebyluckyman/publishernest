@@ -1,12 +1,17 @@
 
 import { Button } from "@/components/ui/button";
+import { UseFormReturn } from "react-hook-form";
+import { QuoteRequestFormValues } from "./schema";
 
 interface FormActionsProps {
-  isPending: boolean;
+  form: UseFormReturn<QuoteRequestFormValues>;
+  isSubmitting: boolean;
   onCancel?: () => void;
 }
 
-export function FormActions({ isPending, onCancel }: FormActionsProps) {
+export function FormActions({ form, isSubmitting, onCancel }: FormActionsProps) {
+  const isEditMode = form.getValues().id !== undefined;
+
   return (
     <div className="flex justify-end space-x-2">
       {onCancel && (
@@ -16,9 +21,12 @@ export function FormActions({ isPending, onCancel }: FormActionsProps) {
       )}
       <Button 
         type="submit" 
-        disabled={isPending}
+        disabled={isSubmitting}
       >
-        {isPending ? "Creating..." : "Create Quote Request"}
+        {isSubmitting ? 
+          (isEditMode ? "Updating..." : "Creating...") : 
+          (isEditMode ? "Update Quote Request" : "Create Quote Request")
+        }
       </Button>
     </div>
   );

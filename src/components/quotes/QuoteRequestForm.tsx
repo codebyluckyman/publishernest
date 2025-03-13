@@ -6,11 +6,13 @@ import { BasicFormFields } from "./form/BasicFormFields";
 import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
 import { Supplier } from "@/types/supplier";
+import { Form } from "@/components/ui/form";
+import { QuoteRequest } from "@/types/quoteRequest";
 
 interface QuoteRequestFormProps {
   onSubmit: (data: QuoteRequestFormValues) => void;
   suppliers: Supplier[];
-  initialValues?: Partial<QuoteRequestFormValues>;
+  initialValues?: Partial<QuoteRequestFormValues & { id?: string }>;
   isSubmitting: boolean;
   onCancel: () => void;
 }
@@ -26,6 +28,7 @@ export function QuoteRequestForm({
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
+      id: initialValues?.id,
       title: initialValues?.title || "",
       supplier_ids: initialValues?.supplier_ids || [],
       description: initialValues?.description || "",
@@ -43,14 +46,16 @@ export function QuoteRequestForm({
   };
 
   return (
-    <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-      <BasicFormFields form={form} suppliers={suppliers} />
-      <FormatFieldArray form={form} />
-      <FormActions
-        form={form}
-        onCancel={onCancel}
-        isSubmitting={isSubmitting}
-      />
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+        <BasicFormFields form={form} suppliers={suppliers} />
+        <FormatFieldArray form={form} />
+        <FormActions
+          form={form}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+        />
+      </form>
+    </Form>
   );
 }

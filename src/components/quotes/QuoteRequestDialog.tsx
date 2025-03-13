@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { QuoteRequestForm } from "./QuoteRequestForm";
 import { Supplier } from "@/types/supplier";
+import { useQuoteRequests } from "@/hooks/useQuoteRequests";
+import { useOrganization } from "@/hooks/useOrganization";
+import { QuoteRequestFormValues } from "@/types/quoteRequest";
 
 interface QuoteRequestDialogProps {
   suppliers: Supplier[];
@@ -19,10 +22,25 @@ interface QuoteRequestDialogProps {
 
 export function QuoteRequestDialog({ suppliers, onSuccess }: QuoteRequestDialogProps) {
   const [open, setOpen] = useState(false);
+  const { currentOrganization } = useOrganization();
+  const { useCreateQuoteRequest } = useQuoteRequests();
+  const createMutation = useCreateQuoteRequest();
 
-  const handleSuccess = () => {
-    setOpen(false);
-    if (onSuccess) onSuccess();
+  const handleSubmit = (formData: QuoteRequestFormValues) => {
+    if (currentOrganization) {
+      createMutation.mutate(
+        {
+          formData,
+          organizationId: currentOrganization.id,
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            if (onSuccess) onSuccess();
+          },
+        }
+      );
+    }
   };
 
   return (
@@ -40,8 +58,9 @@ export function QuoteRequestDialog({ suppliers, onSuccess }: QuoteRequestDialogP
         <div className="overflow-y-auto pr-1 flex-grow">
           <QuoteRequestForm 
             suppliers={suppliers} 
-            onSuccess={handleSuccess} 
+            onSubmit={handleSubmit} 
             onCancel={() => setOpen(false)} 
+            isSubmitting={createMutation.isPending}
           />
         </div>
       </DialogContent>

@@ -1,5 +1,5 @@
 
-import { useFieldArray, Control } from "react-hook-form";
+import { useFieldArray, Control, UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form";
 import { Plus, Trash2 } from "lucide-react";
@@ -9,14 +9,14 @@ import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { QuoteRequestFormValues } from "./schema";
 
 interface FormatFieldArrayProps {
-  control: Control<QuoteRequestFormValues>;
-  formats: FormatForSelect[];
-  isFormatsLoading: boolean;
+  form: UseFormReturn<QuoteRequestFormValues>;
+  formats?: FormatForSelect[];
+  isFormatsLoading?: boolean;
 }
 
-export function FormatFieldArray({ control, formats, isFormatsLoading }: FormatFieldArrayProps) {
+export function FormatFieldArray({ form, formats = [], isFormatsLoading = false }: FormatFieldArrayProps) {
   const { fields, append, remove } = useFieldArray({
-    control,
+    control: form.control,
     name: "formats",
   });
 
@@ -67,7 +67,7 @@ export function FormatFieldArray({ control, formats, isFormatsLoading }: FormatF
               </Button>
             </div>
             <FormatField 
-              control={control} 
+              control={form.control} 
               index={index} 
               formats={formats} 
               isFormatsLoading={isFormatsLoading}
