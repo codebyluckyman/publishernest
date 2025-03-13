@@ -27,6 +27,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface QuoteRequestTableProps {
   quoteRequests: QuoteRequest[];
@@ -66,7 +67,6 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     setDetailsOpen(true);
   }, []);
 
-
   const closeDetails = useCallback(() => {
     setDetailsOpen(false);
     // Give time for animation to complete before clearing the data
@@ -90,6 +90,34 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const formatSupplierDisplay = (request: QuoteRequest) => {
+    // Handle case when supplier_ids array exists and has multiple entries
+    if (request.supplier_ids && request.supplier_ids.length > 1) {
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 text-xs">
+              {request.supplier_ids.length} suppliers
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="p-2 w-fit">
+            <div className="text-sm font-medium mb-2">Suppliers:</div>
+            <div className="space-y-1">
+              {request.supplier_names && request.supplier_names.map((name, index) => (
+                <div key={index} className="text-sm">{name}</div>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      );
+    }
+    
+    // Single supplier or fall back to supplier_name
+    return request.supplier_names && request.supplier_names.length > 0 
+      ? request.supplier_names[0] 
+      : request.supplier_name || 'Unknown';
   };
 
   if (isLoading) {
@@ -119,7 +147,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
-            <TableHead>Supplier</TableHead>
+            <TableHead>Supplier(s)</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Formats</TableHead>
@@ -130,7 +158,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
           {quoteRequests.map((request) => (
             <TableRow key={request.id}>
               <TableCell className="font-medium">{request.title}</TableCell>
-              <TableCell>{request.supplier_name}</TableCell>
+              <TableCell>{formatSupplierDisplay(request)}</TableCell>
               <TableCell>
                 {format(new Date(request.requested_at), "MMM d, yyyy")}
               </TableCell>
@@ -225,8 +253,16 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
               )}
               
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Supplier</h3>
-                <p className="mt-1">{selectedRequest.supplier_name}</p>
+                <h3 className="text-sm font-medium text-muted-foreground">Supplier(s)</h3>
+                {selectedRequest.supplier_names && selectedRequest.supplier_names.length > 0 ? (
+                  <div className="mt-1 space-y-1">
+                    {selectedRequest.supplier_names.map((name, index) => (
+                      <div key={index}>{name}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-1">{selectedRequest.supplier_name || 'Unknown'}</p>
+                )}
               </div>
               
               <div>

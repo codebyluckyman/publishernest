@@ -15,6 +15,7 @@ export interface QuoteRequest {
   quantities: Record<string, any> | null;
   notes: string | null;
   supplier_name?: string; // Joined field
+  supplier_names?: string[]; // Array of supplier names mapped from supplier_ids
   formats?: QuoteRequestFormat[]; // Added field for associated formats
 }
 

@@ -49,6 +49,35 @@ export async function fetchQuoteRequests(
 
     if (error) throw error;
 
+    // Get all unique supplier IDs from all requests
+    const allSupplierIds = new Set<string>();
+    (data || []).forEach(request => {
+      if (request.supplier_ids && Array.isArray(request.supplier_ids)) {
+        request.supplier_ids.forEach((id: string) => allSupplierIds.add(id));
+      }
+      // Also add the single supplier_id if it exists and isn't in the array
+      if (request.supplier_id && !allSupplierIds.has(request.supplier_id)) {
+        allSupplierIds.add(request.supplier_id);
+      }
+    });
+
+    // Fetch all suppliers in one go if we have any IDs
+    let suppliersMap: Record<string, string> = {};
+    if (allSupplierIds.size > 0) {
+      const { data: suppliersData, error: suppliersError } = await supabase
+        .from("suppliers")
+        .select("id, supplier_name")
+        .in("id", Array.from(allSupplierIds));
+
+      if (suppliersError) throw suppliersError;
+
+      // Create a map of supplier ID to name
+      suppliersMap = (suppliersData || []).reduce((acc: Record<string, string>, supplier: any) => {
+        acc[supplier.id] = supplier.supplier_name;
+        return acc;
+      }, {});
+    }
+
     // Transform the data to make it compatible with our QuoteRequest type
     return (data || []).map(item => {
       // Map quote_request_formats to our expected formats structure
@@ -61,9 +90,15 @@ export async function fetchQuoteRequests(
         format_name: f.formats?.format_name
       }));
 
+      // Map supplier IDs to names
+      const supplier_names = item.supplier_ids && Array.isArray(item.supplier_ids)
+        ? item.supplier_ids.map((id: string) => suppliersMap[id] || 'Unknown')
+        : [];
+
       return {
         ...item,
-        supplier_name: item.suppliers?.supplier_name || 'Unknown',
+        supplier_name: item.suppliers?.supplier_name || (supplier_names.length > 0 ? supplier_names[0] : 'Unknown'),
+        supplier_names: supplier_names,
         formats: formats
       } as QuoteRequest;
     });
