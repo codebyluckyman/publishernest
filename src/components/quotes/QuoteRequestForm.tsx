@@ -34,7 +34,7 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
       formats: [],
       products: {},
       quantities: {},
-    } as QuoteRequestFormValues,
+    },
   });
 
   const onSubmit = async (values: QuoteRequestFormValues) => {
