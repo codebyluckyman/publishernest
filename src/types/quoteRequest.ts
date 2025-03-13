@@ -3,6 +3,7 @@ export interface QuoteRequest {
   id: string;
   organization_id: string;
   supplier_id: string;
+  supplier_ids?: string[];
   title: string;
   description: string | null;
   status: 'pending' | 'approved' | 'declined';
@@ -31,7 +32,7 @@ export type SortDirection = 'asc' | 'desc';
 
 export interface QuoteRequestFormValues {
   title: string;
-  supplier_id: string;
+  supplier_ids: string[];
   description?: string;
   expected_delivery_date?: Date;
   products?: Record<string, any>;

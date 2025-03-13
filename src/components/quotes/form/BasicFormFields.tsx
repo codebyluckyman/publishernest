@@ -8,10 +8,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequestFormValues } from "./schema";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 
 interface BasicFormFieldsProps {
   control: Control<QuoteRequestFormValues>;
@@ -37,27 +38,61 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
 
       <FormField
         control={control}
-        name="supplier_id"
+        name="supplier_ids"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Supplier</FormLabel>
-            <Select 
-              onValueChange={field.onChange} 
-              defaultValue={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a supplier" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {suppliers.map((supplier) => (
-                  <SelectItem key={supplier.id} value={supplier.id}>
-                    {supplier.supplier_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <FormItem className="flex flex-col">
+            <FormLabel>Suppliers</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className={cn(
+                      "w-full justify-between",
+                      !field.value?.length && "text-muted-foreground"
+                    )}
+                  >
+                    {field.value?.length
+                      ? `${field.value.length} supplier${field.value.length > 1 ? "s" : ""} selected`
+                      : "Select suppliers"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search suppliers..." />
+                  <CommandEmpty>No supplier found.</CommandEmpty>
+                  <CommandGroup className="max-h-60 overflow-auto">
+                    {suppliers.map((supplier) => (
+                      <CommandItem
+                        value={supplier.supplier_name}
+                        key={supplier.id}
+                        onSelect={() => {
+                          const selectedValues = field.value || [];
+                          const isSelected = selectedValues.includes(supplier.id);
+                          
+                          if (isSelected) {
+                            field.onChange(selectedValues.filter((id) => id !== supplier.id));
+                          } else {
+                            field.onChange([...selectedValues, supplier.id]);
+                          }
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            field.value?.includes(supplier.id) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {supplier.supplier_name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <FormMessage />
           </FormItem>
         )}

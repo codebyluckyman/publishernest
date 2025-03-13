@@ -28,7 +28,7 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
       title: "",
-      supplier_id: "",
+      supplier_ids: [],
       description: "",
       notes: "",
       formats: [],
