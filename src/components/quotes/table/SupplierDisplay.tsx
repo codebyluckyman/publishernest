@@ -23,14 +23,14 @@ export const SupplierDisplay = ({ request }: SupplierDisplayProps) => {
               <div key={index} className="text-sm">{name}</div>
             ))}
           </div>
-            <Button 
-              variant="link" 
-              size="sm" 
-              className="mt-2 h-6 p-0" 
-              onClick={() => onClick(request)}
-            >
-              View Details
-            </Button>
+          <Button 
+            variant="link" 
+            size="sm" 
+            className="mt-2 h-6 p-0" 
+            onClick={() => onClick(request)}
+          >
+            View Details
+          </Button>
         </PopoverContent>
       </Popover>
     );
