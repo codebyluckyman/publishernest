@@ -40,9 +40,22 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
   const onSubmit = async (values: QuoteRequestFormValues) => {
     if (!currentOrganization) return;
 
+    // Make sure we're passing a complete object that matches QuoteRequestFormValues
+    const formData: QuoteRequestFormValues = {
+      title: values.title, // This is required
+      supplier_ids: values.supplier_ids, // This is required
+      description: values.description,
+      expected_delivery_date: values.expected_delivery_date,
+      notes: values.notes,
+      formats: values.formats,
+      products: values.products,
+      quantities: values.quantities,
+      supplier_id: values.supplier_id, // Keep for backward compatibility
+    };
+
     createMutation.mutate(
       { 
-        formData: values, 
+        formData, 
         organizationId: currentOrganization.id 
       },
       {
