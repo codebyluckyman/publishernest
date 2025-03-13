@@ -5,9 +5,10 @@ import { QuoteRequest } from "@/types/quoteRequest";
 
 type SupplierDisplayProps = {
   request: QuoteRequest;
+  onClick: (requet: QuoteRequest ) => void;
 };
 
-export const SupplierDisplay = ({ request }: SupplierDisplayProps) => {
+export const SupplierDisplay = ({ request, onClick }: SupplierDisplayProps) => {
   if (request.supplier_ids && request.supplier_ids.length > 1) {
     return (
       <Popover>
