@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Format, FormatCategory } from "@/types/format";
+import { Format } from "@/types/format";
 
 export async function createFormat(formatData: Omit<Format, "id" | "created_at" | "updated_at">) {
   try {
@@ -50,6 +50,10 @@ export async function deleteFormat(id: string) {
   }
 }
 
+// Note: We're temporarily commenting out these functions as the format_categories table doesn't exist yet
+// If you need these functions, you'll need to create the format_categories table first
+
+/*
 export async function createFormatCategory(categoryData: { name: string; organization_id: string }) {
   try {
     const { data, error } = await supabase
@@ -97,3 +101,4 @@ export async function deleteFormatCategory(id: string) {
     throw error;
   }
 }
+*/
