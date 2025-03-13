@@ -23,7 +23,7 @@ export function SupplierTableRow({ supplier, onEditSupplier, formatDate }: Suppl
       <TableCell>{supplier.contact_email || "N/A"}</TableCell>
       <TableCell>{supplier.contact_phone || "N/A"}</TableCell>
       <TableCell>
-        <Badge variant={supplier.status === "active" ? "success" : "destructive"}>
+        <Badge variant={supplier.status === "active" ? "default" : "destructive"}>
           {supplier.status}
         </Badge>
       </TableCell>
