@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronsUpDown, X } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequestFormValues } from "./schema";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
 interface BasicFormFieldsProps {
@@ -42,59 +42,34 @@ export function BasicFormFields({ control, suppliers }: BasicFormFieldsProps) {
         render={({ field }) => (
           <FormItem className="flex flex-col">
             <FormLabel>Suppliers</FormLabel>
-            <Popover>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className={cn(
-                      "w-full justify-between",
-                      !field.value?.length && "text-muted-foreground"
-                    )}
+            <Select
+              onValueChange={(value) => {
+                // Check if value already exists in the array
+                if (!field.value.includes(value)) {
+                  field.onChange([...field.value, value]);
+                }
+              }}
+            >
+              <FormControl>
+                <SelectTrigger className={cn(
+                  "w-full",
+                  !field.value?.length && "text-muted-foreground"
+                )}>
+                  <SelectValue placeholder="Select suppliers" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {suppliers && suppliers.length > 0 && suppliers.map((supplier) => (
+                  <SelectItem 
+                    key={supplier.id} 
+                    value={supplier.id}
+                    disabled={field.value.includes(supplier.id)}
                   >
-                    {field.value?.length 
-                      ? `${field.value.length} supplier(s) selected`
-                      : "Select suppliers"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search suppliers..." />
-                  <CommandEmpty>No supplier found.</CommandEmpty>
-                  <CommandList>
-                    <CommandGroup className="max-h-60 overflow-auto">
-                      {suppliers && suppliers.length > 0 && suppliers.map((supplier) => (
-                        <CommandItem
-                          value={supplier.supplier_name}
-                          key={supplier.id}
-                          onSelect={() => {
-                            const newValue = [...field.value];
-                            // Toggle selection
-                            if (newValue.includes(supplier.id)) {
-                              field.onChange(newValue.filter(id => id !== supplier.id));
-                            } else {
-                              field.onChange([...newValue, supplier.id]);
-                            }
-                          }}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            {supplier.supplier_name}
-                            {field.value.includes(supplier.id) && (
-                              <div className="flex-shrink-0 ml-2">
-                                <Badge variant="outline">Selected</Badge>
-                              </div>
-                            )}
-                          </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                    {supplier.supplier_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {field.value.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {field.value.map(supplierId => {
