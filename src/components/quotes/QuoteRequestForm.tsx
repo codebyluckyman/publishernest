@@ -50,7 +50,6 @@ export function QuoteRequestForm({ suppliers, onSuccess, onCancel }: QuoteReques
       formats: values.formats,
       products: values.products,
       quantities: values.quantities,
-      supplier_id: values.supplier_id, // Keep for backward compatibility
     };
 
     createMutation.mutate(
