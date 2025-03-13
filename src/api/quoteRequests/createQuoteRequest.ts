@@ -26,6 +26,7 @@ export async function createQuoteRequest(
       const newQuoteRequest = {
         organization_id: organizationId,
         supplier_id,
+        supplier_ids: formData.supplier_ids,
         title: formData.title,
         description: formData.description || null,
         status: "pending",

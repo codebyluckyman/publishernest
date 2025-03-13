@@ -1,6 +1,7 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Format } from "@/types/format";
+import { Format, FormatCategory } from "@/types/format";
 import { 
   createFormat, 
   updateFormat, 
@@ -21,8 +22,8 @@ export function useFormatMutations() {
    */
   const useCreateFormat = () => {
     return useMutation({
-      // @ts-ignore - Breaking circular type reference
-      mutationFn: (formatData: Omit<Format, "id">) => createFormat(formatData),
+      mutationFn: (formatData: Omit<Format, "id" | "created_at" | "updated_at">) => 
+        createFormat(formatData as any), // Using type assertion to break circular reference
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["formats"] });
         toast.success("Format created successfully");
