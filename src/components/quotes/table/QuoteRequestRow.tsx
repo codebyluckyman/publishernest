@@ -35,7 +35,7 @@ export const QuoteRequestRow = ({
           : "Not set"}
       </TableCell>
       <TableCell><StatusBadge status={request.status} /></TableCell>
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <FormatCountButton 
           request={request} 
           onClick={onViewDetails} 
