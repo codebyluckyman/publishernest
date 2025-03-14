@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Eye, Pencil, Copy, FileText, MoreVertical } from "lucide-react";
+import { Eye, Pencil, Copy, FileText, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Format } from "./types/FormatTypes";
 import { FormatCopyDialog } from "./FormatCopyDialog";
@@ -31,7 +31,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
       <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" title="Format Actions">
-            <MoreVertical className="h-4 w-4" />
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-white">
