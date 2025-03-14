@@ -81,6 +81,9 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
               buttonText="Create Quote Request"
               buttonIcon={true}
               className="flex items-center w-full"
+              // We need to close the dropdown menu first, then show the dialog
+              // but don't call onSuccess in the CreateQuoteRequestFromFormat component
+              // until the quote request is actually created
               onSuccess={() => setIsOpen(false)}
             />
           </DropdownMenuItem>

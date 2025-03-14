@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
@@ -77,7 +78,9 @@ export function CreateQuoteRequestFromFormat({
         onClick={(e) => {
           e.stopPropagation();
           setOpen(true);
-          if (onSuccess) onSuccess(); // Call onSuccess here to close the parent dropdown
+          // Don't call onSuccess here, as it will close the parent dropdown
+          // AND close the dialog we're trying to open
+          // if (onSuccess) onSuccess(); <- This was causing the dialog to close immediately
         }} 
         variant={buttonVariant} 
         size={buttonSize}
@@ -92,6 +95,9 @@ export function CreateQuoteRequestFromFormat({
         <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Create Quote Request</DialogTitle>
+            <DialogDescription>
+              Create a new quote request using this format.
+            </DialogDescription>
           </DialogHeader>
           <div className="overflow-y-auto pr-1 flex-grow">
             {isSuppliersLoading ? (
