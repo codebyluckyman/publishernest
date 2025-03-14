@@ -1,15 +1,34 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
+import { recordQuoteRequestAudit } from "./quoteRequestAudit";
 
 /**
  * Updates an existing quote request
  */
 export async function updateQuoteRequest(
   id: string,
-  updates: Partial<QuoteRequestFormValues>
+  updates: Partial<QuoteRequestFormValues>,
+  userId: string
 ): Promise<QuoteRequest | null> {
   try {
+    // First, get the current state of the quote request before updates
+    const { data: currentRequest, error: fetchError } = await supabase
+      .from("quote_requests")
+      .select(`
+        *,
+        quote_request_formats(
+          id,
+          format_id,
+          quantity,
+          notes
+        )
+      `)
+      .eq("id", id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
     // Extract formats from updates to handle separately
     const { formats, ...quoteRequestUpdates } = updates;
 
@@ -62,7 +81,7 @@ export async function updateQuoteRequest(
     }
 
     // Fetch the updated quote request with its formats
-    const { data: updatedRequest, error: fetchError } = await supabase
+    const { data: updatedRequest, error: fetchError2 } = await supabase
       .from("quote_requests")
       .select(`
         *,
@@ -77,7 +96,16 @@ export async function updateQuoteRequest(
       .eq("id", id)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError2) throw fetchError2;
+
+    // Record the audit entry
+    await recordQuoteRequestAudit(
+      id,
+      userId,
+      currentRequest as Partial<QuoteRequest>,
+      updatedRequest as Partial<QuoteRequest>,
+      'update'
+    );
 
     return updatedRequest as QuoteRequest;
   } catch (error: any) {

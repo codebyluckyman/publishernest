@@ -7,6 +7,7 @@ import {
   updateQuoteRequestStatus,
   deleteQuoteRequest
 } from "@/api/quoteRequestsApi";
+import { fetchQuoteRequestAudit } from "@/api/quoteRequests/quoteRequestAudit";
 
 /**
  * API hook for quote requests, used for backward compatibility
@@ -19,7 +20,8 @@ export function useQuoteRequestsApi() {
     useCreateQuoteRequest,
     useUpdateQuoteRequest,
     useUpdateQuoteRequestStatus,
-    useDeleteQuoteRequest
+    useDeleteQuoteRequest,
+    useQuoteRequestAudit
   } = useQuoteRequests();
 
   return {
@@ -29,12 +31,14 @@ export function useQuoteRequestsApi() {
     updateQuoteRequest,
     updateQuoteRequestStatus,
     deleteQuoteRequest,
+    fetchQuoteRequestAudit,
     
     // React Query hooks
     useQuoteRequests: useQuoteRequestsList, // Renamed for backward compatibility
     useCreateQuoteRequest,
     useUpdateQuoteRequest,
     useUpdateQuoteRequestStatus,
-    useDeleteQuoteRequest
+    useDeleteQuoteRequest,
+    useQuoteRequestAudit
   };
 }

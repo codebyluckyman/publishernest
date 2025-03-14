@@ -1,106 +1,123 @@
 
+import { useState } from "react";
 import { format } from "date-fns";
+import { Clock, ClipboardList, Calendar, Tag, User, MessageSquare, FileText } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { QuoteRequest } from "@/types/quoteRequest";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { StatusBadge } from "./StatusBadge";
+import { SupplierDisplay } from "./SupplierDisplay";
+import { FormatCountButton } from "./FormatCountButton";
+import { QuoteAuditHistory } from "./QuoteAuditHistory";
 
-type QuoteDetailsSheetProps = {
+interface QuoteDetailsSheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedRequest: QuoteRequest | null;
-};
+}
 
-export const QuoteDetailsSheet = ({ 
-  isOpen, 
-  onOpenChange, 
-  selectedRequest 
-}: QuoteDetailsSheetProps) => {
+export function QuoteDetailsSheet({
+  isOpen,
+  onOpenChange,
+  selectedRequest,
+}: QuoteDetailsSheetProps) {
+  const [auditHistoryOpen, setAuditHistoryOpen] = useState(false);
+
   if (!selectedRequest) return null;
 
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Quote Request Details</SheetTitle>
-        </SheetHeader>
-        
-        <div className="space-y-4 mt-6">
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Title</h3>
-            <p className="mt-1">{selectedRequest.title}</p>
-          </div>
-          
-          {selectedRequest.description && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-              <p className="mt-1">{selectedRequest.description}</p>
-            </div>
-          )}
-          
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Supplier(s)</h3>
-            {selectedRequest.supplier_names && selectedRequest.supplier_names.length > 0 ? (
-              <div className="mt-1 space-y-1">
-                {selectedRequest.supplier_names.map((name, index) => (
-                  <div key={index}>{name}</div>
-                ))}
+    <>
+      <Sheet open={isOpen} onOpenChange={onOpenChange}>
+        <SheetContent className="sm:max-w-md overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-2xl flex items-center gap-2">
+              <ClipboardList className="h-6 w-6" />
+              <span className="truncate">{selectedRequest.title}</span>
+            </SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                <StatusBadge status={selectedRequest.status} />
               </div>
-            ) : (
-              <p className="mt-1">{selectedRequest.supplier_name || 'Unknown'}</p>
-            )}
-          </div>
-          
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
-            <div className="mt-1"><StatusBadge status={selectedRequest.status} /></div>
-          </div>
-          
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Date Requested</h3>
-            <p className="mt-1">{selectedRequest.requested_at ? format(new Date(selectedRequest.requested_at), "PPP") : 'N/A'}</p>
-          </div>
-          
-          {selectedRequest.due_date && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Due Date</h3>
-              <p className="mt-1">{format(new Date(selectedRequest.due_date), "PPP")}</p>
-            </div>
-          )}
-          
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Formats</h3>
-            {selectedRequest.formats && selectedRequest.formats.length > 0 ? (
-              <div className="border rounded-md divide-y">
-                {selectedRequest.formats.map((format) => (
-                  <div key={format.id} className="p-3">
-                    <div className="flex justify-between">
-                      <span className="font-medium">{format.format_name}</span>
-                      <span>Qty: {format.quantity}</span>
-                    </div>
-                    {format.notes && (
-                      <p className="text-sm text-muted-foreground mt-1">{format.notes}</p>
-                    )}
+
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-500">Formats</h3>
+                <FormatCountButton formats={selectedRequest.formats} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-500">Supplier</h3>
+                <SupplierDisplay 
+                  supplierName={selectedRequest.supplier_name} 
+                  supplierNames={selectedRequest.supplier_names} 
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-500">Requested</h3>
+                <div className="flex items-center text-sm">
+                  <Clock className="h-4 w-4 mr-1 text-gray-400" />
+                  {format(new Date(selectedRequest.requested_at), "PPP")}
+                </div>
+              </div>
+
+              {selectedRequest.due_date && (
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-500">Due Date</h3>
+                  <div className="flex items-center text-sm">
+                    <Calendar className="h-4 w-4 mr-1 text-gray-400" />
+                    {format(new Date(selectedRequest.due_date), "PPP")}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground">No formats associated with this request.</p>
-            )}
-          </div>
-          
-          {selectedRequest.notes && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Additional Notes</h3>
-              <p className="mt-1">{selectedRequest.notes}</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+
+            <Separator />
+
+            {selectedRequest.description && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500 flex items-center">
+                  <FileText className="h-4 w-4 mr-1" />
+                  Description
+                </h3>
+                <p className="text-sm whitespace-pre-line">{selectedRequest.description}</p>
+              </div>
+            )}
+
+            {selectedRequest.notes && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-500 flex items-center">
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  Notes
+                </h3>
+                <p className="text-sm whitespace-pre-line">{selectedRequest.notes}</p>
+              </div>
+            )}
+
+            <Separator />
+            
+            <div className="flex justify-center">
+              <Button 
+                variant="outline" 
+                onClick={() => setAuditHistoryOpen(true)}
+                className="w-full"
+              >
+                View Audit History
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <QuoteAuditHistory 
+        quoteRequest={selectedRequest}
+        isOpen={auditHistoryOpen}
+        onOpenChange={setAuditHistoryOpen}
+      />
+    </>
   );
-};
+}

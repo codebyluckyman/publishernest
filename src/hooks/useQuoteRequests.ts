@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -64,8 +65,12 @@ export function useQuoteRequests() {
    */
   const useUpdateQuoteRequest = () => {
     return useMutation({
-      mutationFn: ({ id, updates }: { id: string; updates: Partial<QuoteRequestFormValues> }) => 
-        updateQuoteRequest(id, updates),
+      mutationFn: ({ id, updates }: { id: string; updates: Partial<QuoteRequestFormValues> }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return updateQuoteRequest(id, updates, user.id);
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["quoteRequests"] });
         toast.success("Quote request updated successfully");
@@ -81,8 +86,12 @@ export function useQuoteRequests() {
    */
   const useUpdateQuoteRequestStatus = () => {
     return useMutation({
-      mutationFn: ({ id, status }: { id: string; status: 'pending' | 'approved' | 'declined' }) =>
-        updateQuoteRequestStatus(id, status),
+      mutationFn: ({ id, status }: { id: string; status: 'pending' | 'approved' | 'declined' }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return updateQuoteRequestStatus(id, status, user.id);
+      },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["quoteRequests"] });
         toast.success(`Quote request ${variables.status} successfully`);
@@ -98,7 +107,12 @@ export function useQuoteRequests() {
    */
   const useDeleteQuoteRequest = () => {
     return useMutation({
-      mutationFn: (id: string) => deleteQuoteRequest(id),
+      mutationFn: (id: string) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return deleteQuoteRequest(id, user.id);
+      },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["quoteRequests"] });
         toast.success("Quote request deleted successfully");
@@ -109,11 +123,30 @@ export function useQuoteRequests() {
     });
   };
 
+  /**
+   * Hook to fetch audit history for a quote request
+   */
+  const useQuoteRequestAudit = (quoteRequestId: string | null) => {
+    const { fetchQuoteRequestAudit } = require("@/api/quoteRequests/quoteRequestAudit");
+    
+    return useQuery({
+      queryKey: ["quoteRequestAudit", quoteRequestId],
+      queryFn: () => fetchQuoteRequestAudit(quoteRequestId as string),
+      enabled: !!quoteRequestId,
+      meta: {
+        onError: (error: any) => {
+          toast.error(error.message || "Failed to load audit history");
+        }
+      }
+    });
+  };
+
   return {
     useQuoteRequestsList,
     useCreateQuoteRequest,
     useUpdateQuoteRequest,
     useUpdateQuoteRequestStatus,
-    useDeleteQuoteRequest
+    useDeleteQuoteRequest,
+    useQuoteRequestAudit
   };
 }

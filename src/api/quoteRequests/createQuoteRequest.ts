@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
+import { recordQuoteRequestAudit } from "./quoteRequestAudit";
 
 /**
  * Creates a new quote request for a supplier
@@ -62,6 +63,15 @@ export async function createQuoteRequest(
         throw formatsError;
       }
     }
+
+    // Record the creation in the audit trail
+    await recordQuoteRequestAudit(
+      quoteRequestData.id,
+      userId,
+      {},
+      quoteRequestData,
+      'create'
+    );
 
     return quoteRequestData;
   } catch (error: any) {

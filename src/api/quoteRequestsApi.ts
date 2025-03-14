@@ -7,7 +7,9 @@ import {
   createQuoteRequest,
   updateQuoteRequest,
   updateQuoteRequestStatus,
-  deleteQuoteRequest
+  deleteQuoteRequest,
+  fetchQuoteRequestAudit,
+  recordQuoteRequestAudit
 } from './quoteRequests';
 
 export {
@@ -15,5 +17,7 @@ export {
   createQuoteRequest,
   updateQuoteRequest,
   updateQuoteRequestStatus,
-  deleteQuoteRequest
+  deleteQuoteRequest,
+  fetchQuoteRequestAudit,
+  recordQuoteRequestAudit
 };
