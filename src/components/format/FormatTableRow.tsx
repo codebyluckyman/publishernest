@@ -204,7 +204,7 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
               formatId={format.id}
               buttonVariant="ghost"
               buttonSize="icon"
-              buttonText=""
+              buttonText="Create Quote Request"
               buttonIcon={true}
             />
           </div>
