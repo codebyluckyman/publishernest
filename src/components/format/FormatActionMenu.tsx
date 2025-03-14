@@ -41,7 +41,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
             onViewFormat(format.id);
             setIsOpen(false);
           }}>
-            <Eye className="h-4 w-4" />
+            <Eye className="mr-2 h-4 w-4" />
             <span>View Format</span>
           </DropdownMenuItem>
           
@@ -49,7 +49,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
             onEditFormat(format.id);
             setIsOpen(false);
           }}>
-            <Pencil className="h-4 w-4" />
+            <Pencil className="mr-2 h-4 w-4" />
             <span>Edit Format</span>
           </DropdownMenuItem>
           
@@ -66,7 +66,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
               }}
               triggerElement={
                 <div className="flex items-center w-full">
-                  <Copy className="h-4 w-4" />
+                  <Copy className="mr-2 h-4 w-4" />
                   <span>Copy Format</span>
                 </div>
               }
@@ -81,7 +81,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
                 buttonSize="sm"
                 buttonText="Create Quote Request"
                 buttonIcon={true}
-                className="h-4 w-4"
+                className="mr-2 h-4 w-4"
                 onSuccess={() => setIsOpen(false)}
               />
             </div>
