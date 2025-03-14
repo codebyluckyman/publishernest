@@ -37,7 +37,7 @@ export function CreateQuoteRequestFromFormat({
         .from('quote_requests')
         .insert({
           format_id: formatId,
-          status: 'draft',
+          status: 'pending',
         })
         .select()
         .single();
