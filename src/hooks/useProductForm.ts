@@ -97,7 +97,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       const formattedValues = {
         ...values,
         title: values.title,
-        publication_date: values.publication_date ? values.publication_date.toISOString().split('T')[0] : null,
+        publication_date: values.publication_date ? formatDateToYYYYMMDD(values.publication_date) : null,
         organization_id: currentOrganization.id,
         format_id: cleanedFormatId, // Use the cleaned format_id
       };
@@ -137,6 +137,18 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     } finally {
       setIsLoading(false);
     }
+  }
+
+  /**
+   * Helper function to format a Date to YYYY-MM-DD string
+   * without timezone conversion issues
+   */
+  function formatDateToYYYYMMDD(date: Date): string {
+    const year = date.getFullYear();
+    // getMonth() is 0-indexed, so add 1
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   // Handle product deletion
