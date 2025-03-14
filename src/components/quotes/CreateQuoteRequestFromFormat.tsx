@@ -77,6 +77,7 @@ export function CreateQuoteRequestFromFormat({
         onClick={(e) => {
           e.stopPropagation();
           setOpen(true);
+          if (onSuccess) onSuccess(); // Call onSuccess here to close the parent dropdown
         }} 
         variant={buttonVariant} 
         size={buttonSize}

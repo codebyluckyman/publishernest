@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Eye, Pencil, Copy, FileText, MoreHorizontal } from "lucide-react";
+import { Eye, Pencil, Copy, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Format } from "./types/FormatTypes";
 import { FormatCopyDialog } from "./FormatCopyDialog";
@@ -63,7 +63,6 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
                 if (onFormatCopied) {
                   onFormatCopied(newFormatId);
                 }
-              
               }}
               triggerElement={
                 <div className="flex items-center w-full">
@@ -75,17 +74,15 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
           </DropdownMenuItem>
           
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <div className="flex items-center w-full">
-              <CreateQuoteRequestFromFormat
-                formatId={format.id}
-                buttonVariant="ghost"
-                buttonSize="sm"
-                buttonText="Create Quote Request"
-                buttonIcon={true}
-                className="mr-2 h-4 w-4"
-                onSuccess={() => setIsOpen(false)}
-              />
-            </div>
+            <CreateQuoteRequestFromFormat
+              formatId={format.id}
+              buttonVariant="ghost"
+              buttonSize="sm"
+              buttonText="Create Quote Request"
+              buttonIcon={true}
+              className="flex items-center w-full"
+              onSuccess={() => setIsOpen(false)}
+            />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
