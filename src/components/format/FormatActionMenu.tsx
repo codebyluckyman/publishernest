@@ -59,10 +59,11 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
             <FormatCopyDialog 
               format={format} 
               onFormatCopied={(newFormatId) => {
+                setIsOpen(false);
                 if (onFormatCopied) {
                   onFormatCopied(newFormatId);
                 }
-                setIsOpen(false);
+              
               }}
               triggerElement={
                 <div className="flex items-center w-full">
