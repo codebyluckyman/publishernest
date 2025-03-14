@@ -47,8 +47,8 @@ export const QuoteRequestRow = ({
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <SupplierDisplay 
-          request={request}
-          onClick={onViewDetails} 
+          supplierName={request.supplier_name || ''} 
+          supplierNames={request.supplier_names || []} 
         />
       </TableCell>
       <TableCell onClick={() => onViewDetails(request)}>
@@ -64,7 +64,8 @@ export const QuoteRequestRow = ({
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <FormatCountButton 
-          request={request} 
+          formats={request.formats || []} 
+          request={request}
           onClick={onViewDetails} 
         />
       </TableCell>

@@ -66,14 +66,21 @@ export async function fetchQuoteRequestAudit(quoteRequestId: string): Promise<Qu
       .from('quote_request_audit')
       .select(`
         *,
-        changed_by_user:changed_by(email)
+        changed_by_user:profiles(email)
       `)
       .eq("quote_request_id", quoteRequestId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    return data || [];
+    // Properly type cast the data to match QuoteRequestAudit type
+    const auditData = data.map(item => ({
+      ...item,
+      action: item.action as 'create' | 'update' | 'status_change' | 'delete',
+      changed_by_user: item.changed_by_user as { email: string }
+    }));
+
+    return auditData;
   } catch (error: any) {
     console.error("Error fetching quote request audit:", error);
     throw error;

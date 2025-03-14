@@ -13,21 +13,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { QuoteRequest, QuoteRequestAudit } from "@/types/quoteRequest";
 
-interface QuoteAuditHistoryProps {
+export interface QuoteAuditHistoryProps {
   quoteRequest: QuoteRequest | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -103,69 +97,74 @@ export function QuoteAuditHistory({
     });
   };
 
+  const handleBackClick = () => {
+    onOpenChange(false);
+  };
+
   if (!quoteRequest) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Audit History - {quoteRequest.title}</DialogTitle>
-        </DialogHeader>
-        
-        <div className="overflow-auto flex-1">
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin h-6 w-6 border-2 border-blue-500 rounded-full border-t-transparent"></div>
-              <span className="ml-2">Loading audit history...</span>
-            </div>
-          ) : auditEntries.length === 0 ? (
-            <div className="text-center p-8 text-gray-500">
-              No audit records found for this quote request.
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {auditEntries.map((entry: any) => {
-                  const { label, color } = getActionLabel(entry.action);
-                  return (
-                    <TableRow key={entry.id}>
-                      <TableCell>
-                        {format(new Date(entry.created_at), 'PPP p')}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={color}>{label}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {entry.changed_by_user?.email || 'Unknown user'}
-                      </TableCell>
-                      <TableCell>
-                        <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem value="changes">
-                            <AccordionTrigger>View Changes</AccordionTrigger>
-                            <AccordionContent>
-                              <div className="bg-gray-50 p-3 rounded text-sm">
-                                {formatChanges(entry.changes)}
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+    <div className="space-y-4 py-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-medium">Audit History - {quoteRequest.title}</h3>
+        <Button variant="outline" size="sm" onClick={handleBackClick}>
+          Back to Details
+        </Button>
+      </div>
+      
+      <div className="overflow-auto max-h-[500px]">
+        {isLoading ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin h-6 w-6 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+            <span className="ml-2">Loading audit history...</span>
+          </div>
+        ) : auditEntries.length === 0 ? (
+          <div className="text-center p-8 text-gray-500">
+            No audit records found for this quote request.
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {auditEntries.map((entry: any) => {
+                const { label, color } = getActionLabel(entry.action);
+                return (
+                  <TableRow key={entry.id}>
+                    <TableCell>
+                      {format(new Date(entry.created_at), 'PPP p')}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={color}>{label}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {entry.changed_by_user?.email || 'Unknown user'}
+                    </TableCell>
+                    <TableCell>
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="changes">
+                          <AccordionTrigger>View Changes</AccordionTrigger>
+                          <AccordionContent>
+                            <div className="bg-gray-50 p-3 rounded text-sm">
+                              {formatChanges(entry.changes)}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+    </div>
   );
 }

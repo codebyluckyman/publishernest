@@ -13,25 +13,45 @@ import { Eye, FileEdit, RotateCcw, CheckCircle, XCircle, ClockIcon } from "lucid
 
 interface QuoteDetailsSheetProps {
   isOpen: boolean;
-  onClose: () => void;
-  quoteRequest: QuoteRequest | null;
-  onEdit: (request: QuoteRequest) => void;
-  onStatusChange: (id: string, status: 'approved' | 'declined' | 'pending') => void;
+  onOpenChange: (open: boolean) => void;
+  selectedRequest: QuoteRequest | null;
+  onEdit?: (request: QuoteRequest) => void;
+  onStatusChange?: (id: string, status: 'approved' | 'declined' | 'pending') => void;
 }
 
 export function QuoteDetailsSheet({
   isOpen,
-  onClose,
-  quoteRequest,
+  onOpenChange,
+  selectedRequest,
   onEdit,
   onStatusChange,
 }: QuoteDetailsSheetProps) {
   const [showAuditHistory, setShowAuditHistory] = React.useState(false);
 
-  if (!quoteRequest) return null;
+  if (!selectedRequest) return null;
+
+  const handleStatusChange = (status: 'approved' | 'declined' | 'pending') => {
+    if (onStatusChange) {
+      onStatusChange(selectedRequest.id, status);
+    }
+  };
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(selectedRequest);
+    }
+  };
+
+  const handleClose = (open: boolean) => {
+    // Reset audit history view when closing the sheet
+    if (!open) {
+      setShowAuditHistory(false);
+    }
+    onOpenChange(open);
+  };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={handleClose}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Quote Request Details</SheetTitle>
@@ -39,30 +59,33 @@ export function QuoteDetailsSheet({
 
         {showAuditHistory ? (
           <QuoteAuditHistory 
-            quoteRequestId={quoteRequest.id} 
-            onBack={() => setShowAuditHistory(false)} 
+            quoteRequest={selectedRequest} 
+            isOpen={showAuditHistory}
+            onOpenChange={(open) => setShowAuditHistory(open)} 
           />
         ) : (
           <div className="space-y-6 py-6">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-semibold">{quoteRequest.title}</h2>
+                <h2 className="text-2xl font-semibold">{selectedRequest.title}</h2>
                 <div className="flex items-center mt-2 space-x-2">
-                  <StatusBadge status={quoteRequest.status} />
-                  {quoteRequest.formats && quoteRequest.formats.length > 0 && (
-                    <FormatCountButton formats={quoteRequest.formats} />
+                  <StatusBadge status={selectedRequest.status} />
+                  {selectedRequest.formats && selectedRequest.formats.length > 0 && (
+                    <FormatCountButton formats={selectedRequest.formats} />
                   )}
                 </div>
               </div>
               <div className="flex space-x-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onEdit(quoteRequest)}
-                >
-                  <FileEdit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
+                {onEdit && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleEdit}
+                  >
+                    <FileEdit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -80,64 +103,66 @@ export function QuoteDetailsSheet({
                   <div>
                     <p className="text-sm text-muted-foreground">Supplier</p>
                     <SupplierDisplay 
-                      supplierName={quoteRequest.supplier_name || ''}
-                      supplierNames={quoteRequest.supplier_names || []}
+                      supplierName={selectedRequest.supplier_name || ''}
+                      supplierNames={selectedRequest.supplier_names || []}
                     />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Requested on</p>
-                    <p className="font-medium">{formatDate(quoteRequest.requested_at)}</p>
+                    <p className="font-medium">{formatDate(selectedRequest.requested_at)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Due date</p>
                     <p className="font-medium">
-                      {quoteRequest.due_date ? formatDate(quoteRequest.due_date) : "Not specified"}
+                      {selectedRequest.due_date ? formatDate(selectedRequest.due_date) : "Not specified"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Status</p>
-                    <StatusBadge status={quoteRequest.status} />
+                    <StatusBadge status={selectedRequest.status} />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {quoteRequest.description && (
+            {selectedRequest.description && (
               <div>
                 <h3 className="text-md font-medium mb-2">Description</h3>
-                <p className="text-sm whitespace-pre-wrap">{quoteRequest.description}</p>
+                <p className="text-sm whitespace-pre-wrap">{selectedRequest.description}</p>
               </div>
             )}
 
-            <div>
-              <h3 className="text-md font-medium mb-2">Actions</h3>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={quoteRequest.status === "approved" ? "default" : "outline"}
-                  onClick={() => onStatusChange(quoteRequest.id, "approved")}
-                  className="flex-1"
-                >
-                  <CheckCircle className="h-4 w-4 mr-1" />
-                  Approve
-                </Button>
-                <Button
-                  variant={quoteRequest.status === "declined" ? "destructive" : "outline"}
-                  onClick={() => onStatusChange(quoteRequest.id, "declined")}
-                  className="flex-1"
-                >
-                  <XCircle className="h-4 w-4 mr-1" />
-                  Decline
-                </Button>
-                <Button
-                  variant={quoteRequest.status === "pending" ? "secondary" : "outline"}
-                  onClick={() => onStatusChange(quoteRequest.id, "pending")}
-                  className="flex-1"
-                >
-                  <ClockIcon className="h-4 w-4 mr-1" />
-                  Pending
-                </Button>
+            {onStatusChange && (
+              <div>
+                <h3 className="text-md font-medium mb-2">Actions</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={selectedRequest.status === "approved" ? "default" : "outline"}
+                    onClick={() => handleStatusChange("approved")}
+                    className="flex-1"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant={selectedRequest.status === "declined" ? "destructive" : "outline"}
+                    onClick={() => handleStatusChange("declined")}
+                    className="flex-1"
+                  >
+                    <XCircle className="h-4 w-4 mr-1" />
+                    Decline
+                  </Button>
+                  <Button
+                    variant={selectedRequest.status === "pending" ? "secondary" : "outline"}
+                    onClick={() => handleStatusChange("pending")}
+                    className="flex-1"
+                  >
+                    <ClockIcon className="h-4 w-4 mr-1" />
+                    Pending
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </SheetContent>

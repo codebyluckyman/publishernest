@@ -102,6 +102,8 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
         isOpen={detailsOpen}
         onOpenChange={closeDetails}
         selectedRequest={selectedRequest}
+        onEdit={editRequest}
+        onStatusChange={handleStatusChange}
       />
 
       <EditQuoteRequestDialog
