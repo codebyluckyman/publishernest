@@ -81,7 +81,7 @@ export function CreateQuoteRequestFromFormat({
         className={className}
         title="Create Quote Request"
       >
-        {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
+        {buttonIcon && <FileText className="h-4 w-4" />}
         {buttonText}
       </Button>
 
