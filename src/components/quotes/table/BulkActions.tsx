@@ -5,6 +5,7 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
+  Calendar,
 } from "lucide-react";
 import {
   Tooltip,
@@ -19,6 +20,7 @@ interface BulkActionsProps {
   onDecline: () => void;
   onMarkPending: () => void;
   onDelete: () => void;
+  onUpdateDueDate: () => void;
   onClearSelection: () => void;
 }
 
@@ -28,6 +30,7 @@ export function BulkActions({
   onDecline,
   onMarkPending,
   onDelete,
+  onUpdateDueDate,
   onClearSelection,
 }: BulkActionsProps) {
   if (selectedCount === 0) {
@@ -88,6 +91,22 @@ export function BulkActions({
           </TooltipTrigger>
           <TooltipContent>
             <p>Mark selected quote requests as pending</p>
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onUpdateDueDate}
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              Update Due Date
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Update due date for selected quote requests</p>
           </TooltipContent>
         </Tooltip>
 

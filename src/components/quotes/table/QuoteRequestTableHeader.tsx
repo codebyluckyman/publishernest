@@ -35,7 +35,8 @@ export function QuoteRequestTableHeader({
             ref={(checkbox) => {
               // Set indeterminate state if some but not all rows are selected
               if (checkbox) {
-                checkbox.indeterminate = indeterminate;
+                // Using DOM API directly since the React interface doesn't include indeterminate
+                (checkbox as unknown as HTMLInputElement).indeterminate = indeterminate;
               }
             }}
           />

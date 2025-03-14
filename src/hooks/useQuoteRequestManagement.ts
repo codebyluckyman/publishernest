@@ -14,6 +14,7 @@ export function useQuoteRequestManagement() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [dueDateDialogOpen, setDueDateDialogOpen] = useState(false);
 
   // Bulk selection handling
   const handleSelectRow = useCallback((id: string, selected: boolean) => {
@@ -119,12 +120,44 @@ export function useQuoteRequestManagement() {
     }
   }, [selectedRows, deleteMutation, clearSelection]);
 
+  const openDueDateDialog = useCallback(() => {
+    setDueDateDialogOpen(true);
+  }, []);
+
+  const handleBulkUpdateDueDate = useCallback((newDate: Date | undefined) => {
+    if (selectedRows.length === 0) return;
+
+    // Format the date for API or use null to clear the date
+    const formattedDate = newDate ? newDate.toISOString().split('T')[0] : null;
+    const action = newDate ? "update" : "remove";
+    
+    // Create a queue of promises
+    const promises = selectedRows.map(id => 
+      updateMutation.mutateAsync({ 
+        id, 
+        updates: { due_date: newDate } 
+      })
+    );
+    
+    // Execute all promises
+    Promise.all(promises)
+      .then(() => {
+        toast.success(`Successfully ${action}d due date for ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
+        clearSelection();
+      })
+      .catch(error => {
+        toast.error(`Error updating due dates: ${error.message}`);
+      });
+  }, [selectedRows, updateMutation, clearSelection]);
+
   return {
     selectedRequest,
     detailsOpen,
     editOpen,
     setEditOpen,
     selectedRows,
+    dueDateDialogOpen,
+    setDueDateDialogOpen,
     handleSelectRow,
     handleSelectAll,
     clearSelection,
@@ -136,6 +169,8 @@ export function useQuoteRequestManagement() {
     closeDetails,
     updateMutation,
     handleBulkStatusChange,
-    handleBulkDelete
+    handleBulkDelete,
+    openDueDateDialog,
+    handleBulkUpdateDueDate
   };
 }

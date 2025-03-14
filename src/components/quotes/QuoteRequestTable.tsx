@@ -14,6 +14,7 @@ import { useQuoteRequestSort } from "@/hooks/useQuoteRequestSort";
 import { useQuoteRequestManagement } from "@/hooks/useQuoteRequestManagement";
 import { QuoteRequestTableHeader } from "./table/QuoteRequestTableHeader";
 import { BulkActions } from "./table/BulkActions";
+import { BulkDueDateDialog } from "./table/BulkDueDateDialog";
 import { useMemo } from "react";
 
 interface QuoteRequestTableProps {
@@ -38,6 +39,8 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     editOpen,
     setEditOpen,
     selectedRows,
+    dueDateDialogOpen,
+    setDueDateDialogOpen,
     handleSelectRow,
     handleSelectAll,
     clearSelection,
@@ -49,7 +52,9 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     closeDetails,
     updateMutation,
     handleBulkStatusChange,
-    handleBulkDelete
+    handleBulkDelete,
+    openDueDateDialog,
+    handleBulkUpdateDueDate
   } = useQuoteRequestManagement();
 
   if (quoteRequests.length === 0) {
@@ -64,6 +69,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
         onDecline={() => handleBulkStatusChange('declined')}
         onMarkPending={() => handleBulkStatusChange('pending')}
         onDelete={handleBulkDelete}
+        onUpdateDueDate={openDueDateDialog}
         onClearSelection={clearSelection}
       />
 
@@ -105,6 +111,13 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
         suppliers={suppliers}
         onSubmit={handleUpdateRequest}
         isSubmitting={updateMutation.isPending}
+      />
+
+      <BulkDueDateDialog
+        isOpen={dueDateDialogOpen}
+        onOpenChange={setDueDateDialogOpen}
+        onConfirm={handleBulkUpdateDueDate}
+        count={selectedRows.length}
       />
     </>
   );
