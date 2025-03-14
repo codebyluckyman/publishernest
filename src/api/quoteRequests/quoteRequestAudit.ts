@@ -62,6 +62,7 @@ export async function recordQuoteRequestAudit(
  */
 export async function fetchQuoteRequestAudit(quoteRequestId: string): Promise<QuoteRequestAudit[]> {
   try {
+    // Fixed query to not attempt to join with profiles table since there's no foreign key relationship
     const { data, error } = await supabase
       .from('quote_request_audit')
       .select(`
@@ -70,24 +71,42 @@ export async function fetchQuoteRequestAudit(quoteRequestId: string): Promise<Qu
         changed_by,
         action,
         changes,
-        created_at,
-        profiles(email)
+        created_at
       `)
       .eq("quote_request_id", quoteRequestId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
 
-    // Properly type cast the data to match QuoteRequestAudit type
+    // Fetch user emails in a separate query if needed
+    const userIds = data.map(item => item.changed_by).filter(Boolean);
+    let userEmails: Record<string, string> = {};
+    
+    if (userIds.length > 0) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .in('id', userIds);
+        
+      if (!profilesError && profilesData) {
+        userEmails = profilesData.reduce((acc: Record<string, string>, profile) => {
+          acc[profile.id] = profile.email;
+          return acc;
+        }, {});
+      } else {
+        console.warn("Could not fetch user profiles for audit log:", profilesError);
+      }
+    }
+
+    // Map the data to the expected format
     const auditData: QuoteRequestAudit[] = data.map(item => {
       // Cast the action string to our enum type
       const action = item.action as 'create' | 'update' | 'status_change' | 'delete';
       
-      // Handle the joined profiles data safely
-      let changedByUser: { email: string } | undefined = undefined;
-      if (item.profiles && typeof item.profiles === 'object' && 'email' in item.profiles) {
-        changedByUser = { email: (item.profiles as any).email as string };
-      }
+      // Get user email from our separate profiles query
+      const changedByUser = item.changed_by && userEmails[item.changed_by] 
+        ? { email: userEmails[item.changed_by] } 
+        : undefined;
       
       // Cast changes from Json type to our expected Record type
       const changes = item.changes as Record<string, { previous: any; new: any }>;

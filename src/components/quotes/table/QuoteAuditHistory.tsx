@@ -85,11 +85,11 @@ export function QuoteAuditHistory({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <span className="text-xs text-gray-500">Previous:</span>
-              <div className="text-sm">{previousFormatted || '(empty)'}</div>
+              <div className="text-sm">{previousFormatted !== undefined ? JSON.stringify(previousFormatted) : '(empty)'}</div>
             </div>
             <div>
               <span className="text-xs text-gray-500">New:</span>
-              <div className="text-sm">{newFormatted || '(empty)'}</div>
+              <div className="text-sm">{newFormatted !== undefined ? JSON.stringify(newFormatted) : '(empty)'}</div>
             </div>
           </div>
         </div>
@@ -133,7 +133,7 @@ export function QuoteAuditHistory({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {auditEntries.map((entry: any) => {
+              {auditEntries.map((entry: QuoteRequestAudit) => {
                 const { label, color } = getActionLabel(entry.action);
                 return (
                   <TableRow key={entry.id}>
