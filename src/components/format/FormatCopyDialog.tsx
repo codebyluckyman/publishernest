@@ -16,7 +16,7 @@ interface FormatCopyDialogProps {
 export function FormatCopyDialog({ format, onFormatCopied, triggerElement }: FormatCopyDialogProps) {
   const [isCopying, setIsCopying] = useState(false);
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setIsOpen] = useState(false);
 
   const copyFormat = async () => {
     setIsCopying(true);
