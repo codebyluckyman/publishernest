@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 
@@ -35,11 +36,12 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-white">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem onClick={() => {
             onViewFormat(format.id);
             setIsOpen(false);
           }}>
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="h-4 w-4" />
             <span>View Format</span>
           </DropdownMenuItem>
           
@@ -47,7 +49,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
             onEditFormat(format.id);
             setIsOpen(false);
           }}>
-            <Pencil className="h-4 w-4 mr-2" />
+            <Pencil className="h-4 w-4" />
             <span>Edit Format</span>
           </DropdownMenuItem>
           
@@ -64,7 +66,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
               }}
               triggerElement={
                 <div className="flex items-center w-full">
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="h-4 w-4" />
                   <span>Copy Format</span>
                 </div>
               }
@@ -79,7 +81,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
                 buttonSize="sm"
                 buttonText="Create Quote Request"
                 buttonIcon={true}
-                className="flex items-center p-0 h-auto w-full justify-start hover:bg-transparent"
+                className="h-4 w-4"
                 onSuccess={() => setIsOpen(false)}
               />
             </div>
