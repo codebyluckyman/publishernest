@@ -45,5 +45,5 @@ export interface QuoteRequestFormValues {
   quantities?: Record<string, any>;
 }
 
-export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name';
+export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';
 export type SortDirection = 'asc' | 'desc';
