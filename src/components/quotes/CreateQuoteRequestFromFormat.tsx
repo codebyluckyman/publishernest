@@ -52,7 +52,6 @@ export function CreateQuoteRequestFromFormat({
           onSuccess: () => {
             setOpen(false);
             toast.success("Quote request created successfully");
-            // Navigate to quote requests page after successful creation
             navigate("/quote-requests");
             if (onSuccess) onSuccess();
           },
@@ -75,13 +74,16 @@ export function CreateQuoteRequestFromFormat({
   return (
     <>
       <Button 
-        onClick={() => setOpen(true)} 
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }} 
         variant={buttonVariant} 
         size={buttonSize}
         className={className}
         title="Create Quote Request"
       >
-        {buttonIcon && <FileText className="h-4 w-4" />}
+        {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
         {buttonText}
       </Button>
 

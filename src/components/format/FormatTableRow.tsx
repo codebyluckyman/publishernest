@@ -1,27 +1,9 @@
-import { Eye, Pencil, Copy, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { TableRow, TableCell } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { CreateQuoteRequestFromFormat } from "../quotes/CreateQuoteRequestFromFormat";
 
-export interface Format {
-  id: string;
-  format_name: string;
-  tps_height_mm: number | null;
-  tps_width_mm: number | null;
-  tps_depth_mm: number | null;
-  tps_plc_height_mm: number | null;
-  tps_plc_width_mm: number | null;
-  tps_plc_depth_mm: number | null;
-  extent: string | null;
-  cover_stock_print: string | null;
-  internal_stock_print: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { TableRow, TableCell } from "@/components/ui/table";
+import { useState } from "react";
+import { FormatActionMenu } from "./FormatActionMenu";
+import { Format } from "./types/FormatTypes";
+import { FormatDimensions } from "./FormatDimensions";
 
 interface FormatTableRowProps {
   format: Format;
@@ -32,85 +14,6 @@ interface FormatTableRowProps {
 }
 
 export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate, onFormatCopied }: FormatTableRowProps) {
-  const [isCopying, setIsCopying] = useState(false);
-  const [copyDialogOpen, setCopyDialogOpen] = useState(false);
-  
-  const formatTextDimensions = () => {
-    if (!format.tps_height_mm && !format.tps_width_mm && !format.tps_depth_mm) {
-      return "N/A";
-    }
-    
-    const height = format.tps_height_mm + 'mm';
-    const width = format.tps_width_mm + 'mm';
-    
-    if (format.tps_depth_mm) {
-      return `${height} × ${width} × ${format.tps_depth_mm}mm`;
-    }
-    
-    return `${height} × ${width}`;
-  };
-
-  const formatPlcDimensions = () => {
-    if (!format.tps_plc_height_mm && !format.tps_plc_width_mm && !format.tps_plc_depth_mm) {
-      return "N/A";
-    }
-    
-    const height = format.tps_plc_height_mm + 'mm';
-    const width = format.tps_plc_width_mm + 'mm';
-    
-    if (format.tps_plc_depth_mm) {
-      return `${height} × ${width} × ${format.tps_plc_depth_mm}mm`;
-    }
-    
-    return `${height} × ${width}`;
-  };
-
-  const copyFormat = async () => {
-    setIsCopying(true);
-    try {
-      const { data: formatData, error: fetchError } = await supabase
-        .from("formats")
-        .select("*")
-        .eq("id", format.id)
-        .single();
-        
-      if (fetchError) throw fetchError;
-      
-      if (!formatData) {
-        throw new Error("Format not found");
-      }
-      
-      const newFormatData = {
-        ...formatData,
-        id: undefined,
-        format_name: `${formatData.format_name} (Copy)`,
-        created_at: undefined,
-        updated_at: undefined,
-      };
-      
-      const { data: newFormat, error: insertError } = await supabase
-        .from("formats")
-        .insert(newFormatData)
-        .select()
-        .single();
-        
-      if (insertError) throw insertError;
-      
-      toast.success(`Format "${format.format_name}" copied successfully`);
-      
-      setCopyDialogOpen(false);
-      
-      if (onFormatCopied && newFormat) {
-        onFormatCopied(newFormat.id);
-      }
-    } catch (error: any) {
-      toast.error(`Failed to copy format: ${error.message}`);
-      console.error("Error copying format:", error);
-    } finally {
-      setIsCopying(false);
-    }
-  };
-
   return (
     <TableRow 
       key={format.id}
@@ -118,84 +21,19 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
       onClick={() => onViewFormat(format.id)}
     >
       <TableCell className="font-medium">{format.format_name}</TableCell>
-      <TableCell>{formatTextDimensions()}</TableCell>
-      <TableCell>{formatPlcDimensions()}</TableCell>
+      <TableCell><FormatDimensions format={format} type="text" /></TableCell>
+      <TableCell><FormatDimensions format={format} type="plc" /></TableCell>
       <TableCell>{format.extent || "N/A"}</TableCell>
       <TableCell>{format.cover_stock_print || "N/A"}</TableCell>
       <TableCell>{format.internal_stock_print || "N/A"}</TableCell>
       <TableCell>{formatDate(format.created_at)}</TableCell>
       <TableCell>
-        <div className="flex items-center space-x-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewFormat(format.id);
-            }}
-            title="View format"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onEditFormat(format.id);
-            }}
-            title="Edit format"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <AlertDialog open={copyDialogOpen} onOpenChange={setCopyDialogOpen}>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCopyDialogOpen(true);
-                }}
-                title="Copy format"
-                disabled={isCopying}
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Copy Format</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to create a copy of "{format.format_name}"? A new format will be created with all the same properties.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setCopyDialogOpen(false)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    copyFormat();
-                  }}
-                  disabled={isCopying}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  {isCopying ? "Copying..." : "Copy Format"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          
-          <div onClick={(e) => e.stopPropagation()}>
-            <CreateQuoteRequestFromFormat
-              formatId={format.id}
-              buttonVariant="ghost"
-              buttonSize="icon"
-              buttonText=""
-              buttonIcon={true}
-            />
-          </div>
-        </div>
+        <FormatActionMenu 
+          format={format} 
+          onViewFormat={onViewFormat}
+          onEditFormat={onEditFormat}
+          onFormatCopied={onFormatCopied}
+        />
       </TableCell>
     </TableRow>
   );
