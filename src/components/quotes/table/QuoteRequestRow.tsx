@@ -23,9 +23,13 @@ export const QuoteRequestRow = ({
   onEdit
 }: QuoteRequestRowProps) => {
   return (
-    <TableRow key={request.id}>
+    <TableRow 
+      key={request.id}
+      className="cursor-pointer hover:bg-gray-50"
+      onClick={() => onViewDetails(request)}
+    >
       <TableCell className="font-medium">{request.title}</TableCell>
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <SupplierDisplay 
           request={request}
           onClick={onViewDetails} 
@@ -46,7 +50,7 @@ export const QuoteRequestRow = ({
           onClick={onViewDetails} 
         />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <QuoteRequestActions 
           request={request}
           onStatusChange={onStatusChange}
