@@ -48,6 +48,8 @@ export function QuoteRequestForm({
   }, [form]);
 
   const handleFormSubmit = (data: QuoteRequestFormValues) => {
+    // Log the form data before submission to debug
+    console.log("Form submission data:", data);
     onSubmit(data);
   };
 

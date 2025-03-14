@@ -43,6 +43,9 @@ export function CreateQuoteRequestFromFormat({
   const { data: suppliers = [], isLoading: isSuppliersLoading } = useFetchSuppliers();
 
   const handleSubmit = (formData: QuoteRequestFormValues) => {
+    // Log the form data to debug
+    console.log("Submitting form data:", formData);
+    
     if (currentOrganization) {
       createMutation.mutate(
         {

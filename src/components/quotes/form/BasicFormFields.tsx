@@ -1,4 +1,3 @@
-
 import { Control, UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,14 @@ export function BasicFormFields({ form, suppliers }: BasicFormFieldsProps) {
           <FormItem>
             <FormLabel>Title</FormLabel>
             <FormControl>
-              <Input placeholder="Quote request title" {...field} />
+              <Input 
+                placeholder="Quote request title" 
+                {...field} 
+                onChange={(e) => {
+                  field.onChange(e.target.value);
+                  console.log("Title input value:", e.target.value);
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -46,7 +52,6 @@ export function BasicFormFields({ form, suppliers }: BasicFormFieldsProps) {
             <FormLabel>Suppliers</FormLabel>
             <Select
               onValueChange={(value) => {
-                // Check if value already exists in the array
                 if (!field.value.includes(value)) {
                   field.onChange([...field.value, value]);
                 }

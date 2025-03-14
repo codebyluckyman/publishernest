@@ -20,6 +20,8 @@ export async function createQuoteRequest(
       throw new Error("No suppliers selected");
     }
 
+    console.log("Creating quote request with title:", formData.title);
+
     const newQuoteRequest = {
       organization_id: organizationId,
       supplier_ids: formData.supplier_ids,
@@ -36,6 +38,8 @@ export async function createQuoteRequest(
       notes: formData.notes || null
     };
 
+    console.log("Quote request data to insert:", newQuoteRequest);
+
     // Insert the quote request
     const { data: quoteRequestData, error: quoteRequestError } = await supabase
       .from("quote_requests")
@@ -43,7 +47,10 @@ export async function createQuoteRequest(
       .select()
       .single();
 
-    if (quoteRequestError) throw quoteRequestError;
+    if (quoteRequestError) {
+      console.error("Error inserting quote request:", quoteRequestError);
+      throw quoteRequestError;
+    }
 
     // If formats were provided, insert them
     if (formData.formats && formData.formats.length > 0 && quoteRequestData) {
