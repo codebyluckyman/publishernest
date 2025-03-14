@@ -38,9 +38,6 @@ export function CreateQuoteRequestFromFormat({
         .insert({
           format_id: formatId,
           status: 'draft',
-          title: "Quote Request from Format",
-          organization_id: "00000000-0000-0000-0000-000000000000", // This will be replaced by the server
-          requested_by: "00000000-0000-0000-0000-000000000000" // This will be replaced by the server
         })
         .select()
         .single();
