@@ -1,123 +1,146 @@
 
-import { useState } from "react";
-import { format } from "date-fns";
-import { Clock, ClipboardList, Calendar, Tag, User, MessageSquare, FileText } from "lucide-react";
+import React from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { QuoteRequest } from "@/types/quoteRequest";
 import { StatusBadge } from "./StatusBadge";
-import { SupplierDisplay } from "./SupplierDisplay";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { FormatCountButton } from "./FormatCountButton";
+import { QuoteRequest } from "@/types/quoteRequest";
+import { formatDate } from "@/lib/utils";
+import { SupplierDisplay } from "./SupplierDisplay";
 import { QuoteAuditHistory } from "./QuoteAuditHistory";
+import { Eye, FileEdit, RotateCcw, CheckCircle, XCircle, ClockIcon } from "lucide-react";
 
 interface QuoteDetailsSheetProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedRequest: QuoteRequest | null;
+  onClose: () => void;
+  quoteRequest: QuoteRequest | null;
+  onEdit: (request: QuoteRequest) => void;
+  onStatusChange: (id: string, status: 'approved' | 'declined' | 'pending') => void;
 }
 
 export function QuoteDetailsSheet({
   isOpen,
-  onOpenChange,
-  selectedRequest,
+  onClose,
+  quoteRequest,
+  onEdit,
+  onStatusChange,
 }: QuoteDetailsSheetProps) {
-  const [auditHistoryOpen, setAuditHistoryOpen] = useState(false);
+  const [showAuditHistory, setShowAuditHistory] = React.useState(false);
 
-  if (!selectedRequest) return null;
+  if (!quoteRequest) return null;
 
   return (
-    <>
-      <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent className="sm:max-w-md overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-2xl flex items-center gap-2">
-              <ClipboardList className="h-6 w-6" />
-              <span className="truncate">{selectedRequest.title}</span>
-            </SheetTitle>
-          </SheetHeader>
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Quote Request Details</SheetTitle>
+        </SheetHeader>
 
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                <StatusBadge status={selectedRequest.status} />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-gray-500">Formats</h3>
-                <FormatCountButton formats={selectedRequest.formats} />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-gray-500">Supplier</h3>
-                <SupplierDisplay 
-                  supplierName={selectedRequest.supplier_name} 
-                  supplierNames={selectedRequest.supplier_names} 
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-gray-500">Requested</h3>
-                <div className="flex items-center text-sm">
-                  <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                  {format(new Date(selectedRequest.requested_at), "PPP")}
+        {showAuditHistory ? (
+          <QuoteAuditHistory 
+            quoteRequestId={quoteRequest.id} 
+            onBack={() => setShowAuditHistory(false)} 
+          />
+        ) : (
+          <div className="space-y-6 py-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-semibold">{quoteRequest.title}</h2>
+                <div className="flex items-center mt-2 space-x-2">
+                  <StatusBadge status={quoteRequest.status} />
+                  {quoteRequest.formats && quoteRequest.formats.length > 0 && (
+                    <FormatCountButton formats={quoteRequest.formats} />
+                  )}
                 </div>
               </div>
+              <div className="flex space-x-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEdit(quoteRequest)}
+                >
+                  <FileEdit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAuditHistory(true)}
+                >
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  History
+                </Button>
+              </div>
+            </div>
 
-              {selectedRequest.due_date && (
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-500">Due Date</h3>
-                  <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                    {format(new Date(selectedRequest.due_date), "PPP")}
+            <Card>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Supplier</p>
+                    <SupplierDisplay 
+                      supplierName={quoteRequest.supplier_name || ''}
+                      supplierNames={quoteRequest.supplier_names || []}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Requested on</p>
+                    <p className="font-medium">{formatDate(quoteRequest.requested_at)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Due date</p>
+                    <p className="font-medium">
+                      {quoteRequest.due_date ? formatDate(quoteRequest.due_date) : "Not specified"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <StatusBadge status={quoteRequest.status} />
                   </div>
                 </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
 
-            <Separator />
-
-            {selectedRequest.description && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                  <FileText className="h-4 w-4 mr-1" />
-                  Description
-                </h3>
-                <p className="text-sm whitespace-pre-line">{selectedRequest.description}</p>
+            {quoteRequest.description && (
+              <div>
+                <h3 className="text-md font-medium mb-2">Description</h3>
+                <p className="text-sm whitespace-pre-wrap">{quoteRequest.description}</p>
               </div>
             )}
 
-            {selectedRequest.notes && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                  <MessageSquare className="h-4 w-4 mr-1" />
-                  Notes
-                </h3>
-                <p className="text-sm whitespace-pre-line">{selectedRequest.notes}</p>
+            <div>
+              <h3 className="text-md font-medium mb-2">Actions</h3>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={quoteRequest.status === "approved" ? "default" : "outline"}
+                  onClick={() => onStatusChange(quoteRequest.id, "approved")}
+                  className="flex-1"
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Approve
+                </Button>
+                <Button
+                  variant={quoteRequest.status === "declined" ? "destructive" : "outline"}
+                  onClick={() => onStatusChange(quoteRequest.id, "declined")}
+                  className="flex-1"
+                >
+                  <XCircle className="h-4 w-4 mr-1" />
+                  Decline
+                </Button>
+                <Button
+                  variant={quoteRequest.status === "pending" ? "secondary" : "outline"}
+                  onClick={() => onStatusChange(quoteRequest.id, "pending")}
+                  className="flex-1"
+                >
+                  <ClockIcon className="h-4 w-4 mr-1" />
+                  Pending
+                </Button>
               </div>
-            )}
-
-            <Separator />
-            
-            <div className="flex justify-center">
-              <Button 
-                variant="outline" 
-                onClick={() => setAuditHistoryOpen(true)}
-                className="w-full"
-              >
-                View Audit History
-              </Button>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
-
-      <QuoteAuditHistory 
-        quoteRequest={selectedRequest}
-        isOpen={auditHistoryOpen}
-        onOpenChange={setAuditHistoryOpen}
-      />
-    </>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }

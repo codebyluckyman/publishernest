@@ -449,6 +449,41 @@ export type Database = {
           },
         ]
       }
+      quote_request_audit: {
+        Row: {
+          action: string
+          changed_by: string | null
+          changes: Json | null
+          created_at: string
+          id: string
+          quote_request_id: string | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          quote_request_id?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          quote_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_request_audit_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_request_formats: {
         Row: {
           created_at: string

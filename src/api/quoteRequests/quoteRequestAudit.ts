@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { QuoteRequest, QuoteRequestAudit } from "@/types/quoteRequest";
 
 /**
  * Records an audit entry for changes made to a quote request
@@ -38,9 +38,9 @@ export async function recordQuoteRequestAudit(
       return true;
     }
     
-    // Insert the audit record
+    // Insert the audit record - using PostgrestFilterBuilder properly
     const { error } = await supabase
-      .from("quote_request_audit")
+      .from('quote_request_audit')
       .insert({
         quote_request_id: quoteRequestId,
         changed_by: userId,
@@ -60,10 +60,10 @@ export async function recordQuoteRequestAudit(
 /**
  * Fetches audit history for a specific quote request
  */
-export async function fetchQuoteRequestAudit(quoteRequestId: string) {
+export async function fetchQuoteRequestAudit(quoteRequestId: string): Promise<QuoteRequestAudit[]> {
   try {
     const { data, error } = await supabase
-      .from("quote_request_audit")
+      .from('quote_request_audit')
       .select(`
         *,
         changed_by_user:changed_by(email)
@@ -73,7 +73,7 @@ export async function fetchQuoteRequestAudit(quoteRequestId: string) {
 
     if (error) throw error;
 
-    return data;
+    return data || [];
   } catch (error: any) {
     console.error("Error fetching quote request audit:", error);
     throw error;

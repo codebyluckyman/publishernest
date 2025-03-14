@@ -1,43 +1,40 @@
 
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { Badge } from "@/components/ui/badge";
 
-type SupplierDisplayProps = {
-  request: QuoteRequest;
-  onClick: (requet: QuoteRequest ) => void;
-};
+export interface SupplierDisplayProps {
+  supplierName: string;
+  supplierNames: string[];
+}
 
-export const SupplierDisplay = ({ request, onClick }: SupplierDisplayProps) => {
-  if (request.supplier_ids && request.supplier_ids.length > 1) {
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 text-xs">
-            {request.supplier_ids.length} suppliers
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="p-2 w-fit">
-          <div className="text-sm font-medium mb-2">Suppliers:</div>
-          <div className="space-y-1">
-            {request.supplier_names && request.supplier_names.map((name, index) => (
-              <div key={index} className="text-sm">{name}</div>
-            ))}
-          </div>
-          <Button 
-            variant="link" 
-            size="sm" 
-            className="mt-2 h-6 p-0" 
-            onClick={() => onClick(request)}
-          >
-            View Details
-          </Button>
-        </PopoverContent>
-      </Popover>
-    );
+export function SupplierDisplay({ supplierName, supplierNames }: SupplierDisplayProps) {
+  // If there's only one supplier or no suppliers, just show the name
+  if (!supplierNames || supplierNames.length <= 1) {
+    return <p className="font-medium">{supplierName || 'Unknown'}</p>;
   }
-  
-  return request.supplier_names && request.supplier_names.length > 0 
-    ? request.supplier_names[0] 
-    : request.supplier_name || 'Unknown';
-};
+
+  // If there are multiple suppliers, show the first with a +X more
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <div className="flex items-center cursor-pointer">
+          <p className="font-medium mr-2">{supplierName}</p>
+          <Badge variant="outline">
+            +{supplierNames.length - 1} more
+          </Badge>
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-0">
+        <div className="p-3">
+          <h4 className="text-sm font-medium mb-2">All Suppliers</h4>
+          <ul className="space-y-1">
+            {supplierNames.map((name, index) => (
+              <li key={index} className="text-sm">{name}</li>
+            ))}
+          </ul>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}

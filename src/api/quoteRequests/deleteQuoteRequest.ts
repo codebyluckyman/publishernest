@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
 
 /**
@@ -28,7 +29,7 @@ export async function deleteQuoteRequest(id: string, userId: string): Promise<bo
     await recordQuoteRequestAudit(
       id,
       userId,
-      quoteRequest,
+      quoteRequest as Partial<QuoteRequest>,
       {},
       'delete'
     );

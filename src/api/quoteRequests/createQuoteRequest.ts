@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { QuoteRequestFormValues } from "@/types/quoteRequest";
+import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
 
 /**
@@ -26,7 +26,7 @@ export async function createQuoteRequest(
       supplier_id: formData.supplier_ids[0], // Keep backward compatibility
       title: formData.title,
       description: formData.description || null,
-      status: "pending",
+      status: "pending" as const,
       requested_by: userId,
       due_date: formData.due_date 
         ? formData.due_date.toISOString().split('T')[0] 
@@ -69,7 +69,7 @@ export async function createQuoteRequest(
       quoteRequestData.id,
       userId,
       {},
-      quoteRequestData,
+      quoteRequestData as Partial<QuoteRequest>,
       'create'
     );
 
