@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,12 @@ import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useOrganization } from "@/hooks/useOrganization";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CreateQuoteRequestFromFormatProps {
   formatId: string;
@@ -34,6 +41,7 @@ export function CreateQuoteRequestFromFormat({
   onSuccess
 }: CreateQuoteRequestFromFormatProps) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
   const { useCreateQuoteRequest, useFetchSuppliers } = useQuoteRequests();
   const createMutation = useCreateQuoteRequest();
@@ -50,6 +58,8 @@ export function CreateQuoteRequestFromFormat({
           onSuccess: () => {
             setOpen(false);
             toast.success("Quote request created successfully");
+            // Navigate to quote requests page after successful creation
+            navigate("/quote-requests");
             if (onSuccess) onSuccess();
           },
         }
@@ -70,15 +80,24 @@ export function CreateQuoteRequestFromFormat({
 
   return (
     <>
-      <Button 
-        onClick={() => setOpen(true)} 
-        variant={buttonVariant} 
-        size={buttonSize}
-        className={className}
-      >
-        {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
-        {buttonText}
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              onClick={() => setOpen(true)} 
+              variant={buttonVariant} 
+              size={buttonSize}
+              className={className}
+            >
+              {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
+              {buttonText}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Create Quote Request</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">

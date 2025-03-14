@@ -1,4 +1,3 @@
-
 import { Eye, Pencil, Copy, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableRow, TableCell } from "@/components/ui/table";
@@ -36,7 +35,6 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
   const [isCopying, setIsCopying] = useState(false);
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
   
-  // Format text dimensions in HxWxD format
   const formatTextDimensions = () => {
     if (!format.tps_height_mm && !format.tps_width_mm && !format.tps_depth_mm) {
       return "N/A";
@@ -45,16 +43,13 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
     const height = format.tps_height_mm + 'mm';
     const width = format.tps_width_mm + 'mm';
     
-    // Only include depth if it has a value
     if (format.tps_depth_mm) {
       return `${height} × ${width} × ${format.tps_depth_mm}mm`;
     }
     
-    // Otherwise just show height and width
     return `${height} × ${width}`;
   };
 
-  // Format PLC dimensions in HxWxD format
   const formatPlcDimensions = () => {
     if (!format.tps_plc_height_mm && !format.tps_plc_width_mm && !format.tps_plc_depth_mm) {
       return "N/A";
@@ -63,19 +58,16 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
     const height = format.tps_plc_height_mm + 'mm';
     const width = format.tps_plc_width_mm + 'mm';
     
-    // Only include depth if it has a value
     if (format.tps_plc_depth_mm) {
       return `${height} × ${width} × ${format.tps_plc_depth_mm}mm`;
     }
     
-    // Otherwise just show height and width
     return `${height} × ${width}`;
   };
 
   const copyFormat = async () => {
     setIsCopying(true);
     try {
-      // 1. Get the current format data
       const { data: formatData, error: fetchError } = await supabase
         .from("formats")
         .select("*")
@@ -88,16 +80,14 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
         throw new Error("Format not found");
       }
       
-      // 2. Create a new format with the same data but a different name
       const newFormatData = {
         ...formatData,
-        id: undefined, // Let Supabase generate a new ID
+        id: undefined,
         format_name: `${formatData.format_name} (Copy)`,
-        created_at: undefined, // Let Supabase set this
-        updated_at: undefined, // Let Supabase set this
+        created_at: undefined,
+        updated_at: undefined,
       };
       
-      // 3. Insert the new format
       const { data: newFormat, error: insertError } = await supabase
         .from("formats")
         .insert(newFormatData)
@@ -108,10 +98,8 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
       
       toast.success(`Format "${format.format_name}" copied successfully`);
       
-      // Close the copy dialog
       setCopyDialogOpen(false);
       
-      // 4. Notify parent component to refresh the list and open the edit form
       if (onFormatCopied && newFormat) {
         onFormatCopied(newFormat.id);
       }
@@ -198,7 +186,6 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
             </AlertDialogContent>
           </AlertDialog>
           
-          {/* Add Create Quote Request button */}
           <div onClick={(e) => e.stopPropagation()}>
             <CreateQuoteRequestFromFormat
               formatId={format.id}
