@@ -65,8 +65,13 @@ export async function fetchQuoteRequestAudit(quoteRequestId: string): Promise<Qu
     const { data, error } = await supabase
       .from('quote_request_audit')
       .select(`
-        *,
-        changed_by_user:profiles(email)
+        id, 
+        quote_request_id, 
+        changed_by,
+        action,
+        changes,
+        created_at,
+        profiles(email)
       `)
       .eq("quote_request_id", quoteRequestId)
       .order("created_at", { ascending: false });
@@ -74,11 +79,29 @@ export async function fetchQuoteRequestAudit(quoteRequestId: string): Promise<Qu
     if (error) throw error;
 
     // Properly type cast the data to match QuoteRequestAudit type
-    const auditData = data.map(item => ({
-      ...item,
-      action: item.action as 'create' | 'update' | 'status_change' | 'delete',
-      changed_by_user: item.changed_by_user as { email: string }
-    }));
+    const auditData: QuoteRequestAudit[] = data.map(item => {
+      // Cast the action string to our enum type
+      const action = item.action as 'create' | 'update' | 'status_change' | 'delete';
+      
+      // Handle the joined profiles data safely
+      let changedByUser: { email: string } | undefined = undefined;
+      if (item.profiles && typeof item.profiles === 'object' && 'email' in item.profiles) {
+        changedByUser = { email: item.profiles.email as string };
+      }
+      
+      // Cast changes from Json type to our expected Record type
+      const changes = item.changes as Record<string, { previous: any; new: any }>;
+      
+      return {
+        id: item.id,
+        quote_request_id: item.quote_request_id,
+        changed_by: item.changed_by,
+        action: action,
+        changes: changes || {},
+        created_at: item.created_at,
+        changed_by_user: changedByUser
+      };
+    });
 
     return auditData;
   } catch (error: any) {

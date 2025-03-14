@@ -48,13 +48,13 @@ export interface QuoteRequestFormValues {
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';
 export type SortDirection = 'asc' | 'desc';
 
-// Add audit trail interfaces
+// Update audit trail interface to make it more flexible
 export interface QuoteRequestAudit {
   id: string;
-  quote_request_id: string;
-  changed_by: string;
+  quote_request_id: string | null;
+  changed_by: string | null;
   action: 'create' | 'update' | 'status_change' | 'delete';
   changes: Record<string, { previous: any; new: any }>;
   created_at: string;
-  changed_by_user?: { email: string };
+  changed_by_user?: { email: string } | undefined;
 }
