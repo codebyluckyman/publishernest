@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Eye, Pencil, Copy, FileText, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Format } from "./types/FormatTypes";
@@ -19,21 +20,33 @@ interface FormatActionMenuProps {
 }
 
 export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatCopied }: FormatActionMenuProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+  };
+
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      <DropdownMenu>
+      <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" title="Format Actions">
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-white">
-          <DropdownMenuItem onClick={() => onViewFormat(format.id)}>
+          <DropdownMenuItem onClick={() => {
+            onViewFormat(format.id);
+            setIsOpen(false);
+          }}>
             <Eye className="h-4 w-4 mr-2" />
             <span>View Format</span>
           </DropdownMenuItem>
           
-          <DropdownMenuItem onClick={() => onEditFormat(format.id)}>
+          <DropdownMenuItem onClick={() => {
+            onEditFormat(format.id);
+            setIsOpen(false);
+          }}>
             <Pencil className="h-4 w-4 mr-2" />
             <span>Edit Format</span>
           </DropdownMenuItem>
@@ -43,7 +56,12 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
           >
             <FormatCopyDialog 
               format={format} 
-              onFormatCopied={onFormatCopied}
+              onFormatCopied={(newFormatId) => {
+                if (onFormatCopied) {
+                  onFormatCopied(newFormatId);
+                }
+                setIsOpen(false);
+              }}
               triggerElement={
                 <div className="flex items-center w-full">
                   <Copy className="h-4 w-4 mr-2" />
@@ -62,6 +80,7 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
                 buttonText="Create Quote Request"
                 buttonIcon={true}
                 className="flex items-center p-0 h-auto w-full justify-start hover:bg-transparent"
+                onSuccess={() => setIsOpen(false)}
               />
             </div>
           </DropdownMenuItem>

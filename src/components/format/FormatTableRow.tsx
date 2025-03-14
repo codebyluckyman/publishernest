@@ -26,7 +26,7 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
       <TableCell>{format.cover_stock_print || "N/A"}</TableCell>
       <TableCell>{format.internal_stock_print || "N/A"}</TableCell>
       <TableCell>{formatDate(format.created_at)}</TableCell>
-      <TableCell>
+      <TableCell className="relative">
         <FormatActionMenu 
           format={format} 
           onViewFormat={onViewFormat}

@@ -64,7 +64,12 @@ export function FormatCopyDialog({ format, onFormatCopied, triggerElement }: For
   };
 
   return (
-    <AlertDialog open={copyDialogOpen} onOpenChange={setCopyDialogOpen}>
+    <AlertDialog open={copyDialogOpen} onOpenChange={(open) => {
+      setCopyDialogOpen(open);
+      if (!open && onFormatCopied) {
+        onFormatCopied(); // Notify parent when dialog is closed
+      }
+    }}>
       <AlertDialogTrigger asChild>
         {triggerElement ? triggerElement : (
           <Button 
