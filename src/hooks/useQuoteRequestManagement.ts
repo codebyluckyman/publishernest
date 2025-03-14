@@ -1,7 +1,8 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
 import { useQuoteRequests } from "@/hooks/useQuoteRequests";
+import { toast } from "sonner";
 
 export function useQuoteRequestManagement() {
   const { useUpdateQuoteRequestStatus, useDeleteQuoteRequest, useUpdateQuoteRequest } = useQuoteRequests();
@@ -12,7 +13,26 @@ export function useQuoteRequestManagement() {
   const [selectedRequest, setSelectedRequest] = useState<QuoteRequest | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
+  // Bulk selection handling
+  const handleSelectRow = useCallback((id: string, selected: boolean) => {
+    setSelectedRows(prev => 
+      selected 
+        ? [...prev, id] 
+        : prev.filter(rowId => rowId !== id)
+    );
+  }, []);
+
+  const handleSelectAll = useCallback((selected: boolean, allIds: string[]) => {
+    setSelectedRows(selected ? [...allIds] : []);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedRows([]);
+  }, []);
+
+  // CRUD operations
   const handleStatusChange = useCallback((id: string, status: 'approved' | 'declined' | 'pending') => {
     updateStatusMutation.mutate({ id, status });
   }, [updateStatusMutation]);
@@ -51,17 +71,71 @@ export function useQuoteRequestManagement() {
     }, 300);
   }, []);
 
+  // Bulk operations
+  const handleBulkStatusChange = useCallback((status: 'approved' | 'declined' | 'pending') => {
+    if (selectedRows.length === 0) return;
+
+    const statusText = status === 'approved' ? 'approve' : status === 'declined' ? 'decline' : 'mark as pending';
+    const confirmMessage = `Are you sure you want to ${statusText} ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}?`;
+    
+    if (window.confirm(confirmMessage)) {
+      // Create a queue of promises
+      const promises = selectedRows.map(id => 
+        updateStatusMutation.mutateAsync({ id, status })
+      );
+      
+      // Execute all promises
+      Promise.all(promises)
+        .then(() => {
+          toast.success(`Successfully updated ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
+          clearSelection();
+        })
+        .catch(error => {
+          toast.error(`Error updating some quote requests: ${error.message}`);
+        });
+    }
+  }, [selectedRows, updateStatusMutation, clearSelection]);
+
+  const handleBulkDelete = useCallback(() => {
+    if (selectedRows.length === 0) return;
+
+    const confirmMessage = `Are you sure you want to delete ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}?`;
+    
+    if (window.confirm(confirmMessage)) {
+      // Create a queue of promises
+      const promises = selectedRows.map(id => 
+        deleteMutation.mutateAsync(id)
+      );
+      
+      // Execute all promises
+      Promise.all(promises)
+        .then(() => {
+          toast.success(`Successfully deleted ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
+          clearSelection();
+        })
+        .catch(error => {
+          toast.error(`Error deleting some quote requests: ${error.message}`);
+        });
+    }
+  }, [selectedRows, deleteMutation, clearSelection]);
+
   return {
     selectedRequest,
     detailsOpen,
     editOpen,
     setEditOpen,
+    selectedRows,
+    handleSelectRow,
+    handleSelectAll,
+    clearSelection,
     handleStatusChange,
     handleDelete,
     viewDetails,
     editRequest,
     handleUpdateRequest,
     closeDetails,
-    updateMutation
+    updateMutation,
+    handleBulkStatusChange,
+    handleBulkDelete
   };
 }

@@ -13,6 +13,8 @@ import { EmptyState } from "./table/EmptyState";
 import { useQuoteRequestSort } from "@/hooks/useQuoteRequestSort";
 import { useQuoteRequestManagement } from "@/hooks/useQuoteRequestManagement";
 import { QuoteRequestTableHeader } from "./table/QuoteRequestTableHeader";
+import { BulkActions } from "./table/BulkActions";
+import { useMemo } from "react";
 
 interface QuoteRequestTableProps {
   quoteRequests: QuoteRequest[];
@@ -26,19 +28,28 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
   // Sort functionality
   const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
   
+  // Get all quote request IDs for bulk operations
+  const allQuoteRequestIds = useMemo(() => quoteRequests.map(req => req.id), [quoteRequests]);
+  
   // Request management (view, edit, delete, etc.)
   const {
     selectedRequest,
     detailsOpen,
     editOpen,
     setEditOpen,
+    selectedRows,
+    handleSelectRow,
+    handleSelectAll,
+    clearSelection,
     handleStatusChange,
     handleDelete,
     viewDetails,
     editRequest,
     handleUpdateRequest,
     closeDetails,
-    updateMutation
+    updateMutation,
+    handleBulkStatusChange,
+    handleBulkDelete
   } = useQuoteRequestManagement();
 
   if (quoteRequests.length === 0) {
@@ -47,11 +58,23 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
 
   return (
     <>
+      <BulkActions 
+        selectedCount={selectedRows.length}
+        onApprove={() => handleBulkStatusChange('approved')}
+        onDecline={() => handleBulkStatusChange('declined')}
+        onMarkPending={() => handleBulkStatusChange('pending')}
+        onDelete={handleBulkDelete}
+        onClearSelection={clearSelection}
+      />
+
       <Table>
         <QuoteRequestTableHeader
           sortField={sortField}
           sortDirection={sortDirection}
           handleSort={handleSort}
+          selectedRows={selectedRows}
+          allRowIds={allQuoteRequestIds}
+          onSelectAll={(selected) => handleSelectAll(selected, allQuoteRequestIds)}
         />
         <TableBody>
           {sortedQuoteRequests.map((request) => (
@@ -62,6 +85,8 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
               onDelete={handleDelete}
               onViewDetails={viewDetails}
               onEdit={editRequest}
+              isSelected={selectedRows.includes(request.id)}
+              onSelectRow={handleSelectRow}
             />
           ))}
         </TableBody>
