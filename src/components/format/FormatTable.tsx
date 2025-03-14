@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Table, TableHeader, TableBody, TableHead, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { Format, FormatTableRow } from "./FormatTableRow";
+import { FormatTableRow } from "./FormatTableRow";
+import { Format } from "./types/FormatTypes";
 import { FormatEmptyState } from "./FormatEmptyState";
 import { FilterOptions } from "./FormatFilters";
 import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";

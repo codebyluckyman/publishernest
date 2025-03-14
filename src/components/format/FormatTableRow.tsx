@@ -1,9 +1,8 @@
 
 import { TableRow, TableCell } from "@/components/ui/table";
-import { useState } from "react";
-import { FormatActionMenu } from "./FormatActionMenu";
 import { Format } from "./types/FormatTypes";
 import { FormatDimensions } from "./FormatDimensions";
+import { FormatActionMenu } from "./FormatActionMenu";
 
 interface FormatTableRowProps {
   format: Format;
