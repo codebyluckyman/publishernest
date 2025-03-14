@@ -1,78 +1,112 @@
 
 import { useState } from "react";
-import { FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ButtonProps } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
+import { FileText } from "lucide-react";
+import { QuoteRequestForm } from "./QuoteRequestForm";
+import { useQuoteRequests } from "@/hooks/useQuoteRequests";
+import { useOrganization } from "@/hooks/useOrganization";
+import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 interface CreateQuoteRequestFromFormatProps {
   formatId: string;
-  buttonVariant?: ButtonProps["variant"];
-  buttonSize?: ButtonProps["size"];
+  buttonVariant?: "default" | "outline" | "ghost" | "link";
   buttonText?: string;
   buttonIcon?: boolean;
+  buttonSize?: "default" | "sm" | "lg" | "icon";
   className?: string;
   onSuccess?: () => void;
 }
 
-export function CreateQuoteRequestFromFormat({
+export function CreateQuoteRequestFromFormat({ 
   formatId,
   buttonVariant = "default",
-  buttonSize = "default",
   buttonText = "Create Quote Request",
-  buttonIcon = false,
-  className = "",
+  buttonIcon = true,
+  buttonSize = "sm",
+  className,
   onSuccess
 }: CreateQuoteRequestFromFormatProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { currentOrganization } = useOrganization();
+  const { useCreateQuoteRequest, useFetchSuppliers } = useQuoteRequests();
+  const createMutation = useCreateQuoteRequest();
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = useFetchSuppliers();
 
-  const createQuoteRequestMutation = useMutation({
-    mutationFn: async () => {
-      setIsLoading(true);
-      
-      // Create a basic quote request from the format
-      const { data, error } = await supabase
-        .from('quote_requests')
-        .insert({
-          format_id: formatId,
-          status: 'pending',
-        })
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      toast.success("Quote request created");
-      if (onSuccess) onSuccess();
-      // Note: In a real implementation, you might navigate to the newly created quote request
-      // or open it in a modal/dialog
-    },
-    onError: (error) => {
-      toast.error(`Failed to create quote request: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    },
-    onSettled: () => {
-      setIsLoading(false);
+  const handleSubmit = (formData: QuoteRequestFormValues) => {
+    if (currentOrganization) {
+      createMutation.mutate(
+        {
+          formData,
+          organizationId: currentOrganization.id,
+        },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            toast.success("Quote request created successfully");
+            navigate("/quote-requests");
+            if (onSuccess) onSuccess();
+          },
+        }
+      );
     }
-  });
+  };
 
-  const handleClick = () => {
-    createQuoteRequestMutation.mutate();
+  // Pre-fill the form with the selected format
+  const initialValues: Partial<QuoteRequestFormValues> = {
+    formats: [
+      {
+        format_id: formatId,
+        quantity: 1,
+        notes: "",
+      },
+    ],
   };
 
   return (
-    <Button
-      variant={buttonVariant}
-      size={buttonSize}
-      onClick={handleClick}
-      disabled={isLoading}
-      className={className}
-    >
-      {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
-      {buttonText}
-    </Button>
+    <>
+      <Button 
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }} 
+        variant={buttonVariant} 
+        size={buttonSize}
+        className={className}
+        title="Create Quote Request"
+      >
+        {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
+        {buttonText}
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Create Quote Request</DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto pr-1 flex-grow">
+            {isSuppliersLoading ? (
+              <div className="p-8 text-center">Loading suppliers...</div>
+            ) : (
+              <QuoteRequestForm 
+                suppliers={suppliers} 
+                initialValues={initialValues}
+                onSubmit={handleSubmit} 
+                onCancel={() => setOpen(false)} 
+                isSubmitting={createMutation.isPending}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
