@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import DesktopSidebar from "./navigation/DesktopSidebar";
 import NavigationHeader from "./navigation/NavigationHeader";
 import BreadcrumbNavigation from "./navigation/BreadcrumbNavigation";
+import Footer from "./navigation/Footer";
 import { getNavigationMenuItems } from "./navigation/NavigationMenuItems";
 
 const Layout = ({
@@ -20,15 +21,20 @@ const Layout = ({
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        {/* Desktop Sidebar - hidden on mobile */}
-        <DesktopSidebar menuItems={menuItems} />
-        
-        <main className="flex-1 p-4 md:p-8 animate-fadeIn">
-          <NavigationHeader currentPageLabel={currentPageLabel} menuItems={menuItems} />
-          <BreadcrumbNavigation />
-          {children}
-        </main>
+      <div className="min-h-screen flex flex-col w-full bg-gray-50">
+        <div className="flex flex-1 w-full">
+          {/* Desktop Sidebar - hidden on mobile */}
+          <DesktopSidebar menuItems={menuItems} />
+          
+          <main className="flex-1 flex flex-col p-4 md:p-8 animate-fadeIn">
+            <NavigationHeader currentPageLabel={currentPageLabel} menuItems={menuItems} />
+            <BreadcrumbNavigation />
+            <div className="flex-1">
+              {children}
+            </div>
+            <Footer />
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
