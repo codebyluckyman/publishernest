@@ -14,12 +14,6 @@ import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useOrganization } from "@/hooks/useOrganization";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { toast } from "sonner";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface CreateQuoteRequestFromFormatProps {
   formatId: string;
@@ -80,24 +74,16 @@ export function CreateQuoteRequestFromFormat({
 
   return (
     <>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              onClick={() => setOpen(true)} 
-              variant={buttonVariant} 
-              size={buttonSize}
-              className={className}
-            >
-              {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
-              {buttonText}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Create Quote Request</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Button 
+        onClick={() => setOpen(true)} 
+        variant={buttonVariant} 
+        size={buttonSize}
+        className={className}
+        title="Create Quote Request"
+      >
+        {buttonIcon && <FileText className="h-4 w-4 mr-2" />}
+        {buttonText}
+      </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
