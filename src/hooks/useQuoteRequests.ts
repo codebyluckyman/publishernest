@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -94,10 +95,20 @@ export function useQuoteRequests() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["quoteRequests"] });
-        toast.success(`Quote request ${variables.status} successfully`);
+        const statusMessage = variables.status === 'approved' 
+          ? 'marked active' 
+          : variables.status === 'declined' 
+            ? 'marked inactive' 
+            : 'marked as pending';
+        toast.success(`Quote request ${statusMessage} successfully`);
       },
       onError: (error: any, variables) => {
-        toast.error(error.message || `Failed to update quote request to ${variables.status}`);
+        const statusText = variables.status === 'approved' 
+          ? 'mark active' 
+          : variables.status === 'declined' 
+            ? 'mark inactive' 
+            : 'mark as pending';
+        toast.error(error.message || `Failed to ${statusText} quote request`);
       }
     });
   };

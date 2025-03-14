@@ -59,8 +59,8 @@ const QuoteRequests = () => {
             <Tabs defaultValue="pending" className="space-y-4" onValueChange={handleTabChange}>
               <TabsList>
                 <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="approved">Approved</TabsTrigger>
-                <TabsTrigger value="declined">Declined</TabsTrigger>
+                <TabsTrigger value="approved">Active</TabsTrigger>
+                <TabsTrigger value="declined">Inactive</TabsTrigger>
                 <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
               <TabsContent value="pending" className="space-y-4">

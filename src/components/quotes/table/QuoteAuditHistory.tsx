@@ -79,6 +79,14 @@ export function QuoteAuditHistory({
         newFormatted = newValue;
       }
       
+      // Update status wording for display
+      if (key === 'status') {
+        if (previousFormatted === 'approved') previousFormatted = 'active';
+        if (previousFormatted === 'declined') previousFormatted = 'inactive';
+        if (newFormatted === 'approved') newFormatted = 'active';
+        if (newFormatted === 'declined') newFormatted = 'inactive';
+      }
+      
       return (
         <div key={key} className="mb-2 border-b pb-2">
           <div className="font-medium capitalize">{key.replace('_', ' ')}</div>

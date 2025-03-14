@@ -72,7 +72,7 @@ export function useQuoteRequestManagement() {
   const handleBulkStatusChange = useCallback((status: 'approved' | 'declined' | 'pending') => {
     if (selectedRows.length === 0) return;
 
-    const statusText = status === 'approved' ? 'approve' : status === 'declined' ? 'decline' : 'mark as pending';
+    const statusText = status === 'approved' ? 'mark active' : status === 'declined' ? 'mark inactive' : 'mark as pending';
     const confirmMessage = `Are you sure you want to ${statusText} ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}?`;
     
     if (window.confirm(confirmMessage)) {
@@ -82,7 +82,8 @@ export function useQuoteRequestManagement() {
       
       Promise.all(promises)
         .then(() => {
-          toast.success(`Successfully updated ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
+          const statusMessage = status === 'approved' ? 'marked active' : status === 'declined' ? 'marked inactive' : 'marked as pending';
+          toast.success(`Successfully ${statusMessage} ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
           clearSelection();
         })
         .catch(error => {

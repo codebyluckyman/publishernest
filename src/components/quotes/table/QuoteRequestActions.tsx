@@ -69,13 +69,13 @@ export const QuoteRequestActions = ({
         {request.status !== "approved" && (
           <DropdownMenuItem onClick={() => handleStatusChange("approved")}>
             <CheckCircle className="mr-2 h-4 w-4" />
-            <span>Approve</span>
+            <span>Mark Active</span>
           </DropdownMenuItem>
         )}
         {request.status !== "declined" && (
           <DropdownMenuItem onClick={() => handleStatusChange("declined")}>
             <XCircle className="mr-2 h-4 w-4" />
-            <span>Decline</span>
+            <span>Mark Inactive</span>
           </DropdownMenuItem>
         )}
         {request.status !== "pending" && (

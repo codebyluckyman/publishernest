@@ -53,11 +53,11 @@ export function BulkActions({
               className="text-green-600"
             >
               <CheckCircle className="h-4 w-4 mr-1" />
-              Approve
+              Mark Active
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Approve selected quote requests</p>
+            <p>Mark selected quote requests as active</p>
           </TooltipContent>
         </Tooltip>
 
@@ -70,11 +70,11 @@ export function BulkActions({
               className="text-red-600"
             >
               <XCircle className="h-4 w-4 mr-1" />
-              Decline
+              Mark Inactive
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Decline selected quote requests</p>
+            <p>Mark selected quote requests as inactive</p>
           </TooltipContent>
         </Tooltip>
 

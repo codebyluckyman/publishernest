@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { StatusBadge } from "./StatusBadge";
@@ -142,7 +141,7 @@ export function QuoteDetailsSheet({
                     className="flex-1"
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
-                    Approve
+                    Mark Active
                   </Button>
                   <Button
                     variant={selectedRequest.status === "declined" ? "destructive" : "outline"}
@@ -150,7 +149,7 @@ export function QuoteDetailsSheet({
                     className="flex-1"
                   >
                     <XCircle className="h-4 w-4 mr-1" />
-                    Decline
+                    Mark Inactive
                   </Button>
                   <Button
                     variant={selectedRequest.status === "pending" ? "secondary" : "outline"}
