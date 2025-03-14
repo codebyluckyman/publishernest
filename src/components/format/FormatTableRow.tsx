@@ -1,11 +1,12 @@
 
-import { Eye, Pencil, Copy } from "lucide-react";
+import { Eye, Pencil, Copy, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CreateQuoteRequestFromFormat } from "../quotes/CreateQuoteRequestFromFormat";
 
 export interface Format {
   id: string;
@@ -196,6 +197,17 @@ export function FormatTableRow({ format, onViewFormat, onEditFormat, formatDate,
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          
+          {/* Add Create Quote Request button */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <CreateQuoteRequestFromFormat
+              formatId={format.id}
+              buttonVariant="ghost"
+              buttonSize="icon"
+              buttonText=""
+              buttonIcon={true}
+            />
+          </div>
         </div>
       </TableCell>
     </TableRow>

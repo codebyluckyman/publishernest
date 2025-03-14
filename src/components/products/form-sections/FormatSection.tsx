@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit } from "lucide-react";
+import { PlusCircle, Edit, FileText } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ProductFormValues } from "@/schemas/productSchema";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { toast } from "sonner";
 import FormatDialog from "../../FormatDialog";
+import { CreateQuoteRequestFromFormat } from "../../quotes/CreateQuoteRequestFromFormat";
 
 interface Format {
   id: string;
@@ -182,17 +183,27 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
           <div className="p-4 border rounded-md">
             <div className="flex justify-between items-center mb-2">
               <h4 className="font-medium">Format Details</h4>
-              {!readOnly && (
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleEditFormat}
-                  className="h-8 w-8 p-0"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              )}
+              <div className="flex space-x-2">
+                {formatId && !readOnly && (
+                  <CreateQuoteRequestFromFormat
+                    formatId={formatId}
+                    buttonVariant="ghost"
+                    buttonSize="sm"
+                    buttonText="Quote"
+                  />
+                )}
+                {!readOnly && (
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleEditFormat}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="space-y-2 text-sm text-black">
               <p><span className="font-medium">Extent:</span> {selectedFormat.extent || "N/A"}</p>
