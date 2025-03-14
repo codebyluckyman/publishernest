@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -9,7 +8,8 @@ import {
   createQuoteRequest,
   updateQuoteRequest,
   updateQuoteRequestStatus,
-  deleteQuoteRequest
+  deleteQuoteRequest,
+  fetchQuoteRequestAudit
 } from "@/api/quoteRequests";
 
 /**
@@ -127,8 +127,6 @@ export function useQuoteRequests() {
    * Hook to fetch audit history for a quote request
    */
   const useQuoteRequestAudit = (quoteRequestId: string | null) => {
-    const { fetchQuoteRequestAudit } = require("@/api/quoteRequests/quoteRequestAudit");
-    
     return useQuery({
       queryKey: ["quoteRequestAudit", quoteRequestId],
       queryFn: () => fetchQuoteRequestAudit(quoteRequestId as string),

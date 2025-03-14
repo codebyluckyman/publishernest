@@ -86,7 +86,7 @@ export async function fetchQuoteRequestAudit(quoteRequestId: string): Promise<Qu
       // Handle the joined profiles data safely
       let changedByUser: { email: string } | undefined = undefined;
       if (item.profiles && typeof item.profiles === 'object' && 'email' in item.profiles) {
-        changedByUser = { email: item.profiles.email as string };
+        changedByUser = { email: (item.profiles as any).email as string };
       }
       
       // Cast changes from Json type to our expected Record type
