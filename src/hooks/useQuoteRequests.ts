@@ -12,6 +12,8 @@ import {
   deleteQuoteRequest,
   fetchQuoteRequestAudit
 } from "@/api/quoteRequests";
+import { supabase } from "@/integrations/supabase/client";
+import { Supplier } from "@/types/supplier";
 
 /**
  * Custom hook for managing quote requests with React Query
@@ -35,6 +37,29 @@ export function useQuoteRequests() {
       meta: {
         onError: (error: any) => {
           toast.error(error.message || "Failed to load quote requests");
+        }
+      }
+    });
+  };
+
+  /**
+   * Hook to fetch suppliers for quote requests
+   */
+  const useFetchSuppliers = () => {
+    return useQuery({
+      queryKey: ["suppliers"],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("suppliers")
+          .select("*")
+          .order("supplier_name");
+          
+        if (error) throw error;
+        return data as Supplier[];
+      },
+      meta: {
+        onError: (error: any) => {
+          toast.error(error.message || "Failed to load suppliers");
         }
       }
     });
@@ -156,6 +181,7 @@ export function useQuoteRequests() {
     useUpdateQuoteRequest,
     useUpdateQuoteRequestStatus,
     useDeleteQuoteRequest,
-    useQuoteRequestAudit
+    useQuoteRequestAudit,
+    useFetchSuppliers
   };
 }

@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { QuoteRequestForm } from "./QuoteRequestForm";
-import { Supplier } from "@/types/supplier";
 import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useOrganization } from "@/hooks/useOrganization";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
