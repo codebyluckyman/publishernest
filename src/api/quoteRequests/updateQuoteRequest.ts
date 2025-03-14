@@ -13,11 +13,12 @@ export async function updateQuoteRequest(
     // Extract formats from updates to handle separately
     const { formats, ...quoteRequestUpdates } = updates;
 
-    // Convert Date object to ISO string if present
+    // Format the date to preserve the selected date without timezone conversion
+    // by using the date directly in YYYY-MM-DD format
     const formattedUpdates = {
       ...quoteRequestUpdates,
       due_date: updates.due_date 
-        ? updates.due_date.toISOString().split('T')[0] 
+        ? formatDateToYYYYMMDD(updates.due_date)
         : undefined,
       // If supplier_ids is updated, update supplier_id for backward compatibility
       supplier_id: updates.supplier_ids && updates.supplier_ids.length > 0 
@@ -83,4 +84,16 @@ export async function updateQuoteRequest(
     console.error("Error updating quote request:", error);
     throw error;
   }
+}
+
+/**
+ * Helper function to format a Date to YYYY-MM-DD string
+ * without timezone conversion issues
+ */
+function formatDateToYYYYMMDD(date: Date): string {
+  const year = date.getFullYear();
+  // getMonth() is 0-indexed, so add 1
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }

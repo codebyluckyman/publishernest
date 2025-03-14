@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from "react";
 import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
 import { useQuoteRequests } from "@/hooks/useQuoteRequests";
@@ -16,7 +15,6 @@ export function useQuoteRequestManagement() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [dueDateDialogOpen, setDueDateDialogOpen] = useState(false);
 
-  // Bulk selection handling
   const handleSelectRow = useCallback((id: string, selected: boolean) => {
     setSelectedRows(prev => 
       selected 
@@ -33,7 +31,6 @@ export function useQuoteRequestManagement() {
     setSelectedRows([]);
   }, []);
 
-  // CRUD operations
   const handleStatusChange = useCallback((id: string, status: 'approved' | 'declined' | 'pending') => {
     updateStatusMutation.mutate({ id, status });
   }, [updateStatusMutation]);
@@ -72,7 +69,6 @@ export function useQuoteRequestManagement() {
     }, 300);
   }, []);
 
-  // Bulk operations
   const handleBulkStatusChange = useCallback((status: 'approved' | 'declined' | 'pending') => {
     if (selectedRows.length === 0) return;
 
@@ -80,12 +76,10 @@ export function useQuoteRequestManagement() {
     const confirmMessage = `Are you sure you want to ${statusText} ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}?`;
     
     if (window.confirm(confirmMessage)) {
-      // Create a queue of promises
       const promises = selectedRows.map(id => 
         updateStatusMutation.mutateAsync({ id, status })
       );
       
-      // Execute all promises
       Promise.all(promises)
         .then(() => {
           toast.success(`Successfully updated ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
@@ -103,12 +97,10 @@ export function useQuoteRequestManagement() {
     const confirmMessage = `Are you sure you want to delete ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}?`;
     
     if (window.confirm(confirmMessage)) {
-      // Create a queue of promises
       const promises = selectedRows.map(id => 
         deleteMutation.mutateAsync(id)
       );
       
-      // Execute all promises
       Promise.all(promises)
         .then(() => {
           toast.success(`Successfully deleted ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
@@ -127,11 +119,8 @@ export function useQuoteRequestManagement() {
   const handleBulkUpdateDueDate = useCallback((newDate: Date | undefined) => {
     if (selectedRows.length === 0) return;
 
-    // Format the date for API or use null to clear the date
-    const formattedDate = newDate ? newDate.toISOString().split('T')[0] : null;
     const action = newDate ? "update" : "remove";
     
-    // Create a queue of promises
     const promises = selectedRows.map(id => 
       updateMutation.mutateAsync({ 
         id, 
@@ -139,7 +128,6 @@ export function useQuoteRequestManagement() {
       })
     );
     
-    // Execute all promises
     Promise.all(promises)
       .then(() => {
         toast.success(`Successfully ${action}d due date for ${selectedRows.length} quote request${selectedRows.length > 1 ? 's' : ''}`);
