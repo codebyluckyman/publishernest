@@ -1,14 +1,13 @@
 
 import { Control, useWatch } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { QuoteRequestFormValues } from "./schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
-import { Combobox } from "@/components/ui/combobox";
-import { Separator } from "@/components/ui/separator";
+import { FormatSelectionField } from "./format-fields/FormatSelectionField";
+import { QuantityField } from "./format-fields/QuantityField";
+import { NotesField } from "./format-fields/NotesField";
+import { FormatSpecificationsDisplay } from "./format-fields/FormatSpecificationsDisplay";
 import { FormatProductField } from "./FormatProductField";
-import { FormatSpecifications } from "./FormatSpecifications";
 import { PriceBreakField } from "./PriceBreakField";
 
 interface FormatFieldProps {
@@ -26,12 +25,6 @@ export function FormatField({
   isFormatsLoading,
   showFormatSpecifications = false,
 }: FormatFieldProps) {
-  // Format options for the combobox
-  const formatOptions = formats.map((format) => ({
-    label: format.format_name,
-    value: format.id,
-  }));
-
   // Watch the format_id to pass it to child components
   const formatId = useWatch({
     control,
@@ -41,84 +34,24 @@ export function FormatField({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name={`formats.${index}.format_id`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Format</FormLabel>
-              <FormControl>
-                <Combobox
-                  items={formatOptions}
-                  placeholder="Select format"
-                  {...field}
-                  isLoading={isFormatsLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <FormatSelectionField 
+          control={control} 
+          index={index} 
+          formats={formats} 
+          isFormatsLoading={isFormatsLoading} 
         />
-
-        <FormField
-          control={control}
-          name={`formats.${index}.quantity`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Quantity</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min="1"
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <QuantityField control={control} index={index} />
       </div>
 
-      <FormField
-        control={control}
-        name={`formats.${index}.notes`}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Format Notes</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Add any additional notes about this format"
-                className="h-20"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <NotesField control={control} index={index} />
 
       {/* Format specifications if available and enabled */}
-      {showFormatSpecifications && (
-        <FormField
-          control={control}
-          name={`formats.${index}.format_id`}
-          render={({ field }) => {
-            const selectedFormatId = field.value;
-            const selectedFormat = formats.find(
-              (format) => format.id === selectedFormatId
-            );
-            return selectedFormat ? (
-              <div className="p-3 bg-slate-50 rounded-md">
-                <FormatSpecifications 
-                  format={selectedFormat as any} 
-                  isLoading={false} 
-                />
-              </div>
-            ) : null;
-          }}
-        />
-      )}
+      <FormatSpecificationsDisplay 
+        control={control} 
+        index={index} 
+        formats={formats} 
+        showSpecifications={showFormatSpecifications} 
+      />
 
       <Separator />
 
@@ -128,7 +61,7 @@ export function FormatField({
         <FormatProductField 
           control={control} 
           formatIndex={index}
-          formatId={formatId} 
+          formatId={formatId || ""} 
         />
       </div>
 
