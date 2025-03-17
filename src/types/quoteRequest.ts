@@ -25,7 +25,7 @@ export interface QuoteRequestFormat {
   format_id: string;
   quantity: number;
   notes: string | null;
-  format_name?: string; // Joined field
+  format_name?: string; // Joined field from format.format_name
   products?: QuoteRequestFormatProduct[]; // Products linked to this format
 }
 
@@ -36,6 +36,15 @@ export interface QuoteRequestFormatProduct {
   quantity: number;
   notes?: string | null;
   product_name?: string; // Joined field
+  format_extras?: {
+    foil?: boolean;
+    spot_uv?: boolean;
+    glitter?: boolean;
+    embossing?: boolean;
+    die_cut?: boolean;
+    holographic?: boolean;
+  } | null;
+  format_extra_comments?: string | null;
 }
 
 export interface QuoteRequestFormValues {

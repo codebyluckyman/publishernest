@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequest } from "@/types/quoteRequest";
 
@@ -20,7 +21,17 @@ const applyStatusFilter = (query: any, status: string) => {
 /**
  * Fetches a list of quote requests with additional data like suppliers and formats
  */
-export async function fetchQuoteRequests(organizationId: string, status?: string, search?: string) {
+export async function fetchQuoteRequests({ 
+  currentOrganization, 
+  status, 
+  searchQuery 
+}: { 
+  currentOrganization: { id: string } | null; 
+  status?: string; 
+  searchQuery?: string;
+}) {
+  if (!currentOrganization) return [];
+  
   try {
     // Initialize the query
     let initialQuery = supabase
@@ -43,11 +54,11 @@ export async function fetchQuoteRequests(organizationId: string, status?: string
           )
         )
       `)
-      .eq("organization_id", organizationId);
+      .eq("organization_id", currentOrganization.id);
 
     // Apply filters
-    let query = applySearchFilter(initialQuery, search);
-    query = applyStatusFilter(query, status);
+    let query = applySearchFilter(initialQuery, searchQuery || '');
+    query = applyStatusFilter(query, status || '');
 
     const { data, error } = await query;
 
@@ -64,9 +75,6 @@ export async function fetchQuoteRequests(organizationId: string, status?: string
       // Map formats with properly named format information
       if (request.formats) {
         request.formats = request.formats.map((format: any) => {
-          // Extract format name from the joined format object
-          const formatName = format.format?.format_name;
-          
           // Map products with properly named product information
           if (format.products) {
             format.products = format.products.map((productEntry: any) => {
@@ -86,10 +94,11 @@ export async function fetchQuoteRequests(organizationId: string, status?: string
           return {
             id: format.id,
             format_id: format.format_id,
+            quote_request_id: request.id, // Add the missing quote_request_id
             quantity: format.quantity,
-            notes: format.notes,
-            format_name: formatName,
-            products: format.products
+            notes: format.notes || "",
+            format_name: format.format?.format_name,
+            products: format.products || []
           };
         });
       }
@@ -97,7 +106,7 @@ export async function fetchQuoteRequests(organizationId: string, status?: string
       return {
         ...request,
         supplier_name: supplierName,
-        formats: request.formats
+        formats: request.formats || []
       };
     });
 
@@ -149,9 +158,6 @@ export async function fetchQuoteRequestById(id: string) {
     // Map formats with properly named format information
     if (request.formats) {
       request.formats = request.formats.map((format: any) => {
-        // Extract format name from the joined format object
-        const formatName = format.format?.format_name;
-        
         // Map products with properly named product information
         if (format.products) {
           format.products = format.products.map((productEntry: any) => {
@@ -171,10 +177,11 @@ export async function fetchQuoteRequestById(id: string) {
         return {
           id: format.id,
           format_id: format.format_id,
+          quote_request_id: request.id, // Add the missing quote_request_id
           quantity: format.quantity,
-          notes: format.notes,
-          format_name: formatName,
-          products: format.products
+          notes: format.notes || "",
+          format_name: format.format?.format_name,
+          products: format.products || []
         };
       });
     }
@@ -182,7 +189,7 @@ export async function fetchQuoteRequestById(id: string) {
     const transformedData = {
       ...request,
       supplier_name: supplierName,
-      formats: request.formats
+      formats: request.formats || []
     };
 
     return transformedData as QuoteRequest;

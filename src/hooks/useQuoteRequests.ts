@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -32,7 +31,11 @@ export function useQuoteRequests() {
   ) => {
     return useQuery({
       queryKey: ["quoteRequests", currentOrganization?.id, status, searchQuery],
-      queryFn: () => fetchQuoteRequests({ currentOrganization, status, searchQuery }),
+      queryFn: () => fetchQuoteRequests({ 
+        currentOrganization, 
+        status, 
+        searchQuery 
+      }),
       enabled: !!currentOrganization,
       meta: {
         onError: (error: any) => {
