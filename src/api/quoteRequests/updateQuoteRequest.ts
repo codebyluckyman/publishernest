@@ -94,21 +94,32 @@ export async function updateQuoteRequest(
           if (format.products && format.products.length > 0 && insertedFormats[index]) {
             const formatId = insertedFormats[index].id;
             
-            // Use a database function to delete and insert products for this format
-            const { error: productsError } = await supabase
-              .rpc('update_quote_request_format_products', {
-                format_id: formatId,
-                products_data: format.products.map(product => ({
-                  quote_request_format_id: formatId,
-                  product_id: product.product_id,
-                  quantity: product.quantity,
-                  notes: product.notes || null
-                }))
-              });
-
-            if (productsError) {
-              console.error("Error updating format products:", productsError);
-              throw productsError;
+            // First delete existing products for this format
+            const { error: deleteProductsError } = await supabase
+              .from('quote_request_format_products')
+              .delete()
+              .eq('quote_request_format_id', formatId);
+              
+            if (deleteProductsError) {
+              console.error("Error deleting format products:", deleteProductsError);
+              throw deleteProductsError;
+            }
+            
+            // Then insert new products
+            const productEntries = format.products.map(product => ({
+              quote_request_format_id: formatId,
+              product_id: product.product_id,
+              quantity: product.quantity,
+              notes: product.notes || null
+            }));
+            
+            const { error: insertProductsError } = await supabase
+              .from('quote_request_format_products')
+              .insert(productEntries);
+              
+            if (insertProductsError) {
+              console.error("Error inserting format products:", insertProductsError);
+              throw insertProductsError;
             }
           }
         });

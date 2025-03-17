@@ -791,6 +791,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_quote_request_format_products: {
+        Args: {
+          products_data: Json
+        }
+        Returns: undefined
+      }
       is_organization_admin: {
         Args: {
           org_id: string
@@ -804,6 +810,13 @@ export type Database = {
           user_id?: string
         }
         Returns: boolean
+      }
+      update_quote_request_format_products: {
+        Args: {
+          format_id: string
+          products_data: Json
+        }
+        Returns: undefined
       }
     }
     Enums: {
