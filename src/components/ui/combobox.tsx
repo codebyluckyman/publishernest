@@ -1,6 +1,7 @@
 
 import * as React from "react";
 import { CheckIcon, CaretSortIcon } from "@radix-ui/react-icons";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,8 @@ interface ComboboxProps {
   value?: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  searchPlaceholder?: string;
+  emptyMessage?: string;
   disabled?: boolean;
   className?: string;
   isLoading?: boolean;
@@ -31,21 +34,40 @@ export function Combobox({
   value = "",
   onChange,
   placeholder = "Select item...",
+  searchPlaceholder = "Search...",
+  emptyMessage = "No item found.",
   disabled = false,
   className,
   isLoading = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
   
   // Ensure items is always an array and value is always a string
   const safeItems = Array.isArray(items) ? items : [];
   const safeValue = typeof value === 'string' ? value : "";
   
+  // Filter items based on search query
+  const filteredItems = React.useMemo(() => {
+    if (!searchQuery.trim()) return safeItems;
+    
+    return safeItems.filter(item => 
+      item.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [safeItems, searchQuery]);
+
   const currentLabel = React.useMemo(() => {
     if (!safeItems || safeItems.length === 0) return "";
     const selected = safeItems.find(item => item.value === safeValue);
     return selected ? selected.label : "";
   }, [safeItems, safeValue]);
+
+  // Reset search when popover closes
+  React.useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+    }
+  }, [open]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,16 +79,30 @@ export function Combobox({
           disabled={disabled || isLoading}
           className={cn("w-full justify-between", className)}
         >
-          {isLoading ? "Loading..." : safeValue ? currentLabel : placeholder}
+          {isLoading ? (
+            <span className="flex items-center">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Loading...
+            </span>
+          ) : safeValue ? (
+            currentLabel || placeholder
+          ) : (
+            placeholder
+          )}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} className="h-9" />
-          <CommandEmpty>No item found.</CommandEmpty>
+          <CommandInput 
+            placeholder={searchPlaceholder} 
+            className="h-9"
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+          />
+          <CommandEmpty>{emptyMessage}</CommandEmpty>
           <CommandGroup className="max-h-64 overflow-auto">
-            {safeItems.map((item) => (
+            {filteredItems.map((item) => (
               <CommandItem
                 key={item.value}
                 value={item.value}
