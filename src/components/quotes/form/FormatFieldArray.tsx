@@ -32,6 +32,9 @@ export function FormatFieldArray({ form, showFormatSpecifications = false }: For
     });
   };
 
+  // Ensure formats is always a valid array
+  const safeFormats = Array.isArray(formats) ? formats : [];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -73,7 +76,7 @@ export function FormatFieldArray({ form, showFormatSpecifications = false }: For
             <FormatField 
               control={form.control} 
               index={index} 
-              formats={formats} 
+              formats={safeFormats} 
               isFormatsLoading={isFormatsLoading}
               showFormatSpecifications={showFormatSpecifications}
             />

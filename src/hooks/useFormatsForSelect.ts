@@ -14,15 +14,23 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
     queryFn: async () => {
       if (!currentOrganization) return [];
 
-      const { data, error } = await supabase
-        .from("formats")
-        .select("id, format_name")
-        .eq("organization_id", currentOrganization.id)
-        .order("format_name", { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from("formats")
+          .select("id, format_name")
+          .eq("organization_id", currentOrganization.id)
+          .order("format_name", { ascending: true });
 
-      if (error) throw error;
+        if (error) {
+          console.error("Error fetching formats:", error);
+          return [];
+        }
 
-      return data as FormatForSelect[];
+        return data as FormatForSelect[];
+      } catch (err) {
+        console.error("Exception fetching formats:", err);
+        return [];
+      }
     },
     enabled: !!currentOrganization,
   });

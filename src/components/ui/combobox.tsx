@@ -27,7 +27,7 @@ interface ComboboxProps {
 }
 
 export function Combobox({
-  items,
+  items = [],
   value,
   onChange,
   placeholder = "Select item...",
@@ -38,9 +38,13 @@ export function Combobox({
   const [open, setOpen] = React.useState(false);
   
   const currentLabel = React.useMemo(() => {
+    if (!items || items.length === 0) return "";
     const selected = items.find(item => item.value === value);
     return selected ? selected.label : "";
   }, [items, value]);
+
+  // Ensure items is always an array
+  const safeItems = Array.isArray(items) ? items : [];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,7 +65,7 @@ export function Combobox({
           <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} className="h-9" />
           <CommandEmpty>No item found.</CommandEmpty>
           <CommandGroup className="max-h-64 overflow-auto">
-            {items.map((item) => (
+            {safeItems.map((item) => (
               <CommandItem
                 key={item.value}
                 value={item.value}
