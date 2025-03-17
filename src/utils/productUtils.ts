@@ -17,6 +17,11 @@ export const formatPrice = (price: number | null, currencyCode: string | null = 
   }).format(price);
 };
 
+export const formatNumber = (num: number | null) => {
+  if (num === null) return "N/A";
+  return num.toLocaleString("en-US");
+};
+
 export const getProductFormLabel = (form: string | null) => {
   if (!form) return "N/A";
   

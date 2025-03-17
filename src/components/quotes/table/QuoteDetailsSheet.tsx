@@ -52,6 +52,11 @@ export function QuoteDetailsSheet({
     onOpenChange(open);
   };
 
+  // Helper function to format numbers with thousand separators
+  const formatNumber = (num: number): string => {
+    return num.toLocaleString('en-US');
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
@@ -144,7 +149,7 @@ export function QuoteDetailsSheet({
                       <AccordionTrigger className="hover:no-underline">
                         <div className="flex justify-between w-full pr-4">
                           <span>{format.format_name || 'Unknown Format'}</span>
-                          <span className="text-sm text-muted-foreground">Qty: {format.quantity}</span>
+                          <span className="text-sm text-muted-foreground">Qty: {formatNumber(format.quantity)}</span>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent>
@@ -168,7 +173,7 @@ export function QuoteDetailsSheet({
                                   <TableCell className="font-medium">
                                     {product.product_name || 'Unknown Product'}
                                   </TableCell>
-                                  <TableCell className="text-right">{product.quantity}</TableCell>
+                                  <TableCell className="text-right">{formatNumber(product.quantity)}</TableCell>
                                   {product.notes && (
                                     <TableCell className="text-sm text-muted-foreground">
                                       {product.notes}
