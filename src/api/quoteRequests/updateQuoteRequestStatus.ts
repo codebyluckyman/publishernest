@@ -24,7 +24,10 @@ export async function updateQuoteRequestStatus(
     // Update the status
     const { data, error } = await supabase
       .from("quote_requests")
-      .update({ status })
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
       .eq("id", id)
       .select()
       .single();
@@ -35,7 +38,7 @@ export async function updateQuoteRequestStatus(
     await recordQuoteRequestAudit(
       id,
       userId,
-      { status: currentRequest.status } as Partial<QuoteRequest>,
+      { status: currentRequest.status as 'pending' | 'approved' | 'declined' },
       { status } as Partial<QuoteRequest>,
       'status_change'
     );
