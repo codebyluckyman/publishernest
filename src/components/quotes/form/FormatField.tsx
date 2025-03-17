@@ -1,5 +1,5 @@
 
-import { Control } from "react-hook-form";
+import { Control, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +31,12 @@ export function FormatField({
     label: format.format_name,
     value: format.id,
   }));
+
+  // Watch the format_id to pass it to child components
+  const formatId = useWatch({
+    control,
+    name: `formats.${index}.format_id`,
+  });
 
   return (
     <div className="space-y-4">
@@ -121,7 +127,8 @@ export function FormatField({
         <h4 className="text-sm font-medium mb-2">Products</h4>
         <FormatProductField 
           control={control} 
-          formatIndex={index} 
+          formatIndex={index}
+          formatId={formatId} 
         />
       </div>
 

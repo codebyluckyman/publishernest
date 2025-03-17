@@ -242,8 +242,8 @@ export async function updateQuoteRequest(
     await recordQuoteRequestAudit(
       id,
       userId,
-      currentQuoteRequest,
-      updatedQuoteRequest,
+      currentQuoteRequest as Partial<QuoteRequest>,
+      updatedQuoteRequest as Partial<QuoteRequest>,
       'update'
     );
 
@@ -295,7 +295,7 @@ export async function updateQuoteRequestStatus(
     await recordQuoteRequestAudit(
       id,
       userId,
-      { status: currentQuoteRequest.status },
+      { status: currentQuoteRequest.status as 'pending' | 'approved' | 'declined' },
       { status },
       'status_change'
     );
