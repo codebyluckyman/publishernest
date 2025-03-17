@@ -1,5 +1,5 @@
 
-import { Control, useWatch, useFormState } from "react-hook-form";
+import { Control, useWatch, useFormContext } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ interface FormatFieldProps {
 
 export function FormatField({ control, index, formats, isFormatsLoading }: FormatFieldProps) {
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
+  const { setValue } = useFormContext<QuoteRequestFormValues>();
   
   // Watch the products array to calculate total quantity
   const productsArray = useWatch({
@@ -35,15 +36,15 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
       
       // Update the format quantity field using setValue instead of directly manipulating internal properties
       if (totalQuantity > 0) {
-        // Safely update the value using the setValue method from the form
-        control._setValue(`formats.${index}.quantity`, totalQuantity, {
+        // Safely update the value using the proper setValue method from useFormContext
+        setValue(`formats.${index}.quantity`, totalQuantity, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
         });
       }
     }
-  }, [productsArray, control, index]);
+  }, [productsArray, setValue, index]);
 
   return (
     <div className="space-y-4">
