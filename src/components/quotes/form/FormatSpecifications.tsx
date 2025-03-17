@@ -50,7 +50,7 @@ export function FormatSpecifications({ format, isLoading }: FormatSpecifications
           {'binding_type' in format && format.binding_type && (
             <div>
               <p className="text-muted-foreground">Binding:</p>
-              <p>{format.binding_type}</p>
+              <p>{String(format.binding_type)}</p>
             </div>
           )}
           
