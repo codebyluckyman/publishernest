@@ -7,7 +7,6 @@ import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
 import { Supplier } from "@/types/supplier";
 import { Form } from "@/components/ui/form";
-import { QuoteRequest } from "@/types/quoteRequest";
 import { useEffect } from "react";
 
 interface QuoteRequestFormProps {
@@ -35,7 +34,10 @@ export function QuoteRequestForm({
       description: initialValues?.description || "",
       due_date: initialValues?.due_date,
       notes: initialValues?.notes || "",
-      formats: initialValues?.formats || [],
+      formats: initialValues?.formats?.map(format => ({
+        ...format,
+        products: format.products || []
+      })) || [],
       products: initialValues?.products || {},
       quantities: initialValues?.quantities || {},
       supplier_id: initialValues?.supplier_id, // For backward compatibility

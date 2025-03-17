@@ -26,6 +26,13 @@ export interface QuoteRequestFormat {
   quantity: number;
   notes: string | null;
   format_name?: string; // Joined field
+  products?: QuoteRequestFormatProduct[]; // Products linked to this format
+}
+
+export interface QuoteRequestFormatProduct {
+  product_id: string;
+  quantity: number;
+  notes?: string;
 }
 
 export interface QuoteRequestFormValues {
@@ -40,6 +47,11 @@ export interface QuoteRequestFormValues {
     format_id: string;
     quantity: number;
     notes?: string;
+    products?: {
+      product_id: string;
+      quantity: number;
+      notes?: string;
+    }[];
   }[];
   products?: Record<string, any>;
   quantities?: Record<string, any>;

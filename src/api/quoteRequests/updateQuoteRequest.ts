@@ -57,7 +57,15 @@ export async function updateQuoteRequest(
 
     // If formats are provided, update them
     if (formats && formats.length > 0) {
-      // First, delete existing formats
+      // First, get existing format IDs
+      const { data: existingFormats, error: getFormatsError } = await supabase
+        .from("quote_request_formats")
+        .select("id, format_id")
+        .eq("quote_request_id", id);
+
+      if (getFormatsError) throw getFormatsError;
+
+      // Delete existing formats
       const { error: deleteError } = await supabase
         .from("quote_request_formats")
         .delete()
@@ -73,11 +81,46 @@ export async function updateQuoteRequest(
         notes: format.notes || null
       }));
 
-      const { error: insertError } = await supabase
+      const { data: insertedFormats, error: insertError } = await supabase
         .from("quote_request_formats")
-        .insert(formatEntries);
+        .insert(formatEntries)
+        .select();
 
       if (insertError) throw insertError;
+
+      // Handle format products
+      if (insertedFormats) {
+        const productPromises = formats.map(async (format, index) => {
+          if (format.products && format.products.length > 0 && insertedFormats[index]) {
+            const formatId = insertedFormats[index].id;
+            
+            // Delete any existing products for this format
+            await supabase
+              .from("quote_request_format_products")
+              .delete()
+              .eq("quote_request_format_id", formatId);
+            
+            const productEntries = format.products.map(product => ({
+              quote_request_format_id: formatId,
+              product_id: product.product_id,
+              quantity: product.quantity,
+              notes: product.notes || null
+            }));
+
+            const { error: productsError } = await supabase
+              .from("quote_request_format_products")
+              .insert(productEntries);
+
+            if (productsError) {
+              console.error("Error inserting format products:", productsError);
+              throw productsError;
+            }
+          }
+        });
+
+        // Wait for all product insertions to complete
+        await Promise.all(productPromises);
+      }
     }
 
     // Fetch the updated quote request with its formats
@@ -90,7 +133,14 @@ export async function updateQuoteRequest(
           format_id,
           quantity,
           notes,
-          formats:format_id(format_name)
+          formats:format_id(format_name),
+          quote_request_format_products(
+            id,
+            product_id,
+            quantity,
+            notes,
+            products:product_id(id, title)
+          )
         )
       `)
       .eq("id", id)

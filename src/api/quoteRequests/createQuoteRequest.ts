@@ -61,14 +61,41 @@ export async function createQuoteRequest(
         notes: format.notes || null
       }));
 
-      const { error: formatsError } = await supabase
+      const { error: formatsError, data: insertedFormats } = await supabase
         .from("quote_request_formats")
-        .insert(formatEntries);
+        .insert(formatEntries)
+        .select();
 
       if (formatsError) {
         console.error("Error inserting formats:", formatsError);
         throw formatsError;
       }
+
+      // If format products were provided, insert them
+      const productPromises = formData.formats.map(async (format, index) => {
+        if (format.products && format.products.length > 0 && insertedFormats && insertedFormats[index]) {
+          const formatId = insertedFormats[index].id;
+          
+          const productEntries = format.products.map(product => ({
+            quote_request_format_id: formatId,
+            product_id: product.product_id,
+            quantity: product.quantity,
+            notes: product.notes || null
+          }));
+
+          const { error: productsError } = await supabase
+            .from("quote_request_format_products")
+            .insert(productEntries);
+
+          if (productsError) {
+            console.error("Error inserting format products:", productsError);
+            throw productsError;
+          }
+        }
+      });
+
+      // Wait for all product insertions to complete
+      await Promise.all(productPromises);
     }
 
     // Record the creation in the audit trail
