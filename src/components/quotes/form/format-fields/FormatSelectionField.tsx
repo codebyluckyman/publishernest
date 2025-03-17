@@ -3,7 +3,6 @@ import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Loader2 } from "lucide-react";
 
@@ -20,12 +19,12 @@ export function FormatSelectionField({
   formats,
   isFormatsLoading,
 }: FormatSelectionFieldProps) {
-  // Ensure formats is always a valid array
+  // Ensure formats is always a valid array (defensive programming)
   const safeFormats = Array.isArray(formats) ? formats : [];
   
-  // Format options for the combobox
+  // Format options for the combobox - only process if we have a valid array
   const formatOptions = safeFormats.map((format) => ({
-    label: format.format_name,
+    label: format.format_name || "Unnamed Format",
     value: format.id,
   }));
 

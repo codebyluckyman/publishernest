@@ -26,14 +26,14 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
           return [];
         }
 
-        // Ensure data is always an array
-        return Array.isArray(data) ? data as FormatForSelect[] : [];
+        // Ensure data is always a valid array before returning
+        return Array.isArray(data) ? data : [];
       } catch (err) {
         console.error("Exception fetching formats:", err);
         return [];
       }
     },
     enabled: !!currentOrganization,
-    initialData: [], // Provide empty array as initial data
+    initialData: [], // Provide empty array as initial data to avoid undefined
   });
 }

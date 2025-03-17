@@ -20,7 +20,7 @@ export function FormatSpecificationsDisplay({
 }: FormatSpecificationsDisplayProps) {
   if (!showSpecifications) return null;
   
-  // Ensure formats is valid before using
+  // Ensure formats is always a valid array
   const safeFormats = Array.isArray(formats) ? formats : [];
 
   return (
