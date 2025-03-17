@@ -27,6 +27,7 @@ export interface QuoteRequestFormat {
   notes: string | null;
   format_name?: string; // Joined field from format.format_name
   products?: QuoteRequestFormatProduct[]; // Products linked to this format
+  price_breaks?: PriceBreak[]; // Added price breaks
 }
 
 export interface QuoteRequestFormatProduct {
@@ -47,6 +48,17 @@ export interface QuoteRequestFormatProduct {
   format_extra_comments?: string | null;
 }
 
+export interface PriceBreak {
+  id?: string;
+  quote_request_format_id?: string;
+  from_quantity: number;
+  to_quantity: number;
+  one_product_price?: boolean;
+  two_products_price?: boolean;
+  three_products_price?: boolean;
+  four_products_price?: boolean;
+}
+
 export interface QuoteRequestFormValues {
   id?: string;
   title: string;
@@ -63,6 +75,14 @@ export interface QuoteRequestFormValues {
       product_id: string;
       quantity: number;
       notes?: string;
+    }[];
+    price_breaks?: {
+      from_quantity: number;
+      to_quantity: number;
+      one_product_price?: boolean;
+      two_products_price?: boolean;
+      three_products_price?: boolean;
+      four_products_price?: boolean;
     }[];
   }[];
   products?: Record<string, any>;

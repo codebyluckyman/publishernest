@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { QuoteRequest, QuoteRequestFormat, QuoteRequestFormatProduct, PriceBreak } from "@/types/quoteRequest";
 
 // Helper function to apply search filter
 const applySearchFilter = (query: any, search: string) => {
@@ -51,6 +51,15 @@ export async function fetchQuoteRequests({
             quantity, 
             notes,
             product:products(id, title, format_extras, format_extra_comments)
+          ),
+          price_breaks:quote_request_format_price_breaks(
+            id,
+            from_quantity,
+            to_quantity,
+            one_product_price,
+            two_products_price,
+            three_products_price,
+            four_products_price
           )
         )
       `)
@@ -73,12 +82,12 @@ export async function fetchQuoteRequests({
       const supplierName = request.supplier ? request.supplier.supplier_name : null;
 
       // Map formats with properly named format information
-      let formattedFormats: any[] = [];
+      let formattedFormats: QuoteRequestFormat[] = [];
       
       if (request.formats && request.formats.length > 0) {
         formattedFormats = request.formats.map((format: any) => {
           // Map products with properly named product information
-          let formattedProducts: any[] = [];
+          let formattedProducts: QuoteRequestFormatProduct[] = [];
           
           if (format.products && format.products.length > 0) {
             formattedProducts = format.products.map((productEntry: any) => {
@@ -95,6 +104,24 @@ export async function fetchQuoteRequests({
             });
           }
           
+          // Map price breaks
+          let formattedPriceBreaks: PriceBreak[] = [];
+          
+          if (format.price_breaks && format.price_breaks.length > 0) {
+            formattedPriceBreaks = format.price_breaks.map((priceBreak: any) => {
+              return {
+                id: priceBreak.id,
+                quote_request_format_id: format.id,
+                from_quantity: priceBreak.from_quantity,
+                to_quantity: priceBreak.to_quantity,
+                one_product_price: priceBreak.one_product_price,
+                two_products_price: priceBreak.two_products_price,
+                three_products_price: priceBreak.three_products_price,
+                four_products_price: priceBreak.four_products_price
+              };
+            });
+          }
+          
           return {
             id: format.id,
             format_id: format.format_id,
@@ -102,7 +129,8 @@ export async function fetchQuoteRequests({
             quantity: format.quantity,
             notes: format.notes || "",
             format_name: format.format?.format_name,
-            products: formattedProducts
+            products: formattedProducts,
+            price_breaks: formattedPriceBreaks
           };
         });
       }
@@ -111,10 +139,10 @@ export async function fetchQuoteRequests({
         ...request,
         supplier_name: supplierName,
         formats: formattedFormats
-      };
+      } as QuoteRequest;
     });
 
-    return transformedData as QuoteRequest[];
+    return transformedData;
   } catch (error: any) {
     console.error("Error fetching quote requests:", error);
     throw error;
@@ -143,6 +171,15 @@ export async function fetchQuoteRequestById(id: string) {
             quantity, 
             notes,
             product:products(id, title, format_extras, format_extra_comments)
+          ),
+          price_breaks:quote_request_format_price_breaks(
+            id,
+            from_quantity,
+            to_quantity,
+            one_product_price,
+            two_products_price,
+            three_products_price,
+            four_products_price
           )
         )
       `)
@@ -160,12 +197,12 @@ export async function fetchQuoteRequestById(id: string) {
     const supplierName = request.supplier ? request.supplier.supplier_name : null;
 
     // Map formats with properly named format information
-    let formattedFormats: any[] = [];
+    let formattedFormats: QuoteRequestFormat[] = [];
     
     if (request.formats && request.formats.length > 0) {
       formattedFormats = request.formats.map((format: any) => {
         // Map products with properly named product information
-        let formattedProducts: any[] = [];
+        let formattedProducts: QuoteRequestFormatProduct[] = [];
         
         if (format.products && format.products.length > 0) {
           formattedProducts = format.products.map((productEntry: any) => {
@@ -182,6 +219,24 @@ export async function fetchQuoteRequestById(id: string) {
           });
         }
         
+        // Map price breaks
+        let formattedPriceBreaks: PriceBreak[] = [];
+        
+        if (format.price_breaks && format.price_breaks.length > 0) {
+          formattedPriceBreaks = format.price_breaks.map((priceBreak: any) => {
+            return {
+              id: priceBreak.id,
+              quote_request_format_id: format.id,
+              from_quantity: priceBreak.from_quantity,
+              to_quantity: priceBreak.to_quantity,
+              one_product_price: priceBreak.one_product_price,
+              two_products_price: priceBreak.two_products_price,
+              three_products_price: priceBreak.three_products_price,
+              four_products_price: priceBreak.four_products_price
+            };
+          });
+        }
+        
         return {
           id: format.id,
           format_id: format.format_id,
@@ -189,7 +244,8 @@ export async function fetchQuoteRequestById(id: string) {
           quantity: format.quantity,
           notes: format.notes || "",
           format_name: format.format?.format_name,
-          products: formattedProducts
+          products: formattedProducts,
+          price_breaks: formattedPriceBreaks
         };
       });
     }
@@ -198,9 +254,9 @@ export async function fetchQuoteRequestById(id: string) {
       ...request,
       supplier_name: supplierName,
       formats: formattedFormats
-    };
+    } as QuoteRequest;
 
-    return transformedData as QuoteRequest;
+    return transformedData;
   } catch (error: any) {
     console.error("Error fetching quote request:", error);
     throw error;

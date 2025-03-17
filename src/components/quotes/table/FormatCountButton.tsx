@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { QuoteRequest, QuoteRequestFormat } from "@/types/quoteRequest";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CheckIcon, XIcon } from "lucide-react";
 
 export interface FormatCountButtonProps {
   formats: QuoteRequestFormat[];
@@ -50,6 +52,57 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
     );
   };
 
+  // Helper function to render the price breaks section
+  const renderPriceBreaks = (format: QuoteRequestFormat) => {
+    if (!format.price_breaks || format.price_breaks.length === 0) return null;
+
+    return (
+      <div className="mt-3">
+        <h5 className="text-xs font-medium mb-1">Price Break Requests</h5>
+        <Table className="text-xs">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="p-1">Quantity</TableHead>
+              <TableHead className="p-1 text-center">1P</TableHead>
+              <TableHead className="p-1 text-center">2P</TableHead>
+              <TableHead className="p-1 text-center">3P</TableHead>
+              <TableHead className="p-1 text-center">4P</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {format.price_breaks.map((priceBreak, idx) => (
+              <TableRow key={priceBreak.id || idx}>
+                <TableCell className="p-1">
+                  {priceBreak.from_quantity}-{priceBreak.to_quantity}
+                </TableCell>
+                <TableCell className="p-1 text-center">
+                  {priceBreak.one_product_price ? 
+                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
+                </TableCell>
+                <TableCell className="p-1 text-center">
+                  {priceBreak.two_products_price ? 
+                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
+                </TableCell>
+                <TableCell className="p-1 text-center">
+                  {priceBreak.three_products_price ? 
+                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
+                </TableCell>
+                <TableCell className="p-1 text-center">
+                  {priceBreak.four_products_price ? 
+                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -84,6 +137,9 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
                     ))}
                   </div>
                 )}
+
+                {/* Add the price breaks section */}
+                {renderPriceBreaks(format)}
               </div>
             ))}
           </div>

@@ -6,6 +6,7 @@ import { FormatSpecifications } from "../../form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { QuoteRequestFormat } from "@/types/quoteRequest";
 import { Badge } from "@/components/ui/badge";
+import { CheckIcon, XIcon } from "lucide-react";
 
 interface FormatAccordionProps {
   formats: QuoteRequestFormat[];
@@ -39,10 +40,60 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
         
         {product.format_extra_comments && (
           <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-800">
-            <p className="font-medium mb-1">Format Extra Details:</p>
             <p>{product.format_extra_comments}</p>
           </div>
         )}
+      </div>
+    );
+  };
+
+  // Helper function to render the price breaks table
+  const renderPriceBreaks = (format: QuoteRequestFormat) => {
+    if (!format.price_breaks || format.price_breaks.length === 0) return null;
+
+    return (
+      <div className="mt-4">
+        <h4 className="text-sm font-medium mb-2">Price Break Requests</h4>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Quantity Range</TableHead>
+              <TableHead className="text-center">1 Product</TableHead>
+              <TableHead className="text-center">2 Products</TableHead>
+              <TableHead className="text-center">3 Products</TableHead>
+              <TableHead className="text-center">4 Products</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {format.price_breaks.map((priceBreak, idx) => (
+              <TableRow key={priceBreak.id || idx}>
+                <TableCell>
+                  {formatNumber(priceBreak.from_quantity)} - {formatNumber(priceBreak.to_quantity)}
+                </TableCell>
+                <TableCell className="text-center">
+                  {priceBreak.one_product_price ? 
+                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
+                </TableCell>
+                <TableCell className="text-center">
+                  {priceBreak.two_products_price ? 
+                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
+                </TableCell>
+                <TableCell className="text-center">
+                  {priceBreak.three_products_price ? 
+                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
+                </TableCell>
+                <TableCell className="text-center">
+                  {priceBreak.four_products_price ? 
+                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
+                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     );
   };
@@ -105,6 +156,9 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
               ) : (
                 <p className="text-sm text-muted-foreground">No products specified for this format</p>
               )}
+              
+              {/* Show price breaks */}
+              {renderPriceBreaks(format)}
             </AccordionContent>
           </AccordionItem>
         );

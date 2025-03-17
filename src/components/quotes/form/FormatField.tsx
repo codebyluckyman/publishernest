@@ -1,15 +1,15 @@
 
-import { Control, useWatch, useFormContext } from "react-hook-form";
+import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { QuoteRequestFormValues } from "./schema";
+import { FormatForSelect } from "@/hooks/useFormatsForSelect";
+import { Combobox } from "@/components/ui/combobox";
+import { Separator } from "@/components/ui/separator";
 import { FormatProductField } from "./FormatProductField";
-import { useState, useEffect } from "react";
-import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { FormatSpecifications } from "./FormatSpecifications";
+import { PriceBreakField } from "./PriceBreakField";
 
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -19,89 +19,36 @@ interface FormatFieldProps {
   showFormatSpecifications?: boolean;
 }
 
-export function FormatField({ 
-  control, 
-  index, 
-  formats, 
-  isFormatsLoading, 
-  showFormatSpecifications = false 
+export function FormatField({
+  control,
+  index,
+  formats,
+  isFormatsLoading,
+  showFormatSpecifications = false,
 }: FormatFieldProps) {
-  const [selectedFormatId, setSelectedFormatId] = useState<string>("");
-  const { setValue } = useFormContext<QuoteRequestFormValues>();
-  
-  // Fetch format details
-  const { data: formatDetails, isLoading: isFormatDetailsLoading } = useFormatDetails(selectedFormatId);
-  
-  // Watch the products array to calculate total quantity
-  const productsArray = useWatch({
-    control,
-    name: `formats.${index}.products`,
-    defaultValue: [],
-  });
-
-  // Watch the format_id to update selectedFormatId when initializing the form
-  const formatId = useWatch({
-    control,
-    name: `formats.${index}.format_id`,
-    defaultValue: "",
-  });
-
-  // Update selectedFormatId when the form loads with initial values
-  useEffect(() => {
-    if (formatId && formatId !== selectedFormatId) {
-      setSelectedFormatId(formatId);
-    }
-  }, [formatId, selectedFormatId]);
-
-  // Calculate total quantity based on products
-  useEffect(() => {
-    if (productsArray && productsArray.length > 0) {
-      const totalQuantity = productsArray.reduce((sum, product) => {
-        return sum + (product.quantity || 0);
-      }, 0);
-      
-      // Update the format quantity field using setValue instead of directly manipulating internal properties
-      if (totalQuantity > 0) {
-        // Safely update the value using the proper setValue method from useFormContext
-        setValue(`formats.${index}.quantity`, totalQuantity, {
-          shouldValidate: true,
-          shouldDirty: true,
-          shouldTouch: true,
-        });
-      }
-    }
-  }, [productsArray, setValue, index]);
+  // Format options for the combobox
+  const formatOptions = formats.map((format) => ({
+    label: format.format_name,
+    value: format.id,
+  }));
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={control}
           name={`formats.${index}.format_id`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Format</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  setSelectedFormatId(value);
-                }}
-                defaultValue={field.value}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a format" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {formats.map((format) => (
-                    <SelectItem key={format.id} value={format.id}>
-                      {format.format_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <Combobox
+                  items={formatOptions}
+                  placeholder="Select format"
+                  {...field}
+                  isLoading={isFormatsLoading}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -112,38 +59,13 @@ export function FormatField({
           name={`formats.${index}.quantity`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Quantity (Auto-calculated)</FormLabel>
+              <FormLabel>Quantity</FormLabel>
               <FormControl>
                 <Input
                   type="number"
                   min="1"
                   {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                  value={field.value || ''}
-                  disabled={productsArray && productsArray.length > 0}
-                />
-              </FormControl>
-              {productsArray && productsArray.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  This value is automatically calculated from product quantities
-                </p>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name={`formats.${index}.notes`}
-          render={({ field }) => (
-            <FormItem className="md:col-span-2">
-              <FormLabel>Notes (Optional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Any specific notes about this format"
-                  className="resize-none"
-                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -152,17 +74,55 @@ export function FormatField({
         />
       </div>
 
-      {selectedFormatId && (
-        <>
-          {/* Always show format specifications */}
-          <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />
-          <FormatProductField 
-            control={control} 
-            formatIndex={index} 
-            formatId={selectedFormatId}
-          />
-        </>
+      <FormField
+        control={control}
+        name={`formats.${index}.notes`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Format Notes</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Add any additional notes about this format"
+                className="h-20"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Format specifications if available and enabled */}
+      {showFormatSpecifications && (
+        <FormField
+          control={control}
+          name={`formats.${index}.format_id`}
+          render={({ field }) => {
+            const selectedFormatId = field.value;
+            const selectedFormat = formats.find(
+              (format) => format.id === selectedFormatId
+            );
+            return selectedFormat ? (
+              <div className="p-3 bg-slate-50 rounded-md">
+                <FormatSpecifications format={selectedFormat} isLoading={false} />
+              </div>
+            ) : null;
+          }}
+        />
       )}
+
+      <Separator />
+
+      {/* Products section */}
+      <div>
+        <h4 className="text-sm font-medium mb-2">Products</h4>
+        <FormatProductField control={control} formatIndex={index} />
+      </div>
+
+      <Separator />
+
+      {/* Price Break section */}
+      <PriceBreakField control={control} formatIndex={index} />
     </div>
   );
 }

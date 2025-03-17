@@ -88,44 +88,83 @@ export async function updateQuoteRequest(
 
       if (insertError) throw insertError;
 
-      // Handle format products
+      // Process each format's products and price breaks
       if (insertedFormats) {
-        const productPromises = formats.map(async (format, index) => {
-          if (format.products && format.products.length > 0 && insertedFormats[index]) {
+        const processFormatPromises = formats.map(async (format, index) => {
+          if (insertedFormats[index]) {
             const formatId = insertedFormats[index].id;
             
-            // First delete existing products for this format
-            const { error: deleteProductsError } = await supabase
-              .from('quote_request_format_products')
-              .delete()
-              .eq('quote_request_format_id', formatId);
+            // Process products if they exist
+            if (format.products && format.products.length > 0) {
+              // First delete existing products for this format
+              const { error: deleteProductsError } = await supabase
+                .from('quote_request_format_products')
+                .delete()
+                .eq('quote_request_format_id', formatId);
+                
+              if (deleteProductsError) {
+                console.error("Error deleting format products:", deleteProductsError);
+                throw deleteProductsError;
+              }
               
-            if (deleteProductsError) {
-              console.error("Error deleting format products:", deleteProductsError);
-              throw deleteProductsError;
+              // Then insert new products
+              const productEntries = format.products.map(product => ({
+                quote_request_format_id: formatId,
+                product_id: product.product_id,
+                quantity: product.quantity,
+                notes: product.notes || null
+              }));
+              
+              const { error: insertProductsError } = await supabase
+                .from('quote_request_format_products')
+                .insert(productEntries);
+                
+              if (insertProductsError) {
+                console.error("Error inserting format products:", insertProductsError);
+                throw insertProductsError;
+              }
             }
             
-            // Then insert new products
-            const productEntries = format.products.map(product => ({
-              quote_request_format_id: formatId,
-              product_id: product.product_id,
-              quantity: product.quantity,
-              notes: product.notes || null
-            }));
-            
-            const { error: insertProductsError } = await supabase
-              .from('quote_request_format_products')
-              .insert(productEntries);
+            // Process price breaks if they exist
+            if (format.price_breaks) {
+              // First delete existing price breaks for this format
+              const { error: deletePriceBreaksError } = await supabase
+                .from('quote_request_format_price_breaks')
+                .delete()
+                .eq('quote_request_format_id', formatId);
+                
+              if (deletePriceBreaksError) {
+                console.error("Error deleting price breaks:", deletePriceBreaksError);
+                throw deletePriceBreaksError;
+              }
               
-            if (insertProductsError) {
-              console.error("Error inserting format products:", insertProductsError);
-              throw insertProductsError;
+              if (format.price_breaks.length > 0) {
+                // Then insert new price breaks
+                const priceBreakEntries = format.price_breaks.map(priceBreak => ({
+                  quote_request_format_id: formatId,
+                  from_quantity: priceBreak.from_quantity,
+                  to_quantity: priceBreak.to_quantity,
+                  one_product_price: priceBreak.one_product_price || false,
+                  two_products_price: priceBreak.two_products_price || false,
+                  three_products_price: priceBreak.three_products_price || false,
+                  four_products_price: priceBreak.four_products_price || false
+                }));
+                
+                const { error: insertPriceBreaksError } = await supabase
+                  .from('quote_request_format_price_breaks')
+                  .insert(priceBreakEntries);
+                  
+                if (insertPriceBreaksError) {
+                  console.error("Error inserting price breaks:", insertPriceBreaksError);
+                  throw insertPriceBreaksError;
+                }
+              }
             }
           }
         });
 
-        // Wait for all product operations to complete
-        await Promise.all(productPromises);
+        // Wait for all format processing to complete
+        await Promise.all(processFormatPromises);
       }
     }
 
@@ -145,7 +184,16 @@ export async function updateQuoteRequest(
             product_id,
             quantity,
             notes,
-            products:product_id(id, title)
+            products:product_id(id, title, format_extras, format_extra_comments)
+          ),
+          quote_request_format_price_breaks:id(
+            id,
+            from_quantity,
+            to_quantity,
+            one_product_price,
+            two_products_price,
+            three_products_price,
+            four_products_price
           )
         )
       `)

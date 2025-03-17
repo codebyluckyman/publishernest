@@ -71,32 +71,56 @@ export async function createQuoteRequest(
         throw formatsError;
       }
 
-      // If format products were provided, insert them
-      const productPromises = formData.formats.map(async (format, index) => {
-        if (format.products && format.products.length > 0 && insertedFormats && insertedFormats[index]) {
+      // Process each format's products and price breaks
+      const processFormatPromises = formData.formats.map(async (format, index) => {
+        if (insertedFormats && insertedFormats[index]) {
           const formatId = insertedFormats[index].id;
           
-          const productEntries = format.products.map(product => ({
-            quote_request_format_id: formatId,
-            product_id: product.product_id,
-            quantity: product.quantity,
-            notes: product.notes || null
-          }));
+          // Process products if they exist
+          if (format.products && format.products.length > 0) {
+            const productEntries = format.products.map(product => ({
+              quote_request_format_id: formatId,
+              product_id: product.product_id,
+              quantity: product.quantity,
+              notes: product.notes || null
+            }));
 
-          // Use raw query with the correct function signature
-          const { error: productsError } = await supabase
-            .from('quote_request_format_products')
-            .insert(productEntries);
+            const { error: productsError } = await supabase
+              .from('quote_request_format_products')
+              .insert(productEntries);
 
-          if (productsError) {
-            console.error("Error inserting format products:", productsError);
-            throw productsError;
+            if (productsError) {
+              console.error("Error inserting format products:", productsError);
+              throw productsError;
+            }
+          }
+          
+          // Process price breaks if they exist
+          if (format.price_breaks && format.price_breaks.length > 0) {
+            const priceBreakEntries = format.price_breaks.map(priceBreak => ({
+              quote_request_format_id: formatId,
+              from_quantity: priceBreak.from_quantity,
+              to_quantity: priceBreak.to_quantity,
+              one_product_price: priceBreak.one_product_price || false,
+              two_products_price: priceBreak.two_products_price || false,
+              three_products_price: priceBreak.three_products_price || false,
+              four_products_price: priceBreak.four_products_price || false
+            }));
+
+            const { error: priceBreaksError } = await supabase
+              .from('quote_request_format_price_breaks')
+              .insert(priceBreakEntries);
+
+            if (priceBreaksError) {
+              console.error("Error inserting price breaks:", priceBreaksError);
+              throw priceBreaksError;
+            }
           }
         }
       });
 
-      // Wait for all product insertions to complete
-      await Promise.all(productPromises);
+      // Wait for all format processing to complete
+      await Promise.all(processFormatPromises);
     }
 
     // Record the creation in the audit trail
