@@ -34,5 +34,6 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
       }
     },
     enabled: !!currentOrganization,
+    initialData: [], // Provide empty array as initial data
   });
 }

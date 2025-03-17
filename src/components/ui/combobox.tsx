@@ -28,7 +28,7 @@ interface ComboboxProps {
 
 export function Combobox({
   items = [],
-  value,
+  value = "",
   onChange,
   placeholder = "Select item...",
   disabled = false,
@@ -37,14 +37,15 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   
-  // Ensure items is always an array
+  // Ensure items is always an array and value is always a string
   const safeItems = Array.isArray(items) ? items : [];
+  const safeValue = typeof value === 'string' ? value : "";
   
   const currentLabel = React.useMemo(() => {
     if (!safeItems || safeItems.length === 0) return "";
-    const selected = safeItems.find(item => item.value === value);
+    const selected = safeItems.find(item => item.value === safeValue);
     return selected ? selected.label : "";
-  }, [safeItems, value]);
+  }, [safeItems, safeValue]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -56,7 +57,7 @@ export function Combobox({
           disabled={disabled || isLoading}
           className={cn("w-full justify-between", className)}
         >
-          {isLoading ? "Loading..." : value ? currentLabel : placeholder}
+          {isLoading ? "Loading..." : safeValue ? currentLabel : placeholder}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -78,7 +79,7 @@ export function Combobox({
                 <CheckIcon
                   className={cn(
                     "ml-auto h-4 w-4",
-                    value === item.value ? "opacity-100" : "opacity-0"
+                    safeValue === item.value ? "opacity-100" : "opacity-0"
                   )}
                 />
               </CommandItem>

@@ -18,10 +18,10 @@ export function FormatSelectionField({
   formats,
   isFormatsLoading,
 }: FormatSelectionFieldProps) {
-  // Ensure formats is valid before mapping
+  // Ensure formats is always a valid array
   const safeFormats = Array.isArray(formats) ? formats : [];
   
-  // Format options for the combobox
+  // Format options for the combobox - only create if safeFormats has items
   const formatOptions = safeFormats.map((format) => ({
     label: format.format_name,
     value: format.id,
@@ -38,7 +38,7 @@ export function FormatSelectionField({
             <Combobox
               items={formatOptions}
               placeholder="Select format"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               isLoading={isFormatsLoading}
             />

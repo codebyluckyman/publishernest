@@ -28,7 +28,7 @@ export function FormatSpecificationsDisplay({
       control={control}
       name={`formats.${index}.format_id`}
       render={({ field }) => {
-        const selectedFormatId = field.value;
+        const selectedFormatId = field.value || "";
         const selectedFormat = safeFormats.find(
           (format) => format.id === selectedFormatId
         );
