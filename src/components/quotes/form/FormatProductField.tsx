@@ -1,5 +1,5 @@
 
-import { useFieldArray, Control } from "react-hook-form";
+import { useFieldArray, Control, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { QuoteRequestFormValues } from "./schema";
 import { useLinkedProducts } from "@/components/format/hooks/useLinkedProducts";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatNumber } from "@/utils/productUtils";
 
 interface FormatProductFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -122,7 +123,10 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
                         type="number"
                         min="1"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value) || 0;
+                          field.onChange(newValue);
+                        }}
                         value={field.value || ''}
                         className="text-sm"
                       />

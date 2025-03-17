@@ -1,5 +1,5 @@
 
-import { Control } from "react-hook-form";
+import { Control, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { QuoteRequestFormValues } from "./schema";
 import { FormatProductField } from "./FormatProductField";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -18,6 +18,32 @@ interface FormatFieldProps {
 
 export function FormatField({ control, index, formats, isFormatsLoading }: FormatFieldProps) {
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
+  
+  // Watch the products array to calculate total quantity
+  const productsArray = useWatch({
+    control,
+    name: `formats.${index}.products`,
+    defaultValue: [],
+  });
+
+  // Calculate total quantity based on products
+  useEffect(() => {
+    if (productsArray && productsArray.length > 0) {
+      const totalQuantity = productsArray.reduce((sum, product) => {
+        return sum + (product.quantity || 0);
+      }, 0);
+      
+      // Update the format quantity field
+      if (totalQuantity > 0) {
+        control._formValues.formats[index].quantity = totalQuantity;
+        // Notify the form about the value change
+        control._subjects.state.next({
+          name: `formats.${index}.quantity`,
+          type: 'change',
+        });
+      }
+    }
+  }, [productsArray, control, index]);
 
   return (
     <div className="space-y-4">
@@ -58,7 +84,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
           name={`formats.${index}.quantity`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Quantity</FormLabel>
+              <FormLabel>Quantity (Auto-calculated)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -66,8 +92,14 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
                   {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                   value={field.value || ''}
+                  disabled={productsArray && productsArray.length > 0}
                 />
               </FormControl>
+              {productsArray && productsArray.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  This value is automatically calculated from product quantities
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}
