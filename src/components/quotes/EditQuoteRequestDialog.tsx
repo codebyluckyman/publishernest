@@ -40,7 +40,8 @@ export function EditQuoteRequestDialog({
       formats: request.formats?.map(format => ({
         format_id: format.format_id,
         quantity: format.quantity,
-        notes: format.notes || ""
+        notes: format.notes || "",
+        products: format.products || []
       })) || [],
       products: request.products || {},
       quantities: request.quantities || {},
@@ -72,6 +73,7 @@ export function EditQuoteRequestDialog({
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}
               onCancel={handleCancel}
+              showFormatSpecifications={true}
             />
           )}
         </div>

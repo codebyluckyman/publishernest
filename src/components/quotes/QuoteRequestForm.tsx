@@ -15,6 +15,7 @@ interface QuoteRequestFormProps {
   initialValues?: Partial<QuoteRequestFormValues>;
   isSubmitting: boolean;
   onCancel: () => void;
+  showFormatSpecifications?: boolean;
 }
 
 export function QuoteRequestForm({
@@ -23,6 +24,7 @@ export function QuoteRequestForm({
   initialValues,
   isSubmitting,
   onCancel,
+  showFormatSpecifications = false,
 }: QuoteRequestFormProps) {
   // Create form with validation schema and default values
   const form = useForm<QuoteRequestFormValues>({
@@ -59,7 +61,7 @@ export function QuoteRequestForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <BasicFormFields form={form} suppliers={suppliers} />
-        <FormatFieldArray form={form} />
+        <FormatFieldArray form={form} showFormatSpecifications={showFormatSpecifications} />
         <FormActions
           form={form}
           onCancel={onCancel}

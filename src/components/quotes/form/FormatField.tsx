@@ -16,9 +16,16 @@ interface FormatFieldProps {
   index: number;
   formats: FormatForSelect[];
   isFormatsLoading: boolean;
+  showFormatSpecifications?: boolean;
 }
 
-export function FormatField({ control, index, formats, isFormatsLoading }: FormatFieldProps) {
+export function FormatField({ 
+  control, 
+  index, 
+  formats, 
+  isFormatsLoading, 
+  showFormatSpecifications = false 
+}: FormatFieldProps) {
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const { setValue } = useFormContext<QuoteRequestFormValues>();
   
@@ -31,6 +38,20 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
     name: `formats.${index}.products`,
     defaultValue: [],
   });
+
+  // Watch the format_id to update selectedFormatId when initializing the form
+  const formatId = useWatch({
+    control,
+    name: `formats.${index}.format_id`,
+    defaultValue: "",
+  });
+
+  // Update selectedFormatId when the form loads with initial values
+  useEffect(() => {
+    if (formatId && formatId !== selectedFormatId) {
+      setSelectedFormatId(formatId);
+    }
+  }, [formatId, selectedFormatId]);
 
   // Calculate total quantity based on products
   useEffect(() => {
@@ -66,6 +87,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
                   setSelectedFormatId(value);
                 }}
                 defaultValue={field.value}
+                value={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -132,6 +154,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
 
       {selectedFormatId && (
         <>
+          {/* Always show format specifications */}
           <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />
           <FormatProductField 
             control={control} 
