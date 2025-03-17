@@ -83,9 +83,11 @@ export async function createQuoteRequest(
             notes: product.notes || null
           }));
 
+          // Use raw query for inserting into the new table since it's not yet in the types
           const { error: productsError } = await supabase
-            .from("quote_request_format_products")
-            .insert(productEntries);
+            .rpc('insert_quote_request_format_products', {
+              products_data: productEntries
+            });
 
           if (productsError) {
             console.error("Error inserting format products:", productsError);

@@ -30,9 +30,12 @@ export interface QuoteRequestFormat {
 }
 
 export interface QuoteRequestFormatProduct {
+  id?: string;
+  quote_request_format_id?: string;
   product_id: string;
   quantity: number;
-  notes?: string;
+  notes?: string | null;
+  product_name?: string; // Joined field
 }
 
 export interface QuoteRequestFormValues {

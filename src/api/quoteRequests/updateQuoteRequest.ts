@@ -94,31 +94,26 @@ export async function updateQuoteRequest(
           if (format.products && format.products.length > 0 && insertedFormats[index]) {
             const formatId = insertedFormats[index].id;
             
-            // Delete any existing products for this format
-            await supabase
-              .from("quote_request_format_products")
-              .delete()
-              .eq("quote_request_format_id", formatId);
-            
-            const productEntries = format.products.map(product => ({
-              quote_request_format_id: formatId,
-              product_id: product.product_id,
-              quantity: product.quantity,
-              notes: product.notes || null
-            }));
-
+            // Use a database function to delete and insert products for this format
             const { error: productsError } = await supabase
-              .from("quote_request_format_products")
-              .insert(productEntries);
+              .rpc('update_quote_request_format_products', {
+                format_id: formatId,
+                products_data: format.products.map(product => ({
+                  quote_request_format_id: formatId,
+                  product_id: product.product_id,
+                  quantity: product.quantity,
+                  notes: product.notes || null
+                }))
+              });
 
             if (productsError) {
-              console.error("Error inserting format products:", productsError);
+              console.error("Error updating format products:", productsError);
               throw productsError;
             }
           }
         });
 
-        // Wait for all product insertions to complete
+        // Wait for all product operations to complete
         await Promise.all(productPromises);
       }
     }
@@ -134,7 +129,7 @@ export async function updateQuoteRequest(
           quantity,
           notes,
           formats:format_id(format_name),
-          quote_request_format_products(
+          quote_request_format_products:id(
             id,
             product_id,
             quantity,
