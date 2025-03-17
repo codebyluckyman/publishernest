@@ -5,13 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Info } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { QuoteRequestFormValues } from "./schema";
 import { useLinkedProducts } from "@/components/format/hooks/useLinkedProducts";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatNumber } from "@/utils/productUtils";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FormatProductFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -60,36 +58,20 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
     if (activeExtras.length === 0) return null;
 
     return (
-      <div className="mt-2 flex flex-wrap gap-1">
-        {activeExtras.map((extra) => (
-          <TooltipProvider key={extra}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="capitalize text-xs">
-                  {extra.replace('_', ' ')}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Format extra: {extra.replace('_', ' ')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ))}
+      <div className="mt-2">
+        <div className="flex flex-wrap gap-1 mb-1">
+          {activeExtras.map((extra) => (
+            <Badge key={extra} variant="outline" className="capitalize text-xs">
+              {extra.replace('_', ' ')}
+            </Badge>
+          ))}
+        </div>
         
         {product.format_extra_comments && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="cursor-help">
-                  <Info className="h-3 w-3 mr-1" />
-                  Details
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs max-w-xs">{product.format_extra_comments}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-800">
+            <p className="font-medium mb-1">Format Extra Details:</p>
+            <p>{product.format_extra_comments}</p>
+          </div>
         )}
       </div>
     );

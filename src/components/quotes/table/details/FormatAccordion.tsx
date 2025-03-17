@@ -6,8 +6,6 @@ import { FormatSpecifications } from "../../form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { QuoteRequestFormat } from "@/types/quoteRequest";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
 
 interface FormatAccordionProps {
   formats: QuoteRequestFormat[];
@@ -30,27 +28,20 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
     if (activeExtras.length === 0) return null;
 
     return (
-      <div className="flex flex-wrap gap-1 mt-1">
-        {activeExtras.map((extra) => (
-          <Badge key={extra} variant="outline" className="capitalize text-xs">
-            {extra.replace('_', ' ')}
-          </Badge>
-        ))}
+      <div className="space-y-1">
+        <div className="flex flex-wrap gap-1 mt-1">
+          {activeExtras.map((extra) => (
+            <Badge key={extra} variant="outline" className="capitalize text-xs">
+              {extra.replace('_', ' ')}
+            </Badge>
+          ))}
+        </div>
         
         {product.format_extra_comments && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="cursor-help">
-                  <Info className="h-3 w-3 mr-1" />
-                  Details
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs max-w-xs">{product.format_extra_comments}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-800">
+            <p className="font-medium mb-1">Format Extra Details:</p>
+            <p>{product.format_extra_comments}</p>
+          </div>
         )}
       </div>
     );
