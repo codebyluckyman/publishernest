@@ -8,6 +8,8 @@ import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { QuoteRequestFormValues } from "./schema";
 import { FormatProductField } from "./FormatProductField";
 import { useState, useEffect } from "react";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
+import { FormatSpecifications } from "./FormatSpecifications";
 
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -19,6 +21,9 @@ interface FormatFieldProps {
 export function FormatField({ control, index, formats, isFormatsLoading }: FormatFieldProps) {
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const { setValue } = useFormContext<QuoteRequestFormValues>();
+  
+  // Fetch format details
+  const { data: formatDetails, isLoading: isFormatDetailsLoading } = useFormatDetails(selectedFormatId);
   
   // Watch the products array to calculate total quantity
   const productsArray = useWatch({
@@ -126,11 +131,14 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
       </div>
 
       {selectedFormatId && (
-        <FormatProductField 
-          control={control} 
-          formatIndex={index} 
-          formatId={selectedFormatId}
-        />
+        <>
+          <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />
+          <FormatProductField 
+            control={control} 
+            formatIndex={index} 
+            formatId={selectedFormatId}
+          />
+        </>
       )}
     </div>
   );
