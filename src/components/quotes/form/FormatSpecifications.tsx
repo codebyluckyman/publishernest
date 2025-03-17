@@ -40,6 +40,16 @@ export function FormatSpecifications({ format, isLoading }: FormatSpecifications
             </div>
           )}
           
+          {format.tps_plc_height_mm && format.tps_plc_width_mm && (
+            <div>
+              <p className="text-muted-foreground">PLC Dimensions (HxW):</p>
+              <p>{formatNumber(format.tps_plc_height_mm)} × {formatNumber(format.tps_plc_width_mm)} mm</p>
+              {format.tps_plc_depth_mm && (
+                <p>PLC Depth: {formatNumber(format.tps_plc_depth_mm)} mm</p>
+              )}
+            </div>
+          )}
+          
           {format.extent && (
             <div>
               <p className="text-muted-foreground">Extent:</p>
