@@ -51,7 +51,7 @@ export function QuoteRequestDialog({ suppliers, onSuccess }: QuoteRequestDialogP
           New Quote Request
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[900px] max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Create New Quote Request</DialogTitle>
         </DialogHeader>
