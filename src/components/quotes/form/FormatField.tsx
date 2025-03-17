@@ -1,5 +1,5 @@
 
-import { Control, useWatch } from "react-hook-form";
+import { Control, useWatch, useFormState } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,13 +33,13 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
         return sum + (product.quantity || 0);
       }, 0);
       
-      // Update the format quantity field
+      // Update the format quantity field using setValue instead of directly manipulating internal properties
       if (totalQuantity > 0) {
-        control._formValues.formats[index].quantity = totalQuantity;
-        // Notify the form about the value change
-        control._subjects.state.next({
-          name: `formats.${index}.quantity`,
-          type: 'change',
+        // Safely update the value using the setValue method from the form
+        control._setValue(`formats.${index}.quantity`, totalQuantity, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
         });
       }
     }
