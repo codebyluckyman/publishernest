@@ -1,5 +1,5 @@
 
-import { Control, useWatch } from "react-hook-form";
+import { Control } from "react-hook-form";
 import { FormField } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
@@ -19,6 +19,9 @@ export function FormatSpecificationsDisplay({
   showSpecifications,
 }: FormatSpecificationsDisplayProps) {
   if (!showSpecifications) return null;
+  
+  // Ensure formats is valid before using
+  const safeFormats = Array.isArray(formats) ? formats : [];
 
   return (
     <FormField
@@ -26,7 +29,7 @@ export function FormatSpecificationsDisplay({
       name={`formats.${index}.format_id`}
       render={({ field }) => {
         const selectedFormatId = field.value;
-        const selectedFormat = formats.find(
+        const selectedFormat = safeFormats.find(
           (format) => format.id === selectedFormatId
         );
         return selectedFormat ? (

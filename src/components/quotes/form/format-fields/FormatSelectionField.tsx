@@ -1,5 +1,5 @@
 
-import { Control, useWatch } from "react-hook-form";
+import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
@@ -18,8 +18,11 @@ export function FormatSelectionField({
   formats,
   isFormatsLoading,
 }: FormatSelectionFieldProps) {
+  // Ensure formats is valid before mapping
+  const safeFormats = Array.isArray(formats) ? formats : [];
+  
   // Format options for the combobox
-  const formatOptions = formats.map((format) => ({
+  const formatOptions = safeFormats.map((format) => ({
     label: format.format_name,
     value: format.id,
   }));

@@ -37,14 +37,14 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   
-  const currentLabel = React.useMemo(() => {
-    if (!items || items.length === 0) return "";
-    const selected = items.find(item => item.value === value);
-    return selected ? selected.label : "";
-  }, [items, value]);
-
   // Ensure items is always an array
   const safeItems = Array.isArray(items) ? items : [];
+  
+  const currentLabel = React.useMemo(() => {
+    if (!safeItems || safeItems.length === 0) return "";
+    const selected = safeItems.find(item => item.value === value);
+    return selected ? selected.label : "";
+  }, [safeItems, value]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

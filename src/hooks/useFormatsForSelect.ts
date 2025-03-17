@@ -26,7 +26,8 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
           return [];
         }
 
-        return data as FormatForSelect[];
+        // Ensure data is always an array
+        return Array.isArray(data) ? data as FormatForSelect[] : [];
       } catch (err) {
         console.error("Exception fetching formats:", err);
         return [];
