@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Info } from "lucide-react";
 import { QuoteRequestFormValues } from "./schema";
 import { useLinkedProducts } from "@/components/format/hooks/useLinkedProducts";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatNumber } from "@/utils/productUtils";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FormatProductFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -27,12 +29,70 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
     name: `formats.${formatIndex}.products`,
   });
 
+  // Watch for selected product IDs to display format extras
+  const selectedProducts = useWatch({
+    control,
+    name: `formats.${formatIndex}.products`,
+  });
+
   const addProduct = () => {
     append({
       product_id: "",
       quantity: 1,
       notes: "",
     });
+  };
+
+  // Get product details by ID
+  const getProductById = (productId: string) => {
+    return linkedProducts.find(product => product.id === productId);
+  };
+
+  // Render badges for format extras
+  const renderFormatExtrasBadges = (productId: string) => {
+    const product = getProductById(productId);
+    if (!product || !product.format_extras) return null;
+
+    const activeExtras = Object.entries(product.format_extras)
+      .filter(([_, value]) => value === true)
+      .map(([key]) => key);
+
+    if (activeExtras.length === 0) return null;
+
+    return (
+      <div className="mt-2 flex flex-wrap gap-1">
+        {activeExtras.map((extra) => (
+          <TooltipProvider key={extra}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="capitalize text-xs">
+                  {extra.replace('_', ' ')}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Format extra: {extra.replace('_', ' ')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ))}
+        
+        {product.format_extra_comments && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="cursor-help">
+                  <Info className="h-3 w-3 mr-1" />
+                  Details
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-xs">{product.format_extra_comments}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -108,6 +168,7 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
                       </SelectContent>
                     </Select>
                     <FormMessage />
+                    {field.value && renderFormatExtrasBadges(field.value)}
                   </FormItem>
                 )}
               />

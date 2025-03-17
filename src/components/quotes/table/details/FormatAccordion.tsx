@@ -5,6 +5,9 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { FormatSpecifications } from "../../form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { QuoteRequestFormat } from "@/types/quoteRequest";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 interface FormatAccordionProps {
   formats: QuoteRequestFormat[];
@@ -14,6 +17,43 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
   // Helper function to format numbers with thousand separators
   const formatNumber = (num: number): string => {
     return num.toLocaleString('en-US');
+  };
+
+  // Render format extras badges
+  const renderFormatExtras = (product: any) => {
+    if (!product.format_extras) return null;
+
+    const activeExtras = Object.entries(product.format_extras)
+      .filter(([_, value]) => value === true)
+      .map(([key]) => key);
+
+    if (activeExtras.length === 0) return null;
+
+    return (
+      <div className="flex flex-wrap gap-1 mt-1">
+        {activeExtras.map((extra) => (
+          <Badge key={extra} variant="outline" className="capitalize text-xs">
+            {extra.replace('_', ' ')}
+          </Badge>
+        ))}
+        
+        {product.format_extra_comments && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="cursor-help">
+                  <Info className="h-3 w-3 mr-1" />
+                  Details
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-xs">{product.format_extra_comments}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -53,8 +93,13 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
                   <TableBody>
                     {format.products.map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell className="font-medium">
-                          {product.product_name || 'Unknown Product'}
+                        <TableCell>
+                          <div>
+                            <span className="font-medium">
+                              {product.product_name || 'Unknown Product'}
+                            </span>
+                            {renderFormatExtras(product)}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">{formatNumber(product.quantity)}</TableCell>
                         {product.notes && (

@@ -1,123 +1,193 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequest } from "@/types/quoteRequest";
-import { Organization } from "@/types/organization";
+
+// Helper function to apply search filter
+const applySearchFilter = (query: any, search: string) => {
+  if (search) {
+    query = query.ilike("title", `%${search}%`);
+  }
+  return query;
+};
+
+// Helper function to apply status filter
+const applyStatusFilter = (query: any, status: string) => {
+  if (status) {
+    query = query.eq("status", status);
+  }
+  return query;
+};
 
 /**
- * Fetches quote requests based on provided parameters
+ * Fetches a list of quote requests with additional data like suppliers and formats
  */
-export async function fetchQuoteRequests(
-  params: {
-    currentOrganization: Organization | null;
-    status?: string;
-    searchQuery?: string;
-  }
-): Promise<QuoteRequest[]> {
-  const { currentOrganization, status, searchQuery } = params;
-
-  if (!currentOrganization) {
-    return [];
-  }
-
+export async function fetchQuoteRequests(organizationId: string, status?: string, search?: string) {
   try {
-    let query = supabase
+    // Initialize the query
+    let initialQuery = supabase
       .from("quote_requests")
       .select(`
         *,
-        suppliers:supplier_id (supplier_name),
-        quote_request_formats(
-          id,
-          format_id,
-          quantity,
+        supplier:suppliers(supplier_name),
+        formats:quote_request_formats(
+          id, 
+          format_id, 
+          quantity, 
           notes,
-          formats:format_id(format_name),
-          quote_request_format_products(
-            id,
-            product_id,
-            quantity,
+          format:formats(format_name),
+          products:quote_request_format_products(
+            id, 
+            product_id, 
+            quantity, 
             notes,
-            products:product_id(id, title)
+            product:products(id, title, format_extras, format_extra_comments)
           )
         )
       `)
-      .eq("organization_id", currentOrganization.id);
+      .eq("organization_id", organizationId);
 
-    if (status && status !== 'all') {
-      query = query.eq("status", status);
-    }
-
-    if (searchQuery) {
-      query = query.ilike("title", `%${searchQuery}%`);
-    }
-
-    query = query.order("requested_at", { ascending: false });
+    // Apply filters
+    let query = applySearchFilter(initialQuery, search);
+    query = applyStatusFilter(query, status);
 
     const { data, error } = await query;
 
-    if (error) throw error;
-
-    // Get all unique supplier IDs from all requests
-    const allSupplierIds = new Set<string>();
-    (data || []).forEach(request => {
-      if (request.supplier_ids && Array.isArray(request.supplier_ids)) {
-        request.supplier_ids.forEach((id: string) => allSupplierIds.add(id));
-      }
-      // Also add the single supplier_id if it exists and isn't in the array
-      if (request.supplier_id && !allSupplierIds.has(request.supplier_id)) {
-        allSupplierIds.add(request.supplier_id);
-      }
-    });
-
-    // Fetch all suppliers in one go if we have any IDs
-    let suppliersMap: Record<string, string> = {};
-    if (allSupplierIds.size > 0) {
-      const { data: suppliersData, error: suppliersError } = await supabase
-        .from("suppliers")
-        .select("id, supplier_name")
-        .in("id", Array.from(allSupplierIds));
-
-      if (suppliersError) throw suppliersError;
-
-      // Create a map of supplier ID to name
-      suppliersMap = (suppliersData || []).reduce((acc: Record<string, string>, supplier: any) => {
-        acc[supplier.id] = supplier.supplier_name;
-        return acc;
-      }, {});
+    if (error) {
+      console.error("Error fetching quote requests:", error);
+      throw error;
     }
 
-    // Transform the data to make it compatible with our QuoteRequest type
-    return (data || []).map(item => {
-      // Map quote_request_formats to our expected formats structure
-      const formats = (item.quote_request_formats || []).map((f: any) => ({
-        id: f.id,
-        quote_request_id: item.id,
-        format_id: f.format_id,
-        quantity: f.quantity,
-        notes: f.notes,
-        format_name: f.formats?.format_name,
-        products: (f.quote_request_format_products || []).map((p: any) => ({
-          id: p.id,
-          product_id: p.product_id,
-          quantity: p.quantity,
-          notes: p.notes,
-          product_name: p.products?.title
-        }))
-      }));
+    // Transform the data to include properly named format and product information
+    const transformedData = data.map(request => {
+      // Map supplier name from the joined supplier object
+      const supplierName = request.supplier ? request.supplier.supplier_name : null;
 
-      // Map supplier IDs to names
-      const supplier_names = item.supplier_ids && Array.isArray(item.supplier_ids)
-        ? item.supplier_ids.map((id: string) => suppliersMap[id] || 'Unknown')
-        : [];
-      
+      // Map formats with properly named format information
+      if (request.formats) {
+        request.formats = request.formats.map((format: any) => {
+          // Extract format name from the joined format object
+          const formatName = format.format?.format_name;
+          
+          // Map products with properly named product information
+          if (format.products) {
+            format.products = format.products.map((productEntry: any) => {
+              const product = productEntry.product;
+              return {
+                id: productEntry.id,
+                product_id: productEntry.product_id,
+                quantity: productEntry.quantity,
+                notes: productEntry.notes,
+                product_name: product?.title,
+                format_extras: product?.format_extras,
+                format_extra_comments: product?.format_extra_comments
+              };
+            });
+          }
+          
+          return {
+            id: format.id,
+            format_id: format.format_id,
+            quantity: format.quantity,
+            notes: format.notes,
+            format_name: formatName,
+            products: format.products
+          };
+        });
+      }
+
       return {
-        ...item,
-        supplier_name: item.suppliers?.supplier_name || (supplier_names.length > 0 ? supplier_names[0] : 'Unknown'),
-        supplier_names: supplier_names,
-        formats: formats
-      } as QuoteRequest;
+        ...request,
+        supplier_name: supplierName,
+        formats: request.formats
+      };
     });
+
+    return transformedData as QuoteRequest[];
   } catch (error: any) {
     console.error("Error fetching quote requests:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches a single quote request by ID
+ */
+export async function fetchQuoteRequestById(id: string) {
+  try {
+    const { data, error } = await supabase
+      .from("quote_requests")
+      .select(`
+        *,
+        supplier:suppliers(supplier_name),
+        formats:quote_request_formats(
+          id, 
+          format_id, 
+          quantity, 
+          notes,
+          format:formats(format_name),
+          products:quote_request_format_products(
+            id, 
+            product_id, 
+            quantity, 
+            notes,
+            product:products(id, title, format_extras, format_extra_comments)
+          )
+        )
+      `)
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching quote request:", error);
+      throw error;
+    }
+
+    const request = data;
+
+    // Map supplier name from the joined supplier object
+    const supplierName = request.supplier ? request.supplier.supplier_name : null;
+
+    // Map formats with properly named format information
+    if (request.formats) {
+      request.formats = request.formats.map((format: any) => {
+        // Extract format name from the joined format object
+        const formatName = format.format?.format_name;
+        
+        // Map products with properly named product information
+        if (format.products) {
+          format.products = format.products.map((productEntry: any) => {
+            const product = productEntry.product;
+            return {
+              id: productEntry.id,
+              product_id: productEntry.product_id,
+              quantity: productEntry.quantity,
+              notes: productEntry.notes,
+              product_name: product?.title,
+              format_extras: product?.format_extras,
+              format_extra_comments: product?.format_extra_comments
+            };
+          });
+        }
+        
+        return {
+          id: format.id,
+          format_id: format.format_id,
+          quantity: format.quantity,
+          notes: format.notes,
+          format_name: formatName,
+          products: format.products
+        };
+      });
+    }
+
+    const transformedData = {
+      ...request,
+      supplier_name: supplierName,
+      formats: request.formats
+    };
+
+    return transformedData as QuoteRequest;
+  } catch (error: any) {
+    console.error("Error fetching quote request:", error);
     throw error;
   }
 }

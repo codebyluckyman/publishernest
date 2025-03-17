@@ -1,26 +1,31 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Product } from "../types/ProductTypes";
+import { Product } from "@/components/format/types/ProductTypes";
 
 export function useLinkedProducts(formatId: string) {
-  const fetchLinkedProducts = async () => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, title, isbn13, isbn10, cover_image_url")
-      .eq("format_id", formatId);
-
-    if (error) {
-      console.error("Error fetching linked products:", error);
-      throw new Error(error.message);
-    }
-
-    return data as Product[];
-  };
-
   return useQuery({
     queryKey: ["linked-products", formatId],
-    queryFn: fetchLinkedProducts,
+    queryFn: async () => {
+      if (!formatId) return [];
+
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          id,
+          title,
+          isbn13,
+          isbn10,
+          cover_image_url,
+          format_extras,
+          format_extra_comments
+        `)
+        .eq("format_id", formatId);
+
+      if (error) throw error;
+
+      return data as Product[];
+    },
     enabled: !!formatId,
   });
 }
