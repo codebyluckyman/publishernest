@@ -38,7 +38,8 @@ export function FormatSelectionField({
             <Combobox
               items={formatOptions}
               placeholder="Select format"
-              {...field}
+              value={field.value}
+              onChange={field.onChange}
               isLoading={isFormatsLoading}
             />
           </FormControl>
