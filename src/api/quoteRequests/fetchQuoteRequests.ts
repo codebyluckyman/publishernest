@@ -73,11 +73,15 @@ export async function fetchQuoteRequests({
       const supplierName = request.supplier ? request.supplier.supplier_name : null;
 
       // Map formats with properly named format information
-      if (request.formats) {
-        request.formats = request.formats.map((format: any) => {
+      let formattedFormats: any[] = [];
+      
+      if (request.formats && request.formats.length > 0) {
+        formattedFormats = request.formats.map((format: any) => {
           // Map products with properly named product information
-          if (format.products) {
-            format.products = format.products.map((productEntry: any) => {
+          let formattedProducts: any[] = [];
+          
+          if (format.products && format.products.length > 0) {
+            formattedProducts = format.products.map((productEntry: any) => {
               const product = productEntry.product;
               return {
                 id: productEntry.id,
@@ -94,11 +98,11 @@ export async function fetchQuoteRequests({
           return {
             id: format.id,
             format_id: format.format_id,
-            quote_request_id: request.id, // Add the missing quote_request_id
+            quote_request_id: request.id,
             quantity: format.quantity,
             notes: format.notes || "",
             format_name: format.format?.format_name,
-            products: format.products || []
+            products: formattedProducts
           };
         });
       }
@@ -106,7 +110,7 @@ export async function fetchQuoteRequests({
       return {
         ...request,
         supplier_name: supplierName,
-        formats: request.formats || []
+        formats: formattedFormats
       };
     });
 
@@ -156,11 +160,15 @@ export async function fetchQuoteRequestById(id: string) {
     const supplierName = request.supplier ? request.supplier.supplier_name : null;
 
     // Map formats with properly named format information
-    if (request.formats) {
-      request.formats = request.formats.map((format: any) => {
+    let formattedFormats: any[] = [];
+    
+    if (request.formats && request.formats.length > 0) {
+      formattedFormats = request.formats.map((format: any) => {
         // Map products with properly named product information
-        if (format.products) {
-          format.products = format.products.map((productEntry: any) => {
+        let formattedProducts: any[] = [];
+        
+        if (format.products && format.products.length > 0) {
+          formattedProducts = format.products.map((productEntry: any) => {
             const product = productEntry.product;
             return {
               id: productEntry.id,
@@ -177,11 +185,11 @@ export async function fetchQuoteRequestById(id: string) {
         return {
           id: format.id,
           format_id: format.format_id,
-          quote_request_id: request.id, // Add the missing quote_request_id
+          quote_request_id: request.id,
           quantity: format.quantity,
           notes: format.notes || "",
           format_name: format.format?.format_name,
-          products: format.products || []
+          products: formattedProducts
         };
       });
     }
@@ -189,7 +197,7 @@ export async function fetchQuoteRequestById(id: string) {
     const transformedData = {
       ...request,
       supplier_name: supplierName,
-      formats: request.formats || []
+      formats: formattedFormats
     };
 
     return transformedData as QuoteRequest;
