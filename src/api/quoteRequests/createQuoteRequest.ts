@@ -97,23 +97,24 @@ export async function createQuoteRequest(
           
           // Process price breaks if they exist
           if (format.price_breaks && format.price_breaks.length > 0) {
-            const priceBreakEntries = format.price_breaks.map(priceBreak => ({
-              quote_request_format_id: formatId,
-              from_quantity: priceBreak.from_quantity,
-              to_quantity: priceBreak.to_quantity,
-              one_product_price: priceBreak.one_product_price || false,
-              two_products_price: priceBreak.two_products_price || false,
-              three_products_price: priceBreak.three_products_price || false,
-              four_products_price: priceBreak.four_products_price || false
-            }));
+            // For each price break, create an entry in the database
+            for (const priceBreak of format.price_breaks) {
+              const { error: priceBreakError } = await supabase
+                .from('quote_request_format_price_breaks')
+                .insert({
+                  quote_request_format_id: formatId,
+                  from_quantity: priceBreak.from_quantity,
+                  to_quantity: priceBreak.to_quantity,
+                  one_product_price: priceBreak.one_product_price || false,
+                  two_products_price: priceBreak.two_products_price || false,
+                  three_products_price: priceBreak.three_products_price || false,
+                  four_products_price: priceBreak.four_products_price || false
+                });
 
-            const { error: priceBreaksError } = await supabase
-              .from('quote_request_format_price_breaks')
-              .insert(priceBreakEntries);
-
-            if (priceBreaksError) {
-              console.error("Error inserting price breaks:", priceBreaksError);
-              throw priceBreaksError;
+              if (priceBreakError) {
+                console.error("Error inserting price break:", priceBreakError);
+                throw priceBreakError;
+              }
             }
           }
         }

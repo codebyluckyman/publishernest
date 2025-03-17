@@ -104,7 +104,10 @@ export function FormatField({
             );
             return selectedFormat ? (
               <div className="p-3 bg-slate-50 rounded-md">
-                <FormatSpecifications format={selectedFormat} isLoading={false} />
+                <FormatSpecifications 
+                  format={selectedFormat as any} 
+                  isLoading={false} 
+                />
               </div>
             ) : null;
           }}
@@ -116,7 +119,10 @@ export function FormatField({
       {/* Products section */}
       <div>
         <h4 className="text-sm font-medium mb-2">Products</h4>
-        <FormatProductField control={control} formatIndex={index} />
+        <FormatProductField 
+          control={control} 
+          formatIndex={index} 
+        />
       </div>
 
       <Separator />

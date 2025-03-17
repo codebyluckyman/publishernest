@@ -27,7 +27,7 @@ export interface QuoteRequestFormat {
   notes: string | null;
   format_name?: string; // Joined field from format.format_name
   products?: QuoteRequestFormatProduct[]; // Products linked to this format
-  price_breaks?: PriceBreak[]; // Added price breaks
+  price_breaks?: PriceBreak[]; // Price breaks for this format
 }
 
 export interface QuoteRequestFormatProduct {

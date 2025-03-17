@@ -484,6 +484,53 @@ export type Database = {
           },
         ]
       }
+      quote_request_format_price_breaks: {
+        Row: {
+          created_at: string
+          four_products_price: boolean | null
+          from_quantity: number
+          id: string
+          one_product_price: boolean | null
+          quote_request_format_id: string
+          three_products_price: boolean | null
+          to_quantity: number
+          two_products_price: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          four_products_price?: boolean | null
+          from_quantity: number
+          id?: string
+          one_product_price?: boolean | null
+          quote_request_format_id: string
+          three_products_price?: boolean | null
+          to_quantity: number
+          two_products_price?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          four_products_price?: boolean | null
+          from_quantity?: number
+          id?: string
+          one_product_price?: boolean | null
+          quote_request_format_id?: string
+          three_products_price?: boolean | null
+          to_quantity?: number
+          two_products_price?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_request_format_price_breaks_quote_request_format_id_fkey"
+            columns: ["quote_request_format_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_formats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_request_format_products: {
         Row: {
           created_at: string

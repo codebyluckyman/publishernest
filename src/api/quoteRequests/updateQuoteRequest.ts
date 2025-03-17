@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
+import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
 
 /**
@@ -12,206 +12,242 @@ export async function updateQuoteRequest(
   userId: string
 ): Promise<QuoteRequest | null> {
   try {
-    // First, get the current state of the quote request before updates
-    const { data: currentRequest, error: fetchError } = await supabase
+    // Fetch current quote request to compare changes
+    const { data: currentQuoteRequest, error: fetchError } = await supabase
       .from("quote_requests")
-      .select(`
-        *,
-        quote_request_formats(
-          id,
-          format_id,
-          quantity,
-          notes
-        )
-      `)
+      .select("*")
       .eq("id", id)
       .single();
 
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error("Error fetching quote request for update:", fetchError);
+      throw fetchError;
+    }
 
-    // Extract formats from updates to handle separately
-    const { formats, ...quoteRequestUpdates } = updates;
-
-    // Format the date to preserve the selected date without timezone conversion
-    // by using the date directly in YYYY-MM-DD format
-    const formattedUpdates = {
-      ...quoteRequestUpdates,
-      due_date: updates.due_date 
-        ? formatDateToYYYYMMDD(updates.due_date)
-        : undefined,
-      // If supplier_ids is updated, update supplier_id for backward compatibility
+    // Prepare the update object
+    const quoteRequestUpdates: any = {
+      title: updates.title,
+      description: updates.description || null,
+      supplier_ids: updates.supplier_ids || currentQuoteRequest.supplier_ids,
       supplier_id: updates.supplier_ids && updates.supplier_ids.length > 0 
         ? updates.supplier_ids[0] 
-        : undefined
+        : currentQuoteRequest.supplier_id,
+      notes: updates.notes || null,
+      due_date: updates.due_date 
+        ? updates.due_date.toISOString().split('T')[0] 
+        : null,
+      products: updates.products || currentQuoteRequest.products,
+      quantities: updates.quantities || currentQuoteRequest.quantities,
+      updated_at: new Date().toISOString()
     };
 
-    // Update the quote request first
-    const { data, error } = await supabase
+    // Update the quote request
+    const { data: updatedQuoteRequest, error: updateError } = await supabase
       .from("quote_requests")
-      .update(formattedUpdates)
+      .update(quoteRequestUpdates)
       .eq("id", id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (updateError) {
+      console.error("Error updating quote request:", updateError);
+      throw updateError;
+    }
 
-    // If formats are provided, update them
-    if (formats && formats.length > 0) {
-      // First, get existing format IDs
-      const { data: existingFormats, error: getFormatsError } = await supabase
+    // Handle format updates if provided
+    if (updates.formats) {
+      // First, fetch existing formats to compare
+      const { data: existingFormats, error: existingFormatsError } = await supabase
         .from("quote_request_formats")
-        .select("id, format_id")
+        .select("id, format_id, quantity, notes")
         .eq("quote_request_id", id);
 
-      if (getFormatsError) throw getFormatsError;
+      if (existingFormatsError) {
+        console.error("Error fetching existing formats:", existingFormatsError);
+        throw existingFormatsError;
+      }
 
-      // Delete existing formats
-      const { error: deleteError } = await supabase
-        .from("quote_request_formats")
-        .delete()
-        .eq("quote_request_id", id);
+      // Delete formats no longer in the update
+      const updatedFormatIds = new Set(
+        updates.formats
+          .filter(format => format.format_id)
+          .map(format => format.format_id)
+      );
 
-      if (deleteError) throw deleteError;
+      for (const existingFormat of existingFormats || []) {
+        if (!updatedFormatIds.has(existingFormat.format_id)) {
+          const { error: deleteFormatError } = await supabase
+            .from("quote_request_formats")
+            .delete()
+            .eq("id", existingFormat.id);
 
-      // Then, insert new formats
-      const formatEntries = formats.map(format => ({
-        quote_request_id: id,
-        format_id: format.format_id,
-        quantity: format.quantity,
-        notes: format.notes || null
-      }));
+          if (deleteFormatError) {
+            console.error("Error deleting format:", deleteFormatError);
+            throw deleteFormatError;
+          }
+        }
+      }
 
-      const { data: insertedFormats, error: insertError } = await supabase
-        .from("quote_request_formats")
-        .insert(formatEntries)
-        .select();
+      // Upsert each format
+      for (const format of updates.formats) {
+        // Check if this format already exists
+        const existingFormat = existingFormats?.find(
+          ef => ef.format_id === format.format_id
+        );
 
-      if (insertError) throw insertError;
+        if (existingFormat) {
+          // Update existing format
+          const { error: updateFormatError } = await supabase
+            .from("quote_request_formats")
+            .update({
+              quantity: format.quantity,
+              notes: format.notes || null
+            })
+            .eq("id", existingFormat.id);
 
-      // Process each format's products and price breaks
-      if (insertedFormats) {
-        const processFormatPromises = formats.map(async (format, index) => {
-          if (insertedFormats[index]) {
-            const formatId = insertedFormats[index].id;
-            
-            // Process products if they exist
-            if (format.products && format.products.length > 0) {
-              // First delete existing products for this format
-              const { error: deleteProductsError } = await supabase
-                .from('quote_request_format_products')
-                .delete()
-                .eq('quote_request_format_id', formatId);
-                
-              if (deleteProductsError) {
-                console.error("Error deleting format products:", deleteProductsError);
-                throw deleteProductsError;
-              }
-              
-              // Then insert new products
-              const productEntries = format.products.map(product => ({
-                quote_request_format_id: formatId,
-                product_id: product.product_id,
-                quantity: product.quantity,
-                notes: product.notes || null
-              }));
-              
-              const { error: insertProductsError } = await supabase
-                .from('quote_request_format_products')
-                .insert(productEntries);
-                
-              if (insertProductsError) {
-                console.error("Error inserting format products:", insertProductsError);
-                throw insertProductsError;
+          if (updateFormatError) {
+            console.error("Error updating format:", updateFormatError);
+            throw updateFormatError;
+          }
+
+          // Handle products for this format
+          if (format.products && format.products.length > 0) {
+            // First, delete existing products for this format
+            const { error: deleteProductsError } = await supabase
+              .from("quote_request_format_products")
+              .delete()
+              .eq("quote_request_format_id", existingFormat.id);
+
+            if (deleteProductsError) {
+              console.error("Error deleting existing products:", deleteProductsError);
+              throw deleteProductsError;
+            }
+
+            // Insert new products
+            const productEntries = format.products.map(product => ({
+              quote_request_format_id: existingFormat.id,
+              product_id: product.product_id,
+              quantity: product.quantity,
+              notes: product.notes || null
+            }));
+
+            const { error: insertProductsError } = await supabase
+              .from("quote_request_format_products")
+              .insert(productEntries);
+
+            if (insertProductsError) {
+              console.error("Error inserting products:", insertProductsError);
+              throw insertProductsError;
+            }
+          }
+
+          // Handle price breaks for this format
+          if (format.price_breaks) {
+            // First, delete existing price breaks for this format
+            const { error: deletePriceBreaksError } = await supabase
+              .from("quote_request_format_price_breaks")
+              .delete()
+              .eq("quote_request_format_id", existingFormat.id);
+
+            if (deletePriceBreaksError) {
+              console.error("Error deleting existing price breaks:", deletePriceBreaksError);
+              throw deletePriceBreaksError;
+            }
+
+            // Insert new price breaks if any are specified
+            if (format.price_breaks.length > 0) {
+              for (const priceBreak of format.price_breaks) {
+                const { error: insertPriceBreakError } = await supabase
+                  .from("quote_request_format_price_breaks")
+                  .insert({
+                    quote_request_format_id: existingFormat.id,
+                    from_quantity: priceBreak.from_quantity,
+                    to_quantity: priceBreak.to_quantity,
+                    one_product_price: priceBreak.one_product_price || false,
+                    two_products_price: priceBreak.two_products_price || false,
+                    three_products_price: priceBreak.three_products_price || false,
+                    four_products_price: priceBreak.four_products_price || false
+                  });
+
+                if (insertPriceBreakError) {
+                  console.error("Error inserting price break:", insertPriceBreakError);
+                  throw insertPriceBreakError;
+                }
               }
             }
-            
-            // Process price breaks if they exist
-            if (format.price_breaks) {
-              // First delete existing price breaks for this format
-              const { error: deletePriceBreaksError } = await supabase
-                .from('quote_request_format_price_breaks')
-                .delete()
-                .eq('quote_request_format_id', formatId);
-                
-              if (deletePriceBreaksError) {
-                console.error("Error deleting price breaks:", deletePriceBreaksError);
-                throw deletePriceBreaksError;
-              }
-              
-              if (format.price_breaks.length > 0) {
-                // Then insert new price breaks
-                const priceBreakEntries = format.price_breaks.map(priceBreak => ({
-                  quote_request_format_id: formatId,
+          }
+        } else {
+          // Insert new format
+          const { data: newFormat, error: insertFormatError } = await supabase
+            .from("quote_request_formats")
+            .insert({
+              quote_request_id: id,
+              format_id: format.format_id,
+              quantity: format.quantity,
+              notes: format.notes || null
+            })
+            .select()
+            .single();
+
+          if (insertFormatError) {
+            console.error("Error inserting new format:", insertFormatError);
+            throw insertFormatError;
+          }
+
+          // Handle products for this new format
+          if (format.products && format.products.length > 0 && newFormat) {
+            const productEntries = format.products.map(product => ({
+              quote_request_format_id: newFormat.id,
+              product_id: product.product_id,
+              quantity: product.quantity,
+              notes: product.notes || null
+            }));
+
+            const { error: insertProductsError } = await supabase
+              .from("quote_request_format_products")
+              .insert(productEntries);
+
+            if (insertProductsError) {
+              console.error("Error inserting products for new format:", insertProductsError);
+              throw insertProductsError;
+            }
+          }
+
+          // Handle price breaks for this new format
+          if (format.price_breaks && format.price_breaks.length > 0 && newFormat) {
+            for (const priceBreak of format.price_breaks) {
+              const { error: insertPriceBreakError } = await supabase
+                .from("quote_request_format_price_breaks")
+                .insert({
+                  quote_request_format_id: newFormat.id,
                   from_quantity: priceBreak.from_quantity,
                   to_quantity: priceBreak.to_quantity,
                   one_product_price: priceBreak.one_product_price || false,
                   two_products_price: priceBreak.two_products_price || false,
                   three_products_price: priceBreak.three_products_price || false,
                   four_products_price: priceBreak.four_products_price || false
-                }));
-                
-                const { error: insertPriceBreaksError } = await supabase
-                  .from('quote_request_format_price_breaks')
-                  .insert(priceBreakEntries);
-                  
-                if (insertPriceBreaksError) {
-                  console.error("Error inserting price breaks:", insertPriceBreaksError);
-                  throw insertPriceBreaksError;
-                }
+                });
+
+              if (insertPriceBreakError) {
+                console.error("Error inserting price break for new format:", insertPriceBreakError);
+                throw insertPriceBreakError;
               }
             }
           }
-        });
-
-        // Wait for all format processing to complete
-        await Promise.all(processFormatPromises);
+        }
       }
     }
 
-    // Fetch the updated quote request with its formats
-    const { data: updatedRequest, error: fetchError2 } = await supabase
-      .from("quote_requests")
-      .select(`
-        *,
-        quote_request_formats(
-          id,
-          format_id,
-          quantity,
-          notes,
-          formats:format_id(format_name),
-          quote_request_format_products:id(
-            id,
-            product_id,
-            quantity,
-            notes,
-            products:product_id(id, title, format_extras, format_extra_comments)
-          ),
-          quote_request_format_price_breaks:id(
-            id,
-            from_quantity,
-            to_quantity,
-            one_product_price,
-            two_products_price,
-            three_products_price,
-            four_products_price
-          )
-        )
-      `)
-      .eq("id", id)
-      .single();
-
-    if (fetchError2) throw fetchError2;
-
-    // Record the audit entry
+    // Record the update in the audit trail
     await recordQuoteRequestAudit(
       id,
       userId,
-      currentRequest as Partial<QuoteRequest>,
-      updatedRequest as Partial<QuoteRequest>,
+      currentQuoteRequest,
+      updatedQuoteRequest,
       'update'
     );
 
-    return updatedRequest as QuoteRequest;
+    return updatedQuoteRequest as QuoteRequest;
   } catch (error: any) {
     console.error("Error updating quote request:", error);
     throw error;
@@ -219,13 +255,52 @@ export async function updateQuoteRequest(
 }
 
 /**
- * Helper function to format a Date to YYYY-MM-DD string
- * without timezone conversion issues
+ * Updates the status of a quote request
  */
-function formatDateToYYYYMMDD(date: Date): string {
-  const year = date.getFullYear();
-  // getMonth() is 0-indexed, so add 1
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+export async function updateQuoteRequestStatus(
+  id: string,
+  status: 'pending' | 'approved' | 'declined',
+  userId: string
+): Promise<void> {
+  try {
+    // Fetch current quote request to compare changes
+    const { data: currentQuoteRequest, error: fetchError } = await supabase
+      .from("quote_requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching quote request for status update:", fetchError);
+      throw fetchError;
+    }
+
+    // Update the status
+    const { data: updatedQuoteRequest, error: updateError } = await supabase
+      .from("quote_requests")
+      .update({
+        status,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Error updating quote request status:", updateError);
+      throw updateError;
+    }
+
+    // Record the status change in the audit trail
+    await recordQuoteRequestAudit(
+      id,
+      userId,
+      { status: currentQuoteRequest.status },
+      { status },
+      'status_change'
+    );
+  } catch (error: any) {
+    console.error("Error updating quote request status:", error);
+    throw error;
+  }
 }
