@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { StatusBadge } from "./StatusBadge";
@@ -9,6 +10,8 @@ import { formatDate } from "@/lib/utils";
 import { SupplierDisplay } from "./SupplierDisplay";
 import { QuoteAuditHistory } from "./QuoteAuditHistory";
 import { Eye, FileEdit, RotateCcw, CheckCircle, XCircle, ClockIcon } from "lucide-react";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface QuoteDetailsSheetProps {
   isOpen: boolean;
@@ -128,6 +131,60 @@ export function QuoteDetailsSheet({
               <div>
                 <h3 className="text-md font-medium mb-2">Description</h3>
                 <p className="text-sm whitespace-pre-wrap">{selectedRequest.description}</p>
+              </div>
+            )}
+
+            {/* Format and Product Details */}
+            {selectedRequest.formats && selectedRequest.formats.length > 0 && (
+              <div>
+                <h3 className="text-md font-medium mb-2">Format & Product Details</h3>
+                <Accordion type="single" collapsible className="w-full">
+                  {selectedRequest.formats.map((format) => (
+                    <AccordionItem key={format.id} value={format.id}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex justify-between w-full pr-4">
+                          <span>{format.format_name || 'Unknown Format'}</span>
+                          <span className="text-sm text-muted-foreground">Qty: {format.quantity}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {format.notes && (
+                          <div className="mb-3 text-sm">
+                            <span className="font-medium">Notes:</span> {format.notes}
+                          </div>
+                        )}
+                        
+                        {format.products && format.products.length > 0 ? (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Product</TableHead>
+                                <TableHead className="text-right">Quantity</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {format.products.map((product) => (
+                                <TableRow key={product.id}>
+                                  <TableCell className="font-medium">
+                                    {product.product_name || 'Unknown Product'}
+                                  </TableCell>
+                                  <TableCell className="text-right">{product.quantity}</TableCell>
+                                  {product.notes && (
+                                    <TableCell className="text-sm text-muted-foreground">
+                                      {product.notes}
+                                    </TableCell>
+                                  )}
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No products specified for this format</p>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
             )}
 

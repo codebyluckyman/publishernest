@@ -30,7 +30,14 @@ export async function fetchQuoteRequests(
           format_id,
           quantity,
           notes,
-          formats:format_id(format_name)
+          formats:format_id(format_name),
+          quote_request_format_products(
+            id,
+            product_id,
+            quantity,
+            notes,
+            products:product_id(id, title)
+          )
         )
       `)
       .eq("organization_id", currentOrganization.id);
@@ -87,7 +94,14 @@ export async function fetchQuoteRequests(
         format_id: f.format_id,
         quantity: f.quantity,
         notes: f.notes,
-        format_name: f.formats?.format_name
+        format_name: f.formats?.format_name,
+        products: (f.quote_request_format_products || []).map((p: any) => ({
+          id: p.id,
+          product_id: p.product_id,
+          quantity: p.quantity,
+          notes: p.notes,
+          product_name: p.products?.title
+        }))
       }));
 
       // Map supplier IDs to names
