@@ -1,5 +1,5 @@
 
-import { Format } from "@/types/format";
+import { Format } from "@/components/format/types/FormatTypes";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatNumber } from "@/utils/productUtils";
 

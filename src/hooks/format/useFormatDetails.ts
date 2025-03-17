@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Format } from "@/types/format";
+import { Format } from "@/components/format/types/FormatTypes";
 
 export function useFormatDetails(formatId: string | null) {
   return useQuery({
