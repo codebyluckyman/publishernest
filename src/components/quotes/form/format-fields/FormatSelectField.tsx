@@ -90,6 +90,7 @@ export function FormatSelectField({
                             value={option.value}
                             onSelect={() => {
                               field.onChange(option.value);
+                              setValue(option.value);
                               setOpen(false);
                             }}
                           >
@@ -98,7 +99,7 @@ export function FormatSelectField({
                               className={cn(
                                 "mr-2 h-4 w-4",
                                 field.value === option.value
-                                  ? "opacity-100, variant=secondary"
+                                  ? "opacity-100"
                                   : "opacity-0"
                               )}
                             />
