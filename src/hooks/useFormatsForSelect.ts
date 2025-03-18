@@ -27,6 +27,7 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
         }
 
         // Ensure data is always a valid array before returning
+        console.log(`format array: ${data}`);
         return Array.isArray(data) ? data : [];
       } catch (err) {
         console.error("Exception fetching formats:", err);
