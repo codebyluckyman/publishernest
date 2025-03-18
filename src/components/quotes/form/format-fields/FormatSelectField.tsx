@@ -88,9 +88,9 @@ export function FormatSelectField({
                           <CommandItem
                             key={formatOptions.value}
                             value={formatOptions.label}
-                            onSelect={(formatOptions) => {
-                              setValue(formatOptions.value);
-                              field.onChange(formatOptions.value);
+                            onSelect={(currentValue) => {
+                              setValue(currentValue.value);
+                              field.onChange(fcurrentValue.value);
                               setOpen(false);
                             }}
                           >
