@@ -8,6 +8,7 @@ import { NotesField } from "./format-fields/NotesField";
 import { FormatSpecificationsDisplay } from "./format-fields/FormatSpecificationsDisplay";
 import { FormatProductField } from "./FormatProductField";
 import { PriceBreakField } from "./PriceBreakField";
+import { FormatSelectField } from "./format-fields/FormatSelectField";
 
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -32,6 +33,14 @@ export function FormatField({
 
   return (
     <div className="space-y-4">
+      {/* Add Format Selection Field */}
+      <FormatSelectField 
+        control={control} 
+        index={index} 
+        formats={formats} 
+        isLoading={isFormatsLoading} 
+      />
+      
       <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
         <QuantityField control={control} index={index} />
       </div>
