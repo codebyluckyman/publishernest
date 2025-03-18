@@ -57,8 +57,8 @@ export async function createQuoteRequest(
       const formatEntries = formData.formats.map(format => ({
         quote_request_id: quoteRequestData.id,
         format_id: format.format_id,
-        quantity: format.quantity,
-        notes: format.notes || null
+        notes: format.notes || null,
+        num_products: format.num_products || 1
       }));
 
       const { error: formatsError, data: insertedFormats } = await supabase

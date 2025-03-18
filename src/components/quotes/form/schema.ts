@@ -12,7 +12,6 @@ export const quoteRequestFormSchema = z.object({
   formats: z.array(
     z.object({
       format_id: z.string().min(1, "Format is required"), // Updated to require format_id
-      quantity: z.number().min(1, "Quantity must be at least 1"),
       notes: z.string().optional(),
       products: z.array(
         z.object({

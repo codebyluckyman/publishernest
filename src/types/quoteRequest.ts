@@ -23,7 +23,6 @@ export interface QuoteRequestFormat {
   id: string;
   quote_request_id: string;
   format_id: string;
-  quantity: number;
   notes: string | null;
   format_name?: string; // Joined field from format.format_name
   products?: QuoteRequestFormatProduct[]; // Products linked to this format
@@ -66,7 +65,6 @@ export interface QuoteRequestFormValues {
   notes?: string;
   formats?: {
     format_id: string;
-    quantity: number;
     notes?: string;
     products?: {
       product_id: string;

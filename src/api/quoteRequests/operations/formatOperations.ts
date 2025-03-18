@@ -16,7 +16,6 @@ export async function createFormat(
     .insert({
       quote_request_id: quoteRequestId,
       format_id: format.format_id,
-      quantity: format.quantity,
       notes: format.notes || null,
       num_products: format.num_products || 1
     })
@@ -41,7 +40,6 @@ export async function updateFormat(
   const { error: updateFormatError } = await supabase
     .from("quote_request_formats")
     .update({
-      quantity: format.quantity,
       notes: format.notes || null,
       num_products: format.num_products || 1
     })

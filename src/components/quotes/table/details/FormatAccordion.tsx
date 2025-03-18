@@ -89,7 +89,6 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
             <AccordionTrigger className="hover:no-underline">
               <div className="flex justify-between w-full pr-4">
                 <span>{format.format_name || 'Unknown Format'}</span>
-                <span className="text-sm text-muted-foreground">Qty: {formatNumber(format.quantity)}</span>
               </div>
             </AccordionTrigger>
             <AccordionContent>

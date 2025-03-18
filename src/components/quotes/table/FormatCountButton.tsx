@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -102,7 +103,6 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
               <div key={format.id} className="border rounded p-2 text-sm">
                 <div className="flex justify-between">
                   <span className="font-medium">{format.format_name || 'Unknown Format'}</span>
-                  <span className="text-muted-foreground">Qty: {format.quantity}</span>
                 </div>
                 {format.notes && <p className="text-xs mt-1 text-muted-foreground">{format.notes}</p>}
                 
