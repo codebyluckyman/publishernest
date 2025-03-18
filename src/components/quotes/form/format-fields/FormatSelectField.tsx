@@ -84,21 +84,21 @@ export function FormatSelectField({
                     <CommandList>
                       <CommandEmpty>No format found.</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
-                        {formatOptions.map((option) => (
+                        {formatOptions.map((formatOptions) => (
                           <CommandItem
-                            key={option.value}
-                            value={option.label}
+                            key={formatOptions.value}
+                            value={formatOptions.label}
                             onSelect={() => {
-                              field.onChange(option.value);
-                              setValue(option.value);
+                              field.onChange(formatOptions.value);
+                              setValue(formatOptions.value);
                               setOpen(false);
                             }}
                           >
-                            {option.label}
+                            {formatOptions.label}
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                field.value === option.value
+                                field.value === formatOptions.value
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
