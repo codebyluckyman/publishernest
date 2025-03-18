@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { useAuth } from "@/context/AuthContext";
@@ -6,7 +7,9 @@ import { toast } from "sonner";
 import { OrganizationDetails } from "@/components/organizations/OrganizationDetails";
 import { MembersList } from "@/components/organizations/MembersList";
 import { WarehousesList } from "@/components/organizations/WarehousesList";
+import { DefaultPriceBreaks } from "@/components/organizations/DefaultPriceBreaks";
 import { Organization } from "@/types/organization";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type UserProfile = {
   id: string;
@@ -110,25 +113,39 @@ const Organizations = () => {
         <p className="text-gray-600">Manage your organization and team members</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <OrganizationDetails 
-            organization={currentOrganization} 
-            onOrganizationUpdate={handleOrganizationUpdate}
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="members">Members</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="general" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <OrganizationDetails 
+              organization={currentOrganization} 
+              onOrganizationUpdate={handleOrganizationUpdate}
+            />
+            <WarehousesList organizationId={currentOrganization.id} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="members">
+          <MembersList
+            organizationId={currentOrganization.id}
+            members={members}
+            currentUserId={user?.id}
+            loading={loading}
+            onInvite={handleInviteMember}
+            onRoleChange={handleRoleChange}
+            onRemove={handleRemoveMember}
           />
-          <WarehousesList organizationId={currentOrganization.id} />
-        </div>
-        
-        <MembersList
-          organizationId={currentOrganization.id}
-          members={members}
-          currentUserId={user?.id}
-          loading={loading}
-          onInvite={handleInviteMember}
-          onRoleChange={handleRoleChange}
-          onRemove={handleRemoveMember}
-        />
-      </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <DefaultPriceBreaks />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

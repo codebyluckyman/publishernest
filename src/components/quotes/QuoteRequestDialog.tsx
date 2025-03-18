@@ -15,6 +15,7 @@ import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useOrganization } from "@/hooks/useOrganization";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
+import { useDefaultPriceBreaks } from "@/hooks/useDefaultPriceBreaks";
 
 interface QuoteRequestDialogProps {
   suppliers: Supplier[];
@@ -29,6 +30,9 @@ export function QuoteRequestDialog({ suppliers, onSuccess }: QuoteRequestDialogP
   
   // Prefetch formats when dialog button is rendered
   const { refetch: refetchFormats } = useFormatsForSelect(currentOrganization);
+  
+  // Prefetch default price breaks when dialog button is rendered
+  useDefaultPriceBreaks(currentOrganization);
 
   // Prefetch formats when dialog opens
   useEffect(() => {

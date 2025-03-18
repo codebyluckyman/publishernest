@@ -7,6 +7,9 @@ import { QuoteRequestFormValues } from "./schema";
 import { Trash2, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useDefaultPriceBreaks } from "@/hooks/useDefaultPriceBreaks";
+import { useOrganization } from "@/hooks/useOrganization";
+import { useEffect } from "react";
 
 interface PriceBreakFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -14,10 +17,23 @@ interface PriceBreakFieldProps {
 }
 
 export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) {
+  const { currentOrganization } = useOrganization();
+  const { defaultPriceBreaks, isLoading: isLoadingDefaults } = useDefaultPriceBreaks(currentOrganization);
+  
   const { fields, append, remove } = useFieldArray({
     control,
     name: `formats.${formatIndex}.price_breaks`,
   });
+
+  // Populate with default price breaks if none exist and defaults are available
+  useEffect(() => {
+    if (defaultPriceBreaks.length > 0 && fields.length === 0) {
+      // Add each default price break
+      defaultPriceBreaks.forEach(priceBreak => {
+        append({ quantity: priceBreak.quantity });
+      });
+    }
+  }, [defaultPriceBreaks, fields.length, append]);
 
   const handleAddPriceBreak = () => {
     append({
@@ -104,7 +120,9 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
           </div>
         ) : (
           <p className="text-sm text-muted-foreground mb-4">
-            No price breaks specified. Add one below.
+            {isLoadingDefaults 
+              ? "Loading default price breaks..." 
+              : "No price breaks specified. Add one below."}
           </p>
         )}
         <Button
