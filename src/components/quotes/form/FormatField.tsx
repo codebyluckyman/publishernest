@@ -1,7 +1,6 @@
 
 import { useFieldArray, Control, Controller, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
@@ -17,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { FormatSelectField } from "./format-fields/FormatSelectField";
 
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -100,36 +100,12 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
+        {/* Using FormatSelectField (combobox) instead of Select component */}
+        <FormatSelectField 
           control={control}
-          name={`formats.${index}.format_id`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Format</FormLabel>
-              <Select
-                disabled={isFormatsLoading}
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  onFormatChange(value);
-                }}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a format" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {formats.map((format) => (
-                    <SelectItem key={format.id} value={format.id}>
-                      {format.format_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          index={index}
+          formats={formats}
+          isLoading={isFormatsLoading}
         />
       </div>
 
