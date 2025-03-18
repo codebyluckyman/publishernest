@@ -35,7 +35,7 @@ export function FormatSelectField({
   isLoading,
 }: FormatSelectFieldProps) {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
+  const [option, setValue] = useState("");
 
   // Transform formats data for the combobox
   const formatOptions = formats.map(format => ({
