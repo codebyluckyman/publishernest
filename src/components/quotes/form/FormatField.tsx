@@ -3,7 +3,6 @@ import { Control, useWatch } from "react-hook-form";
 import { Separator } from "@/components/ui/separator";
 import { QuoteRequestFormValues } from "./schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
-import { FormatSelectionField } from "./format-fields/FormatSelectionField";
 import { QuantityField } from "./format-fields/QuantityField";
 import { NotesField } from "./format-fields/NotesField";
 import { FormatSpecificationsDisplay } from "./format-fields/FormatSpecificationsDisplay";
@@ -33,13 +32,7 @@ export function FormatField({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormatSelectionField 
-          control={control} 
-          index={index} 
-          formats={formats} 
-          isFormatsLoading={isFormatsLoading} 
-        />
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
         <QuantityField control={control} index={index} />
       </div>
 
