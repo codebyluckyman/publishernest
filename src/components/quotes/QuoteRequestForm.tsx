@@ -31,7 +31,7 @@ export function QuoteRequestForm({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
       id: initialValues?.id,
-      title: initialValues?.title || "",
+      title: initialValues?.title || "", // Provide empty string as default
       supplier_ids: initialValues?.supplier_ids || [],
       description: initialValues?.description || "",
       due_date: initialValues?.due_date,
@@ -52,6 +52,11 @@ export function QuoteRequestForm({
   }, [form]);
 
   const handleFormSubmit = (data: QuoteRequestFormValues) => {
+    // Set a default title if none was provided
+    if (!data.title) {
+      data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
+    }
+    
     // Log the form data before submission to debug
     console.log("Form submission data:", data);
     onSubmit(data);

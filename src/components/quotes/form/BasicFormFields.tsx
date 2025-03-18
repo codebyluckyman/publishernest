@@ -1,6 +1,6 @@
-import { Control, UseFormReturn } from "react-hook-form";
+
+import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,27 +23,6 @@ export function BasicFormFields({ form, suppliers }: BasicFormFieldsProps) {
 
   return (
     <>
-      <FormField
-        control={control}
-        name="title"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Title</FormLabel>
-            <FormControl>
-              <Input 
-                placeholder="Quote request title" 
-                {...field} 
-                onChange={(e) => {
-                  field.onChange(e.target.value);
-                  console.log("Title input value:", e.target.value);
-                }}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <FormField
         control={control}
         name="supplier_ids"

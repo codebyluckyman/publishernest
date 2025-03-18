@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const quoteRequestFormSchema = z.object({
   id: z.string().optional(),
-  title: z.string().min(1, "Title is required"),
+  title: z.string().optional(), // Changed from required to optional
   supplier_id: z.string().optional(), // Keep for backward compatibility
   supplier_ids: z.array(z.string()).min(1, "At least one supplier is required"),
   description: z.string().optional(),
