@@ -9,6 +9,7 @@ import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { QuoteRequestFormValues } from "./schema";
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { useOrganization } from "@/hooks/useOrganization";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface FormatFieldArrayProps {
   form: UseFormReturn<QuoteRequestFormValues>;
@@ -50,7 +51,15 @@ export function FormatFieldArray({ form, showFormatSpecifications = false }: For
         </Button>
       </div>
 
-      {fields.length === 0 && (
+      {isFormatsLoading && (
+        <div className="space-y-2">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      )}
+
+      {!isFormatsLoading && fields.length === 0 && (
         <div className="text-center p-4 border border-dashed rounded-md">
           <p className="text-sm text-muted-foreground">
             No formats added yet. Click 'Add Format' to include formats in this quote request.

@@ -26,8 +26,6 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
           return [];
         }
 
-        // Ensure data is always a valid array before returning
-        console.log(`format array: ${data}`);
         return Array.isArray(data) ? data : [];
       } catch (err) {
         console.error("Exception fetching formats:", err);
@@ -35,6 +33,7 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
       }
     },
     enabled: !!currentOrganization,
-    initialData: [], // Provide empty array as initial data to avoid undefined
+    initialData: [], // Always provide empty array as initial data
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes to improve performance
   });
 }

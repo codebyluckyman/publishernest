@@ -38,7 +38,7 @@ export function FormatSelectionField({
           <FormControl>
             <Combobox
               items={formatOptions}
-              placeholder="Search and select format..."
+              placeholder={isFormatsLoading ? "Loading formats..." : "Search and select format..."}
               value={field.value || ""}
               onChange={field.onChange}
               isLoading={isFormatsLoading}

@@ -9,6 +9,8 @@ import {
 import { QuoteRequestForm } from "./QuoteRequestForm";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
+import { useOrganization } from "@/hooks/useOrganization";
+import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 
 interface EditQuoteRequestDialogProps {
   isOpen: boolean;
@@ -27,6 +29,18 @@ export function EditQuoteRequestDialog({
   onSubmit,
   isSubmitting
 }: EditQuoteRequestDialogProps) {
+  const { currentOrganization } = useOrganization();
+  
+  // Prefetch formats when dialog is opened
+  const { refetch: refetchFormats } = useFormatsForSelect(currentOrganization);
+
+  // Prefetch formats when dialog opens
+  useEffect(() => {
+    if (isOpen && currentOrganization) {
+      refetchFormats();
+    }
+  }, [isOpen, currentOrganization, refetchFormats]);
+  
   // Convert the QuoteRequest to form values
   const mapQuoteRequestToFormValues = (request: QuoteRequest): QuoteRequestFormValues => {
     return {
