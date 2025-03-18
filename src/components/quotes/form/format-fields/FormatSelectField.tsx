@@ -89,7 +89,7 @@ export function FormatSelectField({
                             key={formatOptions.value}
                             value={formatOptions.label}
                             onSelect={(option) => {
-                              field.setValue(option.value);
+                              setValue(option.value);
                               //field.onChange(option.value);
                               setOpen(false);
                             }}
