@@ -71,7 +71,7 @@ export function FormatSelectField({
                     >
                       {field.value
                         ? formatOptions.find(
-                            (option) => option.value === field.value
+                            (option) => option.label === field.label
                           )?.label
                         : "Select a format"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
