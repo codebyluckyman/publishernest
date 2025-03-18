@@ -3,7 +3,7 @@ import { Format } from "@/components/format/types/FormatTypes";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatNumber } from "@/utils/productUtils";
 
-interface FormatSpecificationsProps {
+export interface FormatSpecificationsProps {
   format: Format | null;
   isLoading: boolean;
 }

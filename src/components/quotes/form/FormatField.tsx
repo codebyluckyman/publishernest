@@ -1,5 +1,5 @@
 
-import { Control, Controller, useFieldArray } from "react-hook-form";
+import { useFieldArray, Control, Controller, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,7 @@ import { PriceBreakField } from "./PriceBreakField";
 import { useDefaultPriceBreaks } from "@/hooks/useDefaultPriceBreaks";
 import { useEffect } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -25,7 +26,16 @@ interface FormatFieldProps {
 
 export function FormatField({ control, index, formats, isFormatsLoading }: FormatFieldProps) {
   const { currentOrganization } = useOrganization();
-  const { data: defaultPriceBreaks = [] } = useDefaultPriceBreaks(currentOrganization);
+  const { defaultPriceBreaks = [], isLoading: isDefaultPriceBreaksLoading } = useDefaultPriceBreaks(currentOrganization);
+
+  // Watch the currently selected format to load its details
+  const selectedFormatId = useWatch({
+    control,
+    name: `formats.${index}.format_id`
+  });
+  
+  // Fetch format details when a format is selected
+  const { data: formatDetails, isLoading: isFormatDetailsLoading } = useFormatDetails(selectedFormatId || null);
 
   // Setup nested arrays for products and price breaks within this format
   const {
@@ -155,13 +165,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
         )}
       />
 
-      <Controller
-        control={control}
-        name={`formats.${index}.format_id`}
-        render={({ field }) => (
-          field.value ? <FormatSpecifications formatId={field.value} /> : null
-        )}
-      />
+      {selectedFormatId && <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />}
 
       <div className="space-y-2">
         <div className="flex justify-between items-center">
@@ -198,7 +202,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
             <FormatProductField
               control={control}
               formatIndex={index}
-              productIndex={productIndex}
+              formatId={selectedFormatId}
             />
           </div>
         ))}
@@ -228,7 +232,6 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
               key={field.id}
               control={control}
               formatIndex={index}
-              priceBreakIndex={priceBreakIndex}
               onRemove={() => removePriceBreak(priceBreakIndex)}
             />
           ))}

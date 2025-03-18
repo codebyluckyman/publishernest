@@ -1,11 +1,9 @@
 
 import { useFieldArray, Control, UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { FormField } from "@/components/ui/form";
 import { Plus, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FormatField } from "./FormatField";
-import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { QuoteRequestFormValues } from "./schema";
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { useOrganization } from "@/hooks/useOrganization";
