@@ -35,7 +35,6 @@ export function FormatSelectField({
   isLoading,
 }: FormatSelectFieldProps) {
   const [open, setOpen] = useState(false);
-  const [option, setValue] = useState("");
 
   // Transform formats data for the combobox
   const formatOptions = formats.map(format => ({
@@ -84,21 +83,20 @@ export function FormatSelectField({
                     <CommandList>
                       <CommandEmpty>No format found.</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
-                        {formatOptions.map((formatOptions) => (
+                        {formatOptions.map((option) => (
                           <CommandItem
-                            key={formatOptions.value}
-                            value={formatOptions.label}
-                            onSelect={(option) => {
-                              setValue(option.value);
+                            key={option.value}
+                            value={option.label}
+                            onSelect={() => {
                               field.onChange(option.value);
-                              setOpen(false);       
+                              setOpen(false);
                             }}
                           >
-                            {formatOptions.label}
+                            {option.label}
                             <Check
                               className={cn(
                                 "ml-auto",
-                                field.value === formatOptions.value
+                                field.value === option.value
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
