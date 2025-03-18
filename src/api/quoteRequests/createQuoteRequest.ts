@@ -104,7 +104,7 @@ export async function createQuoteRequest(
                 .insert({
                   quote_request_format_id: formatId,
                   quantity: priceBreak.quantity,
-                  num_products: priceBreak.num_products || 1
+                  num_products: format.num_products || 1
                 });
 
               if (priceBreakError) {
