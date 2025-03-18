@@ -13,10 +13,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface FormatFieldArrayProps {
   form: UseFormReturn<QuoteRequestFormValues>;
-  showFormatSpecifications?: boolean;
 }
 
-export function FormatFieldArray({ form, showFormatSpecifications = false }: FormatFieldArrayProps) {
+export function FormatFieldArray({ form }: FormatFieldArrayProps) {
   const { currentOrganization } = useOrganization();
   const { data: formats = [], isLoading: isFormatsLoading } = useFormatsForSelect(currentOrganization);
   
@@ -87,7 +86,6 @@ export function FormatFieldArray({ form, showFormatSpecifications = false }: For
               index={index} 
               formats={safeFormats} 
               isFormatsLoading={isFormatsLoading}
-              showFormatSpecifications={showFormatSpecifications}
             />
           </CardContent>
         </Card>

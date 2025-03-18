@@ -91,7 +91,6 @@ export function EditQuoteRequestDialog({
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}
               onCancel={handleCancel}
-              showFormatSpecifications={true}
             />
           )}
         </div>

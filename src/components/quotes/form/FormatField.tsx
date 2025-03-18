@@ -15,7 +15,6 @@ interface FormatFieldProps {
   index: number;
   formats: FormatForSelect[];
   isFormatsLoading: boolean;
-  showFormatSpecifications?: boolean;
 }
 
 export function FormatField({
@@ -23,7 +22,6 @@ export function FormatField({
   index,
   formats,
   isFormatsLoading,
-  showFormatSpecifications = false,
 }: FormatFieldProps) {
   // Watch the format_id to pass it to child components
   const formatId = useWatch({
@@ -47,12 +45,11 @@ export function FormatField({
 
       <NotesField control={control} index={index} />
 
-      {/* Format specifications if available and enabled */}
+      {/* Format specifications if available - always show if format is selected */}
       <FormatSpecificationsDisplay 
         control={control} 
         index={index} 
         formats={formats} 
-        showSpecifications={showFormatSpecifications} 
       />
 
       <Separator />

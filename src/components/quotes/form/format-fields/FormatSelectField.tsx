@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Control } from "react-hook-form";
+import { useState, useEffect } from "react";
+import { Control, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
@@ -41,6 +41,12 @@ export function FormatSelectField({
     label: format.format_name,
     value: format.id
   }));
+
+  // Watch the current value to trigger specifications display
+  const formatId = useWatch({
+    control,
+    name: `formats.${index}.format_id`,
+  });
 
   return (
     <FormField
