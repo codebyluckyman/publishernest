@@ -35,6 +35,7 @@ export function FormatSelectField({
   isLoading,
 }: FormatSelectFieldProps) {
   const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
 
   // Transform formats data for the combobox
   const formatOptions = formats.map(format => ({
@@ -89,6 +90,7 @@ export function FormatSelectField({
                             value={option.label}
                             onSelect={() => {
                               field.onChange(option.value);
+                              setValue(option.value);
                               setOpen(false);
                             }}
                           >
