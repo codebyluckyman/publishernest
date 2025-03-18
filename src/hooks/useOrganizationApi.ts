@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Organization, OrganizationMember } from "@/types/organization";
 import { toast } from "sonner";
@@ -200,6 +199,32 @@ export const useOrganizationApi = (userId: string | undefined) => {
     }
   };
 
+  const updateOrganizationSetting = async (organizationId: string, setting: string, value: any): Promise<Organization> => {
+    try {
+      // Create an update object with the setting to update
+      const updateData: Record<string, any> = {};
+      updateData[setting] = value;
+
+      const { data: updatedOrg, error } = await supabase
+        .from('organizations')
+        .update(updateData)
+        .eq('id', organizationId)
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      if (!updatedOrg) throw new Error("Failed to update organization");
+
+      return {
+        ...updatedOrg,
+        organization_type: updatedOrg.organization_type as "publisher" | "printer" | "customer"
+      } as Organization;
+    } catch (error) {
+      console.error(`Error updating organization setting ${setting}:`, error);
+      throw error;
+    }
+  };
+
   return {
     fetchUserOrganizations,
     getCurrentOrganizationId,
@@ -208,6 +233,7 @@ export const useOrganizationApi = (userId: string | undefined) => {
     fetchOrganizationMembers,
     inviteOrganizationMember,
     updateMemberRole,
-    removeMember
+    removeMember,
+    updateOrganizationSetting
   };
 };

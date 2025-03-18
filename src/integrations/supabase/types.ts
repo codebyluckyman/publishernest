@@ -230,6 +230,7 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          default_num_products: number
           id: string
           logo_url: string | null
           name: string
@@ -239,6 +240,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_num_products?: number
           id?: string
           logo_url?: string | null
           name: string
@@ -248,6 +250,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_num_products?: number
           id?: string
           logo_url?: string | null
           name?: string

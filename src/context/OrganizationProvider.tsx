@@ -127,6 +127,27 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
     }
   };
 
+  const updateOrganizationSetting = async (setting: string, value: any) => {
+    if (!currentOrganization) {
+      toast.error("No organization selected");
+      return;
+    }
+
+    try {
+      const updatedOrg = await api.updateOrganizationSetting(currentOrganization.id, setting, value);
+      
+      // Update the organization in state
+      setCurrentOrganization(updatedOrg);
+      setOrganizations(prev => 
+        prev.map(org => org.id === updatedOrg.id ? updatedOrg : org)
+      );
+      
+      toast.success("Organization setting updated");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update organization setting");
+    }
+  };
+
   const value = {
     currentOrganization,
     organizations,
@@ -136,7 +157,8 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
     getOrganizationMembers,
     inviteMember,
     updateMemberRole,
-    removeMember
+    removeMember,
+    updateOrganizationSetting
   };
 
   return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>;

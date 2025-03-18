@@ -6,6 +6,7 @@ export type Organization = {
   created_at: string;
   logo_url?: string | null;
   organization_type: "publisher" | "printer" | "customer";
+  default_num_products?: number;
 };
 
 export type OrganizationMember = {
@@ -26,4 +27,5 @@ export type OrganizationContextType = {
   inviteMember: (organizationId: string, email: string, role: "admin" | "member") => Promise<void>;
   updateMemberRole: (memberId: string, role: "admin" | "member") => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
+  updateOrganizationSetting: (setting: string, value: any) => Promise<void>;
 };

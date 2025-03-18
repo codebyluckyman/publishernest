@@ -8,6 +8,7 @@ import { OrganizationDetails } from "@/components/organizations/OrganizationDeta
 import { MembersList } from "@/components/organizations/MembersList";
 import { WarehousesList } from "@/components/organizations/WarehousesList";
 import { DefaultPriceBreaks } from "@/components/organizations/DefaultPriceBreaks";
+import { DefaultNumProducts } from "@/components/organizations/DefaultNumProducts";
 import { Organization } from "@/types/organization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -143,7 +144,10 @@ const Organizations = () => {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <DefaultPriceBreaks />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DefaultPriceBreaks />
+            <DefaultNumProducts />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

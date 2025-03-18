@@ -10,6 +10,7 @@ import { QuoteRequestFormValues } from "./schema";
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { useOrganization } from "@/hooks/useOrganization";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 interface FormatFieldArrayProps {
   form: UseFormReturn<QuoteRequestFormValues>;
@@ -28,8 +29,20 @@ export function FormatFieldArray({ form }: FormatFieldArrayProps) {
     append({
       format_id: "",
       notes: "",
+      num_products: currentOrganization?.default_num_products || 1,
     });
   };
+
+  // Update existing formats with the default num_products if they don't have one set
+  useEffect(() => {
+    if (currentOrganization?.default_num_products && fields.length > 0) {
+      fields.forEach((field, index) => {
+        if (!field.num_products) {
+          form.setValue(`formats.${index}.num_products`, currentOrganization.default_num_products || 1);
+        }
+      });
+    }
+  }, [currentOrganization?.default_num_products, fields, form]);
 
   // Ensure formats is always a valid array
   const safeFormats = Array.isArray(formats) ? formats : [];
