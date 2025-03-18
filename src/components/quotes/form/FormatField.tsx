@@ -1,4 +1,3 @@
-
 import { useFieldArray, Control, Controller, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -232,6 +231,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
               key={field.id}
               control={control}
               formatIndex={index}
+              priceBreakIndex={priceBreakIndex}
               onRemove={() => removePriceBreak(priceBreakIndex)}
             />
           ))}
