@@ -91,8 +91,9 @@ export function FormatSelectField({
                             onSelect={(option) => {
                               setValue(option.value);
                               //field.onChange(option.value);
-                              setOpen(false);
+                              setOpen(false);       
                             }}
+                            className="pointer-events-auto"
                           >
                             {formatOptions.label}
                             <Check
