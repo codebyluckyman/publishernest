@@ -77,7 +77,7 @@ export function FormatSelectField({
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                   <Command>
                     <CommandInput placeholder="Search formats..." className="h-9" />
                     <CommandList>
