@@ -80,7 +80,7 @@ export function FormatSelectField({
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0">
                   <Command>
-                    <CommandInput placeholder="Search formats..." className="h-9" />
+                    <CommandInput placeholder="Search formats..." className="h-9 data-[disabled]:pointer-events-auto" />
                     <CommandList>
                       <CommandEmpty>No format found.</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
