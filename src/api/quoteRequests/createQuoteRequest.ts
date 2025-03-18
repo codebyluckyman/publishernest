@@ -103,8 +103,7 @@ export async function createQuoteRequest(
                 .from('quote_request_format_price_breaks')
                 .insert({
                   quote_request_format_id: formatId,
-                  from_quantity: priceBreak.from_quantity,
-                  to_quantity: priceBreak.to_quantity,
+                  quantity: priceBreak.quantity,
                   one_product_price: priceBreak.one_product_price || false,
                   two_products_price: priceBreak.two_products_price || false,
                   three_products_price: priceBreak.three_products_price || false,

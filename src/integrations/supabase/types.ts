@@ -488,36 +488,33 @@ export type Database = {
         Row: {
           created_at: string
           four_products_price: boolean | null
-          from_quantity: number
           id: string
           one_product_price: boolean | null
+          quantity: number
           quote_request_format_id: string
           three_products_price: boolean | null
-          to_quantity: number
           two_products_price: boolean | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           four_products_price?: boolean | null
-          from_quantity: number
           id?: string
           one_product_price?: boolean | null
+          quantity: number
           quote_request_format_id: string
           three_products_price?: boolean | null
-          to_quantity: number
           two_products_price?: boolean | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           four_products_price?: boolean | null
-          from_quantity?: number
           id?: string
           one_product_price?: boolean | null
+          quantity?: number
           quote_request_format_id?: string
           three_products_price?: boolean | null
-          to_quantity?: number
           two_products_price?: boolean | null
           updated_at?: string
         }
