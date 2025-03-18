@@ -1,3 +1,4 @@
+
 import { useFieldArray, Control, Controller, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -147,6 +148,41 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
         />
       </div>
 
+      {selectedFormatId && <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />}
+      
+      {/* Price Breaks section moved above Notes */}
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <Label>Price Breaks</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addPriceBreak}
+            className="flex items-center"
+          >
+            <Plus className="h-4 w-4 mr-1" /> Add Price Break
+          </Button>
+        </div>
+        {priceBreakFields.length === 0 && (
+          <div className="text-sm text-muted-foreground border p-3 rounded-md border-dashed text-center">
+            No price breaks added yet
+          </div>
+        )}
+        <div className="space-y-2">
+          {priceBreakFields.map((field, priceBreakIndex) => (
+            <PriceBreakField
+              key={field.id}
+              control={control}
+              formatIndex={index}
+              priceBreakIndex={priceBreakIndex}
+              onRemove={() => removePriceBreak(priceBreakIndex)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Notes field moved below Price Breaks */}
       <FormField
         control={control}
         name={`formats.${index}.notes`}
@@ -163,8 +199,6 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
           </FormItem>
         )}
       />
-
-      {selectedFormatId && <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />}
 
       <div className="space-y-2">
         <div className="flex justify-between items-center">
@@ -205,37 +239,6 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
             />
           </div>
         ))}
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <Label>Price Breaks</Label>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addPriceBreak}
-            className="flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-1" /> Add Price Break
-          </Button>
-        </div>
-        {priceBreakFields.length === 0 && (
-          <div className="text-sm text-muted-foreground border p-3 rounded-md border-dashed text-center">
-            No price breaks added yet
-          </div>
-        )}
-        <div className="space-y-2">
-          {priceBreakFields.map((field, priceBreakIndex) => (
-            <PriceBreakField
-              key={field.id}
-              control={control}
-              formatIndex={index}
-              priceBreakIndex={priceBreakIndex}
-              onRemove={() => removePriceBreak(priceBreakIndex)}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );
