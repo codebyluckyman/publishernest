@@ -104,7 +104,6 @@ export function FormatSelectField({
                               )}
                             />
                           </CommandItem>
-                          <CommandItem className='hover:cursor-pointer'</CommandItem>
                         ))}
                       </CommandGroup>
                     </CommandList>  
