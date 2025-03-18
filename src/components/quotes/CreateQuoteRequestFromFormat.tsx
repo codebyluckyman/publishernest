@@ -69,7 +69,6 @@ export function CreateQuoteRequestFromFormat({
     formats: [
       {
         format_id: formatId,
-        quantity: 1,
         notes: "",
       },
     ],
@@ -81,9 +80,6 @@ export function CreateQuoteRequestFromFormat({
         onClick={(e) => {
           e.stopPropagation();
           setOpen(true);
-          // Don't call onSuccess here, as it will close the parent dropdown
-          // AND close the dialog we're trying to open
-          // if (onSuccess) onSuccess(); <- This was causing the dialog to close immediately
         }} 
         variant={buttonVariant} 
         size={buttonSize}

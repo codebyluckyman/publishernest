@@ -53,9 +53,10 @@ export function EditQuoteRequestDialog({
       // Ensure formats are properly mapped from the database
       formats: request.formats?.map(format => ({
         format_id: format.format_id,
-        quantity: format.quantity,
         notes: format.notes || "",
-        products: format.products || []
+        products: format.products || [],
+        price_breaks: format.price_breaks || [],
+        num_products: format.num_products
       })) || [],
       products: request.products || {},
       quantities: request.quantities || {},

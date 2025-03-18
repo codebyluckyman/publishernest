@@ -42,7 +42,6 @@ export async function fetchQuoteRequests({
         formats:quote_request_formats(
           id, 
           format_id, 
-          quantity, 
           notes,
           format:formats(format_name),
           products:quote_request_format_products(
@@ -118,11 +117,11 @@ export async function fetchQuoteRequests({
             id: format.id,
             format_id: format.format_id,
             quote_request_id: request.id,
-            quantity: format.quantity,
             notes: format.notes || "",
             format_name: format.format?.format_name,
             products: formattedProducts,
-            price_breaks: formattedPriceBreaks
+            price_breaks: formattedPriceBreaks,
+            num_products: format.num_products
           };
         });
       }
@@ -154,7 +153,6 @@ export async function fetchQuoteRequestById(id: string) {
         formats:quote_request_formats(
           id, 
           format_id, 
-          quantity, 
           notes,
           format:formats(format_name),
           products:quote_request_format_products(
@@ -225,11 +223,11 @@ export async function fetchQuoteRequestById(id: string) {
           id: format.id,
           format_id: format.format_id,
           quote_request_id: request.id,
-          quantity: format.quantity,
           notes: format.notes || "",
           format_name: format.format?.format_name,
           products: formattedProducts,
-          price_breaks: formattedPriceBreaks
+          price_breaks: formattedPriceBreaks,
+          num_products: format.num_products
         };
       });
     }

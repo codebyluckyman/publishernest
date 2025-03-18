@@ -27,7 +27,6 @@ export function FormatFieldArray({ form }: FormatFieldArrayProps) {
   const addFormat = () => {
     append({
       format_id: "",
-      quantity: 1,
       notes: "",
     });
   };
