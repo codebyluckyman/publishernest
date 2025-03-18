@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -57,7 +56,7 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Quantity Range</TableHead>
+              <TableHead>Quantity</TableHead>
               <TableHead className="text-center">1 Product</TableHead>
               <TableHead className="text-center">2 Products</TableHead>
               <TableHead className="text-center">3 Products</TableHead>
@@ -68,7 +67,7 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
             {format.price_breaks.map((priceBreak, idx) => (
               <TableRow key={priceBreak.id || idx}>
                 <TableCell>
-                  {formatNumber(priceBreak.from_quantity)} - {formatNumber(priceBreak.to_quantity)}
+                  {formatNumber(priceBreak.quantity)}
                 </TableCell>
                 <TableCell className="text-center">
                   {priceBreak.one_product_price ? 

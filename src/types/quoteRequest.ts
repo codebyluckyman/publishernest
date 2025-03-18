@@ -1,4 +1,3 @@
-
 export interface QuoteRequest {
   id: string;
   organization_id: string;
@@ -51,8 +50,7 @@ export interface QuoteRequestFormatProduct {
 export interface PriceBreak {
   id?: string;
   quote_request_format_id?: string;
-  from_quantity: number;
-  to_quantity: number;
+  quantity: number;
   one_product_price?: boolean;
   two_products_price?: boolean;
   three_products_price?: boolean;
@@ -77,8 +75,7 @@ export interface QuoteRequestFormValues {
       notes?: string;
     }[];
     price_breaks?: {
-      from_quantity: number;
-      to_quantity: number;
+      quantity: number;
       one_product_price?: boolean;
       two_products_price?: boolean;
       three_products_price?: boolean;
@@ -92,7 +89,6 @@ export interface QuoteRequestFormValues {
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';
 export type SortDirection = 'asc' | 'desc';
 
-// Update audit trail interface to make it more flexible
 export interface QuoteRequestAudit {
   id: string;
   quote_request_id: string | null;

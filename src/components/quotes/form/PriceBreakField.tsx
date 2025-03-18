@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Control, useFieldArray } from "react-hook-form";
@@ -22,8 +22,7 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
 
   const handleAddPriceBreak = () => {
     append({
-      from_quantity: 0,
-      to_quantity: 1000,
+      quantity: 1000,
       one_product_price: false,
       two_products_price: false,
       three_products_price: false,
@@ -42,8 +41,7 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-28">From Qty</TableHead>
-                  <TableHead className="w-28">To Qty</TableHead>
+                  <TableHead className="w-28">Quantity</TableHead>
                   <TableHead className="text-center">1 Product</TableHead>
                   <TableHead className="text-center">2 Products</TableHead>
                   <TableHead className="text-center">3 Products</TableHead>
@@ -57,27 +55,7 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
                     <TableCell>
                       <FormField
                         control={control}
-                        name={`formats.${formatIndex}.price_breaks.${index}.from_quantity`}
-                        render={({ field }) => (
-                          <FormItem className="space-y-0">
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                className="h-8"
-                                {...field}
-                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <FormField
-                        control={control}
-                        name={`formats.${formatIndex}.price_breaks.${index}.to_quantity`}
+                        name={`formats.${formatIndex}.price_breaks.${index}.quantity`}
                         render={({ field }) => (
                           <FormItem className="space-y-0">
                             <FormControl>

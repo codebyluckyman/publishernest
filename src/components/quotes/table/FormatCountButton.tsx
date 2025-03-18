@@ -73,7 +73,7 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
             {format.price_breaks.map((priceBreak, idx) => (
               <TableRow key={priceBreak.id || idx}>
                 <TableCell className="p-1">
-                  {priceBreak.from_quantity}-{priceBreak.to_quantity}
+                  {priceBreak.quantity}
                 </TableCell>
                 <TableCell className="p-1 text-center">
                   {priceBreak.one_product_price ? 
