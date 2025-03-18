@@ -65,8 +65,9 @@ export function QuoteRequestForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-        <BasicFormFields form={form} suppliers={suppliers} />
+        {/* Moved FormatFieldArray to the top */}
         <FormatFieldArray form={form} showFormatSpecifications={showFormatSpecifications} />
+        <BasicFormFields form={form} suppliers={suppliers} />
         <FormActions
           form={form}
           onCancel={onCancel}
