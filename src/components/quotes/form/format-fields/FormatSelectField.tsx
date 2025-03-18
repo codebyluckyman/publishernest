@@ -71,7 +71,7 @@ export function FormatSelectField({
                     >
                       {field.value
                         ? formatOptions.find(
-                            (option) => option.label === field.label
+                            (option) => option.value === field.value
                           )?.label
                         : "Select a format"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -87,7 +87,7 @@ export function FormatSelectField({
                         {formatOptions.map((option) => (
                           <CommandItem
                             key={option.value}
-                            value={option.value}
+                            value={option.label}
                             onSelect={() => {
                               field.onChange(option.value);
                               setValue(option.value);
