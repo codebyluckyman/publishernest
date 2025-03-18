@@ -1,11 +1,23 @@
 
 import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuoteRequestFormValues } from "../schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface FormatSelectFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -20,7 +32,7 @@ export function FormatSelectField({
   formats,
   isLoading,
 }: FormatSelectFieldProps) {
-  // Transform formats data for the select component
+  // Transform formats data for the combobox
   const formatOptions = formats.map(format => ({
     label: format.format_name,
     value: format.id
@@ -31,7 +43,7 @@ export function FormatSelectField({
       control={control}
       name={`formats.${index}.format_id`}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className="flex flex-col">
           <FormLabel>Format</FormLabel>
           <FormControl>
             {isLoading ? (
@@ -40,22 +52,54 @@ export function FormatSelectField({
                 <span className="text-sm">Loading formats...</span>
               </div>
             ) : (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isLoading}
-              >
-                <SelectTrigger className={cn("w-full", !field.value && "text-muted-foreground")}>
-                  <SelectValue placeholder="Select a format" />
-                </SelectTrigger>
-                <SelectContent>
-                  {formatOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value
+                        ? formatOptions.find(
+                            (option) => option.value === field.value
+                          )?.label
+                        : "Select a format"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search formats..." className="h-9" />
+                    <CommandEmpty>No format found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-auto">
+                      {formatOptions.map((option) => (
+                        <CommandItem
+                          key={option.value}
+                          value={option.value}
+                          onSelect={() => {
+                            field.onChange(option.value);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              option.value === field.value
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {option.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             )}
           </FormControl>
           <FormMessage />
