@@ -98,7 +98,7 @@ export function FormatSelectField({
                               className={cn(
                                 "mr-2 h-4 w-4",
                                 field.value === option.value
-                                  ? "opacity-100"
+                                  ? "opacity-100, variant=secondary"
                                   : "opacity-0"
                               )}
                             />
