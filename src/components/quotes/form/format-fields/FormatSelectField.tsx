@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
@@ -33,6 +34,8 @@ export function FormatSelectField({
   formats,
   isLoading,
 }: FormatSelectFieldProps) {
+  const [open, setOpen] = useState(false);
+
   // Transform formats data for the combobox
   const formatOptions = formats.map(format => ({
     label: format.format_name,
@@ -53,12 +56,13 @@ export function FormatSelectField({
                 <span className="text-sm">Loading formats...</span>
               </div>
             ) : (
-              <Popover>
+              <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant="outline"
                       role="combobox"
+                      aria-expanded={open}
                       className={cn(
                         "w-full justify-between",
                         !field.value && "text-muted-foreground"
@@ -82,9 +86,10 @@ export function FormatSelectField({
                         {formatOptions.map((option) => (
                           <CommandItem
                             key={option.value}
-                            value={option.value}
+                            value={option.label}
                             onSelect={() => {
                               field.onChange(option.value);
+                              setOpen(false);
                             }}
                           >
                             <Check
