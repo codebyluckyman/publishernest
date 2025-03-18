@@ -131,25 +131,6 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
             </FormItem>
           )}
         />
-
-        <FormField
-          control={control}
-          name={`formats.${index}.num_products`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Number of Products</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min={1}
-                  {...field}
-                  onChange={e => field.onChange(parseInt(e.target.value, 10) || 1)}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
 
       {selectedFormatId && <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />}
@@ -178,6 +159,26 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
         
         <CollapsibleContent>
           <div className="p-3 border-t">
+            {/* Number of Products field moved inside the collapsible */}
+            <FormField
+              control={control}
+              name={`formats.${index}.num_products`}
+              render={({ field }) => (
+                <FormItem className="mb-4">
+                  <FormLabel>Number of Products</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={1}
+                      {...field}
+                      onChange={e => field.onChange(parseInt(e.target.value, 10) || 1)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          
             <div className="flex justify-end mb-2">
               <Button
                 type="button"
