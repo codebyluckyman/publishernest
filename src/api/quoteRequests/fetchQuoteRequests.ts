@@ -50,8 +50,7 @@ export async function fetchQuoteRequests({
             quantity,
             num_products
           )
-        ),
-        requester:profiles(email)
+        )
       `)
       .eq("organization_id", currentOrganization.id);
 
@@ -134,7 +133,7 @@ export async function fetchQuoteRequests({
             quote_request_id: request.id,
             notes: format.notes || "",
             format_name: format.format?.format_name,
-            format: format.format, // Fix: Add format object to match expected type
+            format: format.format, // Include format object to match expected type
             products: formattedProducts,
             price_breaks: formattedPriceBreaks,
             num_products: format.num_products || 1
@@ -184,8 +183,7 @@ export async function fetchQuoteRequestById(id: string): Promise<QuoteRequest | 
             quantity,
             num_products
           )
-        ),
-        requester:profiles(email)
+        )
       `)
       .eq("id", id)
       .single();
@@ -244,7 +242,7 @@ export async function fetchQuoteRequestById(id: string): Promise<QuoteRequest | 
           quote_request_id: request.id,
           notes: format.notes || "",
           format_name: format.format?.format_name,
-          format: format.format, // Fix: Add format object to match expected type
+          format: format.format, // Include format object to match expected type
           products: formattedProducts,
           price_breaks: formattedPriceBreaks,
           num_products: format.num_products || 1
