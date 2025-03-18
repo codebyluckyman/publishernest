@@ -90,7 +90,7 @@ export function FormatSelectField({
                             value={formatOptions.label}
                             onSelect={(currentValue) => {
                               setValue(currentValue.value);
-                              field.onChange(fcurrentValue.value);
+                              field.onChange(currentValue.value);
                               setOpen(false);
                             }}
                           >
