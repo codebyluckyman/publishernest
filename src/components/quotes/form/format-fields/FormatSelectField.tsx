@@ -97,7 +97,7 @@ export function FormatSelectField({
                             {formatOptions.label}
                             <Check
                               className={cn(
-                                "mr-2 h-4 w-4",
+                                "ml-auto",
                                 field.value === formatOptions.value
                                   ? "opacity-100"
                                   : "opacity-0"
