@@ -93,7 +93,7 @@ export function FormatSelectField({
                               //field.onChange(option.value);
                               setOpen(false);
                             }}
-                            className="data-[disabled]:pointer-events-auto"
+                            className="data-[disabled=true]:pointer-events-auto"
                           >
                             {formatOptions.label}
                             <Check
