@@ -52,12 +52,16 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
 
     return (
       <div className="mt-4">
-        <h4 className="text-sm font-medium mb-2">Price Break Requests</h4>
+        <h4 className="text-sm font-medium mb-2">
+          Price Break Requests 
+          <span className="ml-2 text-sm text-muted-foreground">
+            ({format.num_products || 1} product{(format.num_products || 1) !== 1 ? 's' : ''})
+          </span>
+        </h4>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Quantity</TableHead>
-              <TableHead>Number of Products</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -65,9 +69,6 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
               <TableRow key={priceBreak.id || idx}>
                 <TableCell>
                   {formatNumber(priceBreak.quantity)}
-                </TableCell>
-                <TableCell>
-                  {priceBreak.num_products}
                 </TableCell>
               </TableRow>
             ))}

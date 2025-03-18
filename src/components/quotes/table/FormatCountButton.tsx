@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -57,12 +56,16 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
 
     return (
       <div className="mt-3">
-        <h5 className="text-xs font-medium mb-1">Price Break Requests</h5>
+        <h5 className="text-xs font-medium mb-1">
+          Price Break Requests 
+          <span className="ml-1 text-xs text-muted-foreground">
+            ({format.num_products || 1} product{(format.num_products || 1) !== 1 ? 's' : ''})
+          </span>
+        </h5>
         <Table className="text-xs">
           <TableHeader>
             <TableRow>
               <TableHead className="p-1">Quantity</TableHead>
-              <TableHead className="p-1">Products</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -70,9 +73,6 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
               <TableRow key={priceBreak.id || idx}>
                 <TableCell className="p-1">
                   {priceBreak.quantity}
-                </TableCell>
-                <TableCell className="p-1">
-                  {priceBreak.num_products}
                 </TableCell>
               </TableRow>
             ))}
@@ -117,7 +117,6 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
                   </div>
                 )}
 
-                {/* Add the price breaks section */}
                 {renderPriceBreaks(format)}
               </div>
             ))}

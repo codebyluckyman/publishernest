@@ -24,9 +24,9 @@ export const quoteRequestFormSchema = z.object({
       price_breaks: z.array(
         z.object({
           quantity: z.number().min(1, "Quantity must be at least 1"),
-          num_products: z.number().min(1, "Number of products must be at least 1"),
         })
       ).optional().default([]),
+      num_products: z.number().min(1, "Number of products must be at least 1").default(1),
     })
   ).optional(),
   products: z.record(z.any()).optional(),

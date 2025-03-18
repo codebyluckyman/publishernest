@@ -28,6 +28,7 @@ export interface QuoteRequestFormat {
   format_name?: string; // Joined field from format.format_name
   products?: QuoteRequestFormatProduct[]; // Products linked to this format
   price_breaks?: PriceBreak[]; // Price breaks for this format
+  num_products?: number; // Number of products for all price breaks
 }
 
 export interface QuoteRequestFormatProduct {
@@ -52,7 +53,7 @@ export interface PriceBreak {
   id?: string;
   quote_request_format_id?: string;
   quantity: number;
-  num_products: number;
+  num_products?: number; // This will be maintained for compatibility but set at format level
 }
 
 export interface QuoteRequestFormValues {
@@ -74,8 +75,8 @@ export interface QuoteRequestFormValues {
     }[];
     price_breaks?: {
       quantity: number;
-      num_products: number;
     }[];
+    num_products?: number; // Single number of products for all price breaks
   }[];
   products?: Record<string, any>;
   quantities?: Record<string, any>;

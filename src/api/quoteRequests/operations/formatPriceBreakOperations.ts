@@ -7,7 +7,8 @@ import { PriceBreak } from "@/types/quoteRequest";
  */
 export async function updateFormatPriceBreaks(
   formatId: string,
-  priceBreaks?: PriceBreak[]
+  priceBreaks?: PriceBreak[],
+  numProducts: number = 1
 ): Promise<void> {
   if (!priceBreaks) return;
 
@@ -27,7 +28,7 @@ export async function updateFormatPriceBreaks(
     const priceBreakEntries = priceBreaks.map(priceBreak => ({
       quote_request_format_id: formatId,
       quantity: priceBreak.quantity,
-      num_products: priceBreak.num_products || 1
+      num_products: numProducts
     }));
 
     const { error: insertPriceBreakError } = await supabase

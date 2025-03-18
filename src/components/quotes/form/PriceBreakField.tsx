@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Control, useFieldArray } from "react-hook-form";
 import { QuoteRequestFormValues } from "./schema";
@@ -22,7 +22,6 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
   const handleAddPriceBreak = () => {
     append({
       quantity: 1000,
-      num_products: 1,
     });
   };
 
@@ -32,13 +31,36 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
         <CardTitle className="text-base">Price Break Requests</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Single Number of Products Input field for all price breaks */}
+        <div className="mb-4">
+          <FormField
+            control={control}
+            name={`formats.${formatIndex}.num_products`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Number of Products</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    className="w-full max-w-xs"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         {fields.length > 0 ? (
           <div className="space-y-4">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-28">Quantity</TableHead>
-                  <TableHead className="text-center">Number of Products</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -58,27 +80,6 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
                                 className="h-8"
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <FormField
-                        control={control}
-                        name={`formats.${formatIndex}.price_breaks.${index}.num_products`}
-                        render={({ field }) => (
-                          <FormItem className="space-y-0">
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="1"
-                                max="10"
-                                className="h-8"
-                                {...field}
-                                onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                               />
                             </FormControl>
                             <FormMessage />

@@ -17,7 +17,8 @@ export async function createFormat(
       quote_request_id: quoteRequestId,
       format_id: format.format_id,
       quantity: format.quantity,
-      notes: format.notes || null
+      notes: format.notes || null,
+      num_products: format.num_products || 1
     })
     .select("id")
     .single();
@@ -41,7 +42,8 @@ export async function updateFormat(
     .from("quote_request_formats")
     .update({
       quantity: format.quantity,
-      notes: format.notes || null
+      notes: format.notes || null,
+      num_products: format.num_products || 1
     })
     .eq("id", formatId);
 
@@ -98,8 +100,8 @@ export async function handleFormatOperations(
       // Handle products for this format
       await updateFormatProducts(existingFormat.id, format.products);
 
-      // Handle price breaks for this format
-      await updateFormatPriceBreaks(existingFormat.id, format.price_breaks);
+      // Handle price breaks for this format, passing the num_products value
+      await updateFormatPriceBreaks(existingFormat.id, format.price_breaks, format.num_products || 1);
     } else {
       // Create new format
       const newFormat = await createFormat(quoteRequestId, format);
@@ -108,8 +110,8 @@ export async function handleFormatOperations(
         // Handle products for this new format
         await updateFormatProducts(newFormat.id, format.products);
 
-        // Handle price breaks for this new format
-        await updateFormatPriceBreaks(newFormat.id, format.price_breaks);
+        // Handle price breaks for this new format, passing the num_products value
+        await updateFormatPriceBreaks(newFormat.id, format.price_breaks, format.num_products || 1);
       }
     }
   }
