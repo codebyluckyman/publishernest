@@ -41,9 +41,7 @@ export async function fetchQuoteRequests({
             product_id,
             quantity,
             notes,
-            format_extras,
-            format_extra_comments,
-            product:products(id, title)
+            product:products(id, title, format_extras, format_extra_comments)
           ),
           price_breaks:quote_request_format_price_breaks(
             id,
@@ -104,14 +102,18 @@ export async function fetchQuoteRequests({
         request.formats = request.formats.map((format: any) => {
           // Process products for this format
           const formattedProducts = format.products ? format.products.map((product: any) => {
+            // Get format extras from the product table instead of the quote_request_format_products table
+            const formatExtras = product.product?.format_extras || null;
+            const formatExtraComments = product.product?.format_extra_comments || null;
+            
             return {
               id: product.id,
               quote_request_format_id: format.id,
               product_id: product.product_id,
               quantity: product.quantity,
               notes: product.notes || null,
-              format_extras: product.format_extras || null,
-              format_extra_comments: product.format_extra_comments || null,
+              format_extras: formatExtras,
+              format_extra_comments: formatExtraComments,
               product_name: product.product?.title
             };
           }) : [];
@@ -174,9 +176,7 @@ export async function fetchQuoteRequestById(id: string): Promise<QuoteRequest | 
             product_id,
             quantity,
             notes,
-            format_extras,
-            format_extra_comments,
-            product:products(id, title)
+            product:products(id, title, format_extras, format_extra_comments)
           ),
           price_breaks:quote_request_format_price_breaks(
             id,
@@ -213,14 +213,18 @@ export async function fetchQuoteRequestById(id: string): Promise<QuoteRequest | 
       request.formats = request.formats.map((format: any) => {
         // Process products for this format
         const formattedProducts = format.products ? format.products.map((product: any) => {
+          // Get format extras from the product table instead of the quote_request_format_products table
+          const formatExtras = product.product?.format_extras || null;
+          const formatExtraComments = product.product?.format_extra_comments || null;
+          
           return {
             id: product.id,
             quote_request_format_id: format.id,
             product_id: product.product_id,
             quantity: product.quantity,
             notes: product.notes || null,
-            format_extras: product.format_extras || null,
-            format_extra_comments: product.format_extra_comments || null,
+            format_extras: formatExtras,
+            format_extra_comments: formatExtraComments,
             product_name: product.product?.title
           };
         }) : [];

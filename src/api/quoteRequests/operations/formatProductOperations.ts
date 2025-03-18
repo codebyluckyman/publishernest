@@ -28,6 +28,8 @@ export async function updateFormatProducts(
     product_id: product.product_id,
     quantity: product.quantity,
     notes: product.notes || null
+    // Note: format_extras and format_extra_comments are stored in the products table,
+    // not in the quote_request_format_products table
   }));
 
   const { error: insertProductsError } = await supabase
