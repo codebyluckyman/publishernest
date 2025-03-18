@@ -12,6 +12,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList
 } from "@/components/ui/command";
 import {
   Popover,
@@ -75,28 +76,30 @@ export function FormatSelectField({
                 <PopoverContent className="w-full p-0">
                   <Command>
                     <CommandInput placeholder="Search formats..." className="h-9" />
-                    <CommandEmpty>No format found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-auto">
-                      {formatOptions.map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.value}
-                          onSelect={() => {
-                            field.onChange(option.value);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              option.value === field.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {option.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                    <CommandList>
+                      <CommandEmpty>No format found.</CommandEmpty>
+                      <CommandGroup className="max-h-64 overflow-auto">
+                        {formatOptions.map((option) => (
+                          <CommandItem
+                            key={option.value}
+                            value={option.value}
+                            onSelect={() => {
+                              field.onChange(option.value);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                option.value === field.value
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {option.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>  
                   </Command>
                 </PopoverContent>
               </Popover>
