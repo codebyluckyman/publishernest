@@ -27,10 +27,7 @@ export async function updateFormatPriceBreaks(
     const priceBreakEntries = priceBreaks.map(priceBreak => ({
       quote_request_format_id: formatId,
       quantity: priceBreak.quantity,
-      one_product_price: priceBreak.one_product_price || false,
-      two_products_price: priceBreak.two_products_price || false,
-      three_products_price: priceBreak.three_products_price || false,
-      four_products_price: priceBreak.four_products_price || false
+      num_products: priceBreak.num_products || 1
     }));
 
     const { error: insertPriceBreakError } = await supabase

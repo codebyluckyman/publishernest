@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Control, useFieldArray } from "react-hook-form";
 import { QuoteRequestFormValues } from "./schema";
 import { Trash2, PlusCircle } from "lucide-react";
@@ -23,10 +22,7 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
   const handleAddPriceBreak = () => {
     append({
       quantity: 1000,
-      one_product_price: false,
-      two_products_price: false,
-      three_products_price: false,
-      four_products_price: false,
+      num_products: 1,
     });
   };
 
@@ -42,10 +38,7 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-28">Quantity</TableHead>
-                  <TableHead className="text-center">1 Product</TableHead>
-                  <TableHead className="text-center">2 Products</TableHead>
-                  <TableHead className="text-center">3 Products</TableHead>
-                  <TableHead className="text-center">4 Products</TableHead>
+                  <TableHead className="text-center">Number of Products</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -72,66 +65,23 @@ export function PriceBreakField({ control, formatIndex }: PriceBreakFieldProps) 
                         )}
                       />
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell>
                       <FormField
                         control={control}
-                        name={`formats.${formatIndex}.price_breaks.${index}.one_product_price`}
+                        name={`formats.${formatIndex}.price_breaks.${index}.num_products`}
                         render={({ field }) => (
-                          <FormItem className="space-y-0 flex justify-center items-center">
+                          <FormItem className="space-y-0">
                             <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
+                              <Input
+                                type="number"
+                                min="1"
+                                max="10"
+                                className="h-8"
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                               />
                             </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <FormField
-                        control={control}
-                        name={`formats.${formatIndex}.price_breaks.${index}.two_products_price`}
-                        render={({ field }) => (
-                          <FormItem className="space-y-0 flex justify-center items-center">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <FormField
-                        control={control}
-                        name={`formats.${formatIndex}.price_breaks.${index}.three_products_price`}
-                        render={({ field }) => (
-                          <FormItem className="space-y-0 flex justify-center items-center">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <FormField
-                        control={control}
-                        name={`formats.${formatIndex}.price_breaks.${index}.four_products_price`}
-                        render={({ field }) => (
-                          <FormItem className="space-y-0 flex justify-center items-center">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />

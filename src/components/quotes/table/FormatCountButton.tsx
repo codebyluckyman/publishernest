@@ -5,7 +5,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { QuoteRequest, QuoteRequestFormat } from "@/types/quoteRequest";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckIcon, XIcon } from "lucide-react";
 
 export interface FormatCountButtonProps {
   formats: QuoteRequestFormat[];
@@ -63,10 +62,7 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
           <TableHeader>
             <TableRow>
               <TableHead className="p-1">Quantity</TableHead>
-              <TableHead className="p-1 text-center">1P</TableHead>
-              <TableHead className="p-1 text-center">2P</TableHead>
-              <TableHead className="p-1 text-center">3P</TableHead>
-              <TableHead className="p-1 text-center">4P</TableHead>
+              <TableHead className="p-1">Products</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -75,25 +71,8 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
                 <TableCell className="p-1">
                   {priceBreak.quantity}
                 </TableCell>
-                <TableCell className="p-1 text-center">
-                  {priceBreak.one_product_price ? 
-                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
-                </TableCell>
-                <TableCell className="p-1 text-center">
-                  {priceBreak.two_products_price ? 
-                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
-                </TableCell>
-                <TableCell className="p-1 text-center">
-                  {priceBreak.three_products_price ? 
-                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
-                </TableCell>
-                <TableCell className="p-1 text-center">
-                  {priceBreak.four_products_price ? 
-                    <CheckIcon className="h-3 w-3 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-3 w-3 text-gray-300 mx-auto" />}
+                <TableCell className="p-1">
+                  {priceBreak.num_products}
                 </TableCell>
               </TableRow>
             ))}

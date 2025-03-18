@@ -1,3 +1,4 @@
+
 export interface QuoteRequest {
   id: string;
   organization_id: string;
@@ -51,10 +52,7 @@ export interface PriceBreak {
   id?: string;
   quote_request_format_id?: string;
   quantity: number;
-  one_product_price?: boolean;
-  two_products_price?: boolean;
-  three_products_price?: boolean;
-  four_products_price?: boolean;
+  num_products: number;
 }
 
 export interface QuoteRequestFormValues {
@@ -76,10 +74,7 @@ export interface QuoteRequestFormValues {
     }[];
     price_breaks?: {
       quantity: number;
-      one_product_price?: boolean;
-      two_products_price?: boolean;
-      three_products_price?: boolean;
-      four_products_price?: boolean;
+      num_products: number;
     }[];
   }[];
   products?: Record<string, any>;

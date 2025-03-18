@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequest, QuoteRequestFormat, QuoteRequestFormatProduct, PriceBreak } from "@/types/quoteRequest";
 
@@ -54,10 +55,7 @@ export async function fetchQuoteRequests({
           price_breaks:quote_request_format_price_breaks(
             id,
             quantity,
-            one_product_price,
-            two_products_price,
-            three_products_price,
-            four_products_price
+            num_products
           )
         )
       `)
@@ -111,10 +109,7 @@ export async function fetchQuoteRequests({
                 id: priceBreak.id,
                 quote_request_format_id: format.id,
                 quantity: priceBreak.quantity,
-                one_product_price: priceBreak.one_product_price,
-                two_products_price: priceBreak.two_products_price,
-                three_products_price: priceBreak.three_products_price,
-                four_products_price: priceBreak.four_products_price
+                num_products: priceBreak.num_products
               };
             });
           }
@@ -172,10 +167,7 @@ export async function fetchQuoteRequestById(id: string) {
           price_breaks:quote_request_format_price_breaks(
             id,
             quantity,
-            one_product_price,
-            two_products_price,
-            three_products_price,
-            four_products_price
+            num_products
           )
         )
       `)
@@ -224,10 +216,7 @@ export async function fetchQuoteRequestById(id: string) {
               id: priceBreak.id,
               quote_request_format_id: format.id,
               quantity: priceBreak.quantity,
-              one_product_price: priceBreak.one_product_price,
-              two_products_price: priceBreak.two_products_price,
-              three_products_price: priceBreak.three_products_price,
-              four_products_price: priceBreak.four_products_price
+              num_products: priceBreak.num_products
             };
           });
         }

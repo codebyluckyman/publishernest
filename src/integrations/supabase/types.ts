@@ -487,35 +487,26 @@ export type Database = {
       quote_request_format_price_breaks: {
         Row: {
           created_at: string
-          four_products_price: boolean | null
           id: string
-          one_product_price: boolean | null
+          num_products: number
           quantity: number
           quote_request_format_id: string
-          three_products_price: boolean | null
-          two_products_price: boolean | null
           updated_at: string
         }
         Insert: {
           created_at?: string
-          four_products_price?: boolean | null
           id?: string
-          one_product_price?: boolean | null
+          num_products?: number
           quantity: number
           quote_request_format_id: string
-          three_products_price?: boolean | null
-          two_products_price?: boolean | null
           updated_at?: string
         }
         Update: {
           created_at?: string
-          four_products_price?: boolean | null
           id?: string
-          one_product_price?: boolean | null
+          num_products?: number
           quantity?: number
           quote_request_format_id?: string
-          three_products_price?: boolean | null
-          two_products_price?: boolean | null
           updated_at?: string
         }
         Relationships: [

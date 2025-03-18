@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -5,7 +6,6 @@ import { FormatSpecifications } from "../../form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { QuoteRequestFormat } from "@/types/quoteRequest";
 import { Badge } from "@/components/ui/badge";
-import { CheckIcon, XIcon } from "lucide-react";
 
 interface FormatAccordionProps {
   formats: QuoteRequestFormat[];
@@ -57,10 +57,7 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Quantity</TableHead>
-              <TableHead className="text-center">1 Product</TableHead>
-              <TableHead className="text-center">2 Products</TableHead>
-              <TableHead className="text-center">3 Products</TableHead>
-              <TableHead className="text-center">4 Products</TableHead>
+              <TableHead>Number of Products</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -69,25 +66,8 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
                 <TableCell>
                   {formatNumber(priceBreak.quantity)}
                 </TableCell>
-                <TableCell className="text-center">
-                  {priceBreak.one_product_price ? 
-                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
-                </TableCell>
-                <TableCell className="text-center">
-                  {priceBreak.two_products_price ? 
-                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
-                </TableCell>
-                <TableCell className="text-center">
-                  {priceBreak.three_products_price ? 
-                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
-                </TableCell>
-                <TableCell className="text-center">
-                  {priceBreak.four_products_price ? 
-                    <CheckIcon className="h-4 w-4 text-green-600 mx-auto" /> : 
-                    <XIcon className="h-4 w-4 text-gray-300 mx-auto" />}
+                <TableCell>
+                  {priceBreak.num_products}
                 </TableCell>
               </TableRow>
             ))}
