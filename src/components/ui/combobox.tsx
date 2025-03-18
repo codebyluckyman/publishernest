@@ -10,6 +10,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -100,27 +101,29 @@ export function Combobox({
             value={searchQuery}
             onValueChange={setSearchQuery}
           />
-          <CommandEmpty>{emptyMessage}</CommandEmpty>
-          <CommandGroup className="max-h-64 overflow-auto">
-            {filteredItems.map((item) => (
-              <CommandItem
-                key={item.value}
-                value={item.value}
-                onSelect={(currentValue) => {
-                  onChange(currentValue);
-                  setOpen(false);
-                }}
-              >
-                {item.label}
-                <CheckIcon
-                  className={cn(
-                    "ml-auto h-4 w-4",
-                    safeValue === item.value ? "opacity-100" : "opacity-0"
-                  )}
-                />
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandList>
+            <CommandEmpty>{emptyMessage}</CommandEmpty>
+            <CommandGroup className="max-h-64 overflow-auto">
+              {filteredItems.map((item) => (
+                <CommandItem
+                  key={item.value}
+                  value={item.value}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  {item.label}
+                  <CheckIcon
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      safeValue === item.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
