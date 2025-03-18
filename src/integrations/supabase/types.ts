@@ -602,6 +602,7 @@ export type Database = {
           format_id: string
           id: string
           notes: string | null
+          num_products: number
           quantity: number
           quote_request_id: string
           updated_at: string
@@ -611,6 +612,7 @@ export type Database = {
           format_id: string
           id?: string
           notes?: string | null
+          num_products?: number
           quantity?: number
           quote_request_id: string
           updated_at?: string
@@ -620,6 +622,7 @@ export type Database = {
           format_id?: string
           id?: string
           notes?: string | null
+          num_products?: number
           quantity?: number
           quote_request_id?: string
           updated_at?: string
