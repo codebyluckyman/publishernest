@@ -4,7 +4,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { QuoteRequestFormValues } from "./schema";
 import { FormatForSelect } from "@/hooks/useFormatsForSelect";
 import { Label } from "@/components/ui/label";
@@ -13,9 +13,10 @@ import { FormatSpecifications } from "./FormatSpecifications";
 import { FormatProductField } from "./FormatProductField";
 import { PriceBreakField } from "./PriceBreakField";
 import { useDefaultPriceBreaks } from "@/hooks/useDefaultPriceBreaks";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -27,6 +28,7 @@ interface FormatFieldProps {
 export function FormatField({ control, index, formats, isFormatsLoading }: FormatFieldProps) {
   const { currentOrganization } = useOrganization();
   const { defaultPriceBreaks = [], isLoading: isDefaultPriceBreaksLoading } = useDefaultPriceBreaks(currentOrganization);
+  const [isPriceBreaksOpen, setIsPriceBreaksOpen] = useState(false);
 
   // Watch the currently selected format to load its details
   const selectedFormatId = useWatch({
@@ -81,6 +83,8 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
     appendPriceBreak({
       quantity: 1000
     });
+    // Auto-expand the section when adding a new price break
+    setIsPriceBreaksOpen(true);
   };
 
   // Set up default price breaks if none exist
@@ -150,39 +154,62 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
 
       {selectedFormatId && <FormatSpecifications format={formatDetails} isLoading={isFormatDetailsLoading} />}
       
-      {/* Price Breaks section moved above Notes */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <Label>Price Breaks</Label>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addPriceBreak}
-            className="flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-1" /> Add Price Break
-          </Button>
+      {/* Collapsible Price Breaks section */}
+      <Collapsible 
+        open={isPriceBreaksOpen} 
+        onOpenChange={setIsPriceBreaksOpen}
+        className="border rounded-md overflow-hidden"
+      >
+        <div className="flex justify-between items-center p-3 bg-muted/20">
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center justify-between w-full text-left"
+            >
+              <Label className="font-medium">Price Breaks ({priceBreakFields.length})</Label>
+              {isPriceBreaksOpen ? 
+                <ChevronUp className="h-4 w-4 text-muted-foreground" /> : 
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              }
+            </Button>
+          </CollapsibleTrigger>
         </div>
-        {priceBreakFields.length === 0 && (
-          <div className="text-sm text-muted-foreground border p-3 rounded-md border-dashed text-center">
-            No price breaks added yet
+        
+        <CollapsibleContent>
+          <div className="p-3 border-t">
+            <div className="flex justify-end mb-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addPriceBreak}
+                className="flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add Price Break
+              </Button>
+            </div>
+            {priceBreakFields.length === 0 && (
+              <div className="text-sm text-muted-foreground border p-3 rounded-md border-dashed text-center">
+                No price breaks added yet
+              </div>
+            )}
+            <div className="space-y-2">
+              {priceBreakFields.map((field, priceBreakIndex) => (
+                <PriceBreakField
+                  key={field.id}
+                  control={control}
+                  formatIndex={index}
+                  priceBreakIndex={priceBreakIndex}
+                  onRemove={() => removePriceBreak(priceBreakIndex)}
+                />
+              ))}
+            </div>
           </div>
-        )}
-        <div className="space-y-2">
-          {priceBreakFields.map((field, priceBreakIndex) => (
-            <PriceBreakField
-              key={field.id}
-              control={control}
-              formatIndex={index}
-              priceBreakIndex={priceBreakIndex}
-              onRemove={() => removePriceBreak(priceBreakIndex)}
-            />
-          ))}
-        </div>
-      </div>
+        </CollapsibleContent>
+      </Collapsible>
 
-      {/* Notes field moved below Price Breaks */}
+      {/* Notes field */}
       <FormField
         control={control}
         name={`formats.${index}.notes`}
