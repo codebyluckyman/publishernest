@@ -83,7 +83,7 @@ export function FormatSelectField({
                     <CommandInput placeholder="Search formats..." className="h-9" />
                     <CommandList>
                       <CommandEmpty>No format found.</CommandEmpty>
-                      <CommandGroup className="max-h-64 overflow-auto data-[disabled]:pointer-events-auto">
+                      <CommandGroup className="max-h-64 overflow-auto">
                         {formatOptions.map((formatOptions) => (
                           <CommandItem
                             key={formatOptions.value}
@@ -93,6 +93,7 @@ export function FormatSelectField({
                               //field.onChange(option.value);
                               setOpen(false);
                             }}
+                            className="pointer-events-auto";
                           >
                             {formatOptions.label}
                             <Check
