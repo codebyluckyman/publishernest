@@ -111,8 +111,8 @@ export async function fetchQuoteRequests({
               product_id: product.product_id,
               quantity: product.quantity,
               notes: product.notes || null,
-              format_extras: product.format_extras,
-              format_extra_comments: product.format_extra_comments,
+              format_extras: product.format_extras || null,
+              format_extra_comments: product.format_extra_comments || null,
               product_name: product.product?.title
             };
           }) : [];
@@ -134,22 +134,23 @@ export async function fetchQuoteRequests({
             quote_request_id: request.id,
             notes: format.notes || "",
             format_name: format.format?.format_name,
+            format: format.format, // Fix: Add format object to match expected type
             products: formattedProducts,
             price_breaks: formattedPriceBreaks,
-            num_products: format.num_products
+            num_products: format.num_products || 1
           };
         });
       }
 
-      // Return the processed request object
+      // Return the processed request object with type assertion
       return {
         ...request,
         supplier_name: request.supplier?.supplier_name,
         supplier_names: supplierNames
-      };
+      } as unknown as QuoteRequest; // Use type assertion to match expected type
     });
 
-    return processedRequests as QuoteRequest[];
+    return processedRequests;
   } catch (error: any) {
     console.error("Error in fetchQuoteRequests:", error);
     throw error;
@@ -220,8 +221,8 @@ export async function fetchQuoteRequestById(id: string): Promise<QuoteRequest | 
             product_id: product.product_id,
             quantity: product.quantity,
             notes: product.notes || null,
-            format_extras: product.format_extras,
-            format_extra_comments: product.format_extra_comments,
+            format_extras: product.format_extras || null,
+            format_extra_comments: product.format_extra_comments || null,
             product_name: product.product?.title
           };
         }) : [];
@@ -243,19 +244,20 @@ export async function fetchQuoteRequestById(id: string): Promise<QuoteRequest | 
           quote_request_id: request.id,
           notes: format.notes || "",
           format_name: format.format?.format_name,
+          format: format.format, // Fix: Add format object to match expected type
           products: formattedProducts,
           price_breaks: formattedPriceBreaks,
-          num_products: format.num_products
+          num_products: format.num_products || 1
         };
       });
     }
 
-    // Return the processed request object
+    // Return the processed request object with type assertion
     return {
       ...request,
       supplier_name: request.supplier?.supplier_name,
       supplier_names: supplierNames
-    } as QuoteRequest;
+    } as unknown as QuoteRequest; // Use type assertion to match expected type
   } catch (error: any) {
     console.error("Error in fetchQuoteRequestById:", error);
     throw error;
