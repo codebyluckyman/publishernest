@@ -46,4 +46,3 @@ port = 54328
 
 [functions.update-stock]
 verify_jwt = false
-path = "functions/update-stock"
