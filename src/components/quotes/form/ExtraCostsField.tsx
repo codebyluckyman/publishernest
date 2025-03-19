@@ -48,8 +48,8 @@ export function ExtraCostsField() {
   }, [currentOrganization, fields, setValue, defaultCostsAdded]);
 
   return (
-    <Card className="mt-0">
-      <CardHeader className="pb-3">
+    <Card className="mt-6">
+      <CardHeader className="pb-1">
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-medium">Extra Costs</CardTitle>
