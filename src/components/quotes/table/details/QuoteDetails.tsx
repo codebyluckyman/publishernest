@@ -1,11 +1,14 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
 import { BasicInfo } from "./BasicInfo";
 import { FormatAccordion } from "./FormatAccordion";
 import { StatusActions } from "./StatusActions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -20,6 +23,8 @@ export function QuoteDetails({
   onStatusChange, 
   onShowHistory 
 }: QuoteDetailsProps) {
+  const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(true);
+  
   const handleEdit = () => {
     if (onEdit) {
       onEdit(selectedRequest);
@@ -60,33 +65,48 @@ export function QuoteDetails({
       {/* Extra Costs */}
       {selectedRequest.extra_costs && selectedRequest.extra_costs.length > 0 && (
         <div>
-          <h3 className="text-md font-medium mb-2">Extra Costs</h3>
-          <Card>
-            <CardContent className="p-4">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b text-left">
-                    <th className="py-2 font-medium text-sm">Item</th>
-                    <th className="py-2 font-medium text-sm">Description</th>
-                    <th className="py-2 font-medium text-sm text-right">Unit of Measure</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedRequest.extra_costs.map((cost, index) => (
-                    <tr key={cost.id || index} className="border-b">
-                      <td className="py-2 text-sm">{cost.name}</td>
-                      <td className="py-2 text-sm text-muted-foreground">
-                        {cost.description || '-'}
-                      </td>
-                      <td className="py-2 text-sm text-right">
-                        {cost.unit_of_measure || '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-md font-medium">Extra Costs</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-0 h-8 w-8"
+              onClick={() => setIsExtraCostsOpen(!isExtraCostsOpen)}
+            >
+              {isExtraCostsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </div>
+          
+          <Collapsible open={isExtraCostsOpen} onOpenChange={setIsExtraCostsOpen}>
+            <CollapsibleContent>
+              <Card>
+                <CardContent className="p-4">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="py-2 font-medium text-sm">Item</th>
+                        <th className="py-2 font-medium text-sm">Description</th>
+                        <th className="py-2 font-medium text-sm text-right">Unit of Measure</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedRequest.extra_costs.map((cost, index) => (
+                        <tr key={cost.id || index} className="border-b">
+                          <td className="py-2 text-sm">{cost.name}</td>
+                          <td className="py-2 text-sm text-muted-foreground">
+                            {cost.description || '-'}
+                          </td>
+                          <td className="py-2 text-sm text-right">
+                            {cost.unit_of_measure || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       )}
 
