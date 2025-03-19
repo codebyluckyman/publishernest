@@ -5,7 +5,7 @@ import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
 import { BasicFormFields } from "./form/BasicFormFields";
 import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
-import { ExtraCostsField } from "./form/ExtraCostsField";
+import { ExtraCostsField } from "./form/extra-costs";
 import { Supplier } from "@/types/supplier";
 import { Form } from "@/components/ui/form";
 import { useEffect } from "react";
