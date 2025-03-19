@@ -9,9 +9,7 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
     .from('extra_costs')
     .select(`
       *,
-      unit_of_measures:unit_of_measure_id (
-        name
-      )
+      unit_of_measures(name)
     `)
     .eq('organization_id', organizationId)
     .order('name', { ascending: true });
@@ -42,9 +40,7 @@ export async function createExtraCost(
     })
     .select(`
       *,
-      unit_of_measures:unit_of_measure_id (
-        name
-      )
+      unit_of_measures(name)
     `);
   
   if (error) throw error;
@@ -78,9 +74,7 @@ export async function updateExtraCost(
     .eq('id', id)
     .select(`
       *,
-      unit_of_measures:unit_of_measure_id (
-        name
-      )
+      unit_of_measures(name)
     `);
   
   if (error) throw error;

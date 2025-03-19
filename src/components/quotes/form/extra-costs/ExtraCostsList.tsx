@@ -1,5 +1,5 @@
 
-import { useFieldArray, Control, useWatch } from "react-hook-form";
+import { useFieldArray, Control, useWatch, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ interface ExtraCostsListProps {
 }
 
 export function ExtraCostsList({ control }: ExtraCostsListProps) {
+  const { setValue } = useFormContext<QuoteRequestFormValues>();
   const {
     fields,
     remove
@@ -51,7 +52,7 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
           <div className="col-span-2">
             <UnitOfMeasureSelect
               value={useWatch({ control, name: `extra_costs.${index}.unit_of_measure_id` }) || ''}
-              onChange={(value) => control.setValue(`extra_costs.${index}.unit_of_measure_id` as const, value)}
+              onChange={(value) => setValue(`extra_costs.${index}.unit_of_measure_id` as const, value)}
               placeholder="Unit"
               className="w-full"
             />

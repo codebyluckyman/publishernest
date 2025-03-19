@@ -38,7 +38,7 @@ export function ExtraCostsField() {
         const defaultCosts = currentOrganization.default_extra_costs.map((cost: DefaultExtraCost) => ({
           name: cost.name,
           description: cost.description || "",
-          unit_of_measure: cost.unit_of_measure || ""
+          unit_of_measure_id: cost.unit_of_measure_id || ""
         }));
         setValue("extra_costs", defaultCosts);
         setDefaultCostsAdded(true);
@@ -54,13 +54,14 @@ export function ExtraCostsField() {
     append({
       name: cost.name,
       description: cost.description || "",
-      unit_of_measure: cost.unit_of_measure || ""
+      unit_of_measure_id: cost.unit_of_measure_id || ""
     });
     setLibraryOpen(false);
     toast.success(`Added "${cost.name}" to extra costs`);
   };
 
-  return <Card className="mt-6">
+  return (
+    <Card className="mt-6">
       <CardHeader className="pb-5">
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
           <div className="flex items-center justify-between">
@@ -101,5 +102,6 @@ export function ExtraCostsField() {
           </CollapsibleContent>
         </Collapsible>
       </CardHeader>
-    </Card>;
+    </Card>
+  );
 }

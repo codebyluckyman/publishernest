@@ -97,7 +97,7 @@ export function QuoteDetails({
                             {cost.description || '-'}
                           </td>
                           <td className="py-2 text-sm text-right">
-                            {cost.unit_of_measure || '-'}
+                            {cost.unit_of_measure_name || '-'}
                           </td>
                         </tr>
                       ))}

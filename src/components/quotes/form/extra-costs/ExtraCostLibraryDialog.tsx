@@ -112,7 +112,7 @@ export function ExtraCostLibraryDialog({
                   <TableRow key={cost.id}>
                     <TableCell>{cost.name}</TableCell>
                     <TableCell>{cost.description || '-'}</TableCell>
-                    <TableCell>{cost.unit_of_measure || '-'}</TableCell>
+                    <TableCell>{cost.unit_of_measure_name || '-'}</TableCell>
                     <TableCell>
                       <Button
                         size="sm"
