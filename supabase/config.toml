@@ -44,7 +44,6 @@ enabled = false
 enabled = true
 port = 54328
 
-[[functions]]
-name = "update-stock"
-path = "functions/update-stock"
+[functions.update-stock]
 verify_jwt = false
+path = "functions/update-stock"
