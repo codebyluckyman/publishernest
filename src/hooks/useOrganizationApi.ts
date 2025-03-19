@@ -32,7 +32,7 @@ export const useOrganizationApi = (userId: string | undefined) => {
             ? (org.default_extra_costs as any[]).map(cost => ({
                 name: cost.name || "",
                 description: cost.description,
-                estimated_cost: cost.estimated_cost
+                unit_of_measure: cost.unit_of_measure
               })) 
             : [] as DefaultExtraCost[]
         })) as Organization[];
@@ -110,7 +110,7 @@ export const useOrganizationApi = (userId: string | undefined) => {
           ? (org.default_extra_costs as any[]).map(cost => ({
               name: cost.name || "",
               description: cost.description,
-              estimated_cost: cost.estimated_cost
+              unit_of_measure: cost.unit_of_measure
             }))
           : [] as DefaultExtraCost[]
       } as Organization;
@@ -238,7 +238,7 @@ export const useOrganizationApi = (userId: string | undefined) => {
           ? (updatedOrg.default_extra_costs as any[]).map(cost => ({
               name: cost.name || "",
               description: cost.description,
-              estimated_cost: cost.estimated_cost
+              unit_of_measure: cost.unit_of_measure
             }))
           : [] as DefaultExtraCost[]
       } as Organization;

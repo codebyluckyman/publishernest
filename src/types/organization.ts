@@ -10,7 +10,7 @@ export type Organization = {
   default_extra_costs?: {
     name: string;
     description?: string;
-    estimated_cost?: number;
+    unit_of_measure?: string;
   }[];
 };
 

@@ -17,6 +17,7 @@ export function DefaultExtraCosts() {
   // Load existing extra costs from the organization
   useEffect(() => {
     if (currentOrganization?.default_extra_costs) {
+      console.log("Loading default extra costs:", currentOrganization.default_extra_costs);
       setExtraCosts(currentOrganization.default_extra_costs);
     } else {
       setExtraCosts([]);
