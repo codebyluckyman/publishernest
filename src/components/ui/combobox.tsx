@@ -48,7 +48,7 @@ export function Combobox({
   const safeItems = Array.isArray(items) ? items : [];
   const safeValue = typeof value === 'string' ? value : "";
   
-  // Filter items based on search query
+  // Filter items based on search query - making sure we search in the label field
   const filteredItems = React.useMemo(() => {
     if (!searchQuery.trim()) return safeItems;
     
@@ -57,10 +57,9 @@ export function Combobox({
     );
   }, [safeItems, searchQuery]);
 
-  const currentLabel = React.useMemo(() => {
-    if (!safeItems || safeItems.length === 0) return "";
-    const selected = safeItems.find(item => item.label === safeValue);
-    return selected ? selected.label : "";
+  // Find the selected item's label using the value field for comparison
+  const selectedItem = React.useMemo(() => {
+    return safeItems.find(item => item.value === safeValue);
   }, [safeItems, safeValue]);
 
   // Reset search when popover closes
@@ -85,8 +84,8 @@ export function Combobox({
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               Loading...
             </span>
-          ) : safeValue ? (
-            currentLabel || placeholder
+          ) : selectedItem ? (
+            selectedItem.label
           ) : (
             placeholder
           )}
