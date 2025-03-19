@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { DefaultExtraCost } from "@/types/extraCost";
 import { useOrganization } from "@/hooks/useOrganization";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
 export function ExtraCostsField() {
   const {
     currentOrganization
@@ -56,6 +58,9 @@ export function ExtraCostsField() {
               </Button>
             </CollapsibleTrigger>
           </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Specify the extra costs to be included on the supplier quote
+          </p>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-3">
               {fields.length === 0 ? <div className="text-center p-4 border border-dashed rounded-md">
