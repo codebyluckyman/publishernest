@@ -4,12 +4,30 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, Library } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
-import { DefaultExtraCost } from "@/types/extraCost";
+import { DefaultExtraCost, ExtraCostTableItem } from "@/types/extraCost";
 import { useOrganization } from "@/hooks/useOrganization";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { toast } from "sonner";
 
 export function ExtraCostsField() {
   const {
@@ -21,6 +39,10 @@ export function ExtraCostsField() {
   } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [extraCostLibrary, setExtraCostLibrary] = useState<ExtraCostTableItem[]>([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
+  
   const {
     fields,
     append,
@@ -29,6 +51,7 @@ export function ExtraCostsField() {
     control,
     name: "extra_costs"
   });
+  
   const handleAddCost = () => {
     append({
       name: ""
@@ -47,6 +70,44 @@ export function ExtraCostsField() {
       setDefaultCostsAdded(true);
     }
   }, [currentOrganization, fields, setValue, defaultCostsAdded]);
+
+  // Fetch extra costs library when dialog opens
+  const fetchExtraCostLibrary = async () => {
+    if (!currentOrganization) return;
+    
+    setLoadingLibrary(true);
+    try {
+      const { data, error } = await supabase
+        .from('extra_costs')
+        .select('*')
+        .eq('organization_id', currentOrganization.id)
+        .order('name', { ascending: true });
+      
+      if (error) throw error;
+      setExtraCostLibrary(data || []);
+    } catch (error) {
+      console.error("Error fetching extra costs library:", error);
+      toast.error("Failed to load extra costs library");
+    } finally {
+      setLoadingLibrary(false);
+    }
+  };
+
+  const handleLibraryOpen = () => {
+    fetchExtraCostLibrary();
+    setLibraryOpen(true);
+  };
+
+  const handleAddFromLibrary = (cost: ExtraCostTableItem) => {
+    append({
+      name: cost.name,
+      description: cost.description || "",
+      unit_of_measure: cost.unit_of_measure || ""
+    });
+    setLibraryOpen(false);
+    toast.success(`Added "${cost.name}" to extra costs`);
+  };
+
   return <Card className="mt-6">
       <CardHeader className="pb-5">
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
@@ -86,10 +147,74 @@ export function ExtraCostsField() {
                     </div>)}
                 </div>}
 
-              <Button variant="outline" size="sm" className="w-full" onClick={handleAddCost} type="button">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Extra Cost
-              </Button>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="w-full" onClick={handleAddCost} type="button">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Extra Cost
+                </Button>
+                <Dialog open={libraryOpen} onOpenChange={setLibraryOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={handleLibraryOpen} type="button">
+                      <Library className="h-4 w-4 mr-2" />
+                      Add from Library
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[700px]">
+                    <DialogHeader>
+                      <DialogTitle>Extra Costs Library</DialogTitle>
+                      <DialogDescription>
+                        Select extra costs from your library to add to this quote.
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="max-h-[400px] overflow-y-auto mt-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Unit of Measure</TableHead>
+                            <TableHead className="w-[80px]">Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loadingLibrary ? (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center py-6">
+                                Loading costs...
+                              </TableCell>
+                            </TableRow>
+                          ) : extraCostLibrary.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center py-6">
+                                No extra costs found in your library.
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            extraCostLibrary.map((cost) => (
+                              <TableRow key={cost.id}>
+                                <TableCell>{cost.name}</TableCell>
+                                <TableCell>{cost.description || '-'}</TableCell>
+                                <TableCell>{cost.unit_of_measure || '-'}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0 text-primary"
+                                    onClick={() => handleAddFromLibrary(cost)}
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardContent>
           </CollapsibleContent>
         </Collapsible>
