@@ -1,3 +1,4 @@
+import { ExtraCost, DefaultExtraCost } from "./extraCost";
 
 export interface QuoteRequest {
   id: string;
@@ -79,11 +80,7 @@ export interface QuoteRequestFormValues {
   }[];
   products?: Record<string, any>;
   quantities?: Record<string, any>;
-  extra_costs?: {
-    name: string;
-    description?: string;
-    estimated_cost?: number;
-  }[]; // Added field for extra costs
+  extra_costs?: DefaultExtraCost[]; // Fixed type to match DefaultExtraCost
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';

@@ -1,5 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Organization, OrganizationMember } from "@/types/organization";
+import { DefaultExtraCost } from "@/types/extraCost";
 import { toast } from "sonner";
 
 export const useOrganizationApi = (userId: string | undefined) => {
@@ -22,10 +24,13 @@ export const useOrganizationApi = (userId: string | undefined) => {
 
         if (orgsError) throw orgsError;
         
-        // Cast organization_type to proper type
+        // Cast organization_type and default_extra_costs to proper types
         return (orgs || []).map(org => ({
           ...org,
-          organization_type: org.organization_type as "publisher" | "printer" | "customer"
+          organization_type: org.organization_type as "publisher" | "printer" | "customer",
+          default_extra_costs: Array.isArray(org.default_extra_costs) 
+            ? (org.default_extra_costs as DefaultExtraCost[]) 
+            : [] as DefaultExtraCost[]
         })) as Organization[];
       }
       
@@ -93,10 +98,13 @@ export const useOrganizationApi = (userId: string | undefined) => {
 
       await updateCurrentOrganization(org.id);
       
-      // Cast organization_type to ensure it matches the expected type
+      // Cast organization_type and default_extra_costs to ensure it matches the expected type
       return {
         ...org,
-        organization_type: org.organization_type as "publisher" | "printer" | "customer"
+        organization_type: org.organization_type as "publisher" | "printer" | "customer",
+        default_extra_costs: Array.isArray(org.default_extra_costs) 
+          ? (org.default_extra_costs as DefaultExtraCost[]) 
+          : [] as DefaultExtraCost[]
       } as Organization;
     } catch (error: any) {
       console.error("Error creating organization:", error);
@@ -217,7 +225,10 @@ export const useOrganizationApi = (userId: string | undefined) => {
 
       return {
         ...updatedOrg,
-        organization_type: updatedOrg.organization_type as "publisher" | "printer" | "customer"
+        organization_type: updatedOrg.organization_type as "publisher" | "printer" | "customer",
+        default_extra_costs: Array.isArray(updatedOrg.default_extra_costs) 
+          ? (updatedOrg.default_extra_costs as DefaultExtraCost[]) 
+          : [] as DefaultExtraCost[]
       } as Organization;
     } catch (error) {
       console.error(`Error updating organization setting ${setting}:`, error);

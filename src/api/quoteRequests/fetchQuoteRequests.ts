@@ -107,11 +107,17 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         })) || [],
       }));
 
+      // Ensure the status is one of the valid enum values
+      const validStatus = ['pending', 'approved', 'declined'].includes(request.status) 
+        ? request.status as 'pending' | 'approved' | 'declined'
+        : 'pending'; // Default to 'pending' if invalid
+
       return {
         ...request,
+        status: validStatus,
         formats: formattedFormats || [],
         supplier_names: supplierNames,
-      };
+      } as QuoteRequest;
     }));
 
     return enrichedRequests;
