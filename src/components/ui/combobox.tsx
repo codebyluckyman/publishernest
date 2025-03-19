@@ -59,7 +59,7 @@ export function Combobox({
 
   const currentLabel = React.useMemo(() => {
     if (!safeItems || safeItems.length === 0) return "";
-    const selected = safeItems.find(item => item.value === safeValue);
+    const selected = safeItems.find(item => item.label === safeValue);
     return selected ? selected.label : "";
   }, [safeItems, safeValue]);
 
