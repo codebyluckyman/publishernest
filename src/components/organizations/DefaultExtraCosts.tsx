@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -103,7 +104,7 @@ export function DefaultExtraCosts() {
     setExtraCosts([...extraCosts, {
       name: cost.name,
       description: cost.description || "",
-      unit_of_measure_id: cost.unit_of_measure_id
+      unit_of_measure_id: cost.unit_of_measure_id || undefined
     }]);
     setLibraryOpen(false);
     toast.success(`Added "${cost.name}" to default extra costs`);

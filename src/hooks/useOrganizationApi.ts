@@ -238,7 +238,7 @@ export const useOrganizationApi = (userId: string | undefined) => {
           ? (updatedOrg.default_extra_costs as any[]).map(cost => ({
               name: cost.name || "",
               description: cost.description,
-              unit_of_measure: cost.unit_of_measure
+              unit_of_measure_id: cost.unit_of_measure_id
             }))
           : [] as DefaultExtraCost[]
       } as Organization;

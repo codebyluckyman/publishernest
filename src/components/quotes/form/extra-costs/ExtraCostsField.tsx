@@ -35,7 +35,7 @@ export function ExtraCostsField() {
   useEffect(() => {
     if (!defaultCostsAdded && currentOrganization?.default_extra_costs && currentOrganization.default_extra_costs.length > 0) {
       if (!fields || fields.length === 0) {
-        const defaultCosts = currentOrganization.default_extra_costs.map((cost: DefaultExtraCost) => ({
+        const defaultCosts = currentOrganization.default_extra_costs.map((cost) => ({
           name: cost.name,
           description: cost.description || "",
           unit_of_measure_id: cost.unit_of_measure_id || ""
