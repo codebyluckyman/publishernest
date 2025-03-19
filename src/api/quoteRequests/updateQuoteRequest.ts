@@ -91,7 +91,7 @@ export async function updateQuoteRequest(
           quote_request_id: id,
           name: cost.name,
           description: cost.description || null,
-          unit_of_measure: cost.unit_of_measure || null
+          unit_of_measure_id: cost.unit_of_measure_id || null
         }));
 
         const { error: insertError } = await supabase

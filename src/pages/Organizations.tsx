@@ -10,6 +10,7 @@ import { DefaultPriceBreaks } from "@/components/organizations/DefaultPriceBreak
 import { DefaultNumProducts } from "@/components/organizations/DefaultNumProducts";
 import { DefaultExtraCosts } from "@/components/organizations/DefaultExtraCosts";
 import { APIManagement } from "@/components/organizations/APIManagement";
+import { UnitOfMeasuresTable } from "@/components/organizations/unitOfMeasures/UnitOfMeasuresTable";
 import { Organization } from "@/types/organization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtraCostsTable } from "@/components/quotes/form/extra-costs";
@@ -150,9 +151,12 @@ const Organizations = () => {
             <DefaultPriceBreaks />
             <DefaultNumProducts />
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <UnitOfMeasuresTable />
+            <DefaultExtraCosts />
+          </div>
           <div className="grid grid-cols-1 gap-6">
             <ExtraCostsTable />
-            <DefaultExtraCosts />
           </div>
         </TabsContent>
 

@@ -1,10 +1,11 @@
 
-import { useFieldArray, Control } from "react-hook-form";
+import { useFieldArray, Control, useWatch } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
+import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 
 interface ExtraCostsListProps {
   control: Control<QuoteRequestFormValues>;
@@ -48,10 +49,11 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
             />
           </div>
           <div className="col-span-2">
-            <Input 
-              placeholder="Unit of measure" 
-              {...control.register(`extra_costs.${index}.unit_of_measure` as const)} 
-              className="w-full" 
+            <UnitOfMeasureSelect
+              value={useWatch({ control, name: `extra_costs.${index}.unit_of_measure_id` }) || ''}
+              onChange={(value) => control.setValue(`extra_costs.${index}.unit_of_measure_id` as const, value)}
+              placeholder="Unit"
+              className="w-full"
             />
           </div>
           <div className="col-span-1 flex justify-center">

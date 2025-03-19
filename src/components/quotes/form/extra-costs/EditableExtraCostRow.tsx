@@ -7,18 +7,19 @@ import { Check, X } from "lucide-react";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { updateExtraCost } from "./extraCostsService";
 import { toast } from "sonner";
+import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 
 interface EditableExtraCostRowProps {
   cost: ExtraCostTableItem;
   editedCost: {
     name: string;
     description: string;
-    unit_of_measure: string;
+    unit_of_measure_id: string;
   };
   setEditedCost: (cost: {
     name: string;
     description: string;
-    unit_of_measure: string;
+    unit_of_measure_id: string;
   }) => void;
   onCancel: () => void;
   onSuccess: (updatedCost: ExtraCostTableItem) => void;
@@ -63,9 +64,10 @@ export function EditableExtraCostRow({
         />
       </TableCell>
       <TableCell>
-        <Input 
-          value={editedCost.unit_of_measure || ''} 
-          onChange={(e) => setEditedCost({...editedCost, unit_of_measure: e.target.value})}
+        <UnitOfMeasureSelect
+          value={editedCost.unit_of_measure_id || ''}
+          onChange={(value) => setEditedCost({...editedCost, unit_of_measure_id: value})}
+          placeholder="Select unit"
           className="w-full"
         />
       </TableCell>

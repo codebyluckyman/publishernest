@@ -8,6 +8,7 @@ import { Check, X } from "lucide-react";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { createExtraCost } from "./extraCostsService";
 import { toast } from "sonner";
+import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 
 interface NewExtraCostRowProps {
   organizationId: string;
@@ -23,7 +24,7 @@ export function NewExtraCostRow({
   const [newCost, setNewCost] = useState({
     name: "",
     description: "",
-    unit_of_measure: ""
+    unit_of_measure_id: ""
   });
 
   const handleAddSubmit = async () => {
@@ -35,7 +36,7 @@ export function NewExtraCostRow({
     try {
       const createdCost = await createExtraCost(organizationId, newCost);
       onAddSuccess(createdCost);
-      setNewCost({ name: "", description: "", unit_of_measure: "" });
+      setNewCost({ name: "", description: "", unit_of_measure_id: "" });
     } catch (error) {
       console.error("Error adding extra cost:", error);
       toast.error("Failed to add extra cost");
@@ -61,10 +62,10 @@ export function NewExtraCostRow({
         />
       </TableCell>
       <TableCell>
-        <Input 
-          placeholder="Unit of measure" 
-          value={newCost.unit_of_measure} 
-          onChange={(e) => setNewCost({...newCost, unit_of_measure: e.target.value})}
+        <UnitOfMeasureSelect
+          value={newCost.unit_of_measure_id}
+          onChange={(value) => setNewCost({...newCost, unit_of_measure_id: value})}
+          placeholder="Select unit"
           className="w-full"
         />
       </TableCell>

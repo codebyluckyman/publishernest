@@ -29,7 +29,7 @@ export function ExtraCostsTableBody({
   const [editedCost, setEditedCost] = useState({
     name: "",
     description: "",
-    unit_of_measure: ""
+    unit_of_measure_id: ""
   });
 
   const handleEditClick = (cost: ExtraCostTableItem) => {
@@ -37,7 +37,7 @@ export function ExtraCostsTableBody({
     setEditedCost({
       name: cost.name,
       description: cost.description || "",
-      unit_of_measure: cost.unit_of_measure || ""
+      unit_of_measure_id: cost.unit_of_measure_id || ""
     });
   };
 

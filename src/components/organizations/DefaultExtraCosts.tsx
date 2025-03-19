@@ -10,6 +10,7 @@ import { DefaultExtraCost, ExtraCostTableItem } from "@/types/extraCost";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
+import { UnitOfMeasureSelect } from "./unitOfMeasures/UnitOfMeasureSelect";
 import {
   Dialog,
   DialogContent,
@@ -113,7 +114,7 @@ export function DefaultExtraCosts() {
     setExtraCosts([...extraCosts, {
       name: cost.name,
       description: cost.description || "",
-      unit_of_measure: cost.unit_of_measure || ""
+      unit_of_measure_id: cost.unit_of_measure_id || undefined
     }]);
     setLibraryOpen(false);
     toast.success(`Added "${cost.name}" to default extra costs`);
@@ -163,10 +164,10 @@ export function DefaultExtraCosts() {
                         />
                       </div>
                       <div className="col-span-2">
-                        <Input
-                          placeholder="Unit of measure"
-                          value={cost.unit_of_measure || ""}
-                          onChange={(e) => handleUpdateCost(index, 'unit_of_measure', e.target.value)}
+                        <UnitOfMeasureSelect
+                          value={cost.unit_of_measure_id || ""}
+                          onChange={(value) => handleUpdateCost(index, 'unit_of_measure_id', value)}
+                          placeholder="Unit"
                           className="w-full"
                         />
                       </div>
@@ -244,7 +245,7 @@ export function DefaultExtraCosts() {
                                 <TableRow key={cost.id}>
                                   <TableCell>{cost.name}</TableCell>
                                   <TableCell>{cost.description || '-'}</TableCell>
-                                  <TableCell>{cost.unit_of_measure || '-'}</TableCell>
+                                  <TableCell>{cost.unit_of_measure_name || '-'}</TableCell>
                                   <TableCell>
                                     <Button
                                       size="sm"

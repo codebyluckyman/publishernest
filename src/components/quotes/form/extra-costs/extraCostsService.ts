@@ -7,27 +7,45 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
   
   const { data, error } = await supabase
     .from('extra_costs')
-    .select('*')
+    .select(`
+      *,
+      unit_of_measures:unit_of_measure_id (
+        name
+      )
+    `)
     .eq('organization_id', organizationId)
     .order('name', { ascending: true });
   
   if (error) throw error;
-  return data as ExtraCostTableItem[];
+  
+  return data.map(item => ({
+    ...item,
+    unit_of_measure_name: item.unit_of_measures ? item.unit_of_measures.name : null
+  })) as ExtraCostTableItem[];
 }
 
 export async function createExtraCost(
   organizationId: string, 
-  newCost: { name: string; description: string; unit_of_measure: string }
+  newCost: { 
+    name: string; 
+    description: string; 
+    unit_of_measure_id?: string 
+  }
 ): Promise<ExtraCostTableItem> {
   const { data, error } = await supabase
     .from('extra_costs')
     .insert({
       name: newCost.name,
       description: newCost.description,
-      unit_of_measure: newCost.unit_of_measure,
+      unit_of_measure_id: newCost.unit_of_measure_id || null,
       organization_id: organizationId
     })
-    .select();
+    .select(`
+      *,
+      unit_of_measures:unit_of_measure_id (
+        name
+      )
+    `);
   
   if (error) throw error;
   
@@ -35,22 +53,35 @@ export async function createExtraCost(
     throw new Error("Failed to create extra cost");
   }
   
-  return data[0] as ExtraCostTableItem;
+  const result = data[0];
+  return {
+    ...result,
+    unit_of_measure_name: result.unit_of_measures ? result.unit_of_measures.name : null
+  } as ExtraCostTableItem;
 }
 
 export async function updateExtraCost(
   id: string,
-  updates: { name: string; description: string; unit_of_measure: string }
+  updates: { 
+    name: string; 
+    description: string; 
+    unit_of_measure_id?: string 
+  }
 ): Promise<ExtraCostTableItem> {
   const { data, error } = await supabase
     .from('extra_costs')
     .update({
       name: updates.name,
       description: updates.description,
-      unit_of_measure: updates.unit_of_measure
+      unit_of_measure_id: updates.unit_of_measure_id || null
     })
     .eq('id', id)
-    .select();
+    .select(`
+      *,
+      unit_of_measures:unit_of_measure_id (
+        name
+      )
+    `);
   
   if (error) throw error;
   
@@ -58,7 +89,11 @@ export async function updateExtraCost(
     throw new Error("Failed to update extra cost");
   }
   
-  return data[0] as ExtraCostTableItem;
+  const result = data[0];
+  return {
+    ...result,
+    unit_of_measure_name: result.unit_of_measures ? result.unit_of_measures.name : null
+  } as ExtraCostTableItem;
 }
 
 export async function deleteExtraCost(id: string): Promise<void> {

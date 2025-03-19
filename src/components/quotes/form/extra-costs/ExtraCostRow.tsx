@@ -27,7 +27,7 @@ export function ExtraCostRow({ cost, onEditClick, onDeleteSuccess }: ExtraCostRo
     <>
       <TableCell>{cost.name}</TableCell>
       <TableCell>{cost.description || '-'}</TableCell>
-      <TableCell>{cost.unit_of_measure || '-'}</TableCell>
+      <TableCell>{cost.unit_of_measure_name || '-'}</TableCell>
       <TableCell>
         <div className="flex space-x-1">
           <Button 
