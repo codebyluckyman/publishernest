@@ -11,6 +11,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ExtraCostsList } from "./ExtraCostsList";
 import { ExtraCostLibraryDialog } from "./ExtraCostLibraryDialog";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { useFieldArray } from "react-hook-form";
 
 export function ExtraCostsField() {
   const {
@@ -112,7 +114,3 @@ export function ExtraCostsField() {
       </CardHeader>
     </Card>;
 }
-
-// Missing import
-import { useEffect } from "react";
-import { useFieldArray } from "react-hook-form";

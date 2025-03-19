@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
@@ -25,12 +24,11 @@ export function QuoteRequestForm({
   isSubmitting,
   onCancel,
 }: QuoteRequestFormProps) {
-  // Create form with validation schema and default values
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
       id: initialValues?.id,
-      title: initialValues?.title || "", // Provide empty string as default
+      title: initialValues?.title || "",
       supplier_ids: initialValues?.supplier_ids || [],
       description: initialValues?.description || "",
       due_date: initialValues?.due_date,
@@ -42,22 +40,19 @@ export function QuoteRequestForm({
       extra_costs: initialValues?.extra_costs || [],
       products: initialValues?.products || {},
       quantities: initialValues?.quantities || {},
-      supplier_id: initialValues?.supplier_id, // For backward compatibility
+      supplier_id: initialValues?.supplier_id,
     },
   });
 
-  // Log the form values for debugging
   useEffect(() => {
     console.log("Initial form values:", form.getValues());
   }, [form]);
 
   const handleFormSubmit = (data: QuoteRequestFormValues) => {
-    // Set a default title if none was provided
     if (!data.title) {
       data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
     }
     
-    // Log the form data before submission to debug
     console.log("Form submission data:", data);
     onSubmit(data);
   };
@@ -65,12 +60,8 @@ export function QuoteRequestForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-        {/* FormatFieldArray with automatic format specs display */}
         <FormatFieldArray form={form} />
-        
-        {/* Extra Costs Field */}
         <ExtraCostsField />
-        
         <BasicFormFields form={form} suppliers={suppliers} />
         <FormActions
           form={form}
