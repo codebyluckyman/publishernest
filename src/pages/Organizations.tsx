@@ -9,6 +9,7 @@ import { MembersList } from "@/components/organizations/MembersList";
 import { WarehousesList } from "@/components/organizations/WarehousesList";
 import { DefaultPriceBreaks } from "@/components/organizations/DefaultPriceBreaks";
 import { DefaultNumProducts } from "@/components/organizations/DefaultNumProducts";
+import { APIManagement } from "@/components/organizations/APIManagement";
 import { Organization } from "@/types/organization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -119,6 +120,7 @@ const Organizations = () => {
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="api">API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -148,6 +150,10 @@ const Organizations = () => {
             <DefaultPriceBreaks />
             <DefaultNumProducts />
           </div>
+        </TabsContent>
+
+        <TabsContent value="api" className="space-y-6">
+          <APIManagement />
         </TabsContent>
       </Tabs>
     </div>
