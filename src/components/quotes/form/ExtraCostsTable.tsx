@@ -54,7 +54,7 @@ export function ExtraCostsTable() {
         .order('name', { ascending: true });
       
       if (error) throw error;
-      setExtraCosts(data || []);
+      setExtraCosts(data as ExtraCostTableItem[]);
     } catch (error) {
       console.error("Error fetching extra costs:", error);
       toast.error("Failed to load extra costs");
@@ -93,7 +93,7 @@ export function ExtraCostsTable() {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setExtraCosts([...extraCosts, data[0]]);
+        setExtraCosts([...extraCosts, data[0] as ExtraCostTableItem]);
         setIsAdding(false);
         toast.success("Extra cost added successfully");
       }

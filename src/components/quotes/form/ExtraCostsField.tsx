@@ -84,7 +84,7 @@ export function ExtraCostsField() {
         .order('name', { ascending: true });
       
       if (error) throw error;
-      setExtraCostLibrary(data || []);
+      setExtraCostLibrary(data as ExtraCostTableItem[]);
     } catch (error) {
       console.error("Error fetching extra costs library:", error);
       toast.error("Failed to load extra costs library");
