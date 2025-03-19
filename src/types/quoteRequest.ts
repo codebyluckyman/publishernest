@@ -17,6 +17,7 @@ export interface QuoteRequest {
   supplier_name?: string; // Joined field
   supplier_names?: string[]; // Array of supplier names mapped from supplier_ids
   formats?: QuoteRequestFormat[]; // Added field for associated formats
+  extra_costs?: ExtraCost[]; // Added field for extra costs
 }
 
 export interface QuoteRequestFormat {
@@ -78,6 +79,11 @@ export interface QuoteRequestFormValues {
   }[];
   products?: Record<string, any>;
   quantities?: Record<string, any>;
+  extra_costs?: {
+    name: string;
+    description?: string;
+    estimated_cost?: number;
+  }[]; // Added field for extra costs
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';

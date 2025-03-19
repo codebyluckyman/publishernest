@@ -7,6 +7,11 @@ export type Organization = {
   logo_url?: string | null;
   organization_type: "publisher" | "printer" | "customer";
   default_num_products?: number;
+  default_extra_costs?: {
+    name: string;
+    description?: string;
+    estimated_cost?: number;
+  }[];
 };
 
 export type OrganizationMember = {

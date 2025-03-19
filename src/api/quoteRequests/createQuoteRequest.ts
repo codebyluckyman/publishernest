@@ -119,6 +119,25 @@ export async function createQuoteRequest(
       // Wait for all format processing to complete
       await Promise.all(processFormatPromises);
     }
+    
+    // If extra costs were provided, insert them
+    if (formData.extra_costs && formData.extra_costs.length > 0 && quoteRequestData) {
+      const extraCostEntries = formData.extra_costs.map(cost => ({
+        quote_request_id: quoteRequestData.id,
+        name: cost.name,
+        description: cost.description || null,
+        estimated_cost: cost.estimated_cost || null
+      }));
+
+      const { error: extraCostsError } = await supabase
+        .from('quote_request_extra_costs')
+        .insert(extraCostEntries);
+
+      if (extraCostsError) {
+        console.error("Error inserting extra costs:", extraCostsError);
+        throw extraCostsError;
+      }
+    }
 
     // Record the creation in the audit trail
     await recordQuoteRequestAudit(

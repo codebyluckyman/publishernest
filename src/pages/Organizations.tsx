@@ -9,6 +9,7 @@ import { MembersList } from "@/components/organizations/MembersList";
 import { WarehousesList } from "@/components/organizations/WarehousesList";
 import { DefaultPriceBreaks } from "@/components/organizations/DefaultPriceBreaks";
 import { DefaultNumProducts } from "@/components/organizations/DefaultNumProducts";
+import { DefaultExtraCosts } from "@/components/organizations/DefaultExtraCosts";
 import { APIManagement } from "@/components/organizations/APIManagement";
 import { Organization } from "@/types/organization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -149,6 +150,9 @@ const Organizations = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <DefaultPriceBreaks />
             <DefaultNumProducts />
+          </div>
+          <div className="grid grid-cols-1 gap-6">
+            <DefaultExtraCosts />
           </div>
         </TabsContent>
 

@@ -5,6 +5,7 @@ import { DetailHeader } from "./DetailHeader";
 import { BasicInfo } from "./BasicInfo";
 import { FormatAccordion } from "./FormatAccordion";
 import { StatusActions } from "./StatusActions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -53,6 +54,41 @@ export function QuoteDetails({
         <div>
           <h3 className="text-md font-medium mb-2">Format & Product Details</h3>
           <FormatAccordion formats={selectedRequest.formats} />
+        </div>
+      )}
+
+      {/* Extra Costs */}
+      {selectedRequest.extra_costs && selectedRequest.extra_costs.length > 0 && (
+        <div>
+          <h3 className="text-md font-medium mb-2">Extra Costs</h3>
+          <Card>
+            <CardContent className="p-4">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="py-2 font-medium text-sm">Item</th>
+                    <th className="py-2 font-medium text-sm">Description</th>
+                    <th className="py-2 font-medium text-sm text-right">Estimated Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedRequest.extra_costs.map((cost, index) => (
+                    <tr key={cost.id || index} className="border-b">
+                      <td className="py-2 text-sm">{cost.name}</td>
+                      <td className="py-2 text-sm text-muted-foreground">
+                        {cost.description || '-'}
+                      </td>
+                      <td className="py-2 text-sm text-right">
+                        {cost.estimated_cost !== undefined 
+                          ? `$${cost.estimated_cost.toFixed(2)}` 
+                          : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
         </div>
       )}
 

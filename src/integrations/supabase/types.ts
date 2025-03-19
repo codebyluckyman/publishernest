@@ -275,6 +275,7 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          default_extra_costs: Json | null
           default_num_products: number
           id: string
           logo_url: string | null
@@ -285,6 +286,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_extra_costs?: Json | null
           default_num_products?: number
           id?: string
           logo_url?: string | null
@@ -295,6 +297,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_extra_costs?: Json | null
           default_num_products?: number
           id?: string
           logo_url?: string | null
@@ -557,6 +560,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "quote_request_audit_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_request_extra_costs: {
+        Row: {
+          created_at: string
+          description: string | null
+          estimated_cost: number | null
+          id: string
+          name: string
+          quote_request_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          name: string
+          quote_request_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          name?: string
+          quote_request_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_request_extra_costs_quote_request_id_fkey"
             columns: ["quote_request_id"]
             isOneToOne: false
             referencedRelation: "quote_requests"

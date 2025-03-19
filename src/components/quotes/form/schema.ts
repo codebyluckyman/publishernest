@@ -28,6 +28,13 @@ export const quoteRequestFormSchema = z.object({
       num_products: z.number().min(1, "Number of products must be at least 1").default(1),
     })
   ).optional(),
+  extra_costs: z.array(
+    z.object({
+      name: z.string().min(1, "Cost name is required"),
+      description: z.string().optional(),
+      estimated_cost: z.number().optional(),
+    })
+  ).optional(),
   products: z.record(z.any()).optional(),
   quantities: z.record(z.any()).optional(),
 });
