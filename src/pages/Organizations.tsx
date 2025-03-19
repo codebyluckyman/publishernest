@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { useAuth } from "@/context/AuthContext";
@@ -13,7 +12,7 @@ import { DefaultExtraCosts } from "@/components/organizations/DefaultExtraCosts"
 import { APIManagement } from "@/components/organizations/APIManagement";
 import { Organization } from "@/types/organization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExtraCostsTable } from "@/components/quotes/form/ExtraCostsTable";
+import { ExtraCostsTable } from "@/components/quotes/form/extra-costs";
 
 type UserProfile = {
   id: string;
@@ -70,7 +69,6 @@ const Organizations = () => {
   }, [currentOrganization, getOrganizationMembers]);
 
   const handleOrganizationUpdate = (updatedOrg: Organization) => {
-    // Update the current organization with new data (like logo)
     switchOrganization(updatedOrg.id);
   };
 
