@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Plus, Library, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,6 @@ import { ExtraCostsList } from "./ExtraCostsList";
 import { ExtraCostLibraryDialog } from "./ExtraCostLibraryDialog";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { useFieldArray } from "react-hook-form";
 
 export function ExtraCostsField() {
   const {
@@ -26,14 +25,15 @@ export function ExtraCostsField() {
   const [isOpen, setIsOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   
+  // Set up the field array for extra_costs
+  const { fields, append } = useFieldArray({
+    control,
+    name: "extra_costs"
+  });
+  
   // Add default extra costs from organization settings if available
   useEffect(() => {
     if (!defaultCostsAdded && currentOrganization?.default_extra_costs && currentOrganization.default_extra_costs.length > 0) {
-      const { fields } = useFieldArray({
-        control,
-        name: "extra_costs"
-      });
-      
       if (!fields || fields.length === 0) {
         const defaultCosts = currentOrganization.default_extra_costs.map((cost: DefaultExtraCost) => ({
           name: cost.name,
@@ -44,18 +44,13 @@ export function ExtraCostsField() {
         setDefaultCostsAdded(true);
       }
     }
-  }, [currentOrganization, setValue, defaultCostsAdded, control]);
+  }, [currentOrganization, setValue, defaultCostsAdded, fields, control]);
 
   const handleLibraryOpen = () => {
     setLibraryOpen(true);
   };
 
   const handleAddFromLibrary = (cost: ExtraCostTableItem) => {
-    const { append } = useFieldArray({
-      control,
-      name: "extra_costs"
-    });
-    
     append({
       name: cost.name,
       description: cost.description || "",
@@ -88,13 +83,7 @@ export function ExtraCostsField() {
                   variant="outline" 
                   size="sm" 
                   className="w-full" 
-                  onClick={() => {
-                    const { append } = useFieldArray({
-                      control,
-                      name: "extra_costs"
-                    });
-                    append({ name: "" });
-                  }} 
+                  onClick={() => append({ name: "" })} 
                   type="button"
                 >
                   <Plus className="h-4 w-4 mr-2" />
