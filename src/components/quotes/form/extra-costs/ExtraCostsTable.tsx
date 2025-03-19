@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 
 export function ExtraCostsTable() {
   const { currentOrganization } = useOrganization();
+  const { unitOfMeasures, getUnitNameById } = useUnitOfMeasures();
   const [extraCosts, setExtraCosts] = useState<ExtraCostTableItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -29,7 +31,12 @@ export function ExtraCostsTable() {
     setLoading(true);
     try {
       const data = await fetchExtraCosts(currentOrganization?.id);
-      setExtraCosts(data);
+      // Enhance with unit names if needed
+      const enhancedData = data.map(cost => ({
+        ...cost,
+        unit_of_measure_name: getUnitNameById(cost.unit_of_measure_id) || cost.unit_of_measure_name
+      }));
+      setExtraCosts(enhancedData);
     } catch (error) {
       console.error("Error fetching extra costs:", error);
       toast.error("Failed to load extra costs");
@@ -47,14 +54,24 @@ export function ExtraCostsTable() {
   };
 
   const handleAddSuccess = (newCost: ExtraCostTableItem) => {
-    setExtraCosts([...extraCosts, newCost]);
+    // Add the unit name to the new cost
+    const costWithUnitName = {
+      ...newCost,
+      unit_of_measure_name: getUnitNameById(newCost.unit_of_measure_id) || newCost.unit_of_measure_name
+    };
+    setExtraCosts([...extraCosts, costWithUnitName]);
     setIsAdding(false);
     toast.success("Extra cost added successfully");
   };
 
   const handleUpdateSuccess = (updatedCost: ExtraCostTableItem) => {
+    // Update with the correct unit name
+    const costWithUnitName = {
+      ...updatedCost,
+      unit_of_measure_name: getUnitNameById(updatedCost.unit_of_measure_id) || updatedCost.unit_of_measure_name
+    };
     setExtraCosts(extraCosts.map(cost => 
-      cost.id === updatedCost.id ? updatedCost : cost
+      cost.id === costWithUnitName.id ? costWithUnitName : cost
     ));
     setEditingId(null);
     toast.success("Extra cost updated successfully");

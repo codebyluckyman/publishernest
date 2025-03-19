@@ -13,10 +13,10 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
   
   if (error) throw error;
   
-  // Add unit_of_measure_name to match our component expectations
+  // Add both unit_of_measure_id and unit_of_measure_name for component compatibility
   const extraCostsWithUnitNames = data.map(cost => ({
     ...cost,
-    unit_of_measure_id: null, // Add this to maintain type compatibility
+    unit_of_measure_id: cost.unit_of_measure || null,
     unit_of_measure_name: cost.unit_of_measure || null
   }));
   
@@ -51,7 +51,7 @@ export async function createExtraCost(
   const result = data[0];
   const enrichedResult = {
     ...result,
-    unit_of_measure_id: null, // For type compatibility
+    unit_of_measure_id: result.unit_of_measure || null,
     unit_of_measure_name: result.unit_of_measure || null
   };
   
@@ -86,7 +86,7 @@ export async function updateExtraCost(
   const result = data[0];
   const enrichedResult = {
     ...result,
-    unit_of_measure_id: null, // For type compatibility
+    unit_of_measure_id: result.unit_of_measure || null,
     unit_of_measure_name: result.unit_of_measure || null
   };
   

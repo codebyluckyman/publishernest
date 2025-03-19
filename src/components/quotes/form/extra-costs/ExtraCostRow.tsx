@@ -5,6 +5,7 @@ import { Edit, Trash2 } from "lucide-react";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { deleteExtraCost } from "./extraCostsService";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ExtraCostRowProps {
   cost: ExtraCostTableItem;
@@ -13,7 +14,7 @@ interface ExtraCostRowProps {
 }
 
 export function ExtraCostRow({ cost, onEditClick, onDeleteSuccess }: ExtraCostRowProps) {
-  const handleDeleteClick = async () => {
+  const handleDelete = async () => {
     try {
       await deleteExtraCost(cost.id);
       onDeleteSuccess(cost.id);
@@ -26,8 +27,8 @@ export function ExtraCostRow({ cost, onEditClick, onDeleteSuccess }: ExtraCostRo
   return (
     <>
       <TableCell>{cost.name}</TableCell>
-      <TableCell>{cost.description || '-'}</TableCell>
-      <TableCell>{cost.unit_of_measure_name || '-'}</TableCell>
+      <TableCell>{cost.description || "-"}</TableCell>
+      <TableCell>{cost.unit_of_measure_name || "-"}</TableCell>
       <TableCell>
         <div className="flex space-x-1">
           <Button 
@@ -38,14 +39,26 @@ export function ExtraCostRow({ cost, onEditClick, onDeleteSuccess }: ExtraCostRo
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleDeleteClick}
-            className="text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3">
+              <div className="space-y-2">
+                <p className="text-sm">Are you sure you want to delete this cost?</p>
+                <div className="flex justify-end space-x-2">
+                  <Button size="sm" variant="outline">Cancel</Button>
+                  <Button size="sm" variant="destructive" onClick={handleDelete}>Delete</Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </TableCell>
     </>

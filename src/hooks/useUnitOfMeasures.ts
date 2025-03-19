@@ -39,10 +39,18 @@ export function useUnitOfMeasures() {
     value: unit.id
   }));
 
+  // Helper to get unit name from id
+  const getUnitNameById = (id: string | null | undefined): string | null => {
+    if (!id) return null;
+    const unit = unitOfMeasures.find(u => u.id === id);
+    return unit ? (unit.abbreviation ? `${unit.name} (${unit.abbreviation})` : unit.name) : null;
+  };
+
   return {
     unitOfMeasures,
     unitOptions,
     isLoading,
-    error
+    error,
+    getUnitNameById
   };
 }
