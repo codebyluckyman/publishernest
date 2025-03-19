@@ -7,20 +7,20 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
   
   const { data, error } = await supabase
     .from('extra_costs')
-    .select('*, unit_of_measure')
+    .select('*')
     .eq('organization_id', organizationId)
     .order('name', { ascending: true });
   
   if (error) throw error;
   
   // Add both unit_of_measure_id and unit_of_measure_name for component compatibility
-  const extraCostsWithUnitNames = data.map(cost => ({
+  const extraCostsWithUnitIds = data.map(cost => ({
     ...cost,
     unit_of_measure_id: cost.unit_of_measure || null,
     unit_of_measure_name: cost.unit_of_measure || null
   }));
   
-  return extraCostsWithUnitNames as ExtraCostTableItem[];
+  return extraCostsWithUnitIds as ExtraCostTableItem[];
 }
 
 export async function createExtraCost(

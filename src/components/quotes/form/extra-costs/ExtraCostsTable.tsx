@@ -25,17 +25,19 @@ export function ExtraCostsTable() {
     if (currentOrganization) {
       loadExtraCosts();
     }
-  }, [currentOrganization]);
+  }, [currentOrganization, unitOfMeasures]);
 
   const loadExtraCosts = async () => {
     setLoading(true);
     try {
       const data = await fetchExtraCosts(currentOrganization?.id);
-      // Enhance with unit names if needed
+      
+      // Enhance with unit names
       const enhancedData = data.map(cost => ({
         ...cost,
         unit_of_measure_name: getUnitNameById(cost.unit_of_measure_id) || cost.unit_of_measure_name
       }));
+      
       setExtraCosts(enhancedData);
     } catch (error) {
       console.error("Error fetching extra costs:", error);
