@@ -4,11 +4,11 @@ export interface ExtraCost {
   quote_request_id?: string;
   name: string;
   description?: string;
-  estimated_cost?: number;
+  unit_of_measure?: string;
 }
 
 export interface DefaultExtraCost {
   name: string;
   description?: string;
-  estimated_cost?: number;
+  unit_of_measure?: string;
 }

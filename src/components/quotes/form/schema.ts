@@ -32,7 +32,7 @@ export const quoteRequestFormSchema = z.object({
     z.object({
       name: z.string().min(1, "Cost name is required"),
       description: z.string().optional(),
-      estimated_cost: z.number().optional(),
+      unit_of_measure: z.string().optional(),
     })
   ).optional(),
   products: z.record(z.any()).optional(),

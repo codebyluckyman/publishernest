@@ -36,7 +36,7 @@ export function ExtraCostsField() {
         (cost: DefaultExtraCost) => ({
           name: cost.name,
           description: cost.description || "",
-          estimated_cost: cost.estimated_cost,
+          unit_of_measure: cost.unit_of_measure || "",
         })
       );
       
@@ -77,11 +77,8 @@ export function ExtraCostsField() {
                 </div>
                 <div className="col-span-2">
                   <Input
-                    type="number"
-                    placeholder="Cost"
-                    {...control.register(`extra_costs.${index}.estimated_cost` as const, {
-                      valueAsNumber: true,
-                    })}
+                    placeholder="Unit of measure"
+                    {...control.register(`extra_costs.${index}.unit_of_measure` as const)}
                     className="w-full"
                   />
                 </div>

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -47,7 +46,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           id,
           name,
           description,
-          estimated_cost
+          unit_of_measure
         )
       `)
       .eq("organization_id", currentOrganization.id);

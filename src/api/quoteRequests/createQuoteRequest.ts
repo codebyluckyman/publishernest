@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
@@ -126,7 +125,7 @@ export async function createQuoteRequest(
         quote_request_id: quoteRequestData.id,
         name: cost.name,
         description: cost.description || null,
-        estimated_cost: cost.estimated_cost || null
+        unit_of_measure: cost.unit_of_measure || null
       }));
 
       const { error: extraCostsError } = await supabase

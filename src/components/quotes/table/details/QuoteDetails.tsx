@@ -68,7 +68,7 @@ export function QuoteDetails({
                   <tr className="border-b text-left">
                     <th className="py-2 font-medium text-sm">Item</th>
                     <th className="py-2 font-medium text-sm">Description</th>
-                    <th className="py-2 font-medium text-sm text-right">Estimated Cost</th>
+                    <th className="py-2 font-medium text-sm text-right">Unit of Measure</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -79,9 +79,7 @@ export function QuoteDetails({
                         {cost.description || '-'}
                       </td>
                       <td className="py-2 text-sm text-right">
-                        {cost.estimated_cost !== undefined 
-                          ? `$${cost.estimated_cost.toFixed(2)}` 
-                          : '-'}
+                        {cost.unit_of_measure || '-'}
                       </td>
                     </tr>
                   ))}

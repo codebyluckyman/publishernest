@@ -33,17 +33,10 @@ export function DefaultExtraCosts() {
     setExtraCosts(updatedCosts);
   };
 
-  const handleUpdateCost = (index: number, field: keyof DefaultExtraCost, value: string | number) => {
+  const handleUpdateCost = (index: number, field: keyof DefaultExtraCost, value: string) => {
     const updatedCosts = [...extraCosts];
-    
-    if (field === 'estimated_cost' && typeof value === 'string') {
-      // Convert string to number, handling empty case
-      updatedCosts[index][field] = value === '' ? undefined : parseFloat(value);
-    } else {
-      // @ts-ignore - We know the field and value types match
-      updatedCosts[index][field] = value;
-    }
-    
+    // @ts-ignore - We know the field and value types match
+    updatedCosts[index][field] = value;
     setExtraCosts(updatedCosts);
   };
 
@@ -103,10 +96,9 @@ export function DefaultExtraCosts() {
                 </div>
                 <div className="col-span-2">
                   <Input
-                    type="number"
-                    placeholder="Cost"
-                    value={cost.estimated_cost !== undefined ? cost.estimated_cost : ""}
-                    onChange={(e) => handleUpdateCost(index, 'estimated_cost', e.target.value)}
+                    placeholder="Unit of measure"
+                    value={cost.unit_of_measure || ""}
+                    onChange={(e) => handleUpdateCost(index, 'unit_of_measure', e.target.value)}
                     className="w-full"
                   />
                 </div>
