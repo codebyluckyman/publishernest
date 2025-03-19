@@ -42,7 +42,9 @@ enabled = false
 
 [edge_functions]
 enabled = true
+port = 54328
 
-[[functions.routes]]
-path = "/api/update-stock"
-function_name = "update-stock"
+[[functions]]
+name = "update-stock"
+path = "functions/update-stock"
+verify_jwt = false
