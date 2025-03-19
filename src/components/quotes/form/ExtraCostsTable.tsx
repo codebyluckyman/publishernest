@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { supabase } from "@/integrations/supabase/client";
 import { ExtraCostTableItem } from "@/types/extraCost";
@@ -35,13 +35,7 @@ export function ExtraCostsTable() {
   });
   const [isAdding, setIsAdding] = useState(false);
 
-  // Fetch extra costs when organization changes
-  useState(() => {
-    if (currentOrganization) {
-      fetchExtraCosts();
-    }
-  });
-
+  // Define fetchExtraCosts function before using it
   const fetchExtraCosts = async () => {
     if (!currentOrganization) return;
     
@@ -62,6 +56,13 @@ export function ExtraCostsTable() {
       setLoading(false);
     }
   };
+
+  // Use useEffect instead of useState to call fetchExtraCosts when component mounts
+  useEffect(() => {
+    if (currentOrganization) {
+      fetchExtraCosts();
+    }
+  }, [currentOrganization]);
 
   const handleAddClick = () => {
     setIsAdding(true);
