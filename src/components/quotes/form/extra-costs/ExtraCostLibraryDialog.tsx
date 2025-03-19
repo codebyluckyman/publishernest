@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Library, Plus } from "lucide-react";
 import { ExtraCostTableItem } from "@/types/extraCost";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchExtraCosts } from "./extraCostsService";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,6 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
 interface ExtraCostLibraryDialogProps {
   open: boolean;
@@ -40,7 +39,6 @@ export function ExtraCostLibraryDialog({
 }: ExtraCostLibraryDialogProps) {
   const [extraCostLibrary, setExtraCostLibrary] = useState<ExtraCostTableItem[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
-  const { getUnitNameById } = useUnitOfMeasures();
 
   // Fetch extra costs library when dialog opens
   const fetchExtraCostLibrary = async () => {
@@ -48,22 +46,8 @@ export function ExtraCostLibraryDialog({
     
     setLoadingLibrary(true);
     try {
-      const { data, error } = await supabase
-        .from('extra_costs')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .order('name', { ascending: true });
-      
-      if (error) throw error;
-      
-      // Enhance with unit names
-      const enhancedData = data.map(cost => ({
-        ...cost,
-        unit_of_measure_id: cost.unit_of_measure || null,
-        unit_of_measure_name: getUnitNameById(cost.unit_of_measure) || cost.unit_of_measure || null
-      }));
-      
-      setExtraCostLibrary(enhancedData as ExtraCostTableItem[]);
+      const data = await fetchExtraCosts(organizationId);
+      setExtraCostLibrary(data);
     } catch (error) {
       console.error("Error fetching extra costs library:", error);
       toast.error("Failed to load extra costs library");

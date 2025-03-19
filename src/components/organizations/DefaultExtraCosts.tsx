@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,14 +88,8 @@ export function DefaultExtraCosts() {
     
     setLoadingLibrary(true);
     try {
-      const { data, error } = await supabase
-        .from('extra_costs')
-        .select('*')
-        .eq('organization_id', currentOrganization.id)
-        .order('name', { ascending: true });
-      
-      if (error) throw error;
-      setExtraCostLibrary(data as ExtraCostTableItem[]);
+      const data = await fetchExtraCosts(currentOrganization.id);
+      setExtraCostLibrary(data);
     } catch (error) {
       console.error("Error fetching extra costs library:", error);
       toast.error("Failed to load extra costs library");

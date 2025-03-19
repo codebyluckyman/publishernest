@@ -7,20 +7,27 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
   
   const { data, error } = await supabase
     .from('extra_costs')
-    .select('*')
+    .select(`
+      *,
+      unit_of_measure_name:unit_of_measures(name, abbreviation)
+    `)
     .eq('organization_id', organizationId)
     .order('name', { ascending: true });
   
   if (error) throw error;
   
-  // Add both unit_of_measure_id and unit_of_measure_name for component compatibility
-  const extraCostsWithUnitIds = data.map(cost => ({
+  // Transform the data to match our ExtraCostTableItem type
+  const extraCostsWithUnits = data.map(cost => ({
     ...cost,
     unit_of_measure_id: cost.unit_of_measure || null,
-    unit_of_measure_name: cost.unit_of_measure || null
+    unit_of_measure_name: cost.unit_of_measure_name 
+      ? (cost.unit_of_measure_name.abbreviation 
+          ? `${cost.unit_of_measure_name.name} (${cost.unit_of_measure_name.abbreviation})` 
+          : cost.unit_of_measure_name.name)
+      : null
   }));
   
-  return extraCostsWithUnitIds as ExtraCostTableItem[];
+  return extraCostsWithUnits as ExtraCostTableItem[];
 }
 
 export async function createExtraCost(
@@ -52,7 +59,7 @@ export async function createExtraCost(
   const enrichedResult = {
     ...result,
     unit_of_measure_id: result.unit_of_measure || null,
-    unit_of_measure_name: result.unit_of_measure || null
+    unit_of_measure_name: null // We'll need to fetch this separately if needed
   };
   
   return enrichedResult as ExtraCostTableItem;
@@ -87,7 +94,7 @@ export async function updateExtraCost(
   const enrichedResult = {
     ...result,
     unit_of_measure_id: result.unit_of_measure || null,
-    unit_of_measure_name: result.unit_of_measure || null
+    unit_of_measure_name: null // We'll need to fetch this separately if needed
   };
   
   return enrichedResult as ExtraCostTableItem;
