@@ -42,8 +42,7 @@ enabled = false
 
 [edge_functions]
 enabled = true
-port = 54324
 
-[[edge_functions.routes]]
+[[functions.routes]]
 path = "/api/update-stock"
 function_name = "update-stock"
