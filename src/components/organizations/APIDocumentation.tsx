@@ -11,7 +11,7 @@ export function APIDocumentation() {
     toast.success("Copied to clipboard");
   };
 
-  const apiEndpoint = `${window.location.origin}/api/update-stock`;
+  const apiEndpoint = "https://vzguoukmiwxvqdnabfma.supabase.co/functions/v1/update-stock";
   
   const exampleRequest = JSON.stringify({
     updates: [
