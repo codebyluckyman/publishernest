@@ -28,8 +28,12 @@ export const useOrganizationApi = (userId: string | undefined) => {
         return (orgs || []).map(org => ({
           ...org,
           organization_type: org.organization_type as "publisher" | "printer" | "customer",
-          default_extra_costs: Array.isArray(org.default_extra_costs) 
-            ? (org.default_extra_costs as DefaultExtraCost[]) 
+          default_extra_costs: org.default_extra_costs && Array.isArray(org.default_extra_costs) 
+            ? (org.default_extra_costs as any[]).map(cost => ({
+                name: cost.name || "",
+                description: cost.description,
+                estimated_cost: cost.estimated_cost
+              })) 
             : [] as DefaultExtraCost[]
         })) as Organization[];
       }
@@ -102,8 +106,12 @@ export const useOrganizationApi = (userId: string | undefined) => {
       return {
         ...org,
         organization_type: org.organization_type as "publisher" | "printer" | "customer",
-        default_extra_costs: Array.isArray(org.default_extra_costs) 
-          ? (org.default_extra_costs as DefaultExtraCost[]) 
+        default_extra_costs: org.default_extra_costs && Array.isArray(org.default_extra_costs) 
+          ? (org.default_extra_costs as any[]).map(cost => ({
+              name: cost.name || "",
+              description: cost.description,
+              estimated_cost: cost.estimated_cost
+            }))
           : [] as DefaultExtraCost[]
       } as Organization;
     } catch (error: any) {
@@ -226,8 +234,12 @@ export const useOrganizationApi = (userId: string | undefined) => {
       return {
         ...updatedOrg,
         organization_type: updatedOrg.organization_type as "publisher" | "printer" | "customer",
-        default_extra_costs: Array.isArray(updatedOrg.default_extra_costs) 
-          ? (updatedOrg.default_extra_costs as DefaultExtraCost[]) 
+        default_extra_costs: updatedOrg.default_extra_costs && Array.isArray(updatedOrg.default_extra_costs) 
+          ? (updatedOrg.default_extra_costs as any[]).map(cost => ({
+              name: cost.name || "",
+              description: cost.description,
+              estimated_cost: cost.estimated_cost
+            }))
           : [] as DefaultExtraCost[]
       } as Organization;
     } catch (error) {
