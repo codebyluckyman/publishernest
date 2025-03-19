@@ -61,7 +61,7 @@ export type Database = {
           id: string
           name: string
           organization_id: string
-          unit_of_measure: string | null
+          unit_of_measure_id: string | null
           updated_at: string
         }
         Insert: {
@@ -70,7 +70,7 @@ export type Database = {
           id?: string
           name: string
           organization_id: string
-          unit_of_measure?: string | null
+          unit_of_measure_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -79,7 +79,7 @@ export type Database = {
           id?: string
           name?: string
           organization_id?: string
-          unit_of_measure?: string | null
+          unit_of_measure_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -88,6 +88,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_extra_costs_unit_of_measure"
+            columns: ["unit_of_measure_id"]
+            isOneToOne: false
+            referencedRelation: "unit_of_measures"
             referencedColumns: ["id"]
           },
         ]

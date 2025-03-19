@@ -18,10 +18,10 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
   
   // Transform the data to match our ExtraCostTableItem type
   const extraCostsWithUnits = data.map(cost => {
-    const unitOfMeasure = cost.unit_of_measures ? cost.unit_of_measures[0] : null;
+    const unitOfMeasure = cost.unit_of_measures ? cost.unit_of_measures : null;
     let unitName = null;
     
-    if (unitOfMeasure) {
+    if (unitOfMeasure && unitOfMeasure.name) {
       unitName = unitOfMeasure.abbreviation 
         ? `${unitOfMeasure.name} (${unitOfMeasure.abbreviation})` 
         : unitOfMeasure.name;
@@ -29,7 +29,7 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
     
     return {
       ...cost,
-      unit_of_measure_id: cost.unit_of_measure || null,
+      unit_of_measure_id: cost.unit_of_measure_id || null,
       unit_of_measure_name: unitName
     };
   });
@@ -50,7 +50,7 @@ export async function createExtraCost(
     .insert({
       name: newCost.name,
       description: newCost.description,
-      unit_of_measure: newCost.unit_of_measure_id || null, // Use unit_of_measure column
+      unit_of_measure_id: newCost.unit_of_measure_id || null,
       organization_id: organizationId
     })
     .select('*');
@@ -65,7 +65,7 @@ export async function createExtraCost(
   const result = data[0];
   const enrichedResult = {
     ...result,
-    unit_of_measure_id: result.unit_of_measure || null,
+    unit_of_measure_id: result.unit_of_measure_id || null,
     unit_of_measure_name: null // We'll need to fetch this separately if needed
   };
   
@@ -85,7 +85,7 @@ export async function updateExtraCost(
     .update({
       name: updates.name,
       description: updates.description,
-      unit_of_measure: updates.unit_of_measure_id || null // Use unit_of_measure column
+      unit_of_measure_id: updates.unit_of_measure_id || null
     })
     .eq('id', id)
     .select('*');
@@ -100,7 +100,7 @@ export async function updateExtraCost(
   const result = data[0];
   const enrichedResult = {
     ...result,
-    unit_of_measure_id: result.unit_of_measure || null,
+    unit_of_measure_id: result.unit_of_measure_id || null,
     unit_of_measure_name: null // We'll need to fetch this separately if needed
   };
   
