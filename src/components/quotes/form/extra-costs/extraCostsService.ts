@@ -9,7 +9,7 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
     .from('extra_costs')
     .select(`
       *,
-      unit_of_measure_name:unit_of_measures(name, abbreviation)
+      unit_of_measures(id, name, abbreviation)
     `)
     .eq('organization_id', organizationId)
     .order('name', { ascending: true });
@@ -17,15 +17,22 @@ export async function fetchExtraCosts(organizationId?: string): Promise<ExtraCos
   if (error) throw error;
   
   // Transform the data to match our ExtraCostTableItem type
-  const extraCostsWithUnits = data.map(cost => ({
-    ...cost,
-    unit_of_measure_id: cost.unit_of_measure || null,
-    unit_of_measure_name: cost.unit_of_measure_name 
-      ? (cost.unit_of_measure_name.abbreviation 
-          ? `${cost.unit_of_measure_name.name} (${cost.unit_of_measure_name.abbreviation})` 
-          : cost.unit_of_measure_name.name)
-      : null
-  }));
+  const extraCostsWithUnits = data.map(cost => {
+    const unitOfMeasure = cost.unit_of_measures ? cost.unit_of_measures[0] : null;
+    let unitName = null;
+    
+    if (unitOfMeasure) {
+      unitName = unitOfMeasure.abbreviation 
+        ? `${unitOfMeasure.name} (${unitOfMeasure.abbreviation})` 
+        : unitOfMeasure.name;
+    }
+    
+    return {
+      ...cost,
+      unit_of_measure_id: cost.unit_of_measure || null,
+      unit_of_measure_name: unitName
+    };
+  });
   
   return extraCostsWithUnits as ExtraCostTableItem[];
 }

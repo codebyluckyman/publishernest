@@ -8,8 +8,8 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { DefaultExtraCost, ExtraCostTableItem } from "@/types/extraCost";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { supabase } from "@/integrations/supabase/client";
 import { UnitOfMeasureSelect } from "./unitOfMeasures/UnitOfMeasureSelect";
+import { fetchExtraCosts } from "../quotes/form/extra-costs/extraCostsService";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +36,6 @@ export function DefaultExtraCosts() {
   const [extraCostLibrary, setExtraCostLibrary] = useState<ExtraCostTableItem[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
 
-  // Load existing extra costs from the organization
   useEffect(() => {
     if (currentOrganization?.default_extra_costs) {
       console.log("Loading default extra costs:", currentOrganization.default_extra_costs);
@@ -58,13 +57,11 @@ export function DefaultExtraCosts() {
 
   const handleUpdateCost = (index: number, field: keyof DefaultExtraCost, value: string) => {
     const updatedCosts = [...extraCosts];
-    // @ts-ignore - We know the field and value types match
     updatedCosts[index][field] = value;
     setExtraCosts(updatedCosts);
   };
 
   const handleSubmit = async () => {
-    // Validate that each cost has at least a name
     if (extraCosts.some(cost => !cost.name.trim())) {
       toast.error("All extra costs must have a name");
       return;
@@ -82,7 +79,6 @@ export function DefaultExtraCosts() {
     }
   };
 
-  // Fetch extra costs library when dialog opens
   const fetchExtraCostLibrary = async () => {
     if (!currentOrganization) return;
     
@@ -107,7 +103,7 @@ export function DefaultExtraCosts() {
     setExtraCosts([...extraCosts, {
       name: cost.name,
       description: cost.description || "",
-      unit_of_measure_id: cost.unit_of_measure_id || undefined
+      unit_of_measure_id: cost.unit_of_measure_id
     }]);
     setLibraryOpen(false);
     toast.success(`Added "${cost.name}" to default extra costs`);
