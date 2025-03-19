@@ -15,7 +15,7 @@ export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const { fields, append, remove } = useFieldArray({
     control,
