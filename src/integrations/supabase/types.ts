@@ -571,28 +571,28 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
-          estimated_cost: number | null
           id: string
           name: string
           quote_request_id: string
+          unit_of_measure: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           description?: string | null
-          estimated_cost?: number | null
           id?: string
           name: string
           quote_request_id: string
+          unit_of_measure?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           description?: string | null
-          estimated_cost?: number | null
           id?: string
           name?: string
           quote_request_id?: string
+          unit_of_measure?: string | null
           updated_at?: string
         }
         Relationships: [

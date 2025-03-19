@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
