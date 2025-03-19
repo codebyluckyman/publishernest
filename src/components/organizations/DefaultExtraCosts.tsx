@@ -114,7 +114,7 @@ export function DefaultExtraCosts() {
     setExtraCosts([...extraCosts, {
       name: cost.name,
       description: cost.description || "",
-      unit_of_measure_id: cost.unit_of_measure || cost.unit_of_measure_id || undefined
+      unit_of_measure_id: cost.unit_of_measure_id || undefined
     }]);
     setLibraryOpen(false);
     toast.success(`Added "${cost.name}" to default extra costs`);
