@@ -9,11 +9,14 @@ import { WarehousesList } from "@/components/organizations/WarehousesList";
 import { DefaultPriceBreaks } from "@/components/organizations/DefaultPriceBreaks";
 import { DefaultNumProducts } from "@/components/organizations/DefaultNumProducts";
 import { DefaultExtraCosts } from "@/components/organizations/DefaultExtraCosts";
+import { DefaultSavings } from "@/components/organizations/DefaultSavings";
 import { APIManagement } from "@/components/organizations/APIManagement";
 import { UnitOfMeasuresTable } from "@/components/organizations/unitOfMeasures/UnitOfMeasuresTable";
 import { Organization } from "@/types/organization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExtraCostsTable } from "@/components/quotes/form/extra-costs";
+import { SavingsTable } from "@/components/quotes/form/savings/SavingsTable";
+import { ExtraCostsTable } from "@/components/quotes/form/extra-costs/ExtraCostsTable";
+import { Library, Settings, Users, Code, ListChecks, Ruler } from "lucide-react";
 
 type UserProfile = {
   id: string;
@@ -117,11 +120,23 @@ const Organizations = () => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="api">API</TabsTrigger>
+        <TabsList className="mb-6 flex flex-wrap">
+          <TabsTrigger value="general" className="flex items-center gap-1">
+            <Settings className="h-4 w-4" />
+            <span>General</span>
+          </TabsTrigger>
+          <TabsTrigger value="members" className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span>Members</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-1">
+            <ListChecks className="h-4 w-4" />
+            <span>Settings</span>
+          </TabsTrigger>
+          <TabsTrigger value="api" className="flex items-center gap-1">
+            <Code className="h-4 w-4" />
+            <span>API</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -147,17 +162,48 @@ const Organizations = () => {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <DefaultPriceBreaks />
-            <DefaultNumProducts />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <UnitOfMeasuresTable />
-            <DefaultExtraCosts />
-          </div>
-          <div className="grid grid-cols-1 gap-6">
-            <ExtraCostsTable />
-          </div>
+          <Tabs defaultValue="defaults" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="defaults" className="flex items-center gap-1">
+                <Settings className="h-4 w-4" />
+                <span>Default Values</span>
+              </TabsTrigger>
+              <TabsTrigger value="units" className="flex items-center gap-1">
+                <Ruler className="h-4 w-4" />
+                <span>Units of Measure</span>
+              </TabsTrigger>
+              <TabsTrigger value="libraries" className="flex items-center gap-1 font-semibold">
+                <Library className="h-4 w-4" />
+                <span>Libraries</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="defaults" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DefaultPriceBreaks />
+                <DefaultNumProducts />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DefaultExtraCosts />
+                <DefaultSavings />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="units" className="space-y-6">
+              <UnitOfMeasuresTable />
+            </TabsContent>
+
+            <TabsContent value="libraries" className="space-y-6">
+              <div className="pb-4">
+                <h2 className="text-xl font-semibold mb-2">Component Libraries</h2>
+                <p className="text-muted-foreground">Manage your organization's reusable components for quotes and projects</p>
+              </div>
+              <div className="grid grid-cols-1 gap-6">
+                <SavingsTable />
+                <ExtraCostsTable />
+              </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="api" className="space-y-6">
