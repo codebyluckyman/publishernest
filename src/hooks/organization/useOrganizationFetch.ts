@@ -2,6 +2,7 @@
 import { Organization } from "@/types/organization";
 import { DefaultExtraCost } from "@/types/extraCost";
 import { useSupabaseBase } from "./useSupabaseBase";
+import { toast } from "sonner";
 
 export const useOrganizationFetch = (userId: string | undefined) => {
   const { supabase, handleError } = useSupabaseBase(userId);
