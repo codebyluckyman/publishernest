@@ -32,7 +32,7 @@ export function DefaultSavings() {
   const { currentOrganization, updateOrganizationSetting } = useOrganization();
   const [savings, setSavings] = useState<DefaultSaving[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(true); // Set to true to ensure it's initially expanded
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [savingLibrary, setSavingLibrary] = useState<SavingTableItem[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);

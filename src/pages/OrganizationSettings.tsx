@@ -11,12 +11,15 @@ import { UnitOfMeasuresTable } from "@/components/organizations/unitOfMeasures/U
 import { DefaultExtraCosts } from "@/components/organizations/DefaultExtraCosts";
 import { DefaultSavings } from "@/components/organizations/DefaultSavings";
 import { NumberInput } from "@/components/NumberInput";
+import { SavingsTable } from "@/components/quotes/form/savings/SavingsTable";
+import { ExtraCostsTable } from "@/components/quotes/form/extra-costs/ExtraCostsTable";
 
 export default function OrganizationSettings() {
   const { currentOrganization, updateOrganizationSetting } = useOrganization();
   const [orgName, setOrgName] = useState(currentOrganization?.name || "");
   const [defaultNumProducts, setDefaultNumProducts] = useState(currentOrganization?.default_num_products || 1);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
 
   const handleUpdateOrganization = async () => {
     if (!currentOrganization) return;
@@ -55,15 +58,16 @@ export default function OrganizationSettings() {
         <p className="text-gray-600 mb-6">Manage your organization settings and team members</p>
       </div>
 
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList>
+      <Tabs defaultValue="general" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="units">Units of Measure</TabsTrigger>
           <TabsTrigger value="defaults">Default Values</TabsTrigger>
+          <TabsTrigger value="libraries">Libraries</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-6 mt-6">
+        <TabsContent value="general" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Organization Details</CardTitle>
@@ -94,15 +98,15 @@ export default function OrganizationSettings() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="members" className="space-y-6 mt-6">
+        <TabsContent value="members" className="space-y-6">
           <OrganizationMembersTable />
         </TabsContent>
 
-        <TabsContent value="units" className="space-y-6 mt-6">
+        <TabsContent value="units" className="space-y-6">
           <UnitOfMeasuresTable />
         </TabsContent>
 
-        <TabsContent value="defaults" className="space-y-6 mt-6">
+        <TabsContent value="defaults" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Default Quote Values</CardTitle>
@@ -136,6 +140,11 @@ export default function OrganizationSettings() {
           <DefaultExtraCosts />
           
           <DefaultSavings />
+        </TabsContent>
+        
+        <TabsContent value="libraries" className="space-y-6">
+          <SavingsTable />
+          <ExtraCostsTable />
         </TabsContent>
       </Tabs>
     </div>
