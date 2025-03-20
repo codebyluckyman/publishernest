@@ -20,6 +20,9 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
     control,
     name: "extra_costs"
   });
+  
+  // For debugging
+  console.log("ExtraCostsList fields:", fields);
 
   if (fields.length === 0) {
     return (
@@ -33,7 +36,10 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
 
   return (
     <div className="space-y-3">
-      {fields.map((field, index) => (
+      {fields.map((field, index) => {
+        // For debugging individual fields
+        console.log(`Field at index ${index}:`, field);
+        return (
         <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
           <div className="col-span-4">
             <Input 
@@ -69,7 +75,7 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
             </Button>
           </div>
         </div>
-      ))}
+      )})}
     </div>
   );
 }

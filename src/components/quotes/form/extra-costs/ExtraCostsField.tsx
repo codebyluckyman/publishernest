@@ -19,7 +19,8 @@ export function ExtraCostsField() {
   } = useOrganization();
   const {
     control,
-    setValue
+    setValue,
+    formState
   } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -44,7 +45,7 @@ export function ExtraCostsField() {
         setDefaultCostsAdded(true);
       }
     }
-  }, [currentOrganization, setValue, defaultCostsAdded, fields, control]);
+  }, [currentOrganization, setValue, defaultCostsAdded, fields]);
 
   const handleLibraryOpen = () => {
     setLibraryOpen(true);
@@ -59,6 +60,24 @@ export function ExtraCostsField() {
     setLibraryOpen(false);
     toast.success(`Added "${cost.name}" to extra costs`);
   };
+
+  const handleAddExtraCost = () => {
+    append({ 
+      name: "",
+      description: "",
+      unit_of_measure_id: ""
+    });
+    // Ensure the collapsible is open when adding a new cost
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+  };
+
+  // For debugging purposes
+  useEffect(() => {
+    console.log("Extra costs fields:", fields);
+    console.log("Form state:", formState);
+  }, [fields, formState]);
 
   return (
     <Card className="mt-6">
@@ -84,7 +103,7 @@ export function ExtraCostsField() {
                   variant="outline" 
                   size="sm" 
                   className="w-full" 
-                  onClick={() => append({ name: "" })} 
+                  onClick={handleAddExtraCost} 
                   type="button"
                 >
                   <Plus className="h-4 w-4 mr-2" />
