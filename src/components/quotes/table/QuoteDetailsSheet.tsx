@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { QuoteAuditHistory } from "./QuoteAuditHistory";
 import { QuoteDetails } from "./details/QuoteDetails";
@@ -34,25 +35,27 @@ export function QuoteDetailsSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-xl overflow-hidden">
         <SheetHeader>
           <SheetTitle>Quote Request Details</SheetTitle>
         </SheetHeader>
 
-        {showAuditHistory ? (
-          <QuoteAuditHistory 
-            quoteRequest={selectedRequest} 
-            isOpen={showAuditHistory}
-            onOpenChange={(open) => setShowAuditHistory(open)} 
-          />
-        ) : (
-          <QuoteDetails
-            selectedRequest={selectedRequest}
-            onEdit={onEdit}
-            onStatusChange={onStatusChange}
-            onShowHistory={() => setShowAuditHistory(true)}
-          />
-        )}
+        <ScrollArea className="h-[calc(100vh-5rem)] pr-4">
+          {showAuditHistory ? (
+            <QuoteAuditHistory 
+              quoteRequest={selectedRequest} 
+              isOpen={showAuditHistory}
+              onOpenChange={(open) => setShowAuditHistory(open)} 
+            />
+          ) : (
+            <QuoteDetails
+              selectedRequest={selectedRequest}
+              onEdit={onEdit}
+              onStatusChange={onStatusChange}
+              onShowHistory={() => setShowAuditHistory(true)}
+            />
+          )}
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );
