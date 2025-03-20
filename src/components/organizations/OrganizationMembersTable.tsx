@@ -135,7 +135,7 @@ export function OrganizationMembersTable() {
                 <MemberItem
                   key={member.id}
                   member={member}
-                  currentUserId={user?.id}
+                  isCurrentUser={user?.id === member.auth_user_id}
                   onRoleChange={handleRoleChange}
                   onRemove={handleRemoveMember}
                 />
