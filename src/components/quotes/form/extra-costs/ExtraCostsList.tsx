@@ -1,5 +1,5 @@
 
-import { useFieldArray, Control, useWatch, useFormContext } from "react-hook-form";
+import { useFieldArray, Control, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -67,8 +67,9 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
               />
             </div>
             <div className="col-span-2">
+              {/* Move useWatch out of render function - this was causing the hooks error */}
               <UnitOfMeasureSelect
-                value={useWatch({ control, name: `extra_costs.${index}.unit_of_measure_id` }) || ''}
+                value={watch(`extra_costs.${index}.unit_of_measure_id`) || ''}
                 onChange={(value) => {
                   setValue(`extra_costs.${index}.unit_of_measure_id` as const, value);
                   console.log(`Updated unit of measure for extra cost at index ${index}:`, value);
