@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuoteRequestFormValues } from "./schema";
 import { useLinkedProducts } from "@/components/format/hooks/useLinkedProducts";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface FormatProductFieldProps {
@@ -33,20 +32,14 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
   // Render badges for format extras
   const renderFormatExtrasBadges = (productId: string) => {
     const product = getProductById(productId);
-    if (!product || !product.format_extras) return null;
-
-    const activeExtras = Object.entries(product.format_extras)
-      .filter(([_, value]) => value === true)
-      .map(([key]) => key);
-
-    if (activeExtras.length === 0) return null;
+    if (!product || !product.format_extras || product.format_extras.length === 0) return null;
 
     return (
       <div className="mt-2">
         <div className="flex flex-wrap gap-1 mb-1">
-          {activeExtras.map((extra) => (
-            <Badge key={extra} variant="outline" className="capitalize text-xs">
-              {extra.replace('_', ' ')}
+          {product.format_extras.map((extra, index) => (
+            <Badge key={index} variant="outline" className="text-xs">
+              {extra.name}
             </Badge>
           ))}
         </div>

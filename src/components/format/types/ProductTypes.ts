@@ -5,13 +5,11 @@ export type Product = {
   isbn13: string | null;
   isbn10: string | null;
   cover_image_url: string | null;
-  format_extras?: {
-    foil: boolean;
-    spot_uv: boolean;
-    glitter: boolean;
-    embossing: boolean;
-    die_cut: boolean;
-    holographic: boolean;
-  };
+  format_extras?: Array<{
+    id?: string;
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }>;
   format_extra_comments?: string | null;
 };

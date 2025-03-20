@@ -19,20 +19,14 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
 
   // Render format extras badges
   const renderFormatExtras = (product: any) => {
-    if (!product.format_extras) return null;
-
-    const activeExtras = Object.entries(product.format_extras)
-      .filter(([_, value]) => value === true)
-      .map(([key]) => key);
-
-    if (activeExtras.length === 0) return null;
+    if (!product.format_extras || product.format_extras.length === 0) return null;
 
     return (
       <div className="space-y-1">
         <div className="flex flex-wrap gap-1 mt-1">
-          {activeExtras.map((extra) => (
-            <Badge key={extra} variant="outline" className="capitalize text-xs">
-              {extra.replace('_', ' ')}
+          {product.format_extras.map((extra: any, index: number) => (
+            <Badge key={index} variant="outline" className="text-xs">
+              {extra.name}
             </Badge>
           ))}
         </div>
