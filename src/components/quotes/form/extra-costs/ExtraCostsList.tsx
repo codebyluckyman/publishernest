@@ -72,6 +72,7 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
                 }} 
                 type="button" 
                 className="text-destructive"
+                data-testid={`remove-extra-cost-${index}`}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

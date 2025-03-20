@@ -103,6 +103,7 @@ export function ExtraCostsField() {
                   className="w-full" 
                   onClick={handleAddExtraCost} 
                   type="button"
+                  data-testid="add-extra-cost-button" // Adding a test ID for easier debugging
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Extra Cost
