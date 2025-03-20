@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Library } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { ExtraCostTableItem } from "@/types/extraCost";
@@ -16,7 +16,7 @@ export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, formState, getValues } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // Start with the section open for better visibility
   const [libraryOpen, setLibraryOpen] = useState(false);
   
   // Set up the field array for extra_costs
@@ -36,6 +36,7 @@ export function ExtraCostsField() {
         }));
         setValue("extra_costs", defaultCosts);
         setDefaultCostsAdded(true);
+        console.log("Default extra costs added:", defaultCosts);
       }
     }
   }, [currentOrganization, setValue, defaultCostsAdded, fields]);
@@ -75,7 +76,16 @@ export function ExtraCostsField() {
     
     // For debugging
     console.log("Fields after append:", fields);
+    
+    // Show success toast for better user feedback
+    toast.success("New extra cost field added");
   };
+
+  // Debug mount
+  useEffect(() => {
+    console.log("ExtraCostsField mounted");
+    return () => console.log("ExtraCostsField unmounted");
+  }, []);
 
   return (
     <Card className="mt-6">
@@ -98,12 +108,12 @@ export function ExtraCostsField() {
 
               <div className="flex space-x-2">
                 <Button 
-                  variant="outline" 
+                  variant="success"  
                   size="sm" 
-                  className="w-full" 
                   onClick={handleAddExtraCost} 
                   type="button"
-                  data-testid="add-extra-cost-button" // Adding a test ID for easier debugging
+                  data-testid="add-extra-cost-button"
+                  className="w-full"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Extra Cost

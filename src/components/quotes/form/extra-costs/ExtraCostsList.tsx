@@ -12,7 +12,7 @@ interface ExtraCostsListProps {
 }
 
 export function ExtraCostsList({ control }: ExtraCostsListProps) {
-  const { setValue } = useFormContext<QuoteRequestFormValues>();
+  const { setValue, watch } = useFormContext<QuoteRequestFormValues>();
   const {
     fields,
     remove
@@ -21,9 +21,11 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
     name: "extra_costs"
   });
   
-  // For debugging
+  // For debugging - log fields array when it changes
   console.log("ExtraCostsList rendering with fields:", fields);
+  console.log("Current form value for extra_costs:", watch("extra_costs"));
 
+  // If there are no fields to display, show a placeholder message
   if (fields.length === 0) {
     return (
       <div className="text-center p-4 border border-dashed rounded-md">
@@ -45,6 +47,11 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
                 placeholder="Cost name" 
                 {...control.register(`extra_costs.${index}.name` as const)} 
                 className="w-full" 
+                onChange={(e) => {
+                  // Update the field value and log the change
+                  setValue(`extra_costs.${index}.name` as const, e.target.value);
+                  console.log(`Updated name for extra cost at index ${index}:`, e.target.value);
+                }}
               />
             </div>
             <div className="col-span-5">
@@ -52,12 +59,20 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
                 placeholder="Description (optional)" 
                 {...control.register(`extra_costs.${index}.description` as const)} 
                 className="w-full h-10 min-h-10 resize-none" 
+                onChange={(e) => {
+                  // Update the field value and log the change
+                  setValue(`extra_costs.${index}.description` as const, e.target.value);
+                  console.log(`Updated description for extra cost at index ${index}:`, e.target.value);
+                }}
               />
             </div>
             <div className="col-span-2">
               <UnitOfMeasureSelect
                 value={useWatch({ control, name: `extra_costs.${index}.unit_of_measure_id` }) || ''}
-                onChange={(value) => setValue(`extra_costs.${index}.unit_of_measure_id` as const, value)}
+                onChange={(value) => {
+                  setValue(`extra_costs.${index}.unit_of_measure_id` as const, value);
+                  console.log(`Updated unit of measure for extra cost at index ${index}:`, value);
+                }}
                 placeholder="Unit"
                 className="w-full"
               />
@@ -69,6 +84,7 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
                 onClick={() => {
                   console.log(`Removing extra cost at index ${index}`);
                   remove(index);
+                  console.log("Fields after removal:", fields.filter((_, i) => i !== index));
                 }} 
                 type="button" 
                 className="text-destructive"
