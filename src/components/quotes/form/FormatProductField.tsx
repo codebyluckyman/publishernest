@@ -45,8 +45,14 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
         
         // Get ISBN for reference
         const isbn = selectedProduct.isbn13 || selectedProduct.isbn10 || selectedProduct.id;
+
+        // Log for debugging
+        console.log(`Adding format extras for ${selectedProduct.title} (${isbn}):`, selectedProduct.format_extras);
         
-        // Process each format extra
+        // Process each format extra and add to extra costs
+        const newExtraCosts = [...currentExtraCosts];
+        let hasChanges = false;
+        
         selectedProduct.format_extras.forEach(extra => {
           // Create description that mentions the product and includes format extra comments
           let description = `Related to "${selectedProduct.title}" (${isbn})`;
@@ -62,22 +68,26 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
           }
           
           // Check if this extra cost already exists by name
-          const extraExists = currentExtraCosts.some(
+          const extraExists = newExtraCosts.some(
             cost => cost.name.toLowerCase() === extra.name.toLowerCase()
           );
           
           if (!extraExists) {
-            // Add the extra cost
-            setValue("extra_costs", [
-              ...currentExtraCosts,
-              {
-                name: extra.name,
-                description: description,
-                unit_of_measure_id: extra.unit_of_measure_id || ""
-              }
-            ]);
+            // Add the extra cost to our array
+            newExtraCosts.push({
+              name: extra.name,
+              description: description,
+              unit_of_measure_id: extra.unit_of_measure_id || ""
+            });
+            hasChanges = true;
           }
         });
+        
+        // Only update the form if we have new items to add
+        if (hasChanges) {
+          console.log("Setting updated extra costs:", newExtraCosts);
+          setValue("extra_costs", newExtraCosts);
+        }
       }
     }
   }, [selectedProductId, linkedProducts, setValue, getValues]);
