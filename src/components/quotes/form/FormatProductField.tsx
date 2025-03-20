@@ -13,7 +13,7 @@ interface FormatProductFieldProps {
   control: Control<QuoteRequestFormValues>;
   formatIndex: number;
   formatId: string;
-  productIndex: number; // Add productIndex to track which product we're working with
+  productIndex: number; // Track which product we're working with
 }
 
 export function FormatProductField({ control, formatIndex, formatId, productIndex }: FormatProductFieldProps) {
@@ -46,22 +46,27 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
         // Get ISBN for reference
         const isbn = selectedProduct.isbn13 || selectedProduct.isbn10 || selectedProduct.id;
         
-        // Add each format extra if it doesn't already exist
+        // Process each format extra
         selectedProduct.format_extras.forEach(extra => {
+          // Create description that mentions the product and includes format extra comments
+          let description = `Related to "${selectedProduct.title}" (${isbn})`;
+          
+          // Add format extra description if available
+          if (extra.description) {
+            description += `. Extra: ${extra.description}`;
+          }
+          
+          // Add format extra comments if available
+          if (selectedProduct.format_extra_comments) {
+            description += `. Comments: ${selectedProduct.format_extra_comments}`;
+          }
+          
           // Check if this extra cost already exists by name
           const extraExists = currentExtraCosts.some(
             cost => cost.name.toLowerCase() === extra.name.toLowerCase()
           );
           
           if (!extraExists) {
-            // Create description that mentions the product and includes format extra comments
-            let description = `Related to "${selectedProduct.title}" (${isbn})`;
-            
-            // Add format extra comments if available
-            if (selectedProduct.format_extra_comments) {
-              description += `. Comments: ${selectedProduct.format_extra_comments}`;
-            }
-            
             // Add the extra cost
             setValue("extra_costs", [
               ...currentExtraCosts,
