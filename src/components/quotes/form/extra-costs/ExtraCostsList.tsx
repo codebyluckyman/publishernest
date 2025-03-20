@@ -22,7 +22,7 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
   });
   
   // For debugging
-  console.log("ExtraCostsList fields:", fields);
+  console.log("ExtraCostsList rendering with fields:", fields);
 
   if (fields.length === 0) {
     return (
@@ -37,45 +37,48 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
   return (
     <div className="space-y-3">
       {fields.map((field, index) => {
-        // For debugging individual fields
-        console.log(`Field at index ${index}:`, field);
+        console.log(`Rendering field at index ${index}:`, field);
         return (
-        <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
-          <div className="col-span-4">
-            <Input 
-              placeholder="Cost name" 
-              {...control.register(`extra_costs.${index}.name` as const)} 
-              className="w-full" 
-            />
+          <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
+            <div className="col-span-4">
+              <Input 
+                placeholder="Cost name" 
+                {...control.register(`extra_costs.${index}.name` as const)} 
+                className="w-full" 
+              />
+            </div>
+            <div className="col-span-5">
+              <Textarea 
+                placeholder="Description (optional)" 
+                {...control.register(`extra_costs.${index}.description` as const)} 
+                className="w-full h-10 min-h-10 resize-none" 
+              />
+            </div>
+            <div className="col-span-2">
+              <UnitOfMeasureSelect
+                value={useWatch({ control, name: `extra_costs.${index}.unit_of_measure_id` }) || ''}
+                onChange={(value) => setValue(`extra_costs.${index}.unit_of_measure_id` as const, value)}
+                placeholder="Unit"
+                className="w-full"
+              />
+            </div>
+            <div className="col-span-1 flex justify-center">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => {
+                  console.log(`Removing extra cost at index ${index}`);
+                  remove(index);
+                }} 
+                type="button" 
+                className="text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <div className="col-span-5">
-            <Textarea 
-              placeholder="Description (optional)" 
-              {...control.register(`extra_costs.${index}.description` as const)} 
-              className="w-full h-10 min-h-10 resize-none" 
-            />
-          </div>
-          <div className="col-span-2">
-            <UnitOfMeasureSelect
-              value={useWatch({ control, name: `extra_costs.${index}.unit_of_measure_id` }) || ''}
-              onChange={(value) => setValue(`extra_costs.${index}.unit_of_measure_id` as const, value)}
-              placeholder="Unit"
-              className="w-full"
-            />
-          </div>
-          <div className="col-span-1 flex justify-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => remove(index)} 
-              type="button" 
-              className="text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )})}
+        );
+      })}
     </div>
   );
 }

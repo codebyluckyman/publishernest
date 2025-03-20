@@ -14,13 +14,13 @@ import { toast } from "sonner";
 
 export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
-  const { control, setValue, formState } = useFormContext<QuoteRequestFormValues>();
+  const { control, setValue, formState, getValues } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   
   // Set up the field array for extra_costs
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "extra_costs"
   });
@@ -45,6 +45,7 @@ export function ExtraCostsField() {
   };
 
   const handleAddFromLibrary = (cost: ExtraCostTableItem) => {
+    console.log("Adding from library:", cost);
     append({
       name: cost.name,
       description: cost.description || "",
@@ -55,6 +56,9 @@ export function ExtraCostsField() {
   };
 
   const handleAddExtraCost = () => {
+    console.log("Add Extra Cost button clicked");
+    console.log("Current extra costs before adding:", getValues("extra_costs"));
+    
     // Ensure we're adding an empty extra cost
     append({ 
       name: "",
@@ -62,13 +66,15 @@ export function ExtraCostsField() {
       unit_of_measure_id: ""
     });
     
+    console.log("Current extra costs after adding:", getValues("extra_costs"));
+    
     // Ensure the collapsible is open when adding a new cost
     if (!isOpen) {
       setIsOpen(true);
     }
     
     // For debugging
-    console.log("Added new extra cost. Current fields:", fields);
+    console.log("Fields after append:", fields);
   };
 
   return (
