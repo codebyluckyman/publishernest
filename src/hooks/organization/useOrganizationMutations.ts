@@ -1,6 +1,7 @@
 
 import { Organization } from "@/types/organization";
 import { DefaultExtraCost } from "@/types/extraCost";
+import { DefaultSaving } from "@/types/saving";
 import { useSupabaseBase } from "./useSupabaseBase";
 
 export const useOrganizationMutations = (userId: string | undefined) => {
@@ -43,7 +44,7 @@ export const useOrganizationMutations = (userId: string | undefined) => {
 
       await updateCurrentOrganization(org.id);
       
-      // Cast organization_type and default_extra_costs to ensure it matches the expected type
+      // Cast organization_type, default_extra_costs, and default_savings to ensure they match the expected type
       return {
         ...org,
         organization_type: org.organization_type as "publisher" | "printer" | "customer",
@@ -53,7 +54,14 @@ export const useOrganizationMutations = (userId: string | undefined) => {
               description: cost.description,
               unit_of_measure_id: cost.unit_of_measure_id
             }))
-          : [] as DefaultExtraCost[]
+          : [] as DefaultExtraCost[],
+        default_savings: org.default_savings && Array.isArray(org.default_savings) 
+          ? (org.default_savings as any[]).map(saving => ({
+              name: saving.name || "",
+              description: saving.description,
+              unit_of_measure_id: saving.unit_of_measure_id
+            }))
+          : [] as DefaultSaving[]
       } as Organization;
     } catch (error: any) {
       console.error("Error creating organization:", error);
@@ -86,7 +94,14 @@ export const useOrganizationMutations = (userId: string | undefined) => {
               description: cost.description,
               unit_of_measure_id: cost.unit_of_measure_id
             }))
-          : [] as DefaultExtraCost[]
+          : [] as DefaultExtraCost[],
+        default_savings: updatedOrg.default_savings && Array.isArray(updatedOrg.default_savings) 
+          ? (updatedOrg.default_savings as any[]).map(saving => ({
+              name: saving.name || "",
+              description: saving.description,
+              unit_of_measure_id: saving.unit_of_measure_id
+            }))
+          : [] as DefaultSaving[]
       } as Organization;
     } catch (error) {
       console.error(`Error updating organization setting ${setting}:`, error);

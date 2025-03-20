@@ -1,6 +1,7 @@
 
 import { Organization } from "@/types/organization";
 import { DefaultExtraCost } from "@/types/extraCost";
+import { DefaultSaving } from "@/types/saving";
 import { useSupabaseBase } from "./useSupabaseBase";
 import { toast } from "sonner";
 
@@ -26,7 +27,7 @@ export const useOrganizationFetch = (userId: string | undefined) => {
 
         if (orgsError) throw orgsError;
         
-        // Cast organization_type and default_extra_costs to proper types
+        // Cast organization_type, default_extra_costs, and default_savings to proper types
         return (orgs || []).map(org => ({
           ...org,
           organization_type: org.organization_type as "publisher" | "printer" | "customer",
@@ -36,7 +37,14 @@ export const useOrganizationFetch = (userId: string | undefined) => {
                 description: cost.description,
                 unit_of_measure_id: cost.unit_of_measure_id
               })) 
-            : [] as DefaultExtraCost[]
+            : [] as DefaultExtraCost[],
+          default_savings: org.default_savings && Array.isArray(org.default_savings) 
+            ? (org.default_savings as any[]).map(saving => ({
+                name: saving.name || "",
+                description: saving.description,
+                unit_of_measure_id: saving.unit_of_measure_id
+              })) 
+            : [] as DefaultSaving[]
         })) as Organization[];
       }
       
