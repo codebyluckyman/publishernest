@@ -1,27 +1,20 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Plus, Library, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
-import { DefaultExtraCost, ExtraCostTableItem } from "@/types/extraCost";
+import { ExtraCostTableItem } from "@/types/extraCost";
 import { useOrganization } from "@/hooks/useOrganization";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ExtraCostsList } from "./ExtraCostsList";
 import { ExtraCostLibraryDialog } from "./ExtraCostLibraryDialog";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 export function ExtraCostsField() {
-  const {
-    currentOrganization
-  } = useOrganization();
-  const {
-    control,
-    setValue,
-    formState
-  } = useFormContext<QuoteRequestFormValues>();
+  const { currentOrganization } = useOrganization();
+  const { control, setValue, formState } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -62,22 +55,21 @@ export function ExtraCostsField() {
   };
 
   const handleAddExtraCost = () => {
+    // Ensure we're adding an empty extra cost
     append({ 
       name: "",
       description: "",
       unit_of_measure_id: ""
     });
+    
     // Ensure the collapsible is open when adding a new cost
     if (!isOpen) {
       setIsOpen(true);
     }
+    
+    // For debugging
+    console.log("Added new extra cost. Current fields:", fields);
   };
-
-  // For debugging purposes
-  useEffect(() => {
-    console.log("Extra costs fields:", fields);
-    console.log("Form state:", formState);
-  }, [fields, formState]);
 
   return (
     <Card className="mt-6">
