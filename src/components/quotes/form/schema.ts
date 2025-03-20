@@ -35,6 +35,7 @@ export const quoteRequestFormSchema = z.object({
       unit_of_measure_id: z.string().optional(),
     })
   ).optional(),
+  currency: z.string().default("USD"),
   products: z.record(z.any()).optional(),
   quantities: z.record(z.any()).optional(),
 });

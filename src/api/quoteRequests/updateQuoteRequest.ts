@@ -39,6 +39,7 @@ export async function updateQuoteRequest(
         : null,
       products: updates.products || currentQuoteRequest.products,
       quantities: updates.quantities || currentQuoteRequest.quantities,
+      currency: updates.currency || currentQuoteRequest.currency || "USD",
       updated_at: new Date().toISOString()
     };
 

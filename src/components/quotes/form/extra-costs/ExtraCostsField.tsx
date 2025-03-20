@@ -10,6 +10,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ExtraCostsList } from "./ExtraCostsList";
 import { ExtraCostLibraryDialog } from "./ExtraCostLibraryDialog";
+import { CurrencySelect } from "./CurrencySelect";
 import { toast } from "sonner";
 
 export function ExtraCostsField() {
@@ -108,6 +109,11 @@ export function ExtraCostsField() {
           </p>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-3">
+              {/* Currency selection field */}
+              <div className="mb-4">
+                <CurrencySelect />
+              </div>
+              
               {/* Pass the extraCosts array to trigger re-render when it changes */}
               <ExtraCostsList control={control} extraCosts={extraCosts} />
 

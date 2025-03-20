@@ -39,6 +39,7 @@ export function QuoteRequestForm({
         products: format.products || []
       })) || [],
       extra_costs: initialValues?.extra_costs || [],
+      currency: initialValues?.currency || "USD",
       products: initialValues?.products || {},
       quantities: initialValues?.quantities || {},
       supplier_id: initialValues?.supplier_id,
