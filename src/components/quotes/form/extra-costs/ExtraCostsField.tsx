@@ -16,7 +16,7 @@ export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, formState, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(true); // Start with the section open for better visibility
+  const [isOpen, setIsOpen] = useState(false); // Start with the section open for better visibility
   const [libraryOpen, setLibraryOpen] = useState(false);
   
   // Set up the field array for extra_costs
