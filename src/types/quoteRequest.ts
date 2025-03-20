@@ -1,4 +1,3 @@
-
 import { ExtraCost, DefaultExtraCost } from "./extraCost";
 
 export interface QuoteRequest {

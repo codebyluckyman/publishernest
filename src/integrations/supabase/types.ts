@@ -619,7 +619,7 @@ export type Database = {
           id: string
           name: string
           quote_request_id: string
-          unit_of_measure: string | null
+          unit_of_measure_id: string | null
           updated_at: string
         }
         Insert: {
@@ -628,7 +628,7 @@ export type Database = {
           id?: string
           name: string
           quote_request_id: string
-          unit_of_measure?: string | null
+          unit_of_measure_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -637,7 +637,7 @@ export type Database = {
           id?: string
           name?: string
           quote_request_id?: string
-          unit_of_measure?: string | null
+          unit_of_measure_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -646,6 +646,13 @@ export type Database = {
             columns: ["quote_request_id"]
             isOneToOne: false
             referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_request_extra_costs_unit_of_measure_id_fkey"
+            columns: ["unit_of_measure_id"]
+            isOneToOne: false
+            referencedRelation: "unit_of_measures"
             referencedColumns: ["id"]
           },
         ]
