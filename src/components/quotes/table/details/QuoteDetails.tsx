@@ -23,8 +23,8 @@ export function QuoteDetails({
   onStatusChange, 
   onShowHistory 
 }: QuoteDetailsProps) {
-  const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(true);
-  const [isSavingsOpen, setIsSavingsOpen] = useState(true);
+  const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(false);
+  const [isSavingsOpen, setIsSavingsOpen] = useState(false);
   
   const handleEdit = () => {
     if (onEdit) {
