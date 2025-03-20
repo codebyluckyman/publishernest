@@ -1,5 +1,5 @@
 
-import { Control, useWatch } from "react-hook-form";
+import { Control, useWatch, useFormContext } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { QuoteRequestFormValues } from "./schema";
 import { useLinkedProducts } from "@/components/format/hooks/useLinkedProducts";
 import { Badge } from "@/components/ui/badge";
+import { useEffect } from "react";
 
 interface FormatProductFieldProps {
   control: Control<QuoteRequestFormValues>;
@@ -15,19 +16,60 @@ interface FormatProductFieldProps {
 }
 
 export function FormatProductField({ control, formatIndex, formatId }: FormatProductFieldProps) {
+  // Access form context to update extra costs
+  const { setValue, getValues } = useFormContext<QuoteRequestFormValues>();
+  
   // Fetch products linked to this format
   const { data: linkedProducts = [], isLoading } = useLinkedProducts(formatId);
 
   // Watch for selected product IDs to display format extras
-  const selectedProducts = useWatch({
+  const selectedProductId = useWatch({
     control,
-    name: `formats.${formatIndex}.products`,
+    name: `formats.${formatIndex}.products.0.product_id`,
   });
 
   // Get product details by ID
   const getProductById = (productId: string) => {
     return linkedProducts.find(product => product.id === productId);
   };
+
+  // Effect to add format extras to extra costs when a product is selected
+  useEffect(() => {
+    if (selectedProductId) {
+      const selectedProduct = getProductById(selectedProductId);
+      
+      if (selectedProduct?.format_extras && selectedProduct.format_extras.length > 0) {
+        // Get current extra costs
+        const currentExtraCosts = getValues("extra_costs") || [];
+        
+        // Get ISBN for reference
+        const isbn = selectedProduct.isbn13 || selectedProduct.isbn10 || selectedProduct.id;
+        
+        // Add each format extra if it doesn't already exist
+        selectedProduct.format_extras.forEach(extra => {
+          // Check if this extra cost already exists by name
+          const extraExists = currentExtraCosts.some(
+            cost => cost.name.toLowerCase() === extra.name.toLowerCase()
+          );
+          
+          if (!extraExists) {
+            // Create description that mentions the product
+            const description = `Related to "${selectedProduct.title}" (${isbn})`;
+            
+            // Add the extra cost
+            setValue("extra_costs", [
+              ...currentExtraCosts,
+              {
+                name: extra.name,
+                description: description,
+                unit_of_measure_id: extra.unit_of_measure_id || ""
+              }
+            ]);
+          }
+        });
+      }
+    }
+  }, [selectedProductId, linkedProducts, setValue, getValues]);
 
   // Render badges for format extras
   const renderFormatExtrasBadges = (productId: string) => {
