@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
+import { DefaultExtraCost } from "@/types/extraCost";
 
 interface ExtraCostsListProps {
   control: Control<QuoteRequestFormValues>;
+  extraCosts?: DefaultExtraCost[]; // Add this prop to trigger re-renders
 }
 
-export function ExtraCostsList({ control }: ExtraCostsListProps) {
+export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
   const { setValue, watch } = useFormContext<QuoteRequestFormValues>();
   const {
     fields,
@@ -67,7 +69,6 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
               />
             </div>
             <div className="col-span-2">
-              {/* Move useWatch out of render function - this was causing the hooks error */}
               <UnitOfMeasureSelect
                 value={watch(`extra_costs.${index}.unit_of_measure_id`) || ''}
                 onChange={(value) => {

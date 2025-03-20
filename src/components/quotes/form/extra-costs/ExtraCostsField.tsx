@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
-  const { control, setValue, formState, getValues } = useFormContext<QuoteRequestFormValues>();
+  const { control, setValue, formState, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
   const [isOpen, setIsOpen] = useState(true); // Start with the section open for better visibility
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -24,6 +24,9 @@ export function ExtraCostsField() {
     control,
     name: "extra_costs"
   });
+  
+  // Force re-render when fields change
+  const extraCosts = watch("extra_costs");
   
   // Add default extra costs from organization settings if available
   useEffect(() => {
@@ -67,15 +70,16 @@ export function ExtraCostsField() {
       unit_of_measure_id: ""
     });
     
-    console.log("Current extra costs after adding:", getValues("extra_costs"));
+    // Log the updated state
+    setTimeout(() => {
+      console.log("Current extra costs after adding:", getValues("extra_costs"));
+      console.log("Fields after append:", fields);
+    }, 0);
     
     // Ensure the collapsible is open when adding a new cost
     if (!isOpen) {
       setIsOpen(true);
     }
-    
-    // For debugging
-    console.log("Fields after append:", fields);
     
     // Show success toast for better user feedback
     toast.success("New extra cost field added");
@@ -104,7 +108,8 @@ export function ExtraCostsField() {
           </p>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-3">
-              <ExtraCostsList control={control} />
+              {/* Pass the extraCosts array to trigger re-render when it changes */}
+              <ExtraCostsList control={control} extraCosts={extraCosts} />
 
               <div className="flex space-x-2">
                 <Button 
