@@ -13,6 +13,7 @@ import { DefaultSavings } from "@/components/organizations/DefaultSavings";
 import { NumberInput } from "@/components/NumberInput";
 import { SavingsTable } from "@/components/quotes/form/savings/SavingsTable";
 import { ExtraCostsTable } from "@/components/quotes/form/extra-costs/ExtraCostsTable";
+import { Library, Settings, Users, Ruler, ListChecks } from "lucide-react";
 
 export default function OrganizationSettings() {
   const { currentOrganization, updateOrganizationSetting } = useOrganization();
@@ -59,12 +60,27 @@ export default function OrganizationSettings() {
       </div>
 
       <Tabs defaultValue="general" className="w-full" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="units">Units of Measure</TabsTrigger>
-          <TabsTrigger value="defaults">Default Values</TabsTrigger>
-          <TabsTrigger value="libraries">Libraries</TabsTrigger>
+        <TabsList className="mb-4 flex flex-wrap overflow-x-auto">
+          <TabsTrigger value="general" className="flex items-center gap-1">
+            <Settings className="h-4 w-4" />
+            <span>General</span>
+          </TabsTrigger>
+          <TabsTrigger value="members" className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span>Members</span>
+          </TabsTrigger>
+          <TabsTrigger value="units" className="flex items-center gap-1">
+            <Ruler className="h-4 w-4" />
+            <span>Units of Measure</span>
+          </TabsTrigger>
+          <TabsTrigger value="defaults" className="flex items-center gap-1">
+            <ListChecks className="h-4 w-4" />
+            <span>Default Values</span>
+          </TabsTrigger>
+          <TabsTrigger value="libraries" className="flex items-center gap-1 font-semibold">
+            <Library className="h-4 w-4" />
+            <span>Libraries</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -143,6 +159,10 @@ export default function OrganizationSettings() {
         </TabsContent>
         
         <TabsContent value="libraries" className="space-y-6">
+          <div className="pb-4">
+            <h2 className="text-xl font-semibold mb-2">Component Libraries</h2>
+            <p className="text-muted-foreground">Manage your organization's reusable components for quotes and projects</p>
+          </div>
           <SavingsTable />
           <ExtraCostsTable />
         </TabsContent>
