@@ -6,6 +6,7 @@ import { BasicFormFields } from "./form/BasicFormFields";
 import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
 import { ExtraCostsField } from "./form/extra-costs/ExtraCostsField";
+import { SavingsField } from "./form/savings/SavingsField";
 import { Supplier } from "@/types/supplier";
 import { Form } from "@/components/ui/form";
 import { useEffect } from "react";
@@ -39,6 +40,7 @@ export function QuoteRequestForm({
         products: format.products || []
       })) || [],
       extra_costs: initialValues?.extra_costs || [],
+      savings: initialValues?.savings || [],
       currency: initialValues?.currency || "USD",
       products: initialValues?.products || {},
       quantities: initialValues?.quantities || {},
@@ -64,6 +66,7 @@ export function QuoteRequestForm({
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormatFieldArray form={form} />
         <ExtraCostsField />
+        <SavingsField />
         <BasicFormFields form={form} suppliers={suppliers} />
         <FormActions
           form={form}

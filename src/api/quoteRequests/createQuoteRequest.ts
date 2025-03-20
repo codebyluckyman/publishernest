@@ -139,6 +139,25 @@ export async function createQuoteRequest(
         throw extraCostsError;
       }
     }
+    
+    // If savings were provided, insert them
+    if (formData.savings && formData.savings.length > 0 && quoteRequestData) {
+      const savingsEntries = formData.savings.map(saving => ({
+        quote_request_id: quoteRequestData.id,
+        name: saving.name,
+        description: saving.description || null,
+        unit_of_measure_id: saving.unit_of_measure_id || null
+      }));
+
+      const { error: savingsError } = await supabase
+        .from('quote_request_savings')
+        .insert(savingsEntries);
+
+      if (savingsError) {
+        console.error("Error inserting savings:", savingsError);
+        throw savingsError;
+      }
+    }
 
     // Record the creation in the audit trail
     await recordQuoteRequestAudit(

@@ -1,4 +1,5 @@
 import { ExtraCost, DefaultExtraCost } from "./extraCost";
+import { Saving, DefaultSaving } from "./saving";
 
 export interface QuoteRequest {
   id: string;
@@ -20,6 +21,7 @@ export interface QuoteRequest {
   supplier_names?: string[]; // Array of supplier names mapped from supplier_ids
   formats?: QuoteRequestFormat[]; // Added field for associated formats
   extra_costs?: ExtraCost[]; // Added field for extra costs
+  savings?: Saving[]; // Added field for savings
 }
 
 export interface QuoteRequestFormat {
@@ -81,8 +83,9 @@ export interface QuoteRequestFormValues {
   }[];
   products?: Record<string, any>;
   quantities?: Record<string, any>;
-  extra_costs?: DefaultExtraCost[]; // Fixed type to match DefaultExtraCost
-  currency?: string; // New field for currency
+  extra_costs?: DefaultExtraCost[]; 
+  savings?: DefaultSaving[]; // New field for savings
+  currency?: string;
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';

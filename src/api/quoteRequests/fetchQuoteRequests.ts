@@ -49,6 +49,13 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           description,
           unit_of_measure_id,
           unit_of_measures(id, name, abbreviation)
+        ),
+        savings:quote_request_savings(
+          id,
+          name,
+          description,
+          unit_of_measure_id,
+          unit_of_measures(id, name, abbreviation)
         )
       `)
       .eq("organization_id", currentOrganization.id);
@@ -121,6 +128,20 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
             : cost.unit_of_measures.name) 
           : null
       }));
+      
+      // Format the savings with correct unit_of_measure_name
+      const formattedSavings = request.savings?.map((saving: any) => ({
+        id: saving.id,
+        quote_request_id: request.id,
+        name: saving.name,
+        description: saving.description,
+        unit_of_measure_id: saving.unit_of_measure_id,
+        unit_of_measure_name: saving.unit_of_measures ? 
+          (saving.unit_of_measures.abbreviation 
+            ? `${saving.unit_of_measures.name} (${saving.unit_of_measures.abbreviation})` 
+            : saving.unit_of_measures.name) 
+          : null
+      }));
 
       // Ensure the status is one of the valid enum values
       const validStatus = ['pending', 'approved', 'declined'].includes(request.status) 
@@ -132,7 +153,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         status: validStatus,
         formats: formattedFormats || [],
         supplier_names: supplierNames,
-        extra_costs: formattedExtraCosts || []
+        extra_costs: formattedExtraCosts || [],
+        savings: formattedSavings || []
       } as QuoteRequest;
     }));
 

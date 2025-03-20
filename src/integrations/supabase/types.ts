@@ -322,6 +322,7 @@ export type Database = {
           created_at: string
           default_extra_costs: Json | null
           default_num_products: number
+          default_savings: Json | null
           id: string
           logo_url: string | null
           name: string
@@ -333,6 +334,7 @@ export type Database = {
           created_at?: string
           default_extra_costs?: Json | null
           default_num_products?: number
+          default_savings?: Json | null
           id?: string
           logo_url?: string | null
           name: string
@@ -344,6 +346,7 @@ export type Database = {
           created_at?: string
           default_extra_costs?: Json | null
           default_num_products?: number
+          default_savings?: Json | null
           id?: string
           logo_url?: string | null
           name?: string
@@ -785,6 +788,51 @@ export type Database = {
           },
         ]
       }
+      quote_request_savings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          quote_request_id: string
+          unit_of_measure_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          quote_request_id: string
+          unit_of_measure_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          quote_request_id?: string
+          unit_of_measure_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_request_savings_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_request_savings_unit_of_measure_id_fkey"
+            columns: ["unit_of_measure_id"]
+            isOneToOne: false
+            referencedRelation: "unit_of_measures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_requests: {
         Row: {
           currency: string
@@ -850,6 +898,51 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      savings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          unit_of_measure_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          unit_of_measure_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          unit_of_measure_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "savings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "savings_unit_of_measure_id_fkey"
+            columns: ["unit_of_measure_id"]
+            isOneToOne: false
+            referencedRelation: "unit_of_measures"
             referencedColumns: ["id"]
           },
         ]

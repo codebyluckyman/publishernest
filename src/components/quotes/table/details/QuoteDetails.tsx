@@ -24,6 +24,7 @@ export function QuoteDetails({
   onShowHistory 
 }: QuoteDetailsProps) {
   const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(true);
+  const [isSavingsOpen, setIsSavingsOpen] = useState(true);
   
   const handleEdit = () => {
     if (onEdit) {
@@ -98,6 +99,54 @@ export function QuoteDetails({
                           </td>
                           <td className="py-2 text-sm text-right">
                             {cost.unit_of_measure_name || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      )}
+      
+      {/* Savings */}
+      {selectedRequest.savings && selectedRequest.savings.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-md font-medium">Savings</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-0 h-8 w-8"
+              onClick={() => setIsSavingsOpen(!isSavingsOpen)}
+            >
+              {isSavingsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </div>
+          
+          <Collapsible open={isSavingsOpen} onOpenChange={setIsSavingsOpen}>
+            <CollapsibleContent>
+              <Card>
+                <CardContent className="p-4">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="py-2 font-medium text-sm">Item</th>
+                        <th className="py-2 font-medium text-sm">Description</th>
+                        <th className="py-2 font-medium text-sm text-right">Unit of Measure</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedRequest.savings.map((saving, index) => (
+                        <tr key={saving.id || index} className="border-b">
+                          <td className="py-2 text-sm">{saving.name}</td>
+                          <td className="py-2 text-sm text-muted-foreground">
+                            {saving.description || '-'}
+                          </td>
+                          <td className="py-2 text-sm text-right">
+                            {saving.unit_of_measure_name || '-'}
                           </td>
                         </tr>
                       ))}

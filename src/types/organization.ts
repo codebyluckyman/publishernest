@@ -12,6 +12,11 @@ export type Organization = {
     description?: string;
     unit_of_measure_id?: string;
   }[];
+  default_savings?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
 };
 
 export type OrganizationMember = {

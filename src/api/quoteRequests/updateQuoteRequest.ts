@@ -105,6 +105,39 @@ export async function updateQuoteRequest(
         }
       }
     }
+    
+    // Handle savings updates if provided
+    if (updates.savings !== undefined) {
+      // First delete all existing savings
+      const { error: deleteError } = await supabase
+        .from("quote_request_savings")
+        .delete()
+        .eq("quote_request_id", id);
+      
+      if (deleteError) {
+        console.error("Error deleting savings:", deleteError);
+        throw deleteError;
+      }
+      
+      // Then insert the new savings if any
+      if (updates.savings && updates.savings.length > 0) {
+        const savingsEntries = updates.savings.map(saving => ({
+          quote_request_id: id,
+          name: saving.name,
+          description: saving.description || null,
+          unit_of_measure_id: saving.unit_of_measure_id || null
+        }));
+
+        const { error: insertError } = await supabase
+          .from('quote_request_savings')
+          .insert(savingsEntries);
+
+        if (insertError) {
+          console.error("Error inserting updated savings:", insertError);
+          throw insertError;
+        }
+      }
+    }
 
     // Record the update in the audit trail
     await recordQuoteRequestAudit(
