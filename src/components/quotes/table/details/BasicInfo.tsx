@@ -36,6 +36,10 @@ export function BasicInfo({ request }: BasicInfoProps) {
             <p className="text-sm text-muted-foreground">Status</p>
             <StatusBadge status={request.status} />
           </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Currency</p>
+            <p className="font-medium">{request.currency || "USD"}</p>
+          </div>
         </div>
       </CardContent>
     </Card>

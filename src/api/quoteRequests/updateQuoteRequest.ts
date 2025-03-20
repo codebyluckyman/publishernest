@@ -39,8 +39,7 @@ export async function updateQuoteRequest(
         : null,
       products: updates.products || currentQuoteRequest.products,
       quantities: updates.quantities || currentQuoteRequest.quantities,
-      // Handle the currency field safely - if it doesn't exist in the current request, use the update value or default to USD
-      currency: updates.currency || (currentQuoteRequest as any).currency || "USD",
+      currency: updates.currency || currentQuoteRequest.currency || "USD",
       updated_at: new Date().toISOString()
     };
 

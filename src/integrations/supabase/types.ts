@@ -787,6 +787,7 @@ export type Database = {
       }
       quote_requests: {
         Row: {
+          currency: string
           description: string | null
           due_date: string | null
           id: string
@@ -803,6 +804,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          currency?: string
           description?: string | null
           due_date?: string | null
           id?: string
@@ -819,6 +821,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          currency?: string
           description?: string | null
           due_date?: string | null
           id?: string

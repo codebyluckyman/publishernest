@@ -12,6 +12,7 @@ import { Supplier } from "@/types/supplier";
 import { QuoteRequestFormValues } from "./schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { CurrencySelect } from "./currency/CurrencySelect";
 
 interface BasicFormFieldsProps {
   form: UseFormReturn<QuoteRequestFormValues>;
@@ -78,6 +79,8 @@ export function BasicFormFields({ form, suppliers }: BasicFormFieldsProps) {
           </FormItem>
         )}
       />
+
+      <CurrencySelect />
 
       <FormField
         control={control}
