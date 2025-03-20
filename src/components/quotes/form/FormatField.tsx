@@ -240,6 +240,7 @@ export function FormatField({ control, index, formats, isFormatsLoading }: Forma
               control={control}
               formatIndex={index}
               formatId={selectedFormatId}
+              productIndex={productIndex}
             />
           </div>
         ))}

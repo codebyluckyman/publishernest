@@ -13,9 +13,10 @@ interface FormatProductFieldProps {
   control: Control<QuoteRequestFormValues>;
   formatIndex: number;
   formatId: string;
+  productIndex: number; // Add productIndex to track which product we're working with
 }
 
-export function FormatProductField({ control, formatIndex, formatId }: FormatProductFieldProps) {
+export function FormatProductField({ control, formatIndex, formatId, productIndex }: FormatProductFieldProps) {
   // Access form context to update extra costs
   const { setValue, getValues } = useFormContext<QuoteRequestFormValues>();
   
@@ -25,7 +26,7 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
   // Watch for selected product IDs to display format extras
   const selectedProductId = useWatch({
     control,
-    name: `formats.${formatIndex}.products.0.product_id`,
+    name: `formats.${formatIndex}.products.${productIndex}.product_id`,
   });
 
   // Get product details by ID
@@ -118,7 +119,7 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
       <div className="grid gap-3 md:grid-cols-2">
         <FormField
           control={control}
-          name={`formats.${formatIndex}.products.0.product_id`}
+          name={`formats.${formatIndex}.products.${productIndex}.product_id`}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-xs">Product</FormLabel>
@@ -147,7 +148,7 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
 
         <FormField
           control={control}
-          name={`formats.${formatIndex}.products.0.quantity`}
+          name={`formats.${formatIndex}.products.${productIndex}.quantity`}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-xs">Quantity</FormLabel>
@@ -171,7 +172,7 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
 
         <FormField
           control={control}
-          name={`formats.${formatIndex}.products.0.notes`}
+          name={`formats.${formatIndex}.products.${productIndex}.notes`}
           render={({ field }) => (
             <FormItem className="md:col-span-2">
               <FormLabel className="text-xs">Notes (Optional)</FormLabel>
