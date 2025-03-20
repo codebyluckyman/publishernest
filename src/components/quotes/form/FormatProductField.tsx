@@ -53,8 +53,13 @@ export function FormatProductField({ control, formatIndex, formatId }: FormatPro
           );
           
           if (!extraExists) {
-            // Create description that mentions the product
-            const description = `Related to "${selectedProduct.title}" (${isbn})`;
+            // Create description that mentions the product and includes format extra comments
+            let description = `Related to "${selectedProduct.title}" (${isbn})`;
+            
+            // Add format extra comments if available
+            if (selectedProduct.format_extra_comments) {
+              description += `. Comments: ${selectedProduct.format_extra_comments}`;
+            }
             
             // Add the extra cost
             setValue("extra_costs", [
