@@ -20,6 +20,7 @@ export interface SupplierQuote {
   
   // Joined fields
   quote_request?: QuoteRequest;
+  supplier?: { supplier_name: string }; // Add the supplier field
   price_breaks?: SupplierQuotePriceBreak[];
   extra_costs?: SupplierQuoteExtraCost[];
   savings?: SupplierQuoteSaving[];
@@ -37,8 +38,16 @@ export interface SupplierQuotePriceBreak {
   updated_at: string;
   
   // Joined fields
-  format?: QuoteRequestFormat;
-  product?: QuoteRequestFormatProduct;
+  format?: {
+    format_id: string;
+    quote_request_id: string;
+    notes?: string | null;
+  };
+  product?: {
+    product_id: string;
+    quantity: number;
+    notes?: string | null;
+  };
 }
 
 export interface SupplierQuoteExtraCost {

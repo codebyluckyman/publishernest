@@ -27,7 +27,7 @@ export async function fetchSupplierQuotes({
     .select(`
       *,
       quote_requests(id, title, status, requested_at, due_date),
-      suppliers:supplier_id(id, supplier_name)
+      supplier:suppliers(id, supplier_name)
     `)
     .eq("organization_id", currentOrganization.id);
 

@@ -106,7 +106,7 @@ export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuote
                   {quote.quote_request?.title || "Untitled Quote Request"}
                 </TableCell>
                 <TableCell onClick={() => handleViewDetails(quote)}>
-                  {quote.suppliers?.supplier_name || "Unknown Supplier"}
+                  {quote.supplier?.supplier_name || "Unknown Supplier"}
                 </TableCell>
                 <TableCell onClick={() => handleViewDetails(quote)}>
                   {getStatusBadge(quote.status)}

@@ -111,7 +111,7 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
             {supplierQuote.quote_request?.title || "Untitled Quote Request"}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {supplierQuote.suppliers?.supplier_name || "Unknown Supplier"}
+            {supplierQuote.supplier?.supplier_name || "Unknown Supplier"}
           </p>
         </div>
         <div className="flex space-x-2">
@@ -155,7 +155,7 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
               >
                 <div className="flex justify-between">
                   <div className="font-medium">
-                    {priceBreak.format?.format?.format_name || "Unknown Format"}
+                    {priceBreak.format?.format_id ? priceBreak.format.format_id : "Unknown Format"}
                   </div>
                   <div>
                     {priceBreak.unit_cost
@@ -168,7 +168,7 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
                 </div>
                 {priceBreak.product && (
                   <div className="text-sm text-muted-foreground">
-                    Product: {priceBreak.product.title || "Unknown Product"}
+                    Product: {priceBreak.product.product_id || "Unknown Product"}
                   </div>
                 )}
               </div>
