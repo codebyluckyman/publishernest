@@ -100,6 +100,26 @@ export function QuoteDetails({
     }
   };
 
+  // Fetch products for a format
+  const getFormatProducts = async (formatId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("quote_request_format_products")
+        .select("*, products:product_id(title)")
+        .eq("quote_request_format_id", formatId);
+      
+      if (error) {
+        console.error("Error fetching format products:", error);
+        return [];
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching format products:", error);
+      return [];
+    }
+  };
+
   // Alternative PDF generation using jsPDF
   const generatePDF = async () => {
     try {
@@ -250,22 +270,36 @@ export function QuoteDetails({
             }
           }
           
-          // Fetch and add price breaks table
+          // Fetch products for this format
+          const formatProducts = await getFormatProducts(format.id);
+          // Fetch price breaks for this format
           const priceBreaks = await getPriceBreaks(format.id);
-          if (priceBreaks && priceBreaks.length > 0) {
+          
+          if (priceBreaks && priceBreaks.length > 0 && formatProducts && formatProducts.length > 0) {
             doc.setFontSize(10);
             doc.text("Price Breaks", 14, currentY);
             currentY += 5;
             
-            const priceBreaksData = priceBreaks.map(pb => [
-              pb.quantity.toLocaleString(),
-              pb.num_products > 1 ? `${pb.num_products} products per unit` : "1 product per unit"
-            ]);
+            // Create headers with product titles
+            const headers = ["Quantity"];
+            formatProducts.forEach(product => {
+              headers.push(product.products?.title || `Product ${product.product_id.substring(0, 5)}`);
+            });
+            
+            // Create rows for each price break
+            const priceBreaksData = priceBreaks.map(pb => {
+              const row = [pb.quantity.toLocaleString()];
+              // Add placeholder for unit price for each product
+              formatProducts.forEach(() => {
+                row.push("---"); // Placeholder for unit price
+              });
+              return row;
+            });
             
             // @ts-ignore
             doc.autoTable({
               startY: currentY,
-              head: [["Quantity", "Products per Unit"]],
+              head: [headers],
               body: priceBreaksData,
               theme: 'grid',
               headStyles: { fillColor: [120, 144, 240] },
