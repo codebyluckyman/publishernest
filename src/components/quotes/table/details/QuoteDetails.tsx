@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
@@ -15,6 +16,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { supabase } from "@/integrations/supabase/client";
 import { Format } from "@/components/format/types/FormatTypes";
+import { useOrganization } from "@/context/OrganizationContext";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -32,6 +34,7 @@ export function QuoteDetails({
   const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(false);
   const [isSavingsOpen, setIsSavingsOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const { currentOrganization } = useOrganization();
   
   const handleEdit = () => {
     if (onEdit) {
@@ -82,18 +85,50 @@ export function QuoteDetails({
       // Create a new jsPDF instance
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      // Add organization logo if available
+      if (currentOrganization?.logo_url) {
+        try {
+          // Add logo to the top right corner
+          const logoWidth = 40;  // Width of logo in mm
+          const logoHeight = 15; // Height of logo in mm
+          const logoX = pageWidth - logoWidth - 10; // 10mm from right edge
+          const logoY = 10; // 10mm from top
+          
+          doc.addImage(
+            currentOrganization.logo_url,
+            'PNG',
+            logoX,
+            logoY,
+            logoWidth,
+            logoHeight
+          );
+        } catch (logoError) {
+          console.error("Error adding logo to PDF:", logoError);
+          // Continue generating PDF without the logo
+        }
+      }
+      
+      // Add organization name if available
+      if (currentOrganization?.name) {
+        doc.setFontSize(12);
+        doc.setTextColor(100, 100, 100);
+        doc.text(currentOrganization.name, 14, 10);
+      }
       
       // Add title and metadata
       doc.setFontSize(18);
-      doc.text("Quote Request", pageWidth / 2, 15, { align: "center" });
+      doc.setTextColor(0, 0, 0);
+      doc.text("Quote Request", pageWidth / 2, currentOrganization?.logo_url ? 30 : 15, { align: "center" });
       
       // Add quote title
       doc.setFontSize(14);
-      doc.text(selectedRequest.title, pageWidth / 2, 25, { align: "center" });
+      doc.text(selectedRequest.title, pageWidth / 2, currentOrganization?.logo_url ? 40 : 25, { align: "center" });
       
       // Add basic info section
       doc.setFontSize(12);
-      doc.text("Basic Information", 14, 35);
+      doc.text("Basic Information", 14, currentOrganization?.logo_url ? 50 : 35);
       
       const basicInfo = [
         ["Supplier", selectedRequest.supplier_name || selectedRequest.supplier_names?.join(", ") || "Not specified"],
@@ -105,7 +140,7 @@ export function QuoteDetails({
       
       // @ts-ignore - jspdf-autotable types aren't properly recognized
       doc.autoTable({
-        startY: 40,
+        startY: currentOrganization?.logo_url ? 55 : 40,
         head: [["Field", "Value"]],
         body: basicInfo,
         theme: 'grid',
