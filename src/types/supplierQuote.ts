@@ -17,6 +17,7 @@ export interface SupplierQuote {
   submitted_at: string | null;
   created_at: string;
   updated_at: string;
+  reference_id: string | null;
   
   // Joined fields
   quote_request?: QuoteRequest;

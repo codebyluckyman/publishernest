@@ -317,6 +317,29 @@ export type Database = {
           },
         ]
       }
+      organization_quote_counters: {
+        Row: {
+          next_quote_number: number
+          organization_id: string
+        }
+        Insert: {
+          next_quote_number?: number
+          organization_id: string
+        }
+        Update: {
+          next_quote_number?: number
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_quote_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -1197,6 +1220,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           quote_request_id: string
+          reference_id: string | null
           status: string
           submitted_at: string | null
           supplier_id: string
@@ -1210,6 +1234,7 @@ export type Database = {
           notes?: string | null
           organization_id: string
           quote_request_id: string
+          reference_id?: string | null
           status?: string
           submitted_at?: string | null
           supplier_id: string
@@ -1223,6 +1248,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           quote_request_id?: string
+          reference_id?: string | null
           status?: string
           submitted_at?: string | null
           supplier_id?: string

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
@@ -32,7 +31,6 @@ export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuote
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Fetch supplier quotes based on filters
   const { data: supplierQuotes = [], isLoading } = useSupplierQuotesList(
     currentOrganization,
     statusFilter ? statusFilter.join(',') : undefined,
@@ -61,7 +59,6 @@ export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuote
     }
   };
 
-  // Handle loading state
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -77,7 +74,6 @@ export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuote
     );
   }
 
-  // Handle empty state
   if (supplierQuotes.length === 0) {
     return <SupplierQuotesEmptyState statusFilter={statusFilter} />;
   }
@@ -88,6 +84,7 @@ export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuote
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Reference</TableHead>
               <TableHead>Quote Request</TableHead>
               <TableHead>Supplier</TableHead>
               <TableHead>Status</TableHead>
@@ -99,6 +96,12 @@ export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuote
           <TableBody>
             {supplierQuotes.map((quote) => (
               <TableRow key={quote.id} className="hover:bg-muted/50 cursor-pointer">
+                <TableCell 
+                  className="font-mono text-sm"
+                  onClick={() => handleViewDetails(quote)}
+                >
+                  {quote.reference_id || "—"}
+                </TableCell>
                 <TableCell 
                   className="font-medium"
                   onClick={() => handleViewDetails(quote)}

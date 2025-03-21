@@ -117,9 +117,16 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {/* Header with actions */}
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-lg font-semibold">
-            {supplierQuote.quote_request?.title || "Untitled Quote Request"}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold">
+              {supplierQuote.quote_request?.title || "Untitled Quote Request"}
+            </h3>
+            {supplierQuote.reference_id && (
+              <Badge variant="outline" className="font-mono">
+                {supplierQuote.reference_id}
+              </Badge>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground">
             {supplierQuote.supplier?.supplier_name || "Unknown Supplier"}
           </p>
