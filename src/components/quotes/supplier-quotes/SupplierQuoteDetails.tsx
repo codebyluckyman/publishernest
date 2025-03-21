@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { CollapsibleSection } from "./CollapsibleSection";
 
 interface SupplierQuoteDetailsProps {
   supplierQuote: SupplierQuote;
@@ -37,6 +38,11 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
     supplierQuote.total_cost?.toString() || ""
   );
   const [declineReason, setDeclineReason] = useState("");
+
+  // Collapsible states
+  const [priceBreaksOpen, setPriceBreaksOpen] = useState(true);
+  const [extraCostsOpen, setExtraCostsOpen] = useState(true);
+  const [savingsOpen, setSavingsOpen] = useState(true);
 
   const acceptMutation = useAcceptSupplierQuote();
   const declineMutation = useDeclineSupplierQuote();
@@ -102,6 +108,10 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
     );
   }
 
+  const hasPriceBreaks = supplierQuote.price_breaks && supplierQuote.price_breaks.length > 0;
+  const hasExtraCosts = supplierQuote.extra_costs && supplierQuote.extra_costs.length > 0;
+  const hasSavings = supplierQuote.savings && supplierQuote.savings.length > 0;
+
   return (
     <div className="space-y-6 py-6">
       {/* Header with actions */}
@@ -143,107 +153,108 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       <Separator />
 
-      {/* Price Breaks */}
-      <div>
-        <h4 className="font-medium mb-2">Price Breaks</h4>
-        {supplierQuote.price_breaks && supplierQuote.price_breaks.length > 0 ? (
-          <div className="space-y-3">
-            {supplierQuote.price_breaks.map((priceBreak) => (
+      {/* Price Breaks Section */}
+      <CollapsibleSection
+        title="Price Breaks"
+        isOpen={priceBreaksOpen}
+        onOpenChange={setPriceBreaksOpen}
+        isEmpty={!hasPriceBreaks}
+        emptyMessage="No price breaks provided"
+      >
+        {hasPriceBreaks && supplierQuote.price_breaks.map((priceBreak) => (
+          <div
+            key={priceBreak.id}
+            className="border rounded-md p-3 shadow-sm"
+          >
+            <div className="flex justify-between">
+              <div className="font-medium">
+                {priceBreak.format?.format_id ? priceBreak.format.format_id : "Unknown Format"}
+              </div>
+              <div>
+                {priceBreak.unit_cost
+                  ? `${supplierQuote.currency} ${priceBreak.unit_cost} per unit`
+                  : "No cost provided"}
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground mt-1">
+              Quantity: {priceBreak.quantity}
+            </div>
+            {priceBreak.product && (
+              <div className="text-sm text-muted-foreground">
+                Product: {priceBreak.product.product_id || "Unknown Product"}
+              </div>
+            )}
+          </div>
+        ))}
+      </CollapsibleSection>
+
+      {/* Extra Costs Section */}
+      {hasExtraCosts && (
+        <>
+          <Separator />
+          <CollapsibleSection
+            title="Extra Costs"
+            isOpen={extraCostsOpen}
+            onOpenChange={setExtraCostsOpen}
+          >
+            {supplierQuote.extra_costs.map((extraCost) => (
               <div
-                key={priceBreak.id}
+                key={extraCost.id}
                 className="border rounded-md p-3 shadow-sm"
               >
                 <div className="flex justify-between">
                   <div className="font-medium">
-                    {priceBreak.format?.format_id ? priceBreak.format.format_id : "Unknown Format"}
+                    {extraCost.extra_cost?.name || "Unknown Cost"}
                   </div>
                   <div>
-                    {priceBreak.unit_cost
-                      ? `${supplierQuote.currency} ${priceBreak.unit_cost} per unit`
+                    {extraCost.unit_cost
+                      ? `${supplierQuote.currency} ${extraCost.unit_cost}`
                       : "No cost provided"}
                   </div>
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  Quantity: {priceBreak.quantity}
-                </div>
-                {priceBreak.product && (
-                  <div className="text-sm text-muted-foreground">
-                    Product: {priceBreak.product.product_id || "Unknown Product"}
+                {extraCost.notes && (
+                  <div className="text-sm text-muted-foreground mt-1">
+                    Notes: {extraCost.notes}
                   </div>
                 )}
               </div>
             ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No price breaks provided</p>
-        )}
-      </div>
-
-      {/* Extra Costs */}
-      {supplierQuote.extra_costs && supplierQuote.extra_costs.length > 0 && (
-        <>
-          <Separator />
-          <div>
-            <h4 className="font-medium mb-2">Extra Costs</h4>
-            <div className="space-y-3">
-              {supplierQuote.extra_costs.map((extraCost) => (
-                <div
-                  key={extraCost.id}
-                  className="border rounded-md p-3 shadow-sm"
-                >
-                  <div className="flex justify-between">
-                    <div className="font-medium">
-                      {extraCost.extra_cost?.name || "Unknown Cost"}
-                    </div>
-                    <div>
-                      {extraCost.unit_cost
-                        ? `${supplierQuote.currency} ${extraCost.unit_cost}`
-                        : "No cost provided"}
-                    </div>
-                  </div>
-                  {extraCost.notes && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Notes: {extraCost.notes}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          </CollapsibleSection>
         </>
       )}
 
-      {/* Savings */}
-      {supplierQuote.savings && supplierQuote.savings.length > 0 && (
+      {/* Savings Section */}
+      {hasSavings && (
         <>
           <Separator />
-          <div>
-            <h4 className="font-medium mb-2">Savings</h4>
-            <div className="space-y-3">
-              {supplierQuote.savings.map((saving) => (
-                <div
-                  key={saving.id}
-                  className="border rounded-md p-3 shadow-sm"
-                >
-                  <div className="flex justify-between">
-                    <div className="font-medium">
-                      {saving.saving?.name || "Unknown Saving"}
-                    </div>
-                    <div>
-                      {saving.unit_cost
-                        ? `${supplierQuote.currency} ${saving.unit_cost}`
-                        : "No saving provided"}
-                    </div>
+          <CollapsibleSection
+            title="Savings"
+            isOpen={savingsOpen}
+            onOpenChange={setSavingsOpen}
+          >
+            {supplierQuote.savings.map((saving) => (
+              <div
+                key={saving.id}
+                className="border rounded-md p-3 shadow-sm"
+              >
+                <div className="flex justify-between">
+                  <div className="font-medium">
+                    {saving.saving?.name || "Unknown Saving"}
                   </div>
-                  {saving.notes && (
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Notes: {saving.notes}
-                    </div>
-                  )}
+                  <div>
+                    {saving.unit_cost
+                      ? `${supplierQuote.currency} ${saving.unit_cost}`
+                      : "No saving provided"}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+                {saving.notes && (
+                  <div className="text-sm text-muted-foreground mt-1">
+                    Notes: {saving.notes}
+                  </div>
+                )}
+              </div>
+            ))}
+          </CollapsibleSection>
         </>
       )}
 
