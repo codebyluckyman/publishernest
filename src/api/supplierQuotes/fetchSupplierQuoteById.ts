@@ -88,7 +88,7 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     throw new Error(`Error fetching savings: ${savingsError.message}`);
   }
 
-  // Fetch attachments for this supplier quote using raw SQL since the table may not be in type definitions
+  // Fetch attachments for this supplier quote using the RPC function
   const { data: attachments, error: attachmentsError } = await supabase
     .rpc('get_quote_attachments', { quote_id: id });
 

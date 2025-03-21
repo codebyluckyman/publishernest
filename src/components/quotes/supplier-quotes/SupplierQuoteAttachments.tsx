@@ -60,7 +60,7 @@ export function SupplierQuoteAttachments({
           throw uploadError;
         }
         
-        // Create record in database using a raw query approach
+        // Create record in database using the RPC function
         const { error: dbError } = await supabase.rpc('add_quote_attachment', {
           p_supplier_quote_id: supplierQuote.id,
           p_file_name: file.name,
@@ -72,19 +72,7 @@ export function SupplierQuoteAttachments({
         
         if (dbError) {
           console.error("Error creating attachment record:", dbError);
-          // Try fallback direct insert
-          const { error: directError } = await supabase.from('supplier_quote_attachments').insert({
-            supplier_quote_id: supplierQuote.id,
-            file_name: file.name,
-            file_key: filePath,
-            file_size: file.size,
-            file_type: file.type,
-            uploaded_by: user?.id
-          });
-          
-          if (directError) {
-            throw directError;
-          }
+          throw dbError;
         }
       }
       
@@ -156,15 +144,7 @@ export function SupplierQuoteAttachments({
       
       if (dbError) {
         console.error("Error deleting with RPC:", dbError);
-        // Try fallback direct delete
-        const { error: directError } = await supabase
-          .from('supplier_quote_attachments')
-          .delete()
-          .eq('id', attachmentToDelete.id);
-          
-        if (directError) {
-          throw directError;
-        }
+        throw dbError;
       }
       
       toast.success("File deleted successfully");

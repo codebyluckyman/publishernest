@@ -1022,6 +1022,50 @@ export type Database = {
           },
         ]
       }
+      supplier_quote_attachments: {
+        Row: {
+          created_at: string
+          file_key: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          supplier_quote_id: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_key: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          supplier_quote_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_key?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          supplier_quote_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_attachments_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_quote_audit: {
         Row: {
           action: string
@@ -1221,11 +1265,15 @@ export type Database = {
           organization_id: string
           quote_request_id: string
           reference_id: string | null
+          remarks: string | null
           status: string
           submitted_at: string | null
           supplier_id: string
+          terms: string | null
           total_cost: number | null
           updated_at: string
+          valid_from: string | null
+          valid_to: string | null
         }
         Insert: {
           created_at?: string
@@ -1235,11 +1283,15 @@ export type Database = {
           organization_id: string
           quote_request_id: string
           reference_id?: string | null
+          remarks?: string | null
           status?: string
           submitted_at?: string | null
           supplier_id: string
+          terms?: string | null
           total_cost?: number | null
           updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
         }
         Update: {
           created_at?: string
@@ -1249,11 +1301,15 @@ export type Database = {
           organization_id?: string
           quote_request_id?: string
           reference_id?: string | null
+          remarks?: string | null
           status?: string
           submitted_at?: string | null
           supplier_id?: string
+          terms?: string | null
           total_cost?: number | null
           updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
         }
         Relationships: [
           {
@@ -1391,9 +1447,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_quote_attachment: {
+        Args: {
+          p_supplier_quote_id: string
+          p_file_name: string
+          p_file_key: string
+          p_file_size: number
+          p_file_type: string
+          p_uploaded_by: string
+        }
+        Returns: string
+      }
+      delete_quote_attachment: {
+        Args: {
+          attachment_id: string
+        }
+        Returns: undefined
+      }
       generate_api_key: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_quote_attachments: {
+        Args: {
+          quote_id: string
+        }
+        Returns: {
+          created_at: string
+          file_key: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          supplier_quote_id: string
+          updated_at: string
+          uploaded_by: string | null
+        }[]
       }
       get_user_organizations: {
         Args: {
