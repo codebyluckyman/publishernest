@@ -13,6 +13,8 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { toast } from "@/components/ui/use-toast";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
+import { supabase } from "@/integrations/supabase/client";
+import { Format } from "@/components/format/types/FormatTypes";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -53,11 +55,21 @@ export function QuoteDetails({
     }),
   });
 
-  // Fetch all format details for the PDF generation
-  const getFormatDetails = async (formatId: string) => {
+  // Fetch format details directly from the database
+  const getFormatDetails = async (formatId: string): Promise<Format | null> => {
     try {
-      const { data } = await fetch(`/api/formats/${formatId}`).then(res => res.json());
-      return data;
+      const { data, error } = await supabase
+        .from("formats")
+        .select("*")
+        .eq("id", formatId)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching format details:", error);
+        return null;
+      }
+      
+      return data as Format;
     } catch (error) {
       console.error("Error fetching format details:", error);
       return null;
@@ -129,11 +141,9 @@ export function QuoteDetails({
           doc.setTextColor(0, 0, 0);
           
           // Fetch and add format specifications
-          const formatData = await useFormatDetails(format.format_id).query();
+          const formatDetails = await getFormatDetails(format.format_id);
           
-          if (formatData.data) {
-            const formatDetails = formatData.data;
-            
+          if (formatDetails) {
             // Create format specifications table
             const formatSpecsData = [];
             
@@ -416,4 +426,3 @@ export function QuoteDetails({
     </div>
   );
 }
-
