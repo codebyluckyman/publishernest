@@ -2,9 +2,10 @@
 import { useOrganization } from "@/context/OrganizationContext";
 import { useSuppliersApi } from "./useSuppliersApi";
 import { Organization } from "@/types/organization";
+import { Supplier } from "@/types/supplier";
 
 // Accept either a full Organization or just an id string
-type OrganizationParam = Organization | { id: string } | string;
+type OrganizationParam = Organization | string | { id: string };
 
 export const useSuppliers = (organizationParam?: OrganizationParam) => {
   const { currentOrganization } = useOrganization();
@@ -20,12 +21,14 @@ export const useSuppliers = (organizationParam?: OrganizationParam) => {
     orgId = currentOrganization.id;
   }
   
-  const org = orgId ? { id: orgId } : undefined;
-  const result = useSuppliersApi(org);
+  // Create a minimal organization object with just the ID
+  const result = useSuppliersApi(
+    orgId ? { id: orgId } : null
+  );
   
   return { 
     suppliers: result.suppliers,
-    loading: result.isLoading,
+    isLoading: result.isLoading,
     error: result.error,
     refetch: result.refetch
   };

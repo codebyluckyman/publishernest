@@ -20,6 +20,7 @@ import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { SupplierQuoteAttachments } from "./SupplierQuoteAttachments";
 import { useExtraCosts } from "@/hooks/useExtraCosts";
 import { useSavings } from "@/hooks/useSavings";
+import { Supplier } from "@/types/supplier";
 
 // Create a schema for form validation
 const formSchema = z.object({
@@ -79,10 +80,11 @@ export function SupplierQuoteForm({
   onDone
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
-  const { suppliers, loading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
+  const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
   const [activeTab, setActiveTab] = useState("details");
   const { extraCosts } = useExtraCosts();
   const { savings } = useSavings();
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
   // Set up the form with react-hook-form and explicitly cast the type for type safety
   const form = useForm<SupplierQuoteFormValues>({
@@ -95,8 +97,11 @@ export function SupplierQuoteForm({
     const supplierId = form.watch("supplier_id");
     if (supplierId) {
       onSupplierChange(supplierId);
+      // Update selected supplier
+      const supplier = suppliers?.find(s => s.id === supplierId) || null;
+      setSelectedSupplier(supplier);
     }
-  }, [form.watch("supplier_id"), onSupplierChange]);
+  }, [form.watch("supplier_id"), onSupplierChange, suppliers]);
 
   // Set up price breaks when formats are available
   useEffect(() => {
@@ -183,8 +188,9 @@ export function SupplierQuoteForm({
           <SupplierSelect 
             control={form.control}
             suppliers={suppliers || []} 
-            loading={loadingSuppliers}
+            isLoading={loadingSuppliers}
             defaultSupplierId={quoteRequest.supplier_id}
+            quoteRequest={quoteRequest}
           />
         </div>
         
@@ -209,7 +215,11 @@ export function SupplierQuoteForm({
           
           <TabsContent value="pricing">
             <Card className="p-6">
-              <PriceBreaksSection control={form.control} quoteRequest={quoteRequest} />
+              <PriceBreaksSection 
+                control={form.control} 
+                quoteRequest={quoteRequest}
+                selectedSupplier={selectedSupplier}
+              />
             </Card>
           </TabsContent>
           

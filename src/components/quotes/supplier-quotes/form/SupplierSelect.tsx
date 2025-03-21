@@ -6,14 +6,15 @@ import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequest } from "@/types/quoteRequest";
 
-interface SupplierSelectProps {
+export interface SupplierSelectProps {
   control: Control<SupplierQuoteFormValues>;
   suppliers: Supplier[];
-  quoteRequest: QuoteRequest;
   isLoading: boolean;
+  defaultSupplierId?: string;
+  quoteRequest: QuoteRequest;
 }
 
-export function SupplierSelect({ control, suppliers, quoteRequest, isLoading }: SupplierSelectProps) {
+export function SupplierSelect({ control, suppliers, quoteRequest, isLoading, defaultSupplierId }: SupplierSelectProps) {
   // Filter suppliers to only those in the quote request
   const filteredSuppliers = suppliers.filter(supplier => {
     if (quoteRequest.supplier_id) {

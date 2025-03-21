@@ -8,13 +8,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { PriceBreakItem } from "./PriceBreakItem";
 import { Supplier } from "@/types/supplier";
 
-interface PriceBreaksSectionProps {
+export interface PriceBreaksSectionProps {
   control: Control<SupplierQuoteFormValues>;
   quoteRequest: QuoteRequest;
   selectedSupplier: Supplier | null;
 }
 
-export function PriceBreaksSection({ control, quoteRequest, selectedSupplier }: PriceBreaksSectionProps) {
+export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = null }: PriceBreaksSectionProps) {
   const { fields, replace } = useFieldArray({
     control,
     name: "price_breaks"
