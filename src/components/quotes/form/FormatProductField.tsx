@@ -46,7 +46,7 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
       }
       
       // Safely check if format_extras exists and has items
-      if (selectedProduct.format_extras && selectedProduct.format_extras.length > 0) {
+      if (selectedProduct.format_extras && Array.isArray(selectedProduct.format_extras) && selectedProduct.format_extras.length > 0) {
         // Get current extra costs
         const currentExtraCosts = getValues("extra_costs") || [];
         
@@ -96,7 +96,7 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
           setValue("extra_costs", newExtraCosts);
         }
       } else {
-        console.log(`Product "${selectedProduct.title}" has no format extras`);
+        console.log(`Product "${selectedProduct.title}" has no format extras or extras are not in array format`);
       }
     }
   }, [selectedProductId, linkedProducts, setValue, getValues]);
@@ -104,7 +104,7 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
   // Render badges for format extras
   const renderFormatExtrasBadges = (productId: string) => {
     const product = getProductById(productId);
-    if (!product || !product.format_extras || product.format_extras.length === 0) return null;
+    if (!product || !product.format_extras || !Array.isArray(product.format_extras) || product.format_extras.length === 0) return null;
 
     return (
       <div className="mt-2">
