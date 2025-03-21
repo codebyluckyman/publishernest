@@ -59,8 +59,8 @@ export function SupplierQuoteForm({
   onSupplierChange
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
-  const { useSuppliers } = useSuppliersApi();
-  const { data: suppliers = [], isLoading: suppliersLoading } = useSuppliers(currentOrganization?.id);
+  const suppliersApi = useSuppliersApi(currentOrganization);
+  const { data: suppliers = [], isLoading: suppliersLoading } = suppliersApi;
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   
   const form = useForm<SupplierQuoteFormValues>({

@@ -37,7 +37,7 @@ export async function fetchSupplierQuoteAudit(supplierQuoteId: string): Promise<
     .from("supplier_quote_audit")
     .select(`
       *,
-      changed_by_user:profiles!changed_by(email)
+      changed_by_user:profiles(email)
     `)
     .eq("supplier_quote_id", supplierQuoteId)
     .order("created_at", { ascending: false });
@@ -46,5 +46,5 @@ export async function fetchSupplierQuoteAudit(supplierQuoteId: string): Promise<
     throw new Error(`Error fetching supplier quote audit: ${error.message}`);
   }
 
-  return data as unknown as SupplierQuoteAudit[];
+  return data as SupplierQuoteAudit[];
 }

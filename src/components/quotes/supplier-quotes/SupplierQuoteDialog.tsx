@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { SupplierQuoteForm } from "./SupplierQuoteForm";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
 import { useOrganization } from "@/context/OrganizationContext";
-import { SupplierFormValues, SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SupplierQuoteDialogProps {

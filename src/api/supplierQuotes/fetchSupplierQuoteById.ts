@@ -88,9 +88,10 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     throw new Error(`Error fetching savings: ${savingsError.message}`);
   }
 
-  // Construct the full supplier quote object
+  // Construct the full supplier quote object, ensuring status is cast to SupplierQuoteStatus
   const supplierQuote: SupplierQuote = {
     ...quote,
+    status: quote.status as SupplierQuote['status'],
     price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
     extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
     savings: savings as unknown as SupplierQuoteSaving[]
