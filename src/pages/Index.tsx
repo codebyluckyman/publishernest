@@ -1,10 +1,50 @@
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Printer, ShoppingCart, Truck } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useOrganization } from "@/hooks/useOrganization";
 
 const Dashboard = () => {
+  const { currentOrganization } = useOrganization();
+  const [quoteRequestsCount, setQuoteRequestsCount] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuoteRequestsCount = async () => {
+      if (!currentOrganization) return;
+      
+      try {
+        setIsLoading(true);
+        const { count, error } = await supabase
+          .from("quote_requests")
+          .select("id", { count: "exact" })
+          .eq("organization_id", currentOrganization.id)
+          .eq("status", "approved"); // Only count active (approved) quote requests
+        
+        if (error) {
+          console.error("Error fetching quote requests count:", error);
+          return;
+        }
+        
+        setQuoteRequestsCount(count);
+      } catch (error) {
+        console.error("Error fetching quote requests count:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuoteRequestsCount();
+  }, [currentOrganization]);
+
   const stats = [
-    { label: "Active Quotes", value: "12", icon: FileText, color: "text-blue-500" },
+    { 
+      label: "Active Quote Requests", 
+      value: isLoading ? "..." : (quoteRequestsCount !== null ? quoteRequestsCount.toString() : "0"), 
+      icon: FileText, 
+      color: "text-blue-500" 
+    },
     { label: "Open Orders", value: "8", icon: ShoppingCart, color: "text-purple-500" },
     { label: "In Production", value: "5", icon: Printer, color: "text-green-500" },
     { label: "Shipments", value: "3", icon: Truck, color: "text-orange-500" },
