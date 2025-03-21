@@ -131,7 +131,7 @@ export function SupplierQuoteForm({
 
   // Handle form submission
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    onSubmit(data);
+    onSubmit(data as SupplierQuoteFormValues);
   };
 
   // Show attachment management section if a quote has been created
@@ -144,7 +144,7 @@ export function SupplierQuoteForm({
         </div>
         
         <Card className="p-4">
-          <SupplierQuoteAttachments quoteId={createdQuoteId} />
+          <SupplierQuoteAttachments supplierQuoteId={createdQuoteId} />
         </Card>
         
         <div className="flex justify-center mt-6">
@@ -179,7 +179,7 @@ export function SupplierQuoteForm({
           </div>
           
           <SupplierSelect 
-            form={form}
+            control={form.control}
             suppliers={suppliers || []} 
             loading={loadingSuppliers}
             defaultSupplierId={quoteRequest.supplier_id}
@@ -201,20 +201,20 @@ export function SupplierQuoteForm({
             </Card>
             
             <Card className="p-6">
-              <NotesSection form={form} />
+              <NotesSection control={form.control} />
             </Card>
           </TabsContent>
           
           <TabsContent value="pricing">
             <Card className="p-6">
-              <PriceBreaksSection form={form} quoteRequest={quoteRequest} />
+              <PriceBreaksSection control={form.control} quoteRequest={quoteRequest} />
             </Card>
           </TabsContent>
           
           <TabsContent value="costs">
             <Card className="p-6">
               <ExtraCostsSection 
-                form={form} 
+                control={form.control} 
                 extraCosts={extraCosts} 
                 currency={form.watch("currency")} 
               />
@@ -224,7 +224,7 @@ export function SupplierQuoteForm({
           <TabsContent value="savings">
             <Card className="p-6">
               <SavingsSection 
-                form={form} 
+                control={form.control} 
                 savings={savings} 
                 currency={form.watch("currency")} 
               />
