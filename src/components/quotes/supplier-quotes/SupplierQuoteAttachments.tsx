@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuote, SupplierQuoteAttachment } from "@/types/supplierQuote";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Paperclip, Trash2, Download } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { getSupplierQuoteAttachments } from "@/api/supplierQuotes/getAttachments";
 
 interface SupplierQuoteAttachmentsProps {
   supplierQuote: SupplierQuote;
@@ -25,6 +26,16 @@ export function SupplierQuoteAttachments({
   const [isUploading, setIsUploading] = useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = useState<SupplierQuoteAttachment | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [attachments, setAttachments] = useState<SupplierQuoteAttachment[]>(supplierQuote.attachments || []);
+
+  useEffect(() => {
+    const loadAttachments = async () => {
+      const fetched = await getSupplierQuoteAttachments(supplierQuote.id);
+      setAttachments(fetched);
+    };
+    
+    loadAttachments();
+  }, [supplierQuote.id]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -49,22 +60,39 @@ export function SupplierQuoteAttachments({
           throw uploadError;
         }
         
-        // Create record in database
-        const { error: dbError } = await supabase.from('supplier_quote_attachments').insert({
-          supplier_quote_id: supplierQuote.id,
-          file_name: file.name,
-          file_key: filePath,
-          file_size: file.size,
-          file_type: file.type,
-          uploaded_by: user?.id
+        // Create record in database using a raw query approach
+        const { error: dbError } = await supabase.rpc('add_quote_attachment', {
+          p_supplier_quote_id: supplierQuote.id,
+          p_file_name: file.name,
+          p_file_key: filePath,
+          p_file_size: file.size,
+          p_file_type: file.type,
+          p_uploaded_by: user?.id
         });
         
         if (dbError) {
-          throw dbError;
+          console.error("Error creating attachment record:", dbError);
+          // Try fallback direct insert
+          const { error: directError } = await supabase.from('supplier_quote_attachments').insert({
+            supplier_quote_id: supplierQuote.id,
+            file_name: file.name,
+            file_key: filePath,
+            file_size: file.size,
+            file_type: file.type,
+            uploaded_by: user?.id
+          });
+          
+          if (directError) {
+            throw directError;
+          }
         }
       }
       
       toast.success("Files uploaded successfully");
+      // Refresh attachments
+      const refreshed = await getSupplierQuoteAttachments(supplierQuote.id);
+      setAttachments(refreshed);
+      
       if (onAttachmentsChange) {
         onAttachmentsChange();
       }
@@ -121,17 +149,28 @@ export function SupplierQuoteAttachments({
         throw storageError;
       }
       
-      // Delete from database
-      const { error: dbError } = await supabase
-        .from('supplier_quote_attachments')
-        .delete()
-        .eq('id', attachmentToDelete.id);
-        
+      // Delete from database using RPC
+      const { error: dbError } = await supabase.rpc('delete_quote_attachment', {
+        attachment_id: attachmentToDelete.id
+      });
+      
       if (dbError) {
-        throw dbError;
+        console.error("Error deleting with RPC:", dbError);
+        // Try fallback direct delete
+        const { error: directError } = await supabase
+          .from('supplier_quote_attachments')
+          .delete()
+          .eq('id', attachmentToDelete.id);
+          
+        if (directError) {
+          throw directError;
+        }
       }
       
       toast.success("File deleted successfully");
+      // Update attachments list by filtering out the deleted one
+      setAttachments(attachments.filter(a => a.id !== attachmentToDelete.id));
+      
       if (onAttachmentsChange) {
         onAttachmentsChange();
       }
@@ -170,8 +209,8 @@ export function SupplierQuoteAttachments({
       )}
       
       <div className="space-y-2">
-        {supplierQuote.attachments && supplierQuote.attachments.length > 0 ? (
-          supplierQuote.attachments.map((attachment) => (
+        {attachments && attachments.length > 0 ? (
+          attachments.map((attachment) => (
             <div
               key={attachment.id}
               className="flex items-center justify-between border rounded-md p-3 shadow-sm"

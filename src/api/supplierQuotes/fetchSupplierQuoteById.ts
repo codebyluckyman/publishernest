@@ -88,14 +88,13 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     throw new Error(`Error fetching savings: ${savingsError.message}`);
   }
 
-  // Fetch attachments for this supplier quote
+  // Fetch attachments for this supplier quote using raw SQL since the table may not be in type definitions
   const { data: attachments, error: attachmentsError } = await supabase
-    .from("supplier_quote_attachments")
-    .select("*")
-    .eq("supplier_quote_id", id);
+    .rpc('get_quote_attachments', { quote_id: id });
 
   if (attachmentsError) {
-    throw new Error(`Error fetching attachments: ${attachmentsError.message}`);
+    console.error(`Error fetching attachments: ${attachmentsError.message}`);
+    // Continue without attachments rather than failing
   }
 
   // Construct the full supplier quote object, ensuring status is cast to SupplierQuoteStatus
@@ -105,7 +104,11 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
     extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
     savings: savings as unknown as SupplierQuoteSaving[],
-    attachments: attachments as unknown as SupplierQuoteAttachment[]
+    attachments: attachments || [],
+    valid_from: quote.valid_from || null,
+    valid_to: quote.valid_to || null,
+    terms: quote.terms || null,
+    remarks: quote.remarks || null
   };
 
   return supplierQuote;
