@@ -5,13 +5,15 @@ import { QuoteRequest } from "@/types/quoteRequest";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 import { ExtraCostItem } from "./ExtraCostItem";
+import { ExtraCostTableItem } from "@/types/extraCost";
 
 interface ExtraCostsSectionProps {
   control: Control<SupplierQuoteFormValues>;
-  quoteRequest: QuoteRequest;
+  extraCosts: ExtraCostTableItem[];
+  currency: string;
 }
 
-export function ExtraCostsSection({ control, quoteRequest }: ExtraCostsSectionProps) {
+export function ExtraCostsSection({ control, extraCosts, currency }: ExtraCostsSectionProps) {
   const { fields, replace } = useFieldArray({
     control,
     name: "extra_costs"
@@ -24,21 +26,21 @@ export function ExtraCostsSection({ control, quoteRequest }: ExtraCostsSectionPr
   
   // Initialize extra costs when supplier changes
   useEffect(() => {
-    if (!quoteRequest.extra_costs || quoteRequest.extra_costs.length === 0 || !supplierId) {
+    if (!extraCosts || extraCosts.length === 0 || !supplierId) {
       replace([]);
       return;
     }
     
-    const newExtraCosts = quoteRequest.extra_costs.map(cost => ({
+    const newExtraCosts = extraCosts.map(cost => ({
       extra_cost_id: cost.id || "",
       unit_cost: null,
       notes: ""
     }));
     
     replace(newExtraCosts);
-  }, [supplierId, quoteRequest.extra_costs, replace]);
+  }, [supplierId, extraCosts, replace]);
   
-  if (!quoteRequest.extra_costs || quoteRequest.extra_costs.length === 0) {
+  if (!extraCosts || extraCosts.length === 0) {
     return null;
   }
   
@@ -50,7 +52,7 @@ export function ExtraCostsSection({ control, quoteRequest }: ExtraCostsSectionPr
       <CardContent>
         <div className="space-y-4">
           {fields.map((field, index) => {
-            const extraCost = quoteRequest.extra_costs?.find(cost => cost.id === field.extra_cost_id);
+            const extraCost = extraCosts.find(cost => cost.id === field.extra_cost_id);
             if (!extraCost) return null;
             
             return (

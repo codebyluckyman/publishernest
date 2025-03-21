@@ -84,10 +84,10 @@ export function SupplierQuoteForm({
   const { extraCosts } = useExtraCosts();
   const { savings } = useSavings();
 
-  // Set up the form with react-hook-form
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Set up the form with react-hook-form and explicitly cast the type for type safety
+  const form = useForm<SupplierQuoteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialValues,
+    defaultValues: initialValues as SupplierQuoteFormValues,
   });
 
   // When the supplier changes, call the parent handler
@@ -96,7 +96,7 @@ export function SupplierQuoteForm({
     if (supplierId) {
       onSupplierChange(supplierId);
     }
-  }, [form.watch("supplier_id")]);
+  }, [form.watch("supplier_id"), onSupplierChange]);
 
   // Set up price breaks when formats are available
   useEffect(() => {
@@ -127,11 +127,11 @@ export function SupplierQuoteForm({
         }
       }
     }
-  }, [quoteRequest.formats]);
+  }, [quoteRequest.formats, form]);
 
   // Handle form submission
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    onSubmit(data as SupplierQuoteFormValues);
+  const handleSubmit = (data: SupplierQuoteFormValues) => {
+    onSubmit(data);
   };
 
   // Show attachment management section if a quote has been created
@@ -144,7 +144,9 @@ export function SupplierQuoteForm({
         </div>
         
         <Card className="p-4">
-          <SupplierQuoteAttachments supplierQuoteId={createdQuoteId} />
+          <SupplierQuoteAttachments 
+            supplierQuote={{ id: createdQuoteId }} 
+          />
         </Card>
         
         <div className="flex justify-center mt-6">

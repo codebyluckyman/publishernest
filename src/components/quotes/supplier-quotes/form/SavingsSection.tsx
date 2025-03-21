@@ -1,17 +1,18 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { QuoteRequest } from "@/types/quoteRequest";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 import { SavingItem } from "./SavingItem";
+import { SavingTableItem } from "@/types/saving";
 
 interface SavingsSectionProps {
   control: Control<SupplierQuoteFormValues>;
-  quoteRequest: QuoteRequest;
+  savings: SavingTableItem[];
+  currency: string;
 }
 
-export function SavingsSection({ control, quoteRequest }: SavingsSectionProps) {
+export function SavingsSection({ control, savings, currency }: SavingsSectionProps) {
   const { fields, replace } = useFieldArray({
     control,
     name: "savings"
@@ -24,21 +25,21 @@ export function SavingsSection({ control, quoteRequest }: SavingsSectionProps) {
   
   // Initialize savings when supplier changes
   useEffect(() => {
-    if (!quoteRequest.savings || quoteRequest.savings.length === 0 || !supplierId) {
+    if (!savings || savings.length === 0 || !supplierId) {
       replace([]);
       return;
     }
     
-    const newSavings = quoteRequest.savings.map(saving => ({
+    const newSavings = savings.map(saving => ({
       saving_id: saving.id || "",
       unit_cost: null,
       notes: ""
     }));
     
     replace(newSavings);
-  }, [supplierId, quoteRequest.savings, replace]);
+  }, [supplierId, savings, replace]);
   
-  if (!quoteRequest.savings || quoteRequest.savings.length === 0) {
+  if (!savings || savings.length === 0) {
     return null;
   }
   
@@ -50,7 +51,7 @@ export function SavingsSection({ control, quoteRequest }: SavingsSectionProps) {
       <CardContent>
         <div className="space-y-4">
           {fields.map((field, index) => {
-            const saving = quoteRequest.savings?.find(s => s.id === field.saving_id);
+            const saving = savings.find(s => s.id === field.saving_id);
             if (!saving) return null;
             
             return (
