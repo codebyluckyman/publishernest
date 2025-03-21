@@ -1,115 +1,107 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote, SupplierQuotePriceBreak, SupplierQuoteExtraCost, SupplierQuoteSaving, SupplierQuoteAttachment } from "@/types/supplierQuote";
+import { SupplierQuote, SupplierQuoteAttachment, SupplierQuoteExtraCost, SupplierQuotePriceBreak, SupplierQuoteSaving } from "@/types/supplierQuote";
 
 export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote | null> {
-  // Fetch the supplier quote
+  // Fetch the quote
   const { data: quote, error } = await supabase
     .from("supplier_quotes")
     .select(`
       *,
-      quote_requests(
-        *,
+      quote_request:quote_requests(
+        id,
+        title,
+        description,
+        currency,
+        due_date,
         formats:quote_request_formats(
-          *,
-          format:formats(*),
-          price_breaks:quote_request_format_price_breaks(*),
-          products:quote_request_format_products(
-            *,
-            product:products(*)
-          )
-        ),
-        extra_costs:quote_request_extra_costs(
-          *,
-          unit_of_measure:unit_of_measures(*)
-        ),
-        savings:quote_request_savings(
-          *,
-          unit_of_measure:unit_of_measures(*)
+          id,
+          format_id,
+          notes,
+          price_breaks:quote_request_price_breaks(*)
         )
       ),
-      supplier:suppliers(*)
+      supplier:suppliers(id, supplier_name, contact_name, contact_email)
     `)
     .eq("id", id)
     .single();
 
   if (error) {
-    throw new Error(`Error fetching supplier quote: ${error.message}`);
+    console.error("Error fetching supplier quote:", error);
+    throw error;
   }
 
-  if (!quote) {
-    return null;
-  }
+  if (!quote) return null;
 
-  // Fetch price breaks for this supplier quote
-  const { data: priceBreaks, error: priceBreaksError } = await supabase
+  // Fetch price breaks
+  const { data: priceBreaks, error: priceBreakError } = await supabase
     .from("supplier_quote_price_breaks")
     .select(`
       *,
-      format:quote_request_formats(*),
-      price_break:quote_request_format_price_breaks(*),
-      product:products(*)
+      format:quote_request_formats(
+        id,
+        format_id,
+        quote_request_id,
+        notes
+      ),
+      product:quote_request_format_products(
+        product_id,
+        quantity,
+        notes
+      )
     `)
     .eq("supplier_quote_id", id);
 
-  if (priceBreaksError) {
-    throw new Error(`Error fetching price breaks: ${priceBreaksError.message}`);
+  if (priceBreakError) {
+    console.error("Error fetching price breaks:", priceBreakError);
+    throw priceBreakError;
   }
 
-  // Fetch extra costs for this supplier quote
+  // Fetch extra costs
   const { data: extraCosts, error: extraCostsError } = await supabase
     .from("supplier_quote_extra_costs")
     .select(`
       *,
-      extra_cost:quote_request_extra_costs(
-        *,
-        unit_of_measure:unit_of_measures(*)
-      )
+      extra_cost:extra_costs(*)
     `)
     .eq("supplier_quote_id", id);
 
   if (extraCostsError) {
-    throw new Error(`Error fetching extra costs: ${extraCostsError.message}`);
+    console.error("Error fetching extra costs:", extraCostsError);
+    throw extraCostsError;
   }
 
-  // Fetch savings for this supplier quote
+  // Fetch savings
   const { data: savings, error: savingsError } = await supabase
     .from("supplier_quote_savings")
     .select(`
       *,
-      saving:quote_request_savings(
-        *,
-        unit_of_measure:unit_of_measures(*)
-      )
+      saving:savings(*)
     `)
     .eq("supplier_quote_id", id);
 
   if (savingsError) {
-    throw new Error(`Error fetching savings: ${savingsError.message}`);
+    console.error("Error fetching savings:", savingsError);
+    throw savingsError;
   }
 
-  // Fetch attachments for this supplier quote using the RPC function
+  // Fetch attachments
   const { data: attachments, error: attachmentsError } = await supabase
     .rpc('get_quote_attachments', { quote_id: id });
 
   if (attachmentsError) {
-    console.error(`Error fetching attachments: ${attachmentsError.message}`);
-    // Continue without attachments rather than failing
+    console.error("Error fetching attachments:", attachmentsError);
+    throw attachmentsError;
   }
 
-  // Construct the full supplier quote object, ensuring status is cast to SupplierQuoteStatus
-  const supplierQuote: SupplierQuote = {
+  // Return structured data
+  return {
     ...quote,
-    status: quote.status as SupplierQuote['status'],
-    price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
-    extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
-    savings: savings as unknown as SupplierQuoteSaving[],
-    attachments: attachments || [],
-    valid_from: quote.valid_from || null,
-    valid_to: quote.valid_to || null,
-    terms: quote.terms || null,
-    remarks: quote.remarks || null
+    status: quote.status as SupplierQuote["status"],
+    price_breaks: priceBreaks as SupplierQuotePriceBreak[],
+    extra_costs: extraCosts as SupplierQuoteExtraCost[],
+    savings: savings as SupplierQuoteSaving[],
+    attachments: attachments as SupplierQuoteAttachment[],
+    reference: quote.reference || null
   };
-
-  return supplierQuote;
 }

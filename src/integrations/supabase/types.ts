@@ -1264,6 +1264,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           quote_request_id: string
+          reference: string | null
           reference_id: string | null
           remarks: string | null
           status: string
@@ -1282,6 +1283,7 @@ export type Database = {
           notes?: string | null
           organization_id: string
           quote_request_id: string
+          reference?: string | null
           reference_id?: string | null
           remarks?: string | null
           status?: string
@@ -1300,6 +1302,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           quote_request_id?: string
+          reference?: string | null
           reference_id?: string | null
           remarks?: string | null
           status?: string

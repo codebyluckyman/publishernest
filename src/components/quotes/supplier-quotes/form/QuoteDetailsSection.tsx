@@ -1,113 +1,165 @@
 
-import { Control } from "react-hook-form";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
-interface QuoteDetailsSectionProps {
-  control: Control<SupplierQuoteFormValues>;
-}
-
-export function QuoteDetailsSection({ control }: QuoteDetailsSectionProps) {
+export function QuoteDetailsSection({ form, currencies }: { 
+  form: any;
+  currencies: { label: string; value: string }[];
+}) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Quote Details</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Reference Field */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Currency</FormLabel>
+                <FormControl>
+                  <select
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={field.value}
+                    onChange={field.onChange}
+                  >
+                    {currencies.map((currency) => (
+                      <option key={currency.value} value={currency.value}>
+                        {currency.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div>
+          <FormField
+            control={form.control}
+            name="reference"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Reference Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Your reference number" {...field} value={field.value || ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+      
+      <div>
         <FormField
-          control={control}
-          name="reference"
+          control={form.control}
+          name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Your Reference</FormLabel>
+              <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="e.g. Q-12345" 
-                  {...field} 
-                  value={field.value || ''} 
-                />
+                <Textarea placeholder="Add any notes about this quote..." {...field} value={field.value || ''} />
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {/* Validity Dates */}
-        <FormField
-          control={control}
-          name="valid_from"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Valid From</FormLabel>
-              <DatePicker
-                date={field.value ? new Date(field.value) : undefined}
-                setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : undefined)}
-                placeholder="Select start date"
-              />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={control}
-          name="valid_to"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Valid Until</FormLabel>
-              <DatePicker
-                date={field.value ? new Date(field.value) : undefined}
-                setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : undefined)}
-                placeholder="Select end date"
-              />
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
       
-      {/* Terms */}
-      <FormField
-        control={control}
-        name="terms"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Terms & Conditions</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Enter payment terms, delivery terms, etc." 
-                className="min-h-[100px]" 
-                {...field} 
-                value={field.value || ''} 
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      {/* Remarks */}
-      <FormField
-        control={control}
-        name="remarks"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Additional Remarks</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Any additional information for this quote" 
-                className="min-h-[100px]" 
-                {...field} 
-                value={field.value || ''} 
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <FormField
+            control={form.control}
+            name="valid_from"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Valid From</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={(date) => field.onChange(date ? date.toISOString() : undefined)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div>
+          <FormField
+            control={form.control}
+            name="valid_to"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Valid To</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={(date) => field.onChange(date ? date.toISOString() : undefined)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
     </div>
   );
 }
