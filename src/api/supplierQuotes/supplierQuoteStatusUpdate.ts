@@ -4,13 +4,14 @@ import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function acceptSupplierQuote(
   id: string,
-  userId: string,
-  reason?: string
+  acceptedCost: number,
+  userId: string
 ): Promise<void> {
   const { error } = await supabase
     .from("supplier_quotes")
     .update({
       status: "accepted",
+      total_cost: acceptedCost,
       updated_at: new Date().toISOString()
     })
     .eq("id", id);
@@ -25,7 +26,7 @@ export async function acceptSupplierQuote(
     userId,
     "accept",
     {
-      new: { status: "accepted", reason: reason || "Quote accepted" }
+      new: { status: "accepted", acceptedCost }
     }
   );
 }
