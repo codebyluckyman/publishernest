@@ -59,12 +59,19 @@ export function SupplierQuoteAuditHistory({
   const formatChanges = (changes: any) => {
     if (!changes) return 'No changes recorded';
     
-    return Object.entries(changes).map(([key, value]: [string, any]) => {
-      const { previous, new: newValue } = value;
-      
-      // Format the values for display
-      let previousFormatted = previous;
-      let newFormatted = newValue;
+    // Handle different possible formats of changes
+    if (typeof changes !== 'object') {
+      return JSON.stringify(changes);
+    }
+    
+    // Try to display in a structured way if it matches our expected format
+    const changeEntries = Object.entries(changes);
+    if (changeEntries.length === 0) return 'No changes recorded';
+    
+    return changeEntries.map(([key, value]: [string, any]) => {
+      // Handle both our structured format and simpler formats
+      const previous = value?.previous !== undefined ? value.previous : 'N/A';
+      const newValue = value?.new !== undefined ? value.new : value;
       
       return (
         <div key={key} className="mb-2 border-b pb-2">
@@ -72,11 +79,11 @@ export function SupplierQuoteAuditHistory({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <span className="text-xs text-gray-500">Previous:</span>
-              <div className="text-sm">{previousFormatted !== undefined ? JSON.stringify(previousFormatted) : '(empty)'}</div>
+              <div className="text-sm">{previous !== undefined ? JSON.stringify(previous) : '(empty)'}</div>
             </div>
             <div>
               <span className="text-xs text-gray-500">New:</span>
-              <div className="text-sm">{newFormatted !== undefined ? JSON.stringify(newFormatted) : '(empty)'}</div>
+              <div className="text-sm">{newValue !== undefined ? JSON.stringify(newValue) : '(empty)'}</div>
             </div>
           </div>
         </div>

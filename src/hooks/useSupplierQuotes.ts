@@ -9,7 +9,9 @@ import {
   createSupplierQuote,
   updateSupplierQuote,
   submitSupplierQuote,
-  fetchSupplierQuoteAudit
+  fetchSupplierQuoteAudit,
+  acceptSupplierQuote,
+  declineSupplierQuote
 } from "@/api/supplierQuotes";
 
 /**
@@ -129,6 +131,50 @@ export function useSupplierQuotes() {
   };
 
   /**
+   * Hook to accept a supplier quote
+   */
+  const useAcceptSupplierQuote = () => {
+    return useMutation({
+      mutationFn: ({ id, acceptedCost }: { id: string; acceptedCost: number }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return acceptSupplierQuote(id, acceptedCost, user.id);
+      },
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
+        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        toast.success("Supplier quote accepted successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to accept supplier quote");
+      }
+    });
+  };
+
+  /**
+   * Hook to decline a supplier quote
+   */
+  const useDeclineSupplierQuote = () => {
+    return useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason?: string }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return declineSupplierQuote(id, user.id, reason);
+      },
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
+        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        toast.success("Supplier quote declined successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to decline supplier quote");
+      }
+    });
+  };
+
+  /**
    * Hook to fetch supplier quote audit
    */
   const useSupplierQuoteAudit = (supplierQuoteId: string | null) => {
@@ -148,6 +194,8 @@ export function useSupplierQuotes() {
     useCreateSupplierQuote,
     useUpdateSupplierQuote,
     useSubmitSupplierQuote,
+    useAcceptSupplierQuote,
+    useDeclineSupplierQuote,
     useSupplierQuoteAudit
   };
 }

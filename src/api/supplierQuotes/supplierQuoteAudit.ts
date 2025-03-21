@@ -6,7 +6,7 @@ export interface SupplierQuoteAudit {
   supplier_quote_id: string | null;
   changed_by: string | null;
   action: 'create' | 'update' | 'submit' | 'accept' | 'decline';
-  changes: Record<string, { previous: any; new: any }>;
+  changes: any; // Using any here as the JSONB structure could vary
   created_at: string;
   changed_by_user?: { email: string } | undefined;
 }
@@ -46,5 +46,6 @@ export async function fetchSupplierQuoteAudit(supplierQuoteId: string): Promise<
     throw new Error(`Error fetching supplier quote audit: ${error.message}`);
   }
 
-  return data as SupplierQuoteAudit[];
+  // Type cast the data to our SupplierQuoteAudit interface
+  return data as unknown as SupplierQuoteAudit[];
 }
