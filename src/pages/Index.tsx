@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FileText, Printer, ShoppingCart, Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { currentOrganization } = useOrganization();
   const [quoteRequestsCount, setQuoteRequestsCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuoteRequestsCount = async () => {
@@ -38,16 +40,27 @@ const Dashboard = () => {
     fetchQuoteRequestsCount();
   }, [currentOrganization]);
 
+  // Handle navigation to the specific page based on card
+  const handleCardClick = (destination: string, tab?: string) => {
+    if (tab) {
+      navigate(`/${destination}?tab=${tab}`);
+    } else {
+      navigate(`/${destination}`);
+    }
+  };
+
   const stats = [
     { 
       label: "Active Quote Requests", 
       value: isLoading ? "..." : (quoteRequestsCount !== null ? quoteRequestsCount.toString() : "0"), 
       icon: FileText, 
-      color: "text-blue-500" 
+      color: "text-blue-500",
+      destination: "quote-requests",
+      tab: "approved"
     },
-    { label: "Open Orders", value: "8", icon: ShoppingCart, color: "text-purple-500" },
-    { label: "In Production", value: "5", icon: Printer, color: "text-green-500" },
-    { label: "Shipments", value: "3", icon: Truck, color: "text-orange-500" },
+    { label: "Open Orders", value: "8", icon: ShoppingCart, color: "text-purple-500", destination: "orders" },
+    { label: "In Production", value: "5", icon: Printer, color: "text-green-500", destination: "orders" },
+    { label: "Shipments", value: "3", icon: Truck, color: "text-orange-500", destination: "shipments" },
   ];
 
   return (
@@ -59,7 +72,11 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
-          <Card key={stat.label} className="hover:shadow-lg transition-shadow">
+          <Card 
+            key={stat.label} 
+            className="hover:shadow-lg transition-shadow cursor-pointer" 
+            onClick={() => handleCardClick(stat.destination, stat.tab)}
+          >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">
                 {stat.label}
