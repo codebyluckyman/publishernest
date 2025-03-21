@@ -79,6 +79,27 @@ export function QuoteDetails({
     }
   };
 
+  // Fetch price breaks for a format
+  const getPriceBreaks = async (formatId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("quote_request_format_price_breaks")
+        .select("*")
+        .eq("quote_request_format_id", formatId)
+        .order("quantity", { ascending: true });
+      
+      if (error) {
+        console.error("Error fetching price breaks:", error);
+        return [];
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching price breaks:", error);
+      return [];
+    }
+  };
+
   // Alternative PDF generation using jsPDF
   const generatePDF = async () => {
     try {
@@ -227,6 +248,31 @@ export function QuoteDetails({
               
               currentY = (doc as any).lastAutoTable.finalY + 5;
             }
+          }
+          
+          // Fetch and add price breaks table
+          const priceBreaks = await getPriceBreaks(format.id);
+          if (priceBreaks && priceBreaks.length > 0) {
+            doc.setFontSize(10);
+            doc.text("Price Breaks", 14, currentY);
+            currentY += 5;
+            
+            const priceBreaksData = priceBreaks.map(pb => [
+              pb.quantity.toLocaleString(),
+              pb.num_products > 1 ? `${pb.num_products} products per unit` : "1 product per unit"
+            ]);
+            
+            // @ts-ignore
+            doc.autoTable({
+              startY: currentY,
+              head: [["Quantity", "Products per Unit"]],
+              body: priceBreaksData,
+              theme: 'grid',
+              headStyles: { fillColor: [120, 144, 240] },
+              margin: { left: 20 }
+            });
+            
+            currentY = (doc as any).lastAutoTable.finalY + 5;
           }
           
           // Add format notes if exists
