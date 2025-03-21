@@ -84,7 +84,7 @@ const Dashboard = () => {
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="text-2xl font-bold text-center">{stat.value}</div>
             </CardContent>
           </Card>
         ))}
