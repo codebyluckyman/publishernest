@@ -999,6 +999,225 @@ export type Database = {
           },
         ]
       }
+      supplier_quote_extra_costs: {
+        Row: {
+          created_at: string
+          extra_cost_id: string
+          id: string
+          notes: string | null
+          supplier_quote_id: string
+          unit_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          extra_cost_id: string
+          id?: string
+          notes?: string | null
+          supplier_quote_id: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          extra_cost_id?: string
+          id?: string
+          notes?: string | null
+          supplier_quote_id?: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_extra_costs_extra_cost_id_fkey"
+            columns: ["extra_cost_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_extra_costs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_extra_costs_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_quote_price_breaks: {
+        Row: {
+          created_at: string
+          id: string
+          price_break_id: string
+          product_id: string | null
+          quantity: number
+          quote_request_format_id: string
+          supplier_quote_id: string
+          unit_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price_break_id: string
+          product_id?: string | null
+          quantity: number
+          quote_request_format_id: string
+          supplier_quote_id: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price_break_id?: string
+          product_id?: string | null
+          quantity?: number
+          quote_request_format_id?: string
+          supplier_quote_id?: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_price_breaks_price_break_id_fkey"
+            columns: ["price_break_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_format_price_breaks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_price_breaks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_price_breaks_quote_request_format_id_fkey"
+            columns: ["quote_request_format_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_formats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_quote_savings: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          saving_id: string
+          supplier_quote_id: string
+          unit_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          saving_id: string
+          supplier_quote_id: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          saving_id?: string
+          supplier_quote_id?: string
+          unit_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_savings_saving_id_fkey"
+            columns: ["saving_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_savings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_savings_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_quotes: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          organization_id: string
+          quote_request_id: string
+          status: string
+          submitted_at: string | null
+          supplier_id: string
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          organization_id: string
+          quote_request_id: string
+          status?: string
+          submitted_at?: string | null
+          supplier_id: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          quote_request_id?: string
+          status?: string
+          submitted_at?: string | null
+          supplier_id?: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quotes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null

@@ -5,12 +5,13 @@ import { DetailHeader } from "./DetailHeader";
 import { BasicInfo } from "./BasicInfo";
 import { FormatAccordion } from "./FormatAccordion";
 import { StatusActions } from "./StatusActions";
-import { Printer } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "@/components/ui/use-toast";
 import { useOrganization } from "@/context/OrganizationContext";
 import { CollapsibleSection } from "./CollapsibleSection";
 import { generateQuotePDF } from "./PdfGenerator";
+import { Button } from "@/components/ui/button";
+import { QuoteResponseButton } from "../QuoteResponseButton";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -98,6 +99,11 @@ export function QuoteDetails({
         onOpenChange={setIsSavingsOpen}
         items={selectedRequest.savings || []}
       />
+
+      {/* Response Button */}
+      <div className="flex justify-end">
+        <QuoteResponseButton quoteRequest={selectedRequest} />
+      </div>
 
       {onStatusChange && (
         <StatusActions 
