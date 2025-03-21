@@ -39,7 +39,14 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
     if (selectedProductId) {
       const selectedProduct = getProductById(selectedProductId);
       
-      if (selectedProduct?.format_extras && selectedProduct.format_extras.length > 0) {
+      // Check if selected product exists
+      if (!selectedProduct) {
+        console.log(`Product with ID ${selectedProductId} not found in linked products`);
+        return;
+      }
+      
+      // Safely check if format_extras exists and has items
+      if (selectedProduct.format_extras && selectedProduct.format_extras.length > 0) {
         // Get current extra costs
         const currentExtraCosts = getValues("extra_costs") || [];
         
@@ -88,6 +95,8 @@ export function FormatProductField({ control, formatIndex, formatId, productInde
           console.log("Setting updated extra costs:", newExtraCosts);
           setValue("extra_costs", newExtraCosts);
         }
+      } else {
+        console.log(`Product "${selectedProduct.title}" has no format extras`);
       }
     }
   }, [selectedProductId, linkedProducts, setValue, getValues]);
