@@ -999,6 +999,41 @@ export type Database = {
           },
         ]
       }
+      supplier_quote_audit: {
+        Row: {
+          action: string
+          changed_by: string | null
+          changes: Json | null
+          created_at: string
+          id: string
+          supplier_quote_id: string | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          supplier_quote_id?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          changes?: Json | null
+          created_at?: string
+          id?: string
+          supplier_quote_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_audit_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_quote_extra_costs: {
         Row: {
           created_at: string

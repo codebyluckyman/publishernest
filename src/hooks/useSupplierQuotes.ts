@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -9,7 +8,8 @@ import {
   fetchSupplierQuoteById,
   createSupplierQuote,
   updateSupplierQuote,
-  submitSupplierQuote
+  submitSupplierQuote,
+  fetchSupplierQuoteAudit
 } from "@/api/supplierQuotes";
 
 /**
@@ -128,11 +128,26 @@ export function useSupplierQuotes() {
     });
   };
 
+  /**
+   * Hook to fetch supplier quote audit
+   */
+  const useSupplierQuoteAudit = (supplierQuoteId: string | null) => {
+    return useQuery({
+      queryKey: ['supplier-quote-audit', supplierQuoteId],
+      queryFn: async () => {
+        if (!supplierQuoteId) return [];
+        return fetchSupplierQuoteAudit(supplierQuoteId);
+      },
+      enabled: !!supplierQuoteId
+    });
+  };
+
   return {
     useSupplierQuotesList,
     useSupplierQuoteById,
     useCreateSupplierQuote,
     useUpdateSupplierQuote,
-    useSubmitSupplierQuote
+    useSubmitSupplierQuote,
+    useSupplierQuoteAudit
   };
 }
