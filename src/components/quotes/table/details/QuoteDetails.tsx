@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
@@ -13,6 +12,7 @@ import { useReactToPrint } from "react-to-print";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { toast } from "@/components/ui/use-toast";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -53,8 +53,19 @@ export function QuoteDetails({
     }),
   });
 
+  // Fetch all format details for the PDF generation
+  const getFormatDetails = async (formatId: string) => {
+    try {
+      const { data } = await fetch(`/api/formats/${formatId}`).then(res => res.json());
+      return data;
+    } catch (error) {
+      console.error("Error fetching format details:", error);
+      return null;
+    }
+  };
+
   // Alternative PDF generation using jsPDF
-  const generatePDF = () => {
+  const generatePDF = async () => {
     try {
       // Create a new jsPDF instance
       const doc = new jsPDF();
@@ -107,13 +118,71 @@ export function QuoteDetails({
         doc.text("Formats & Products", 14, currentY);
         currentY += 10;
         
-        selectedRequest.formats.forEach((format, index) => {
+        for (let i = 0; i < selectedRequest.formats.length; i++) {
+          const format = selectedRequest.formats[i];
+          
           // Format header
           doc.setFontSize(11);
           doc.setTextColor(66, 133, 244);
           doc.text(`${format.format_name || 'Unknown Format'}`, 14, currentY);
           currentY += 8;
           doc.setTextColor(0, 0, 0);
+          
+          // Fetch and add format specifications
+          const formatData = await useFormatDetails(format.format_id).query();
+          
+          if (formatData.data) {
+            const formatDetails = formatData.data;
+            
+            // Create format specifications table
+            const formatSpecsData = [];
+            
+            if (formatDetails.tps_height_mm && formatDetails.tps_width_mm) {
+              formatSpecsData.push(["Dimensions (HxW)", `${formatDetails.tps_height_mm}mm × ${formatDetails.tps_width_mm}mm`]);
+              
+              if (formatDetails.tps_depth_mm) {
+                formatSpecsData.push(["Depth", `${formatDetails.tps_depth_mm}mm`]);
+              }
+            }
+            
+            if (formatDetails.tps_plc_height_mm && formatDetails.tps_plc_width_mm) {
+              formatSpecsData.push(["PLC Dimensions (HxW)", `${formatDetails.tps_plc_height_mm}mm × ${formatDetails.tps_plc_width_mm}mm`]);
+              
+              if (formatDetails.tps_plc_depth_mm) {
+                formatSpecsData.push(["PLC Depth", `${formatDetails.tps_plc_depth_mm}mm`]);
+              }
+            }
+            
+            if (formatDetails.extent) {
+              formatSpecsData.push(["Extent", formatDetails.extent]);
+            }
+            
+            if ('binding_type' in formatDetails && formatDetails.binding_type) {
+              formatSpecsData.push(["Binding", String(formatDetails.binding_type)]);
+            }
+            
+            if (formatDetails.cover_stock_print) {
+              formatSpecsData.push(["Cover", formatDetails.cover_stock_print]);
+            }
+            
+            if (formatDetails.internal_stock_print) {
+              formatSpecsData.push(["Internal", formatDetails.internal_stock_print]);
+            }
+            
+            if (formatSpecsData.length > 0) {
+              // @ts-ignore
+              doc.autoTable({
+                startY: currentY,
+                head: [["Specification", "Value"]],
+                body: formatSpecsData,
+                theme: 'grid',
+                headStyles: { fillColor: [120, 144, 240] },
+                margin: { left: 20 }
+              });
+              
+              currentY = (doc as any).lastAutoTable.finalY + 5;
+            }
+          }
           
           // Add format notes if exists
           if (format.notes) {
@@ -142,7 +211,7 @@ export function QuoteDetails({
           }
           
           // Add a bit of space between formats
-          if (index < selectedRequest.formats.length - 1) {
+          if (i < selectedRequest.formats.length - 1) {
             currentY += 5;
           }
           
@@ -151,7 +220,7 @@ export function QuoteDetails({
             doc.addPage();
             currentY = 20;
           }
-        });
+        }
       }
       
       // Add extra costs section if exists
@@ -347,3 +416,4 @@ export function QuoteDetails({
     </div>
   );
 }
+
