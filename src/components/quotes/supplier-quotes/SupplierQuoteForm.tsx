@@ -45,6 +45,7 @@ const supplierQuoteFormSchema = z.object({
   })),
   notes: z.string().optional(),
   currency: z.string(),
+  reference: z.string().optional(),
   // New fields
   valid_from: z.string().optional(),
   valid_to: z.string().optional(),
@@ -193,7 +194,7 @@ export function SupplierQuoteForm({
           </TabsContent>
           
           <TabsContent value="terms" className="space-y-6 pt-4">
-            {/* Quote Details Section with validity dates and terms */}
+            {/* Quote Details Section with reference, validity dates and terms */}
             <QuoteDetailsSection control={form.control} />
           </TabsContent>
         </Tabs>

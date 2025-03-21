@@ -20,6 +20,10 @@ export async function updateSupplierQuote(
     quoteUpdates.currency = updates.currency;
   }
 
+  if (updates.reference !== undefined) {
+    quoteUpdates.reference = updates.reference;
+  }
+
   // Add new fields
   if (updates.valid_from !== undefined) {
     quoteUpdates.valid_from = updates.valid_from;

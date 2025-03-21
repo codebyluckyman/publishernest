@@ -18,6 +18,7 @@ export async function createSupplierQuote(
       currency: formData.currency,
       notes: formData.notes || null,
       status: "draft",
+      reference: formData.reference || null,
       // New fields
       valid_from: formData.valid_from || null,
       valid_to: formData.valid_to || null,

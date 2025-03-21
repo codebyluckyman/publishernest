@@ -1,4 +1,3 @@
-
 import { QuoteRequest, QuoteRequestFormat, PriceBreak, QuoteRequestFormatProduct } from "./quoteRequest";
 import { ExtraCost } from "./extraCost";
 import { Saving } from "./saving";
@@ -18,6 +17,7 @@ export interface SupplierQuote {
   created_at: string;
   updated_at: string;
   reference_id: string | null;
+  reference: string | null;
   
   // New fields
   valid_from: string | null;
@@ -118,6 +118,7 @@ export interface SupplierQuoteFormValues {
   }[];
   notes?: string;
   currency: string;
+  reference?: string;
   
   // New fields
   valid_from?: string;

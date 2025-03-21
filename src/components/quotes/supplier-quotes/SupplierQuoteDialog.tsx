@@ -65,7 +65,8 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
                 price_breaks: [],
                 extra_costs: [],
                 savings: [],
-                currency: quoteRequest.currency || "USD"
+                currency: quoteRequest.currency || "USD",
+                reference: ""
               }}
               onSubmit={handleSubmit}
               isSubmitting={createMutation.isPending}
