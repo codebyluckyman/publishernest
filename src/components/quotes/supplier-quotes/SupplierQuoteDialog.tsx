@@ -19,6 +19,7 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
   const { useCreateSupplierQuote } = useSupplierQuotes();
   const createMutation = useCreateSupplierQuote();
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
+  const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(null);
 
   // Initialize the form with the selected supplier
   useEffect(() => {
@@ -28,6 +29,9 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
       } else if (quoteRequest.supplier_ids && quoteRequest.supplier_ids.length > 0) {
         setSelectedSupplierId(quoteRequest.supplier_ids[0]);
       }
+    } else {
+      // Reset state when closing dialog
+      setCreatedQuoteId(null);
     }
   }, [open, quoteRequest]);
 
@@ -38,7 +42,9 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
       formData: data,
       organizationId: currentOrganization.id
     }, {
-      onSuccess: () => onOpenChange(false)
+      onSuccess: (quoteId) => {
+        setCreatedQuoteId(quoteId);
+      }
     });
   };
 
@@ -65,6 +71,8 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
               isSubmitting={createMutation.isPending}
               onCancel={() => onOpenChange(false)}
               onSupplierChange={setSelectedSupplierId}
+              createdQuoteId={createdQuoteId}
+              onDone={() => onOpenChange(false)}
             />
           </div>
         </ScrollArea>

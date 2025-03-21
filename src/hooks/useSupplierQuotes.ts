@@ -76,9 +76,10 @@ export function useSupplierQuotes() {
         }
         return createSupplierQuote(formData, organizationId, user.id);
       },
-      onSuccess: () => {
+      onSuccess: (quoteId) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
         toast.success("Supplier quote created successfully");
+        return quoteId; // Return the quote ID
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to create supplier quote");

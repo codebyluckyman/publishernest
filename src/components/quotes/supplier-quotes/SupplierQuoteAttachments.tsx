@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { getSupplierQuoteAttachments } from "@/api/supplierQuotes/getAttachments";
 
 interface SupplierQuoteAttachmentsProps {
-  supplierQuote: SupplierQuote;
+  supplierQuote: SupplierQuote | { id: string; attachments?: SupplierQuoteAttachment[] };
   readOnly?: boolean;
   onAttachmentsChange?: () => void;
 }
@@ -26,7 +25,9 @@ export function SupplierQuoteAttachments({
   const [isUploading, setIsUploading] = useState(false);
   const [attachmentToDelete, setAttachmentToDelete] = useState<SupplierQuoteAttachment | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [attachments, setAttachments] = useState<SupplierQuoteAttachment[]>(supplierQuote.attachments || []);
+  const [attachments, setAttachments] = useState<SupplierQuoteAttachment[]>(
+    supplierQuote.attachments || []
+  );
 
   useEffect(() => {
     const loadAttachments = async () => {
@@ -47,7 +48,6 @@ export function SupplierQuoteAttachments({
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
-        // Upload file to Storage
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `${supplierQuote.id}/${fileName}`;
@@ -60,7 +60,6 @@ export function SupplierQuoteAttachments({
           throw uploadError;
         }
         
-        // Create record in database using the RPC function
         const { error: dbError } = await supabase.rpc('add_quote_attachment', {
           p_supplier_quote_id: supplierQuote.id,
           p_file_name: file.name,
@@ -77,7 +76,6 @@ export function SupplierQuoteAttachments({
       }
       
       toast.success("Files uploaded successfully");
-      // Refresh attachments
       const refreshed = await getSupplierQuoteAttachments(supplierQuote.id);
       setAttachments(refreshed);
       
@@ -89,7 +87,6 @@ export function SupplierQuoteAttachments({
       toast.error("Error uploading file");
     } finally {
       setIsUploading(false);
-      // Reset the input
       e.target.value = '';
     }
   };
@@ -104,7 +101,6 @@ export function SupplierQuoteAttachments({
         throw error;
       }
       
-      // Create a download link
       const url = URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
@@ -128,7 +124,6 @@ export function SupplierQuoteAttachments({
     if (!attachmentToDelete) return;
     
     try {
-      // Delete from storage
       const { error: storageError } = await supabase.storage
         .from('quote-attachments')
         .remove([attachmentToDelete.file_key]);
@@ -137,7 +132,6 @@ export function SupplierQuoteAttachments({
         throw storageError;
       }
       
-      // Delete from database using RPC
       const { error: dbError } = await supabase.rpc('delete_quote_attachment', {
         attachment_id: attachmentToDelete.id
       });
@@ -148,7 +142,6 @@ export function SupplierQuoteAttachments({
       }
       
       toast.success("File deleted successfully");
-      // Update attachments list by filtering out the deleted one
       setAttachments(attachments.filter(a => a.id !== attachmentToDelete.id));
       
       if (onAttachmentsChange) {

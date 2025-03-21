@@ -17,6 +17,10 @@ import { useSuppliersApi } from "@/hooks/useSuppliersApi";
 import { useOrganization } from "@/context/OrganizationContext";
 import { Supplier } from "@/types/supplier";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SupplierQuoteAttachments } from "./SupplierQuoteAttachments";
+import { toast } from "sonner";
+import { AlertCircle, Check } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Create schema for the supplier quote form
 const supplierQuoteFormSchema = z.object({
@@ -55,6 +59,8 @@ interface SupplierQuoteFormProps {
   isSubmitting: boolean;
   onCancel: () => void;
   onSupplierChange?: (supplierId: string) => void;
+  createdQuoteId?: string | null;
+  onDone?: () => void;
 }
 
 export function SupplierQuoteForm({
@@ -63,13 +69,16 @@ export function SupplierQuoteForm({
   onSubmit,
   isSubmitting,
   onCancel,
-  onSupplierChange
+  onSupplierChange,
+  createdQuoteId,
+  onDone
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
   const suppliersApi = useSuppliersApi(currentOrganization);
   const { data: suppliers = [], isLoading: suppliersLoading } = suppliersApi;
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [activeTab, setActiveTab] = useState("pricing");
+  const [formSubmitted, setFormSubmitted] = useState(false);
   
   const form = useForm<SupplierQuoteFormValues>({
     resolver: zodResolver(supplierQuoteFormSchema),
@@ -86,10 +95,52 @@ export function SupplierQuoteForm({
       onSupplierChange(supplierId);
     }
   }, [form.watch("supplier_id"), suppliers, onSupplierChange]);
+  
+  // Track when the quote is created and show the attachments tab
+  useEffect(() => {
+    if (createdQuoteId && !formSubmitted) {
+      toast.success("Quote created successfully. You can now add attachments.");
+      setFormSubmitted(true);
+      setActiveTab("attachments");
+    }
+  }, [createdQuoteId, formSubmitted]);
 
   const handleFormSubmit = (data: SupplierQuoteFormValues) => {
     onSubmit(data);
   };
+
+  // If the quote is created, show a different UI focusing on attachments
+  if (formSubmitted && createdQuoteId) {
+    return (
+      <div className="space-y-6">
+        <Alert className="bg-green-50">
+          <Check className="h-4 w-4 text-green-600" />
+          <AlertTitle>Quote Created Successfully</AlertTitle>
+          <AlertDescription>
+            Your quote has been created. You can now add attachments to this quote.
+          </AlertDescription>
+        </Alert>
+        
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Add Attachments</h3>
+          <p className="text-sm text-muted-foreground">
+            Upload any supporting documents, price lists, or specifications for this quote.
+          </p>
+          
+          <SupplierQuoteAttachments
+            supplierQuote={{ id: createdQuoteId, attachments: [] } as any}
+            onAttachmentsChange={() => {}}
+          />
+        </div>
+        
+        <div className="flex justify-end space-x-2">
+          <Button type="button" onClick={onDone}>
+            Done
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
