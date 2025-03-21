@@ -1,4 +1,3 @@
-
 import { QuoteRequest, QuoteRequestFormat, PriceBreak, QuoteRequestFormatProduct } from "./quoteRequest";
 import { ExtraCost } from "./extraCost";
 import { Saving } from "./saving";
@@ -19,12 +18,31 @@ export interface SupplierQuote {
   updated_at: string;
   reference_id: string | null;
   
+  // New fields
+  valid_from: string | null;
+  valid_to: string | null;
+  terms: string | null;
+  remarks: string | null;
+  
   // Joined fields
   quote_request?: QuoteRequest;
-  supplier?: { supplier_name: string }; // Add the supplier field
+  supplier?: { supplier_name: string }; 
   price_breaks?: SupplierQuotePriceBreak[];
   extra_costs?: SupplierQuoteExtraCost[];
   savings?: SupplierQuoteSaving[];
+  attachments?: SupplierQuoteAttachment[];
+}
+
+export interface SupplierQuoteAttachment {
+  id: string;
+  supplier_quote_id: string;
+  file_name: string;
+  file_key: string;
+  file_size: number | null;
+  file_type: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SupplierQuotePriceBreak {
@@ -99,4 +117,10 @@ export interface SupplierQuoteFormValues {
   }[];
   notes?: string;
   currency: string;
+  
+  // New fields
+  valid_from?: string;
+  valid_to?: string;
+  terms?: string;
+  remarks?: string;
 }

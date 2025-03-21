@@ -20,6 +20,23 @@ export async function updateSupplierQuote(
     quoteUpdates.currency = updates.currency;
   }
 
+  // Add new fields
+  if (updates.valid_from !== undefined) {
+    quoteUpdates.valid_from = updates.valid_from;
+  }
+  
+  if (updates.valid_to !== undefined) {
+    quoteUpdates.valid_to = updates.valid_to;
+  }
+  
+  if (updates.terms !== undefined) {
+    quoteUpdates.terms = updates.terms;
+  }
+  
+  if (updates.remarks !== undefined) {
+    quoteUpdates.remarks = updates.remarks;
+  }
+
   if (Object.keys(quoteUpdates).length > 0) {
     const { error } = await supabase
       .from("supplier_quotes")

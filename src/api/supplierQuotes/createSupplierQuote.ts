@@ -17,7 +17,12 @@ export async function createSupplierQuote(
       supplier_id: formData.supplier_id,
       currency: formData.currency,
       notes: formData.notes || null,
-      status: "draft"
+      status: "draft",
+      // New fields
+      valid_from: formData.valid_from || null,
+      valid_to: formData.valid_to || null,
+      terms: formData.terms || null,
+      remarks: formData.remarks || null
     })
     .select()
     .single();

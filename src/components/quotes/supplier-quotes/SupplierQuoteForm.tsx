@@ -11,10 +11,12 @@ import { PriceBreaksSection } from "./form/PriceBreaksSection";
 import { ExtraCostsSection } from "./form/ExtraCostsSection";
 import { SavingsSection } from "./form/SavingsSection";
 import { NotesSection } from "./form/NotesSection";
+import { QuoteDetailsSection } from "./form/QuoteDetailsSection";
 import { useEffect, useState } from "react";
 import { useSuppliersApi } from "@/hooks/useSuppliersApi";
 import { useOrganization } from "@/context/OrganizationContext";
 import { Supplier } from "@/types/supplier";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Create schema for the supplier quote form
 const supplierQuoteFormSchema = z.object({
@@ -38,7 +40,12 @@ const supplierQuoteFormSchema = z.object({
     notes: z.string().optional()
   })),
   notes: z.string().optional(),
-  currency: z.string()
+  currency: z.string(),
+  // New fields
+  valid_from: z.string().optional(),
+  valid_to: z.string().optional(),
+  terms: z.string().optional(),
+  remarks: z.string().optional()
 });
 
 interface SupplierQuoteFormProps {
@@ -62,6 +69,7 @@ export function SupplierQuoteForm({
   const suppliersApi = useSuppliersApi(currentOrganization);
   const { data: suppliers = [], isLoading: suppliersLoading } = suppliersApi;
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [activeTab, setActiveTab] = useState("pricing");
   
   const form = useForm<SupplierQuoteFormValues>({
     resolver: zodResolver(supplierQuoteFormSchema),
@@ -102,27 +110,42 @@ export function SupplierQuoteForm({
           isLoading={suppliersLoading}
         />
         
-        {/* Price Breaks */}
-        <PriceBreaksSection 
-          control={form.control}
-          quoteRequest={quoteRequest}
-          selectedSupplier={selectedSupplier}
-        />
-        
-        {/* Extra Costs */}
-        <ExtraCostsSection 
-          control={form.control}
-          quoteRequest={quoteRequest}
-        />
-        
-        {/* Savings */}
-        <SavingsSection 
-          control={form.control}
-          quoteRequest={quoteRequest}
-        />
-        
-        {/* Notes */}
-        <NotesSection control={form.control} />
+        {/* Tabs for different sections */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-2">
+            <TabsTrigger value="pricing">Pricing & Details</TabsTrigger>
+            <TabsTrigger value="terms">Terms & Dates</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="pricing" className="space-y-6 pt-4">
+            {/* Price Breaks */}
+            <PriceBreaksSection 
+              control={form.control}
+              quoteRequest={quoteRequest}
+              selectedSupplier={selectedSupplier}
+            />
+            
+            {/* Extra Costs */}
+            <ExtraCostsSection 
+              control={form.control}
+              quoteRequest={quoteRequest}
+            />
+            
+            {/* Savings */}
+            <SavingsSection 
+              control={form.control}
+              quoteRequest={quoteRequest}
+            />
+            
+            {/* Notes */}
+            <NotesSection control={form.control} />
+          </TabsContent>
+          
+          <TabsContent value="terms" className="space-y-6 pt-4">
+            {/* Quote Details Section with validity dates and terms */}
+            <QuoteDetailsSection control={form.control} />
+          </TabsContent>
+        </Tabs>
         
         {/* Form Actions */}
         <div className="flex justify-end space-x-2">

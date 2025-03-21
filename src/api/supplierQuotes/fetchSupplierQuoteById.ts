@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote, SupplierQuotePriceBreak, SupplierQuoteExtraCost, SupplierQuoteSaving } from "@/types/supplierQuote";
+import { SupplierQuote, SupplierQuotePriceBreak, SupplierQuoteExtraCost, SupplierQuoteSaving, SupplierQuoteAttachment } from "@/types/supplierQuote";
 
 export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote | null> {
   // Fetch the supplier quote
@@ -88,13 +88,24 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     throw new Error(`Error fetching savings: ${savingsError.message}`);
   }
 
+  // Fetch attachments for this supplier quote
+  const { data: attachments, error: attachmentsError } = await supabase
+    .from("supplier_quote_attachments")
+    .select("*")
+    .eq("supplier_quote_id", id);
+
+  if (attachmentsError) {
+    throw new Error(`Error fetching attachments: ${attachmentsError.message}`);
+  }
+
   // Construct the full supplier quote object, ensuring status is cast to SupplierQuoteStatus
   const supplierQuote: SupplierQuote = {
     ...quote,
     status: quote.status as SupplierQuote['status'],
     price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
     extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
-    savings: savings as unknown as SupplierQuoteSaving[]
+    savings: savings as unknown as SupplierQuoteSaving[],
+    attachments: attachments as unknown as SupplierQuoteAttachment[]
   };
 
   return supplierQuote;

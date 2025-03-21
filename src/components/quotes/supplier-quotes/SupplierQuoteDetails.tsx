@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
@@ -22,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { CollapsibleSection } from "./CollapsibleSection";
+import { Paperclip } from "lucide-react";
 
 interface SupplierQuoteDetailsProps {
   supplierQuote: SupplierQuote;
@@ -43,6 +43,7 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
   const [priceBreaksOpen, setPriceBreaksOpen] = useState(true);
   const [extraCostsOpen, setExtraCostsOpen] = useState(true);
   const [savingsOpen, setSavingsOpen] = useState(true);
+  const [attachmentsOpen, setAttachmentsOpen] = useState(true);
 
   const acceptMutation = useAcceptSupplierQuote();
   const declineMutation = useDeclineSupplierQuote();
@@ -111,6 +112,12 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
   const hasPriceBreaks = supplierQuote.price_breaks && supplierQuote.price_breaks.length > 0;
   const hasExtraCosts = supplierQuote.extra_costs && supplierQuote.extra_costs.length > 0;
   const hasSavings = supplierQuote.savings && supplierQuote.savings.length > 0;
+  const hasAttachments = supplierQuote.attachments && supplierQuote.attachments.length > 0;
+  
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Not specified";
+    return format(new Date(dateString), "PPP");
+  };
 
   return (
     <div className="space-y-6 py-6">
@@ -143,7 +150,7 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       </div>
 
       {/* Status and date info */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="space-y-1">
           <p className="text-sm font-medium">Status</p>
           <div>{getStatusBadge(supplierQuote.status)}</div>
@@ -155,6 +162,14 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
               ? format(new Date(supplierQuote.submitted_at), "PPP")
               : "Not submitted"}
           </p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Valid From</p>
+          <p className="text-sm">{supplierQuote.valid_from ? formatDate(supplierQuote.valid_from) : "Not specified"}</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Valid To</p>
+          <p className="text-sm">{supplierQuote.valid_to ? formatDate(supplierQuote.valid_to) : "Not specified"}</p>
         </div>
       </div>
 
@@ -265,6 +280,46 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
         </>
       )}
 
+      {/* Terms Section */}
+      {supplierQuote.terms && (
+        <>
+          <Separator />
+          <div>
+            <h4 className="font-medium mb-2">Terms</h4>
+            <p className="text-sm whitespace-pre-wrap">{supplierQuote.terms}</p>
+          </div>
+        </>
+      )}
+
+      {/* Attachments Section */}
+      {hasAttachments && (
+        <>
+          <Separator />
+          <CollapsibleSection
+            title="Attachments"
+            isOpen={attachmentsOpen}
+            onOpenChange={setAttachmentsOpen}
+          >
+            <div className="space-y-2">
+              {supplierQuote.attachments?.map((attachment) => (
+                <div
+                  key={attachment.id}
+                  className="flex items-center justify-between border rounded-md p-3 shadow-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{attachment.file_name}</span>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    Download
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CollapsibleSection>
+        </>
+      )}
+
       {/* Notes */}
       {supplierQuote.notes && (
         <>
@@ -272,6 +327,17 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
           <div>
             <h4 className="font-medium mb-2">Notes</h4>
             <p className="text-sm whitespace-pre-wrap">{supplierQuote.notes}</p>
+          </div>
+        </>
+      )}
+
+      {/* Remarks */}
+      {supplierQuote.remarks && (
+        <>
+          <Separator />
+          <div>
+            <h4 className="font-medium mb-2">Remarks</h4>
+            <p className="text-sm whitespace-pre-wrap">{supplierQuote.remarks}</p>
           </div>
         </>
       )}
