@@ -11,7 +11,7 @@ import { Supplier } from "@/types/supplier";
 export interface PriceBreaksSectionProps {
   control: Control<SupplierQuoteFormValues>;
   quoteRequest: QuoteRequest;
-  selectedSupplier: Supplier | null;
+  selectedSupplier?: Supplier | null;
 }
 
 export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = null }: PriceBreaksSectionProps) {

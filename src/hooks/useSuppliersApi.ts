@@ -1,3 +1,4 @@
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Supplier, SupplierFormValues } from "@/types/supplier";
@@ -5,7 +6,7 @@ import { toast } from "sonner";
 import { Organization } from "@/types/organization";
 
 export const useSuppliersApi = (
-  currentOrganization: Organization | null,
+  organizationParam: Organization | { id: string } | null,
   options?: {
     searchQuery?: string;
     filters?: {
@@ -29,7 +30,7 @@ export const useSuppliersApi = (
   const result = useQuery({
     queryKey: [
       "suppliers",
-      currentOrganization?.id,
+      organizationParam?.id,
       searchQuery,
       filters,
       sortField,
@@ -37,12 +38,12 @@ export const useSuppliersApi = (
       refreshTrigger,
     ],
     queryFn: async () => {
-      if (!currentOrganization) return [];
+      if (!organizationParam) return [];
 
       let query = supabase
         .from("suppliers")
         .select("*")
-        .eq("organization_id", currentOrganization.id);
+        .eq("organization_id", organizationParam.id);
 
       if (searchQuery) {
         query = query.ilike("supplier_name", `%${searchQuery}%`);
@@ -60,7 +61,7 @@ export const useSuppliersApi = (
 
       return data as Supplier[];
     },
-    enabled: !!currentOrganization,
+    enabled: !!organizationParam,
   });
 
   // Fetch a single supplier by ID
@@ -79,7 +80,7 @@ export const useSuppliersApi = (
   // Create a new supplier
   const createSupplier = useMutation({
     mutationFn: async (newSupplier: SupplierFormValues) => {
-      if (!currentOrganization) {
+      if (!organizationParam) {
         throw new Error("No organization selected");
       }
 
@@ -87,7 +88,7 @@ export const useSuppliersApi = (
         .from("suppliers")
         .insert({
           ...newSupplier,
-          organization_id: currentOrganization.id,
+          organization_id: organizationParam.id,
         })
         .select()
         .single();

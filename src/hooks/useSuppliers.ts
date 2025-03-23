@@ -12,19 +12,20 @@ export const useSuppliers = (organizationParam?: OrganizationParam) => {
   
   // Determine the organization ID to use
   let orgId: string | undefined;
+  let orgParam: { id: string } | null = null;
   
   if (typeof organizationParam === 'string') {
     orgId = organizationParam;
+    orgParam = { id: orgId };
   } else if (organizationParam && 'id' in organizationParam) {
     orgId = organizationParam.id;
+    orgParam = { id: orgId };
   } else if (currentOrganization) {
     orgId = currentOrganization.id;
+    orgParam = { id: orgId };
   }
   
-  // Create a minimal organization object with just the ID
-  const result = useSuppliersApi(
-    orgId ? { id: orgId } : null
-  );
+  const result = useSuppliersApi(orgParam);
   
   return { 
     suppliers: result.suppliers,
