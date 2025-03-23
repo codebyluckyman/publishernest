@@ -17,11 +17,13 @@ export interface SupplierSelectProps {
 export function SupplierSelect({ control, suppliers, quoteRequest, isLoading, defaultSupplierId }: SupplierSelectProps) {
   // Filter suppliers to only those in the quote request
   const filteredSuppliers = suppliers.filter(supplier => {
-    if (quoteRequest.supplier_id) {
-      return supplier.id === quoteRequest.supplier_id;
-    }
+    // Check if it's in the supplier_ids array
     if (quoteRequest.supplier_ids && quoteRequest.supplier_ids.length > 0) {
       return quoteRequest.supplier_ids.includes(supplier.id);
+    }
+    // For backward compatibility, also check single supplier_id
+    if (quoteRequest.supplier_id) {
+      return supplier.id === quoteRequest.supplier_id;
     }
     return false;
   });
