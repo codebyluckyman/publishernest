@@ -120,7 +120,7 @@ const Organizations = () => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="mb-6 flex flex-wrap">
+        <TabsList className="mb-6 flex-start flex-wrap">
           <TabsTrigger value="general" className="flex items-center gap-1">
             <Settings className="h-4 w-4" />
             <span>General</span>
