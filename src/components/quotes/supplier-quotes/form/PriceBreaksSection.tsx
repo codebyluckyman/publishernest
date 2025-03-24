@@ -65,22 +65,33 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
         format.price_breaks.forEach(priceBreak => {
           if (format.products && format.products.length > 0) {
             format.products.forEach(product => {
-              newPriceBreaks.push({
+              // Create price break with multiple unit cost fields
+              const priceBreakEntry = {
                 quote_request_format_id: format.id,
                 price_break_id: priceBreak.id,
                 quantity: priceBreak.quantity,
                 product_id: product.product_id,
-                unit_cost: null
-              });
+                unit_cost: null,
+                unit_cost_1: null,
+                unit_cost_2: null,
+                unit_cost_3: null,
+                unit_cost_4: null
+              };
+              newPriceBreaks.push(priceBreakEntry);
             });
           } else {
             // If no products, add a single price break without product
-            newPriceBreaks.push({
+            const priceBreakEntry = {
               quote_request_format_id: format.id,
               price_break_id: priceBreak.id,
               quantity: priceBreak.quantity,
-              unit_cost: null
-            });
+              unit_cost: null,
+              unit_cost_1: null,
+              unit_cost_2: null,
+              unit_cost_3: null,
+              unit_cost_4: null
+            };
+            newPriceBreaks.push(priceBreakEntry);
           }
         });
       }

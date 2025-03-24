@@ -1,3 +1,4 @@
+
 import { QuoteRequest, QuoteRequestFormat, PriceBreak, QuoteRequestFormatProduct } from "./quoteRequest";
 import { ExtraCost } from "./extraCost";
 import { Saving } from "./saving";
@@ -54,6 +55,11 @@ export interface SupplierQuotePriceBreak {
   quantity: number;
   product_id: string | null;
   unit_cost: number | null;
+  // New fields for multiple product unit costs
+  unit_cost_1: number | null;
+  unit_cost_2: number | null;
+  unit_cost_3: number | null;
+  unit_cost_4: number | null;
   created_at: string;
   updated_at: string;
   
@@ -105,6 +111,11 @@ export interface SupplierQuoteFormValues {
     quantity: number;
     product_id?: string;
     unit_cost: number | null;
+    // New fields for multiple product unit costs
+    unit_cost_1: number | null;
+    unit_cost_2: number | null;
+    unit_cost_3: number | null;
+    unit_cost_4: number | null;
   }[];
   extra_costs: {
     extra_cost_id: string;

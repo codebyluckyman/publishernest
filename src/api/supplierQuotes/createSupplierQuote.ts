@@ -40,7 +40,12 @@ export async function createSupplierQuote(
       price_break_id: pb.price_break_id,
       quantity: pb.quantity,
       product_id: pb.product_id || null,
-      unit_cost: pb.unit_cost
+      unit_cost: pb.unit_cost,
+      // New fields for multiple product unit costs
+      unit_cost_1: pb.unit_cost_1,
+      unit_cost_2: pb.unit_cost_2,
+      unit_cost_3: pb.unit_cost_3,
+      unit_cost_4: pb.unit_cost_4
     }));
 
     const { error: priceBreaksError } = await supabase
