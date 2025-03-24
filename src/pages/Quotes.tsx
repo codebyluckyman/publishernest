@@ -1,16 +1,27 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrganization } from "@/hooks/useOrganization";
 import { SupplierQuotesTable } from "@/components/quotes/supplier-quotes/SupplierQuotesTable";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const Quotes = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("active");
+  const location = useLocation();
+
+  // Check for tab parameter in URL query string
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const tabParam = queryParams.get("tab");
+    if (tabParam && ["active", "completed", "all"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
 
   // Map tab values to status filter
   const getStatusFilter = (tab: string) => {

@@ -63,7 +63,7 @@ export function QuoteDetails({
 
   // Navigate to supplier quotes for this request
   const handleViewSupplierQuotes = () => {
-    navigate(`/quotes?quoteRequestId=${selectedRequest.id}`);
+    navigate(`/quotes?quoteRequestId=${selectedRequest.id}&tab=all`);
   };
 
   return (

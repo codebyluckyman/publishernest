@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { TableCell, TableRow } from "@/components/ui/table";
