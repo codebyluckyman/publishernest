@@ -137,6 +137,14 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
                     {/* Format Specifications */}
                     <div className="bg-slate-50 rounded-md p-3 mb-4">
                       <FormatSpecifications format={formatDetails} isLoading={isLoading} />
+                      
+                      {/* Display number of products */}
+                      <div className="mt-3 pt-3 border-t border-slate-200">
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium">Number of Products:</span>
+                          <span className="ml-2 text-sm">{format.num_products || 1}</span>
+                        </div>
+                      </div>
                     </div>
                     
                     {/* Price breaks for this format */}
@@ -166,6 +174,7 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
                           index={fieldIndex}
                           quantity={formatPriceBreak?.quantity}
                           productName={product?.product_name}
+                          numProducts={format.num_products || 1}
                         />
                       );
                     })}

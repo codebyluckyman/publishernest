@@ -10,16 +10,22 @@ interface PriceBreakItemProps {
   index: number;
   quantity?: number;
   productName?: string;
+  numProducts: number;
 }
 
-export function PriceBreakItem({ control, index, quantity, productName }: PriceBreakItemProps) {
+export function PriceBreakItem({ control, index, quantity, productName, numProducts }: PriceBreakItemProps) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <p className="text-sm font-medium">Quantity</p>
             <p className="text-sm">{quantity?.toLocaleString()}</p>
+          </div>
+          
+          <div>
+            <p className="text-sm font-medium">Products</p>
+            <p className="text-sm">{numProducts}</p>
           </div>
           
           {productName && (
