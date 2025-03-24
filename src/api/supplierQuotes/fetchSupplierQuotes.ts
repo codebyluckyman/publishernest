@@ -1,7 +1,7 @@
 
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote } from "@/types/supplierQuote";
+import { SupplierQuote, SupplierQuoteStatus } from "@/types/supplierQuote";
 
 interface FetchQuotesParams {
   currentOrganization: Organization | null;
@@ -84,6 +84,7 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
 
       return {
         ...quote,
+        status: quote.status as SupplierQuoteStatus, // Cast status to the proper type
         formats: formats ? formats.map(f => ({
           id: f.id,
           format_id: f.format_id,
@@ -93,5 +94,5 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     })
   );
 
-  return quotesWithFormats;
+  return quotesWithFormats as SupplierQuote[];
 }

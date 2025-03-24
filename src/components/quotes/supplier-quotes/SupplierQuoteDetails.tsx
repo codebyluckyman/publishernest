@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useAcceptSupplierQuote, useDeclineSupplierQuote } from "@/hooks/useSupplierQuotes";
+import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -27,8 +27,21 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
   const [acceptedCost, setAcceptedCost] = useState(supplierQuote.total_cost?.toString() || '');
   const [confirmingAction, setConfirmingAction] = useState<'accept' | 'decline' | null>(null);
   
+  // Use the hooks from the useSupplierQuotes hook
+  const { 
+    useAcceptSupplierQuote,
+    useDeclineSupplierQuote
+  } = useSupplierQuotes();
+  
   const acceptMutation = useAcceptSupplierQuote();
   const declineMutation = useDeclineSupplierQuote();
+  
+  // Add state for collapsible sections
+  const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(false);
+  const [isSavingsOpen, setIsSavingsOpen] = useState(false);
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isRemarksOpen, setIsRemarksOpen] = useState(false);
   
   const handleAcceptQuote = () => {
     if (confirmingAction === 'accept') {
@@ -183,7 +196,10 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Formats */}
       {supplierQuote.formats && supplierQuote.formats.length > 0 && (
-        <CollapsibleSection title="Formats" defaultOpen={true}>
+        <CollapsibleSection 
+          title="Formats" 
+          defaultOpen={true}
+        >
           <div className="space-y-4">
             {supplierQuote.formats.map((format, index) => (
               <Card key={index}>
@@ -215,7 +231,10 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Pricing */}
       {supplierQuote.price_breaks && supplierQuote.price_breaks.length > 0 && (
-        <CollapsibleSection title="Pricing" defaultOpen={true}>
+        <CollapsibleSection 
+          title="Pricing" 
+          defaultOpen={true}
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -249,7 +268,11 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Extra Costs */}
       {supplierQuote.extra_costs && supplierQuote.extra_costs.length > 0 && (
-        <CollapsibleSection title="Extra Costs">
+        <CollapsibleSection 
+          title="Extra Costs"
+          isOpen={isExtraCostsOpen}
+          onOpenChange={setIsExtraCostsOpen}
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -282,7 +305,11 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Savings */}
       {supplierQuote.savings && supplierQuote.savings.length > 0 && (
-        <CollapsibleSection title="Savings">
+        <CollapsibleSection 
+          title="Savings"
+          isOpen={isSavingsOpen}
+          onOpenChange={setIsSavingsOpen}
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -315,7 +342,11 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Notes */}
       {supplierQuote.notes && (
-        <CollapsibleSection title="Notes">
+        <CollapsibleSection 
+          title="Notes"
+          isOpen={isNotesOpen}
+          onOpenChange={setIsNotesOpen}
+        >
           <div className="p-4 bg-muted/30 rounded-md">
             <p className="text-sm whitespace-pre-wrap">{supplierQuote.notes}</p>
           </div>
@@ -324,7 +355,11 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Terms */}
       {supplierQuote.terms && (
-        <CollapsibleSection title="Terms">
+        <CollapsibleSection
+          title="Terms"
+          isOpen={isTermsOpen}
+          onOpenChange={setIsTermsOpen}
+        >
           <div className="p-4 bg-muted/30 rounded-md">
             <p className="text-sm whitespace-pre-wrap">{supplierQuote.terms}</p>
           </div>
@@ -333,7 +368,11 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Remarks */}
       {supplierQuote.remarks && (
-        <CollapsibleSection title="Remarks">
+        <CollapsibleSection
+          title="Remarks"
+          isOpen={isRemarksOpen}
+          onOpenChange={setIsRemarksOpen}
+        >
           <div className="p-4 bg-muted/30 rounded-md">
             <p className="text-sm whitespace-pre-wrap">{supplierQuote.remarks}</p>
           </div>
@@ -342,7 +381,11 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
 
       {/* Attachments */}
       {supplierQuote.attachments && supplierQuote.attachments.length > 0 && (
-        <CollapsibleSection title="Attachments">
+        <CollapsibleSection 
+          title="Attachments"
+          isOpen={false}
+          onOpenChange={() => {}}
+        >
           <SupplierQuoteAttachments 
             supplierQuote={{ id: supplierQuote.id }}
             readOnly
@@ -361,7 +404,9 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       </div>
       
       {showAudit && (
-        <SupplierQuoteAuditHistory supplierQuoteId={supplierQuote.id} />
+        <SupplierQuoteAuditHistory 
+          supplierQuoteId={supplierQuote.id} 
+        />
       )}
 
       <Separator />

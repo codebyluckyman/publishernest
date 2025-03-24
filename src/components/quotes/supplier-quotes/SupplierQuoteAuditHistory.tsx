@@ -24,18 +24,21 @@ import { SupplierQuoteAudit } from "@/api/supplierQuotes/supplierQuoteAudit";
 
 export interface SupplierQuoteAuditHistoryProps {
   supplierQuote: SupplierQuote | null;
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  supplierQuoteId?: string;
 }
 
 export function SupplierQuoteAuditHistory({
   supplierQuote,
+  supplierQuoteId,
   isOpen,
   onOpenChange,
 }: SupplierQuoteAuditHistoryProps) {
   const { user } = useAuth();
   const { useSupplierQuoteAudit } = useSupplierQuotes();
-  const { data: auditEntries = [], isLoading } = useSupplierQuoteAudit(supplierQuote?.id || null);
+  const quoteId = supplierQuote?.id || supplierQuoteId || null;
+  const { data: auditEntries = [], isLoading } = useSupplierQuoteAudit(quoteId);
 
   // Helper function to format audit data
   const getActionLabel = (action: string) => {
@@ -92,18 +95,20 @@ export function SupplierQuoteAuditHistory({
   };
 
   const handleBackClick = () => {
-    onOpenChange(false);
+    if (onOpenChange) onOpenChange(false);
   };
 
-  if (!supplierQuote) return null;
+  if (!supplierQuote && !supplierQuoteId) return null;
 
   return (
     <div className="space-y-4 py-4">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-medium">Audit History</h3>
-        <Button variant="outline" size="sm" onClick={handleBackClick}>
-          Back to Details
-        </Button>
+        {onOpenChange && (
+          <Button variant="outline" size="sm" onClick={handleBackClick}>
+            Back to Details
+          </Button>
+        )}
       </div>
       
       <div className="overflow-auto max-h-[500px]">
