@@ -12,6 +12,8 @@ import { CollapsibleSection } from "./CollapsibleSection";
 import { generateQuotePDF } from "./PdfGenerator";
 import { Button } from "@/components/ui/button";
 import { QuoteResponseButton } from "../QuoteResponseButton";
+import { FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -30,6 +32,7 @@ export function QuoteDetails({
   const [isSavingsOpen, setIsSavingsOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const { currentOrganization } = useOrganization();
+  const navigate = useNavigate();
   
   const handleEdit = () => {
     if (onEdit) {
@@ -56,6 +59,11 @@ export function QuoteDetails({
   // Generate PDF using jsPDF
   const handleGeneratePDF = () => {
     generateQuotePDF(selectedRequest, currentOrganization);
+  };
+
+  // Navigate to supplier quotes for this request
+  const handleViewSupplierQuotes = () => {
+    navigate(`/quotes?quoteRequestId=${selectedRequest.id}`);
   };
 
   return (
@@ -100,8 +108,17 @@ export function QuoteDetails({
         items={selectedRequest.savings || []}
       />
 
-      {/* Response Button */}
-      <div className="flex justify-end">
+      {/* Response Buttons */}
+      <div className="flex justify-between items-center">
+        <Button 
+          variant="outline" 
+          onClick={handleViewSupplierQuotes}
+          className="flex items-center gap-2"
+        >
+          <FileText className="h-4 w-4" />
+          View Supplier Quotes
+        </Button>
+        
         <QuoteResponseButton quoteRequest={selectedRequest} />
       </div>
 

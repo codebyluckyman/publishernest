@@ -1156,6 +1156,16 @@ export type Database = {
           quote_request_format_id: string
           supplier_quote_id: string
           unit_cost: number | null
+          unit_cost_1: number | null
+          unit_cost_10: number | null
+          unit_cost_2: number | null
+          unit_cost_3: number | null
+          unit_cost_4: number | null
+          unit_cost_5: number | null
+          unit_cost_6: number | null
+          unit_cost_7: number | null
+          unit_cost_8: number | null
+          unit_cost_9: number | null
           updated_at: string
         }
         Insert: {
@@ -1167,6 +1177,16 @@ export type Database = {
           quote_request_format_id: string
           supplier_quote_id: string
           unit_cost?: number | null
+          unit_cost_1?: number | null
+          unit_cost_10?: number | null
+          unit_cost_2?: number | null
+          unit_cost_3?: number | null
+          unit_cost_4?: number | null
+          unit_cost_5?: number | null
+          unit_cost_6?: number | null
+          unit_cost_7?: number | null
+          unit_cost_8?: number | null
+          unit_cost_9?: number | null
           updated_at?: string
         }
         Update: {
@@ -1178,6 +1198,16 @@ export type Database = {
           quote_request_format_id?: string
           supplier_quote_id?: string
           unit_cost?: number | null
+          unit_cost_1?: number | null
+          unit_cost_10?: number | null
+          unit_cost_2?: number | null
+          unit_cost_3?: number | null
+          unit_cost_4?: number | null
+          unit_cost_5?: number | null
+          unit_cost_6?: number | null
+          unit_cost_7?: number | null
+          unit_cost_8?: number | null
+          unit_cost_9?: number | null
           updated_at?: string
         }
         Relationships: [

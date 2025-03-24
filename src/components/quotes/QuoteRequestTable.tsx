@@ -15,7 +15,8 @@ import { useQuoteRequestManagement } from "@/hooks/useQuoteRequestManagement";
 import { QuoteRequestTableHeader } from "./table/QuoteRequestTableHeader";
 import { BulkActions } from "./table/BulkActions";
 import { BulkDueDateDialog } from "./table/BulkDueDateDialog";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface QuoteRequestTableProps {
   quoteRequests: QuoteRequest[];
@@ -25,6 +26,7 @@ interface QuoteRequestTableProps {
 export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTableProps) {
   const { currentOrganization } = useOrganization();
   const { data: suppliers = [] } = useSuppliersApi(currentOrganization);
+  const navigate = useNavigate();
   
   // Sort functionality
   const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
@@ -56,6 +58,11 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     openDueDateDialog,
     handleBulkUpdateDueDate
   } = useQuoteRequestManagement();
+
+  // Function to navigate to supplier quotes for a specific quote request
+  const handleViewSupplierQuotes = (request: QuoteRequest) => {
+    navigate(`/quotes?quoteRequestId=${request.id}`);
+  };
 
   if (quoteRequests.length === 0) {
     return <EmptyState isLoading={isLoading} />;
@@ -91,6 +98,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
               onDelete={handleDelete}
               onViewDetails={viewDetails}
               onEdit={editRequest}
+              onViewSupplierQuotes={handleViewSupplierQuotes}
               isSelected={selectedRows.includes(request.id)}
               onSelectRow={handleSelectRow}
             />

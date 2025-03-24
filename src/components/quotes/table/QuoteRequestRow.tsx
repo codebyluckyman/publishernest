@@ -14,6 +14,7 @@ type QuoteRequestRowProps = {
   onDelete: (id: string) => void;
   onViewDetails: (request: QuoteRequest) => void;
   onEdit: (request: QuoteRequest) => void;
+  onViewSupplierQuotes?: (request: QuoteRequest) => void;
   isSelected: boolean;
   onSelectRow: (id: string, selected: boolean) => void;
 };
@@ -24,6 +25,7 @@ export const QuoteRequestRow = ({
   onDelete,
   onViewDetails,
   onEdit,
+  onViewSupplierQuotes,
   isSelected,
   onSelectRow
 }: QuoteRequestRowProps) => {
@@ -76,6 +78,7 @@ export const QuoteRequestRow = ({
           onDelete={onDelete}
           onViewDetails={onViewDetails}
           onEdit={onEdit}
+          onViewSupplierQuotes={onViewSupplierQuotes}
         />
       </TableCell>
     </TableRow>

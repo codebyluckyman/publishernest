@@ -8,13 +8,16 @@ import { useSuppliersApi } from "@/hooks/useSuppliersApi";
 import { QuoteRequestTable } from "@/components/quotes/QuoteRequestTable";
 import { QuoteRequestDialog } from "@/components/quotes/QuoteRequestDialog";
 import { Input } from "@/components/ui/input";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 
 const QuoteRequests = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Check for tab parameter in URL query string when component mounts
   useEffect(() => {
@@ -46,6 +49,10 @@ const QuoteRequests = () => {
     refetch();
   }, [refetch]);
 
+  const navigateToQuotes = useCallback(() => {
+    navigate('/quotes');
+  }, [navigate]);
+
   return (
     <div className="space-y-8">
       <div>
@@ -56,7 +63,13 @@ const QuoteRequests = () => {
       <div className="grid gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <QuoteRequestDialog suppliers={suppliers} onSuccess={handleQuoteRequestSuccess} />
+            <div className="flex space-x-2">
+              <QuoteRequestDialog suppliers={suppliers} onSuccess={handleQuoteRequestSuccess} />
+              <Button variant="outline" onClick={navigateToQuotes}>
+                <FileText className="mr-2 h-4 w-4" />
+                View All Supplier Quotes
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
