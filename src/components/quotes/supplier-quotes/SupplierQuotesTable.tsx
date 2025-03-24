@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
@@ -23,9 +24,10 @@ import { CircleDollarSign, Eye, FileCheck, FileX } from "lucide-react";
 interface SupplierQuotesTableProps {
   statusFilter?: string[] | undefined;
   searchQuery?: string;
+  quoteRequestId?: string | null;
 }
 
-export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuotesTableProps) {
+export function SupplierQuotesTable({ statusFilter, searchQuery, quoteRequestId }: SupplierQuotesTableProps) {
   const { currentOrganization } = useOrganization();
   const { useSupplierQuotesList } = useSupplierQuotes();
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
@@ -35,7 +37,7 @@ export function SupplierQuotesTable({ statusFilter, searchQuery }: SupplierQuote
     currentOrganization,
     statusFilter ? statusFilter.join(',') : undefined,
     undefined,
-    undefined,
+    quoteRequestId || undefined,
     searchQuery
   );
 

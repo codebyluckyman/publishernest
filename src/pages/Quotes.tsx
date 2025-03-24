@@ -13,14 +13,21 @@ const Quotes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("active");
   const location = useLocation();
+  const [quoteRequestId, setQuoteRequestId] = useState<string | null>(null);
 
-  // Check for tab parameter in URL query string
+  // Check for tab parameter and quoteRequestId in URL query string
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
+    
+    // Get and set tab parameter
     const tabParam = queryParams.get("tab");
     if (tabParam && ["active", "completed", "all"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
+    
+    // Get and set quoteRequestId parameter
+    const requestIdParam = queryParams.get("quoteRequestId");
+    setQuoteRequestId(requestIdParam);
   }, [location.search]);
 
   // Map tab values to status filter
@@ -79,17 +86,20 @@ const Quotes = () => {
                 <SupplierQuotesTable 
                   statusFilter={getStatusFilter("active")} 
                   searchQuery={searchQuery}
+                  quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
               <TabsContent value="completed" className="space-y-4">
                 <SupplierQuotesTable 
                   statusFilter={getStatusFilter("completed")} 
                   searchQuery={searchQuery}
+                  quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
               <TabsContent value="all" className="space-y-4">
                 <SupplierQuotesTable 
                   searchQuery={searchQuery}
+                  quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
             </Tabs>
