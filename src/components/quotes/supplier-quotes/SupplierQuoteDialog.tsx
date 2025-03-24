@@ -50,12 +50,12 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Create Quote Response</DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="h-[calc(90vh-8rem)]">
+        <ScrollArea className="h-[calc(95vh-8rem)]">
           <div className="p-1">
             <SupplierQuoteForm
               quoteRequest={quoteRequest}
