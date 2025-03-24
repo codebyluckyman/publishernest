@@ -3,10 +3,14 @@ import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect } from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useEffect, useState } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PriceBreakItem } from "./PriceBreakItem";
 import { Supplier } from "@/types/supplier";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FormatSpecifications } from "../../form/FormatSpecifications";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 
 export interface PriceBreaksSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -24,6 +28,28 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
     control,
     name: "supplier_id"
   });
+  
+  // Track open/closed state for each format
+  const [openFormats, setOpenFormats] = useState<Record<string, boolean>>({});
+  
+  // Toggle format sections
+  const toggleFormat = (formatId: string) => {
+    setOpenFormats(prev => ({
+      ...prev,
+      [formatId]: !prev[formatId]
+    }));
+  };
+  
+  // Initialize all formats as open by default
+  useEffect(() => {
+    if (quoteRequest.formats && quoteRequest.formats.length > 0) {
+      const initialOpenState: Record<string, boolean> = {};
+      quoteRequest.formats.forEach(format => {
+        initialOpenState[format.id] = true;
+      });
+      setOpenFormats(initialOpenState);
+    }
+  }, [quoteRequest.formats]);
   
   // Initialize price breaks when supplier changes
   useEffect(() => {
@@ -72,26 +98,49 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
       <CardHeader>
         <CardTitle>Price Breaks</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Accordion type="multiple" defaultValue={quoteRequest.formats?.map(f => f.id) || []}>
-          {quoteRequest.formats.map(format => {
-            // Get price breaks for this format
-            const formatPriceBreaks = fields.filter(
-              field => field.quote_request_format_id === format.id
-            );
-            
-            if (formatPriceBreaks.length === 0) {
-              return null;
-            }
-            
-            return (
-              <AccordionItem key={format.id} value={format.id}>
-                <AccordionTrigger className="font-medium">
-                  {format.format_name || "Format"}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4">
-                    {formatPriceBreaks.map((priceBreak, index) => {
+      <CardContent className="space-y-6">
+        {quoteRequest.formats.map(format => {
+          // Get price breaks for this format
+          const formatPriceBreaks = fields.filter(
+            field => field.quote_request_format_id === format.id
+          );
+          
+          if (formatPriceBreaks.length === 0) {
+            return null;
+          }
+          
+          // Fetch format details for specifications
+          const { data: formatDetails, isLoading } = useFormatDetails(format.format_id);
+          const isOpen = openFormats[format.id] || false;
+          
+          return (
+            <div key={format.id} className="border rounded-md overflow-hidden">
+              <Collapsible open={isOpen} onOpenChange={(open) => setOpenFormats(prev => ({ ...prev, [format.id]: open }))}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center justify-between w-full text-left p-4 font-medium border-b"
+                    onClick={() => toggleFormat(format.id)}
+                  >
+                    <span>{format.format_name || "Format"}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {formatPriceBreaks.length} price break{formatPriceBreaks.length !== 1 ? 's' : ''}
+                      </span>
+                      {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </div>
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="p-4 space-y-4">
+                    {/* Format Specifications */}
+                    <div className="bg-slate-50 rounded-md p-3 mb-4">
+                      <FormatSpecifications format={formatDetails} isLoading={isLoading} />
+                    </div>
+                    
+                    {/* Price breaks for this format */}
+                    {formatPriceBreaks.map((priceBreak) => {
                       const fieldIndex = fields.findIndex(f => 
                         f.quote_request_format_id === priceBreak.quote_request_format_id && 
                         f.price_break_id === priceBreak.price_break_id &&
@@ -121,11 +170,11 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
                       );
                     })}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
