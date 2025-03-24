@@ -50,7 +50,7 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
     return (
       <div>
         <p className="text-sm font-medium mb-2">Unit Costs by Product Count</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-3">
           {Array.from({ length: Math.min(numProducts, 10) }, (_, i) => i + 1).map((i) => (
             <FormField
               key={`unit_cost_${i}`}
