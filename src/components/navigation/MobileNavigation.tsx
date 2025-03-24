@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, User, LogOut, ChevronDown, ChevronRight } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -22,6 +22,29 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { currentOrganization } = useOrganization();
+
+  // Auto-expand submenus based on current route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // Check all menu items with submenus
+    menuItems.forEach(item => {
+      if (item.submenu) {
+        // Check if current path matches any submenu item
+        const isSubmenuActive = item.submenu.some(subItem => 
+          currentPath === subItem.path || 
+          (currentPath.includes('/quote-requests') && subItem.path === '/quote-requests')
+        );
+        
+        if (isSubmenuActive) {
+          setOpenSubmenus(prev => ({
+            ...prev,
+            [item.title]: true
+          }));
+        }
+      }
+    });
+  }, [location.pathname, menuItems]);
 
   const toggleSubmenu = (title: string) => {
     setOpenSubmenus(prev => ({
@@ -101,7 +124,12 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                                 <Link
                                   key={subItem.path}
                                   to={subItem.path}
-                                  className={`flex items-center px-4 py-3 text-base rounded-md ${location.pathname === subItem.path ? 'bg-accent text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                                  className={`flex items-center px-4 py-3 text-base rounded-md ${
+                                    location.pathname === subItem.path || 
+                                    (location.pathname.includes(subItem.path) && subItem.path !== '/') 
+                                    ? 'bg-accent text-white' 
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                  }`}
                                   onClick={() => setMobileMenuOpen(false)}
                                 >
                                   {/* @ts-ignore - passing the real icon component here */}

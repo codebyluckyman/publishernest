@@ -17,7 +17,23 @@ const Layout = ({
   const isMobile = useIsMobile();
   
   const menuItems = getNavigationMenuItems();
-  const currentPageLabel = menuItems.find(item => item.path === location.pathname)?.label || "Dashboard";
+  
+  // Find the current page label - either direct match or from submenu
+  let currentPageLabel = "Dashboard";
+  
+  menuItems.forEach(item => {
+    if (item.path === location.pathname) {
+      currentPageLabel = item.label;
+    } else if (item.submenu) {
+      const subItem = item.submenu.find(subItem => 
+        location.pathname === subItem.path || 
+        (location.pathname.includes(subItem.path) && subItem.path !== '/')
+      );
+      if (subItem) {
+        currentPageLabel = subItem.label;
+      }
+    }
+  });
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>

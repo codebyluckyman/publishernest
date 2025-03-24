@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import OrganizationSwitcher from "../OrganizationSwitcher";
 import { MenuItem } from "./NavigationMenuItems";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DesktopSidebarProps {
   menuItems: MenuItem[];
@@ -24,6 +24,29 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
   
   // Track open submenus
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+
+  // Auto-expand submenus based on current route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // Check all menu items with submenus
+    menuItems.forEach(item => {
+      if (item.submenu) {
+        // Check if current path matches any submenu item
+        const isSubmenuActive = item.submenu.some(subItem => 
+          currentPath === subItem.path || 
+          (currentPath.includes('/quote-requests') && subItem.path === '/quote-requests')
+        );
+        
+        if (isSubmenuActive) {
+          setOpenSubmenus(prev => ({
+            ...prev,
+            [item.title]: true
+          }));
+        }
+      }
+    });
+  }, [location.pathname, menuItems]);
 
   const toggleSubmenu = (title: string) => {
     setOpenSubmenus(prev => ({
@@ -83,7 +106,7 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                             <SidebarMenuButton key={subItem.path} asChild tooltip={subItem.label}>
                               <Link 
                                 to={subItem.path} 
-                                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === subItem.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}
+                                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === subItem.path || (location.pathname.includes(subItem.path) && subItem.path !== '/') ? "bg-accent text-white" : "hover:bg-gray-100"}`}
                               >
                                 {/* @ts-ignore - passing the real icon component here */}
                                 <subItem.icon className="w-5 h-5" />
