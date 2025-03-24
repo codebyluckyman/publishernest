@@ -87,7 +87,7 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="space-y-2 md:col-span-1">
             <div>
               <p className="text-sm font-medium">Quantity</p>
@@ -107,7 +107,7 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
             )}
           </div>
 
-          <div className="md:col-span-3">
+          <div className="md:col-span-11">
             {renderUnitCostFields()}
           </div>
         </div>
