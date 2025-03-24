@@ -55,11 +55,17 @@ export interface SupplierQuotePriceBreak {
   quantity: number;
   product_id: string | null;
   unit_cost: number | null;
-  // New fields for multiple product unit costs
+  // Expanded fields for multiple product unit costs (up to 10)
   unit_cost_1: number | null;
   unit_cost_2: number | null;
   unit_cost_3: number | null;
   unit_cost_4: number | null;
+  unit_cost_5: number | null;
+  unit_cost_6: number | null;
+  unit_cost_7: number | null;
+  unit_cost_8: number | null;
+  unit_cost_9: number | null;
+  unit_cost_10: number | null;
   created_at: string;
   updated_at: string;
   
@@ -111,11 +117,17 @@ export interface SupplierQuoteFormValues {
     quantity: number;
     product_id?: string;
     unit_cost: number | null;
-    // New fields for multiple product unit costs
+    // Expanded fields for multiple product unit costs (up to 10)
     unit_cost_1: number | null;
     unit_cost_2: number | null;
     unit_cost_3: number | null;
     unit_cost_4: number | null;
+    unit_cost_5: number | null;
+    unit_cost_6: number | null;
+    unit_cost_7: number | null;
+    unit_cost_8: number | null;
+    unit_cost_9: number | null;
+    unit_cost_10: number | null;
   }[];
   extra_costs: {
     extra_cost_id: string;

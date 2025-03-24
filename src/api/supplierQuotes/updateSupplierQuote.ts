@@ -72,11 +72,17 @@ export async function updateSupplierQuote(
       quantity: pb.quantity,
       product_id: pb.product_id || null,
       unit_cost: pb.unit_cost,
-      // New fields for multiple product unit costs
+      // All unit cost fields for multiple products (up to 10)
       unit_cost_1: pb.unit_cost_1,
       unit_cost_2: pb.unit_cost_2,
       unit_cost_3: pb.unit_cost_3,
-      unit_cost_4: pb.unit_cost_4
+      unit_cost_4: pb.unit_cost_4,
+      unit_cost_5: pb.unit_cost_5,
+      unit_cost_6: pb.unit_cost_6,
+      unit_cost_7: pb.unit_cost_7,
+      unit_cost_8: pb.unit_cost_8,
+      unit_cost_9: pb.unit_cost_9,
+      unit_cost_10: pb.unit_cost_10
     }));
 
     const { error: insertError } = await supabase

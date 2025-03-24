@@ -48,7 +48,7 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
 
     // Multiple products case - create a field for each product count
     const fields = [];
-    for (let i = 1; i <= Math.min(numProducts, 4); i++) {
+    for (let i = 1; i <= Math.min(numProducts, 10); i++) {
       fields.push(
         <FormField
           key={`unit_cost_${i}`}
