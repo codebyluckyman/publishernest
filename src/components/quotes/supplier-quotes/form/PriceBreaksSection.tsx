@@ -104,6 +104,18 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
     return null;
   }
   
+  // Create a map of format IDs to their format details queries
+  // This avoids calling hooks conditionally within the render method
+  const formatDetailsMap = {};
+  if (quoteRequest.formats) {
+    quoteRequest.formats.forEach(format => {
+      if (format.format_id) {
+        // Store the hook result for each format ID
+        formatDetailsMap[format.id] = useFormatDetails(format.format_id);
+      }
+    });
+  }
+  
   return (
     <Card>
       <CardHeader>
@@ -120,8 +132,8 @@ export function PriceBreaksSection({ control, quoteRequest, selectedSupplier = n
             return null;
           }
           
-          // Fetch format details for specifications
-          const { data: formatDetails, isLoading } = useFormatDetails(format.format_id);
+          // Get format details from our pre-computed map
+          const { data: formatDetails, isLoading } = formatDetailsMap[format.id] || { data: null, isLoading: false };
           const isOpen = openFormats[format.id] || false;
           
           return (
