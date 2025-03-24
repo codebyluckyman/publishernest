@@ -61,7 +61,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
 
   // Function to navigate to supplier quotes for a specific quote request
   const handleViewSupplierQuotes = (request: QuoteRequest) => {
-    navigate(`/quotes?quoteRequestId=${request.id}`);
+    navigate(`/quotes?quoteRequestId=${request.id}&tab=all`);
   };
 
   if (quoteRequests.length === 0) {
