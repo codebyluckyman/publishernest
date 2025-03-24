@@ -99,6 +99,38 @@ export async function createSupplierQuote(
     }
   }
 
+  // Insert formats
+  if (formData.price_breaks && formData.price_breaks.length > 0) {
+    // Get unique quote_request_format_ids from price breaks
+    const uniqueFormatIds = [...new Set(formData.price_breaks.map(pb => pb.quote_request_format_id))];
+    
+    // Get format information for each quote request format
+    const { data: quoteRequestFormats, error: formatError } = await supabase
+      .from("quote_request_formats")
+      .select("id, format_id")
+      .in("id", uniqueFormatIds);
+    
+    if (formatError) {
+      throw new Error(`Error fetching format information: ${formatError.message}`);
+    }
+    
+    if (quoteRequestFormats && quoteRequestFormats.length > 0) {
+      const formatsToInsert = quoteRequestFormats.map(qrf => ({
+        supplier_quote_id: supplierQuote.id,
+        format_id: qrf.format_id,
+        quote_request_format_id: qrf.id
+      }));
+      
+      const { error: insertFormatsError } = await supabase
+        .from("supplier_quote_formats")
+        .insert(formatsToInsert);
+        
+      if (insertFormatsError) {
+        throw new Error(`Error inserting formats: ${insertFormatsError.message}`);
+      }
+    }
+  }
+
   // Record audit entry
   await recordSupplierQuoteAudit(
     supplierQuote.id,

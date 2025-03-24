@@ -1146,6 +1146,55 @@ export type Database = {
           },
         ]
       }
+      supplier_quote_formats: {
+        Row: {
+          created_at: string
+          format_id: string
+          id: string
+          quote_request_format_id: string | null
+          supplier_quote_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          format_id: string
+          id?: string
+          quote_request_format_id?: string | null
+          supplier_quote_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          format_id?: string
+          id?: string
+          quote_request_format_id?: string | null
+          supplier_quote_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_formats_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "formats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_formats_quote_request_format_id_fkey"
+            columns: ["quote_request_format_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_formats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_formats_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_quote_price_breaks: {
         Row: {
           created_at: string

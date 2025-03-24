@@ -19,7 +19,8 @@ import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CircleDollarSign, Eye, FileCheck, FileX } from "lucide-react";
+import { CircleDollarSign, Eye, FileCheck, FileX, BookOpen } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SupplierQuotesTableProps {
   statusFilter?: string[] | undefined;
@@ -89,6 +90,7 @@ export function SupplierQuotesTable({ statusFilter, searchQuery, quoteRequestId 
               <TableHead>Reference</TableHead>
               <TableHead>Quote Request</TableHead>
               <TableHead>Supplier</TableHead>
+              <TableHead>Format</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Submitted</TableHead>
               <TableHead className="text-right">Cost</TableHead>
@@ -112,6 +114,29 @@ export function SupplierQuotesTable({ statusFilter, searchQuery, quoteRequestId 
                 </TableCell>
                 <TableCell onClick={() => handleViewDetails(quote)}>
                   {quote.supplier?.supplier_name || "Unknown Supplier"}
+                </TableCell>
+                <TableCell onClick={() => handleViewDetails(quote)}>
+                  {quote.formats && quote.formats.length > 0 ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1">
+                            <BookOpen className="h-4 w-4 text-muted-foreground" />
+                            <span>{quote.formats.length} format{quote.formats.length !== 1 ? 's' : ''}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <ul className="text-xs">
+                            {quote.formats.map((format, index) => (
+                              <li key={index}>{format.format_name}</li>
+                            ))}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    "—"
+                  )}
                 </TableCell>
                 <TableCell onClick={() => handleViewDetails(quote)}>
                   {getStatusBadge(quote.status)}

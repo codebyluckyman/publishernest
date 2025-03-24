@@ -33,6 +33,17 @@ export interface SupplierQuote {
   extra_costs?: SupplierQuoteExtraCost[];
   savings?: SupplierQuoteSaving[];
   attachments?: SupplierQuoteAttachment[];
+  formats?: SupplierQuoteFormat[];
+}
+
+export interface SupplierQuoteFormat {
+  id: string;
+  supplier_quote_id?: string;
+  format_id: string;
+  quote_request_format_id?: string;
+  format_name: string;
+  dimensions?: string | null;
+  extent?: string | null;
 }
 
 export interface SupplierQuoteAttachment {

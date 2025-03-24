@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote, SupplierQuoteAttachment, SupplierQuoteExtraCost, SupplierQuotePriceBreak, SupplierQuoteSaving } from "@/types/supplierQuote";
+import { SupplierQuote, SupplierQuoteAttachment, SupplierQuoteExtraCost, SupplierQuoteFormat, SupplierQuotePriceBreak, SupplierQuoteSaving } from "@/types/supplierQuote";
 
 export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote | null> {
   // Fetch the quote
@@ -85,6 +85,27 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     throw savingsError;
   }
 
+  // Fetch formats
+  const { data: formats, error: formatsError } = await supabase
+    .from("supplier_quote_formats")
+    .select(`
+      *,
+      format:formats(
+        id,
+        format_name,
+        tps_height_mm,
+        tps_width_mm,
+        tps_depth_mm,
+        extent
+      )
+    `)
+    .eq("supplier_quote_id", id);
+
+  if (formatsError) {
+    console.error("Error fetching formats:", formatsError);
+    throw formatsError;
+  }
+
   // Fetch attachments
   const { data: attachments, error: attachmentsError } = await supabase
     .rpc('get_quote_attachments', { quote_id: id });
@@ -103,6 +124,14 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
     savings: savings as unknown as SupplierQuoteSaving[],
     attachments: attachments as SupplierQuoteAttachment[],
+    formats: formats ? formats.map(f => ({
+      id: f.id,
+      format_id: f.format_id,
+      quote_request_format_id: f.quote_request_format_id,
+      format_name: f.format?.format_name || "Unknown Format",
+      dimensions: f.format ? `${f.format.tps_width_mm || '-'}mm × ${f.format.tps_height_mm || '-'}mm` : null,
+      extent: f.format?.extent || null
+    })) : [],
     reference: quote.reference || null
   };
 }
