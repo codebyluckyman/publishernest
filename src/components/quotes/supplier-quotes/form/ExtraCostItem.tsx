@@ -39,9 +39,9 @@ export function ExtraCostItem({ control, index, extraCost }: ExtraCostItemProps)
                 <FormControl>
                   <Input
                     type="number"
-                    step="0.01"
+                    step="0.001"
                     min="0"
-                    placeholder="0.00"
+                    placeholder="0.000"
                     {...field}
                     onChange={(e) => {
                       const value = e.target.value === "" ? null : parseFloat(e.target.value);

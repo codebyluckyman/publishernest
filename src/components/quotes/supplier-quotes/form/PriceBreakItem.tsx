@@ -28,9 +28,9 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
               <FormControl>
                 <Input
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   min="0"
-                  placeholder="0.00"
+                  placeholder="0.000"
                   {...field}
                   onChange={(e) => {
                     const value = e.target.value === "" ? null : parseFloat(e.target.value);
@@ -62,9 +62,9 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
                   <FormControl>
                     <Input
                       type="number"
-                      step="0.01"
+                      step="0.001"
                       min="0"
-                      placeholder="0.00"
+                      placeholder="0.000"
                       className="h-8 text-sm"
                       {...field}
                       onChange={(e) => {
