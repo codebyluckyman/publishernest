@@ -17,6 +17,7 @@ interface QuoteRequestFormProps {
   initialValues?: Partial<QuoteRequestFormValues>;
   isSubmitting: boolean;
   onCancel: () => void;
+  hasFormats?: boolean;
 }
 
 export function QuoteRequestForm({
@@ -25,6 +26,7 @@ export function QuoteRequestForm({
   initialValues,
   isSubmitting,
   onCancel,
+  hasFormats = false,
 }: QuoteRequestFormProps) {
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
@@ -61,13 +63,33 @@ export function QuoteRequestForm({
     onSubmit(data);
   };
 
+  // When formats change, check if we need to update the form state
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      // If formats array changes, update the title automatically
+      if (name?.startsWith('formats') && form.getValues('formats')?.length > 0) {
+        // Note: The actual title calculation will happen in the API function
+        // This is just to indicate to the user that the title will be set based on formats
+        if (type === 'change') {
+          form.setValue('title', 'Will be set based on formats', { shouldDirty: false });
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormatFieldArray form={form} />
         <ExtraCostsField />
         <SavingsField />
-        <BasicFormFields form={form} suppliers={suppliers} />
+        <BasicFormFields 
+          form={form} 
+          suppliers={suppliers} 
+          titleReadOnly={hasFormats || form.getValues('formats')?.length > 0}
+        />
         <FormActions
           form={form}
           onCancel={onCancel}

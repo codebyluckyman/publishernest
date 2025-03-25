@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
@@ -25,9 +24,42 @@ export async function updateQuoteRequest(
       throw fetchError;
     }
 
+    // If formats exist in the updates, we'll fetch their names to use in the title
+    let formatNames: string[] = [];
+    if (updates.formats && updates.formats.length > 0) {
+      const formatIds = updates.formats.map(format => format.format_id);
+      
+      // Fetch format names
+      const { data: formats, error: formatsError } = await supabase
+        .from("formats")
+        .select("id, format_name")
+        .in("id", formatIds);
+      
+      if (formatsError) {
+        console.error("Error fetching format names:", formatsError);
+      } else if (formats) {
+        // Create a map of format IDs to names
+        const formatNameMap = formats.reduce((map, format) => {
+          map[format.id] = format.format_name;
+          return map;
+        }, {} as Record<string, string>);
+        
+        // Map the format IDs in updates to their names
+        formatNames = updates.formats
+          .map(format => formatNameMap[format.format_id])
+          .filter(Boolean); // Filter out any undefined values
+      }
+    }
+    
+    // Generate title based on formats if available
+    let title = updates.title;
+    if (formatNames.length > 0) {
+      title = `QR for ${formatNames.join(', ')}`;
+    }
+
     // Prepare the update object
     const quoteRequestUpdates: any = {
-      title: updates.title,
+      title: title,
       description: updates.description || null,
       supplier_ids: updates.supplier_ids || currentQuoteRequest.supplier_ids,
       supplier_id: updates.supplier_ids && updates.supplier_ids.length > 0 

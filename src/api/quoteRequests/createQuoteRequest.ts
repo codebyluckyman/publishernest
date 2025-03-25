@@ -20,13 +20,48 @@ export async function createQuoteRequest(
       throw new Error("No suppliers selected");
     }
 
-    console.log("Creating quote request with title:", formData.title);
+    // If formats exist, we'll fetch the format names to use in the title
+    let formatNames: string[] = [];
+    if (formData.formats && formData.formats.length > 0) {
+      const formatIds = formData.formats.map(format => format.format_id);
+      
+      // Fetch format names
+      const { data: formats, error: formatsError } = await supabase
+        .from("formats")
+        .select("id, format_name")
+        .in("id", formatIds);
+      
+      if (formatsError) {
+        console.error("Error fetching format names:", formatsError);
+      } else if (formats) {
+        // Create a map of format IDs to names
+        const formatNameMap = formats.reduce((map, format) => {
+          map[format.id] = format.format_name;
+          return map;
+        }, {} as Record<string, string>);
+        
+        // Map the format IDs in formData to their names
+        formatNames = formData.formats
+          .map(format => formatNameMap[format.format_id])
+          .filter(Boolean); // Filter out any undefined values
+      }
+    }
+    
+    // Generate title based on formats if available
+    let title = formData.title;
+    if (formatNames.length > 0) {
+      title = `QR for ${formatNames.join(', ')}`;
+    } else if (!title) {
+      title = `Quote Request - ${new Date().toLocaleDateString()}`;
+    }
+
+    console.log("Creating quote request with title:", title);
 
     const newQuoteRequest = {
       organization_id: organizationId,
       supplier_ids: formData.supplier_ids,
       supplier_id: formData.supplier_ids[0], // Keep backward compatibility
-      title: formData.title,
+      title: title,
       description: formData.description || null,
       status: "pending" as const,
       requested_by: userId,

@@ -99,6 +99,7 @@ export function EditQuoteRequestDialog({
               onSubmit={handleSubmit}
               isSubmitting={isSubmitting}
               onCancel={handleCancel}
+              hasFormats={quoteRequest.formats && quoteRequest.formats.length > 0}
             />
           )}
         </div>

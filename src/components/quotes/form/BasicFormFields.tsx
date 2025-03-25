@@ -1,146 +1,131 @@
 
 import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { CalendarIcon, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Supplier } from "@/types/supplier";
-import { QuoteRequestFormValues } from "./schema";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { MultipleSupplierSelect } from "./format-fields/MultipleSupplierSelect";
 import { CurrencySelect } from "./currency/CurrencySelect";
+import { DatePicker } from "@/components/ui/date-picker";
+import { QuoteRequestFormValues } from "./schema";
+import { Supplier } from "@/types/supplier";
 
 interface BasicFormFieldsProps {
   form: UseFormReturn<QuoteRequestFormValues>;
   suppliers: Supplier[];
+  titleReadOnly?: boolean;
 }
 
-export function BasicFormFields({ form, suppliers }: BasicFormFieldsProps) {
-  const control = form.control;
-
+export function BasicFormFields({ form, suppliers, titleReadOnly = false }: BasicFormFieldsProps) {
   return (
-    <>
-      <FormField
-        control={control}
-        name="supplier_ids"
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel>Suppliers</FormLabel>
-            <Select
-              onValueChange={(value) => {
-                if (!field.value.includes(value)) {
-                  field.onChange([...field.value, value]);
-                }
-              }}
-            >
+    <Card>
+      <CardContent className="pt-6 grid gap-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
               <FormControl>
-                <SelectTrigger className={cn(
-                  "w-full",
-                  !field.value?.length && "text-muted-foreground"
-                )}>
-                  <SelectValue placeholder="Select suppliers" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {suppliers && suppliers.length > 0 && suppliers.map((supplier) => (
-                  <SelectItem 
-                    key={supplier.id} 
-                    value={supplier.id}
-                    disabled={field.value.includes(supplier.id)}
-                  >
-                    {supplier.supplier_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {field.value.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {field.value.map(supplierId => {
-                  const supplier = suppliers.find(s => s.id === supplierId);
-                  return (
-                    <Badge key={supplierId} variant="secondary" className="flex items-center gap-1">
-                      {supplier?.supplier_name || 'Unknown'}
-                      <X 
-                        className="h-3 w-3 cursor-pointer" 
-                        onClick={() => {
-                          field.onChange(field.value.filter(id => id !== supplierId));
-                        }}
-                      />
-                    </Badge>
-                  );
-                })}
-              </div>
-            )}
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <CurrencySelect />
-
-      <FormField
-        control={control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Description</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Detailed description of the quote request" 
-                className="min-h-[120px]" 
-                {...field} 
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="due_date"
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel>Due Date</FormLabel>
-            <Popover>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full pl-3 text-left font-normal",
-                      !field.value && "text-muted-foreground"
-                    )}
-                  >
-                    {field.value ? (
-                      format(field.value, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={field.value}
-                  onSelect={field.onChange}
-                  disabled={(date) =>
-                    date < new Date(new Date().setHours(0, 0, 0, 0))
-                  }
-                  initialFocus
+                <Input 
+                  {...field} 
+                  disabled={titleReadOnly}
+                  className={titleReadOnly ? "bg-muted" : ""}
+                  placeholder={titleReadOnly ? "Will be set based on selected formats" : "Enter quote request title"} 
                 />
-              </PopoverContent>
-            </Popover>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </>
+              </FormControl>
+              {titleReadOnly && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Title will be automatically generated based on selected formats
+                </p>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea {...field} placeholder="Enter description" className="resize-none" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="due_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col space-y-1">
+                <FormLabel>Due Date</FormLabel>
+                <FormControl>
+                  <DatePicker
+                    date={field.value ? new Date(field.value) : undefined}
+                    onSelect={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormItem className="flex flex-col space-y-1">
+                <FormLabel>Currency</FormLabel>
+                <FormControl>
+                  <CurrencySelect
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="supplier_ids"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Suppliers</FormLabel>
+              <FormControl>
+                <MultipleSupplierSelect
+                  suppliers={suppliers}
+                  value={field.value || []}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea {...field} placeholder="Enter notes" className="resize-none" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </CardContent>
+    </Card>
   );
 }
