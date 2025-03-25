@@ -45,7 +45,7 @@ export function EditQuoteRequestDialog({
   const mapQuoteRequestToFormValues = (request: QuoteRequest): QuoteRequestFormValues => {
     return {
       id: request.id,
-      title: request.title || "", // Added default empty string
+      title: request.title || "", 
       supplier_ids: request.supplier_ids || (request.supplier_id ? [request.supplier_id] : []),
       description: request.description || "",
       due_date: request.due_date ? new Date(request.due_date) : undefined,
@@ -67,10 +67,6 @@ export function EditQuoteRequestDialog({
 
   const handleSubmit = (data: QuoteRequestFormValues) => {
     if (quoteRequest) {
-      // Set a default title if none was provided
-      if (!data.title) {
-        data.title = quoteRequest.title || `Updated Quote Request - ${new Date().toLocaleDateString()}`;
-      }
       onSubmit(quoteRequest.id, data);
     }
   };

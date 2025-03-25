@@ -9,7 +9,9 @@ import { ExtraCostsField } from "./form/extra-costs/ExtraCostsField";
 import { SavingsField } from "./form/savings/SavingsField";
 import { Supplier } from "@/types/supplier";
 import { Form } from "@/components/ui/form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface QuoteRequestFormProps {
   onSubmit: (data: QuoteRequestFormValues) => void;
@@ -28,6 +30,10 @@ export function QuoteRequestForm({
   onCancel,
   hasFormats = false,
 }: QuoteRequestFormProps) {
+  const { currentOrganization } = useOrganization();
+  const { data: formats = [] } = useFormatsForSelect(currentOrganization);
+  const [formatNames, setFormatNames] = useState<Record<string, string>>({});
+
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
@@ -50,34 +56,64 @@ export function QuoteRequestForm({
     },
   });
 
+  // Load format names from the formats data
   useEffect(() => {
-    console.log("Initial form values:", form.getValues());
-  }, [form]);
-
-  const handleFormSubmit = (data: QuoteRequestFormValues) => {
-    if (!data.title) {
-      data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
+    if (formats.length > 0) {
+      const namesMap: Record<string, string> = {};
+      formats.forEach(format => {
+        namesMap[format.value] = format.label;
+      });
+      setFormatNames(namesMap);
     }
-    
-    console.log("Form submission data:", data);
-    onSubmit(data);
-  };
+  }, [formats]);
 
-  // When formats change, check if we need to update the form state
+  // When formats change, update the title
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      // If formats array changes, update the title automatically
-      if (name?.startsWith('formats') && form.getValues('formats')?.length > 0) {
-        // Note: The actual title calculation will happen in the API function
-        // This is just to indicate to the user that the title will be set based on formats
-        if (type === 'change') {
-          form.setValue('title', 'Will be set based on formats', { shouldDirty: false });
+      if (name?.startsWith('formats') && type === 'change') {
+        const formData = form.getValues();
+        const formatsList = formData.formats || [];
+        
+        if (formatsList.length > 0) {
+          // Get format names for the selected format IDs
+          const selectedFormatNames = formatsList
+            .map(format => format.format_id ? formatNames[format.format_id] : null)
+            .filter(Boolean);
+          
+          if (selectedFormatNames.length > 0) {
+            const newTitle = `QR for ${selectedFormatNames.join(', ')}`;
+            form.setValue('title', newTitle, { shouldDirty: true });
+          }
         }
       }
     });
     
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, formatNames]);
+
+  const handleFormSubmit = (data: QuoteRequestFormValues) => {
+    // Set default title if none is provided or if formats are selected
+    if (!data.title || data.formats?.length) {
+      const formatsList = data.formats || [];
+      if (formatsList.length > 0) {
+        // Get format names for the selected format IDs
+        const selectedFormatNames = formatsList
+          .map(format => format.format_id ? formatNames[format.format_id] : null)
+          .filter(Boolean);
+        
+        if (selectedFormatNames.length > 0) {
+          data.title = `QR for ${selectedFormatNames.join(', ')}`;
+        } else {
+          data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
+        }
+      } else {
+        data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
+      }
+    }
+    
+    console.log("Form submission data:", data);
+    onSubmit(data);
+  };
 
   return (
     <Form {...form}>
