@@ -87,14 +87,20 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
         ...quote,
         status: quote.status as SupplierQuoteStatus,
         quote_request: quote.quote_request ? {
-          ...quote.quote_request,
+          id: quote.quote_request.id,
+          organization_id: currentOrganization.id,
           supplier_id: null,
           supplier_ids: [],
+          title: quote.quote_request.title,
+          description: quote.quote_request.description,
           status: 'pending',
           requested_by: '',
           requested_at: '',
           updated_at: '',
-          organization_id: currentOrganization.id,
+          due_date: quote.quote_request.due_date,
+          products: null,
+          quantities: null,
+          notes: null,
           currency: quote.currency
         } : undefined,
         formats: formats ? formats.map(f => ({
@@ -108,5 +114,6 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     })
   );
 
-  return quotesWithFormats;
+  // Explicitly cast the array to SupplierQuote[] to resolve type issues
+  return quotesWithFormats as SupplierQuote[];
 }
