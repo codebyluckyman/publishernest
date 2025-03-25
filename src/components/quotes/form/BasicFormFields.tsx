@@ -76,6 +76,7 @@ export function BasicFormFields({ form, suppliers, titleReadOnly = false }: Basi
             )}
           />
 
+          {/* Replace the incorrect CurrencySelect implementation with the correct one */}
           <FormField
             control={form.control}
             name="currency"
@@ -83,10 +84,20 @@ export function BasicFormFields({ form, suppliers, titleReadOnly = false }: Basi
               <FormItem className="flex flex-col space-y-1">
                 <FormLabel>Currency</FormLabel>
                 <FormControl>
-                  <CurrencySelect
+                  <select 
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={field.value || "USD"}
-                    onValueChange={field.onChange}
-                  />
+                    onChange={(e) => field.onChange(e.target.value)}
+                  >
+                    <option value="AUD">Australian Dollar (AUD)</option>
+                    <option value="CAD">Canadian Dollar (CAD)</option>
+                    <option value="CNY">Chinese Yuan (CNY)</option>
+                    <option value="EUR">Euro (EUR)</option>
+                    <option value="GBP">British Pound (GBP)</option>
+                    <option value="HKD">Hong Kong Dollar (HKD)</option>
+                    <option value="NZD">New Zealand Dollar (NZD)</option>
+                    <option value="USD">US Dollar (USD)</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
