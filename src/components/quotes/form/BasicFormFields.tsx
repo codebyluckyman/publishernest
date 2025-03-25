@@ -85,7 +85,7 @@ export function BasicFormFields({ form, suppliers, titleReadOnly = false }: Basi
                 <FormControl>
                   <CurrencySelect
                     value={field.value || "USD"}
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />

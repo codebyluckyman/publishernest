@@ -61,7 +61,7 @@ export function QuoteRequestForm({
     if (formats.length > 0) {
       const namesMap: Record<string, string> = {};
       formats.forEach(format => {
-        namesMap[format.value] = format.label;
+        namesMap[format.id] = format.format_name;
       });
       setFormatNames(namesMap);
     }
