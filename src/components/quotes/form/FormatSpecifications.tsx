@@ -11,7 +11,7 @@ export interface FormatSpecificationsProps {
 export function FormatSpecifications({ format, isLoading }: FormatSpecificationsProps) {
   if (isLoading) {
     return (
-      <Card className="bg-slate-50">
+      <Card className="bg-slate-50 w-full">
         <CardContent className="p-3">
           <div className="h-24 flex items-center justify-center">
             <p className="text-sm text-muted-foreground">Loading format specifications...</p>
@@ -26,10 +26,10 @@ export function FormatSpecifications({ format, isLoading }: FormatSpecifications
   }
 
   return (
-    <Card className="bg-slate-50">
+    <Card className="bg-slate-50 w-full">
       <CardContent className="p-3">
         <h4 className="font-semibold text-sm mb-2">Format Specifications</h4>
-        <div className="grid grid-cols-2 gap-3 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
           {format.tps_height_mm && format.tps_width_mm && (
             <div>
               <p className="text-muted-foreground">Dimensions (HxW):</p>
