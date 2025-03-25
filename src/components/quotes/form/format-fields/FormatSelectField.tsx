@@ -18,11 +18,13 @@ export function FormatSelectField({
   formats,
   isLoading,
 }: FormatSelectFieldProps) {
-  // Transform formats data for the combobox
-  const formatOptions = formats.map(format => ({
-    label: format.format_name,
-    value: format.id
-  }));
+  // Transform formats data for the combobox - ensure this is always an array
+  const formatOptions = Array.isArray(formats) 
+    ? formats.map(format => ({
+        label: format.format_name,
+        value: format.id
+      }))
+    : [];
 
   return (
     <FormField
@@ -34,7 +36,7 @@ export function FormatSelectField({
           <FormControl>
             <Combobox
               items={formatOptions}
-              value={field.value}
+              value={field.value || ""}
               onChange={(value) => {
                 field.onChange(value);
               }}
