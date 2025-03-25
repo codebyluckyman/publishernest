@@ -82,17 +82,31 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
         return quote;
       }
 
-      return {
+      // Create a properly typed SupplierQuote object
+      const typedQuote: SupplierQuote = {
         ...quote,
-        status: quote.status as SupplierQuoteStatus, // Cast status to the proper type
+        status: quote.status as SupplierQuoteStatus,
+        quote_request: quote.quote_request ? {
+          ...quote.quote_request,
+          supplier_id: null,
+          supplier_ids: [],
+          status: 'pending',
+          requested_by: '',
+          requested_at: '',
+          updated_at: '',
+          organization_id: currentOrganization.id,
+          currency: quote.currency
+        } : undefined,
         formats: formats ? formats.map(f => ({
           id: f.id,
           format_id: f.format_id,
           format_name: f.format?.format_name || "Unknown Format"
         })) : []
       };
+
+      return typedQuote;
     })
   );
 
-  return quotesWithFormats as SupplierQuote[];
+  return quotesWithFormats;
 }

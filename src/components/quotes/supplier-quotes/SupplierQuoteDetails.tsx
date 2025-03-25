@@ -405,7 +405,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       
       {showAudit && (
         <SupplierQuoteAuditHistory 
-          supplierQuoteId={supplierQuote.id} 
+          supplierQuoteId={supplierQuote.id}
+          supplierQuote={null} 
         />
       )}
 

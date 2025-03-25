@@ -23,7 +23,7 @@ import { SupplierQuote } from "@/types/supplierQuote";
 import { SupplierQuoteAudit } from "@/api/supplierQuotes/supplierQuoteAudit";
 
 export interface SupplierQuoteAuditHistoryProps {
-  supplierQuote: SupplierQuote | null;
+  supplierQuote?: SupplierQuote | null;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   supplierQuoteId?: string;
