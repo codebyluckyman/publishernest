@@ -1,10 +1,7 @@
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { StatusBadge } from "../StatusBadge";
-import { SupplierDisplay } from "../SupplierDisplay";
+import { format } from "date-fns";
 import { QuoteRequest } from "@/types/quoteRequest";
-import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface BasicInfoProps {
   request: QuoteRequest;
@@ -12,36 +9,46 @@ interface BasicInfoProps {
 
 export function BasicInfo({ request }: BasicInfoProps) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Supplier</p>
-            <SupplierDisplay 
-              supplierName={request.supplier_name || ''}
-              supplierNames={request.supplier_names || []}
-            />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Requested on</p>
-            <p className="font-medium">{formatDate(request.requested_at)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Due date</p>
-            <p className="font-medium">
-              {request.due_date ? formatDate(request.due_date) : "Not specified"}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Status</p>
-            <StatusBadge status={request.status} />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Currency</p>
-            <p className="font-medium">{request.currency || "USD"}</p>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {request.reference_id && (
+        <div>
+          <h4 className="text-sm font-medium mb-1">Reference</h4>
+          <p className="text-sm font-mono">{request.reference_id}</p>
+        </div>
+      )}
+      
+      <div>
+        <h4 className="text-sm font-medium mb-1">Requested</h4>
+        <p className="text-sm">{format(new Date(request.requested_at), "MMMM d, yyyy")}</p>
+      </div>
+      
+      <div>
+        <h4 className="text-sm font-medium mb-1">Currency</h4>
+        <p className="text-sm">{request.currency || "USD"}</p>
+      </div>
+      
+      {request.due_date && (
+        <div>
+          <h4 className="text-sm font-medium mb-1">Due</h4>
+          <p className="text-sm">
+            {format(new Date(request.due_date), "MMMM d, yyyy")}
+            {new Date(request.due_date) < new Date() && (
+              <Badge variant="destructive" className="ml-2 text-[10px]">Overdue</Badge>
+            )}
+          </p>
+        </div>
+      )}
+      
+      {request.supplier_names && request.supplier_names.length > 0 && (
+        <div className="col-span-2 md:col-span-4">
+          <h4 className="text-sm font-medium mb-1">Suppliers</h4>
+          <div className="flex flex-wrap gap-1">
+            {request.supplier_names.map((name, index) => (
+              <Badge key={index} variant="outline">{name}</Badge>
+            ))}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

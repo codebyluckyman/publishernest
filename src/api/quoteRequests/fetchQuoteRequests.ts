@@ -67,7 +67,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
 
     // Add search query if provided
     if (searchQuery && searchQuery.trim()) {
-      query = query.ilike("title", `%${searchQuery.trim()}%`);
+      // Updated to include reference_id in search
+      query = query.or(`title.ilike.%${searchQuery.trim()}%,reference_id.ilike.%${searchQuery.trim()}%`);
     }
 
     // Add sorting if provided

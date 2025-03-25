@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -44,7 +45,12 @@ export const QuoteRequestRow = ({
         className="font-medium"
         onClick={() => onViewDetails(request)}
       >
-        {request.title}
+        <div className="flex flex-col">
+          <span>{request.title}</span>
+          {request.reference_id && (
+            <span className="text-xs text-muted-foreground font-mono">{request.reference_id}</span>
+          )}
+        </div>
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
         <SupplierDisplay 

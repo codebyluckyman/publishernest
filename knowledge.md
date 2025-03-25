@@ -2,7 +2,7 @@
 # Project Knowledge File
 
 ## Project Overview
-This is a publishing company management application designed for designers, production personnel, and sales people. The application focuses on managing quotes, formats, suppliers, and products with a clean, minimalistic design approach.
+This is a publishing company management application designed for designers, production personnel, and sales people. The application focuses on managing quotes, formats, suppliers, and products with a clean, minimalistic design approach. At the heart of the project is the ability for external parties (suppliers) to submit quotes through the platform, reducing the amount of manual workload to manage email responses and paper trails.
 
 ## Design Principles
 - **Clean & Minimalistic**: The UI should be simple, uncluttered, and easy to navigate
@@ -12,12 +12,18 @@ This is a publishing company management application designed for designers, prod
 
 ## Core Features
 
-### Quote Management
+### Quote Request Management
 - Create, view, edit and delete quote requests
 - Send quote requests to suppliers
 - Track quote request status
 - Manage supplier quotes and responses
 - Compare quotes from different suppliers
+- Auto-generated reference IDs (QR-XXXXXX format) for each organization
+
+## Supplier Quote Management
+- Suppliers to create, view, edit, submit and delete quotes and responses
+- Suppliers to see only the quote responses they have been invited to respond to
+- Suppliers to collaborate with publishers through chat features
 
 ### Format Management
 - Create and manage format specifications (dimensions, material, binding, etc.)
@@ -125,6 +131,9 @@ Quote Request → Format Selection → Product Association → Price Breaks → 
 Quote Request Received → Review Request → Create Quote Response → Set Pricing → Submit Quote
 
 ### Format Management Flow
+1. When not associated with a product (for new formats, a product may not exist yet).
+Create Format → Set Specifications → Use in Quote Requests
+2. When a associated with a product
 Create Format → Set Specifications → Associate with Products → Use in Quote Requests
 
 ## Important Considerations
@@ -133,4 +142,3 @@ Create Format → Set Specifications → Associate with Products → Use in Quot
 - Preserve user context when navigating between pages
 - Optimize performance for potentially large data sets
 - Ensure proper permissions based on user roles
-
