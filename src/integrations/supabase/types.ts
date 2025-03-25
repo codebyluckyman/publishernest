@@ -340,6 +340,29 @@ export type Database = {
           },
         ]
       }
+      organization_quote_request_counters: {
+        Row: {
+          next_quote_number: number
+          organization_id: string
+        }
+        Insert: {
+          next_quote_number?: number
+          organization_id: string
+        }
+        Update: {
+          next_quote_number?: number
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_quote_request_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -866,6 +889,7 @@ export type Database = {
           organization_id: string
           products: Json | null
           quantities: Json | null
+          reference_id: string | null
           requested_at: string
           requested_by: string
           status: string
@@ -883,6 +907,7 @@ export type Database = {
           organization_id: string
           products?: Json | null
           quantities?: Json | null
+          reference_id?: string | null
           requested_at?: string
           requested_by: string
           status?: string
@@ -900,6 +925,7 @@ export type Database = {
           organization_id?: string
           products?: Json | null
           quantities?: Json | null
+          reference_id?: string | null
           requested_at?: string
           requested_by?: string
           status?: string
