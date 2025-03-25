@@ -7,6 +7,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -81,26 +82,28 @@ export function MultipleSupplierSelect({
         <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput placeholder="Search suppliers..." />
-            <CommandEmpty>No suppliers found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-y-auto">
-              {suppliers.map((supplier) => (
-                <CommandItem
-                  key={supplier.id}
-                  value={supplier.id}
-                  onSelect={() => handleSelect(supplier.id)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedItems.includes(supplier.id)
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
-                  />
-                  {supplier.supplier_name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <CommandList>
+              <CommandEmpty>No suppliers found.</CommandEmpty>
+              <CommandGroup className="max-h-64 overflow-y-auto">
+                {suppliers.map((supplier) => (
+                  <CommandItem
+                    key={supplier.id}
+                    value={supplier.id}
+                    onSelect={() => handleSelect(supplier.id)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedItems.includes(supplier.id)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {supplier.supplier_name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
