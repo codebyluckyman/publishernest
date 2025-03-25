@@ -47,9 +47,7 @@ export const QuoteRequestRow = ({
       >
         <div className="flex flex-col">
           <span>{request.title}</span>
-          {request.reference_id && (
-            <span className="text-xs text-muted-foreground font-mono">{request.reference_id}</span>
-          )}
+          <span className="text-xs text-muted-foreground font-mono">{request.reference_id || "No reference"}</span>
         </div>
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>

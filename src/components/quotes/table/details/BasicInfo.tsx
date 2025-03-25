@@ -10,12 +10,10 @@ interface BasicInfoProps {
 export function BasicInfo({ request }: BasicInfoProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {request.reference_id && (
-        <div>
-          <h4 className="text-sm font-medium mb-1">Reference</h4>
-          <p className="text-sm font-mono">{request.reference_id}</p>
-        </div>
-      )}
+      <div>
+        <h4 className="text-sm font-medium mb-1">Reference</h4>
+        <p className="text-sm font-mono">{request.reference_id || "No reference"}</p>
+      </div>
       
       <div>
         <h4 className="text-sm font-medium mb-1">Requested</h4>

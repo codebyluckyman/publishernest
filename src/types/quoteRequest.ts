@@ -18,7 +18,7 @@ export interface QuoteRequest {
   quantities: Record<string, any> | null;
   notes: string | null;
   currency: string;
-  reference_id?: string; // Added reference ID field
+  reference_id?: string; 
   supplier_name?: string; // Joined field
   supplier_names?: string[]; // Array of supplier names mapped from supplier_ids
   formats?: QuoteRequestFormat[]; // Added field for associated formats
@@ -88,6 +88,7 @@ export interface QuoteRequestFormValues {
   extra_costs?: DefaultExtraCost[]; 
   savings?: DefaultSaving[]; // New field for savings
   currency?: string;
+  reference_id?: string; // Added reference ID field
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';

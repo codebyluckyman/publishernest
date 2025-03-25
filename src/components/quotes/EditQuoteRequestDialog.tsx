@@ -60,7 +60,8 @@ export function EditQuoteRequestDialog({
       })) || [],
       products: request.products || {},
       quantities: request.quantities || {},
-      supplier_id: request.supplier_id || undefined
+      supplier_id: request.supplier_id || undefined,
+      reference_id: request.reference_id
     };
   };
 
@@ -82,7 +83,13 @@ export function EditQuoteRequestDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] max-h-[95vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Edit Quote Request</DialogTitle>
+          <DialogTitle>
+            Edit Quote Request {quoteRequest?.reference_id && (
+              <span className="text-muted-foreground font-mono text-sm ml-2">
+                {quoteRequest.reference_id}
+              </span>
+            )}
+          </DialogTitle>
         </DialogHeader>
         <div className="overflow-y-auto pr-1 flex-grow">
           {quoteRequest && (
