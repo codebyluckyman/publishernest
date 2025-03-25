@@ -11,6 +11,7 @@ export interface Format {
   extent: string | null;
   cover_stock_print: string | null;
   internal_stock_print: string | null;
+  binding_type: string | null; // This property is missing from the Format interface
   created_at: string;
   updated_at: string;
 }
