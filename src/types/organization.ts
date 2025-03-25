@@ -27,6 +27,18 @@ export type OrganizationMember = {
   created_at: string;
 };
 
+export type OrganizationProductionStep = {
+  id: string;
+  organization_id: string;
+  step_name: string;
+  description?: string;
+  order_number: number;
+  is_active: boolean;
+  estimated_days?: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type OrganizationContextType = {
   currentOrganization: Organization | null;
   organizations: Organization[];

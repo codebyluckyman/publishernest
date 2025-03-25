@@ -13,7 +13,8 @@ import { DefaultSavings } from "@/components/organizations/DefaultSavings";
 import { NumberInput } from "@/components/NumberInput";
 import { SavingsTable } from "@/components/quotes/form/savings/SavingsTable";
 import { ExtraCostsTable } from "@/components/quotes/form/extra-costs/ExtraCostsTable";
-import { Library, Settings, Users, Ruler, ListChecks } from "lucide-react";
+import { ProductionStepsTable } from "@/components/organizations/ProductionStepsTable";
+import { Library, Settings, Users, Ruler, ListChecks, GitMerge } from "lucide-react";
 
 export default function OrganizationSettings() {
   const { currentOrganization, updateOrganizationSetting } = useOrganization();
@@ -76,6 +77,10 @@ export default function OrganizationSettings() {
           <TabsTrigger value="defaults" className="flex items-center gap-1">
             <ListChecks className="h-4 w-4" />
             <span>Default Values</span>
+          </TabsTrigger>
+          <TabsTrigger value="production" className="flex items-center gap-1">
+            <GitMerge className="h-4 w-4" />
+            <span>Production Process</span>
           </TabsTrigger>
           <TabsTrigger value="libraries" className="flex items-center gap-1 font-semibold">
             <Library className="h-4 w-4" />
@@ -156,6 +161,10 @@ export default function OrganizationSettings() {
           <DefaultExtraCosts />
           
           <DefaultSavings />
+        </TabsContent>
+        
+        <TabsContent value="production" className="space-y-6">
+          <ProductionStepsTable />
         </TabsContent>
         
         <TabsContent value="libraries" className="space-y-6">

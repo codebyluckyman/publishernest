@@ -317,6 +317,50 @@ export type Database = {
           },
         ]
       }
+      organization_production_steps: {
+        Row: {
+          created_at: string
+          description: string | null
+          estimated_days: number | null
+          id: string
+          is_active: boolean
+          order_number: number
+          organization_id: string
+          step_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          estimated_days?: number | null
+          id?: string
+          is_active?: boolean
+          order_number: number
+          organization_id: string
+          step_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          estimated_days?: number | null
+          id?: string
+          is_active?: boolean
+          order_number?: number
+          organization_id?: string
+          step_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_production_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_quote_counters: {
         Row: {
           next_quote_number: number
