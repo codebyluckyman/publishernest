@@ -1,7 +1,6 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { QuoteRequest } from "@/types/quoteRequest";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 import { ExtraCostItem } from "./ExtraCostItem";
@@ -41,31 +40,31 @@ export function ExtraCostsSection({ control, extraCosts, currency }: ExtraCostsS
   }, [supplierId, extraCosts, replace]);
   
   if (!extraCosts || extraCosts.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-4">
+        <p className="text-muted-foreground">No extra costs were requested for this quote request.</p>
+      </div>
+    );
   }
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Extra Costs</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {fields.map((field, index) => {
-            const extraCost = extraCosts.find(cost => cost.id === field.extra_cost_id);
-            if (!extraCost) return null;
-            
-            return (
-              <ExtraCostItem 
-                key={field.id}
-                control={control}
-                index={index}
-                extraCost={extraCost}
-              />
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+    <div>
+      <h3 className="text-lg font-medium mb-4">Extra Costs</h3>
+      <div className="space-y-4">
+        {fields.map((field, index) => {
+          const extraCost = extraCosts.find(cost => cost.id === field.extra_cost_id);
+          if (!extraCost) return null;
+          
+          return (
+            <ExtraCostItem 
+              key={field.id}
+              control={control}
+              index={index}
+              extraCost={extraCost}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 }

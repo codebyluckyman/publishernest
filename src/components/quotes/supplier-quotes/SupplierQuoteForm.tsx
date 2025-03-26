@@ -22,6 +22,8 @@ import { SupplierQuoteAttachments } from "./SupplierQuoteAttachments";
 import { useExtraCosts } from "@/hooks/useExtraCosts";
 import { useSavings } from "@/hooks/useSavings";
 import { Supplier } from "@/types/supplier";
+import { ExtraCostTableItem } from "@/types/extraCost";
+import { SavingTableItem } from "@/types/saving";
 
 // Create a schema for form validation
 const formSchema = z.object({
@@ -87,6 +89,33 @@ export function SupplierQuoteForm({
   const { extraCosts } = useExtraCosts();
   const { savings } = useSavings();
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [filteredExtraCosts, setFilteredExtraCosts] = useState<ExtraCostTableItem[]>([]);
+  const [filteredSavings, setFilteredSavings] = useState<SavingTableItem[]>([]);
+
+  // Filter extra costs and savings based on the quote request
+  useEffect(() => {
+    if (extraCosts && quoteRequest.extra_costs) {
+      // Filter the extra costs to only include those in the quote request
+      const quoteRequestExtraCostIds = quoteRequest.extra_costs.map(cost => cost.id);
+      const filtered = extraCosts.filter(cost => 
+        quoteRequestExtraCostIds.includes(cost.id)
+      );
+      setFilteredExtraCosts(filtered);
+    } else {
+      setFilteredExtraCosts([]);
+    }
+
+    if (savings && quoteRequest.savings) {
+      // Filter the savings to only include those in the quote request
+      const quoteRequestSavingIds = quoteRequest.savings.map(saving => saving.id);
+      const filtered = savings.filter(saving => 
+        quoteRequestSavingIds.includes(saving.id)
+      );
+      setFilteredSavings(filtered);
+    } else {
+      setFilteredSavings([]);
+    }
+  }, [extraCosts, savings, quoteRequest]);
 
   // Create a production schedule with the required step date from the quote request
   useEffect(() => {
@@ -201,6 +230,10 @@ export function SupplierQuoteForm({
   // Determine if we should show the Schedule tab based on production_schedule_requested
   const showScheduleTab = quoteRequest.production_schedule_requested === true;
 
+  // Determine if we should show Extra Costs and Savings tabs
+  const showExtraCostsTab = filteredExtraCosts.length > 0;
+  const showSavingsTab = filteredSavings.length > 0;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -222,11 +255,17 @@ export function SupplierQuoteForm({
         
         {/* Tabs for different sections */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid ${showScheduleTab ? 'grid-cols-5' : 'grid-cols-4'} mb-6`}>
+          <TabsList className={`grid ${
+            ['grid-cols-2', 
+             showExtraCostsTab ? 'grid-cols-3' : 'grid-cols-2', 
+             showSavingsTab ? 'grid-cols-4' : 'grid-cols-3', 
+             showScheduleTab ? 'grid-cols-5' : 'grid-cols-4'
+            ][Number(showExtraCostsTab) + Number(showSavingsTab) + Number(showScheduleTab)]
+          } mb-6`}>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>
-            <TabsTrigger value="costs">Extra Costs</TabsTrigger>
-            <TabsTrigger value="savings">Savings</TabsTrigger>
+            {showExtraCostsTab && <TabsTrigger value="costs">Extra Costs</TabsTrigger>}
+            {showSavingsTab && <TabsTrigger value="savings">Savings</TabsTrigger>}
             {showScheduleTab && <TabsTrigger value="schedule">Schedule</TabsTrigger>}
           </TabsList>
           
@@ -250,25 +289,29 @@ export function SupplierQuoteForm({
             </Card>
           </TabsContent>
           
-          <TabsContent value="costs">
-            <Card className="p-6">
-              <ExtraCostsSection 
-                control={form.control} 
-                extraCosts={extraCosts} 
-                currency={form.watch("currency")} 
-              />
-            </Card>
-          </TabsContent>
+          {showExtraCostsTab && (
+            <TabsContent value="costs">
+              <Card className="p-6">
+                <ExtraCostsSection 
+                  control={form.control} 
+                  extraCosts={filteredExtraCosts} 
+                  currency={form.watch("currency")} 
+                />
+              </Card>
+            </TabsContent>
+          )}
           
-          <TabsContent value="savings">
-            <Card className="p-6">
-              <SavingsSection 
-                control={form.control} 
-                savings={savings} 
-                currency={form.watch("currency")} 
-              />
-            </Card>
-          </TabsContent>
+          {showSavingsTab && (
+            <TabsContent value="savings">
+              <Card className="p-6">
+                <SavingsSection 
+                  control={form.control} 
+                  savings={filteredSavings} 
+                  currency={form.watch("currency")} 
+                />
+              </Card>
+            </TabsContent>
+          )}
           
           {showScheduleTab && (
             <TabsContent value="schedule">

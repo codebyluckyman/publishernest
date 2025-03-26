@@ -1,7 +1,6 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 import { SavingItem } from "./SavingItem";
 import { SavingTableItem } from "@/types/saving";
@@ -40,31 +39,31 @@ export function SavingsSection({ control, savings, currency }: SavingsSectionPro
   }, [supplierId, savings, replace]);
   
   if (!savings || savings.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-4">
+        <p className="text-muted-foreground">No savings were requested for this quote request.</p>
+      </div>
+    );
   }
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Savings</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {fields.map((field, index) => {
-            const saving = savings.find(s => s.id === field.saving_id);
-            if (!saving) return null;
-            
-            return (
-              <SavingItem 
-                key={field.id}
-                control={control}
-                index={index}
-                saving={saving}
-              />
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+    <div>
+      <h3 className="text-lg font-medium mb-4">Savings</h3>
+      <div className="space-y-4">
+        {fields.map((field, index) => {
+          const saving = savings.find(s => s.id === field.saving_id);
+          if (!saving) return null;
+          
+          return (
+            <SavingItem 
+              key={field.id}
+              control={control}
+              index={index}
+              saving={saving}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 }
