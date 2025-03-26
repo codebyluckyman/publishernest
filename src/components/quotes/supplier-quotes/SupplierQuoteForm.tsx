@@ -1,29 +1,22 @@
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import { QuoteDetailsSection } from "./form/QuoteDetailsSection";
-import { PriceBreaksSection } from "./form/PriceBreaksSection";
-import { ExtraCostsSection } from "./form/ExtraCostsSection";
-import { SavingsSection } from "./form/SavingsSection";
-import { NotesSection } from "./form/NotesSection";
-import { ScheduleSection } from "./form/ScheduleSection";
-import { SupplierSelect } from "./form/SupplierSelect";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useOrganization } from "@/context/OrganizationContext";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { SupplierQuoteAttachments } from "./SupplierQuoteAttachments";
-import { useExtraCosts } from "@/hooks/useExtraCosts";
-import { useSavings } from "@/hooks/useSavings";
 import { Supplier } from "@/types/supplier";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { SavingTableItem } from "@/types/saving";
+import { useExtraCosts } from "@/hooks/useExtraCosts";
+import { useSavings } from "@/hooks/useSavings";
+import { FormHeader } from "./form/FormHeader";
+import { FormTabs } from "./form/FormTabs";
+import { FormActions } from "./form/FormActions";
+import { SuccessView } from "./form/SuccessView";
 
 // Create a schema for form validation
 const formSchema = z.object({
@@ -193,24 +186,7 @@ export function SupplierQuoteForm({
 
   // Show attachment management section if a quote has been created
   if (createdQuoteId) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold text-green-600">Quote created successfully!</h2>
-          <p className="text-muted-foreground">Your quote has been saved as a draft. You can now manage attachments.</p>
-        </div>
-        
-        <Card className="p-4">
-          <SupplierQuoteAttachments 
-            supplierQuote={{ id: createdQuoteId }} 
-          />
-        </Card>
-        
-        <div className="flex justify-center mt-6">
-          <Button onClick={onDone} className="w-full md:w-auto">Done</Button>
-        </div>
-      </div>
-    );
+    return <SuccessView createdQuoteId={createdQuoteId} onDone={onDone} />;
   }
 
   // Define currency options
@@ -227,122 +203,36 @@ export function SupplierQuoteForm({
     { label: "NOK - Norwegian Krone", value: "NOK" },
   ];
 
-  // Determine if we should show the Schedule tab based on production_schedule_requested
-  const showScheduleTab = quoteRequest.production_schedule_requested === true;
-
-  // Determine if we should show Extra Costs and Savings tabs
-  const showExtraCostsTab = filteredExtraCosts.length > 0;
-  const showSavingsTab = filteredSavings.length > 0;
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {/* Basic info and supplier selection */}
-        <div className="space-y-4">
-          <div className="border rounded-md p-4 bg-muted/20">
-            <div className="font-medium mb-2">Quote Request: {quoteRequest.title}</div>
-            <div className="text-sm text-muted-foreground">{quoteRequest.description}</div>
-          </div>
-          
-          <SupplierSelect 
-            control={form.control}
-            suppliers={suppliers || []} 
-            isLoading={loadingSuppliers}
-            defaultSupplierId={quoteRequest.supplier_id}
-            quoteRequest={quoteRequest}
-          />
-        </div>
+        <FormHeader 
+          quoteRequest={quoteRequest}
+          suppliers={suppliers}
+          loadingSuppliers={loadingSuppliers}
+          form={form}
+        />
         
         {/* Tabs for different sections */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid ${
-            ['grid-cols-2', 
-             showExtraCostsTab ? 'grid-cols-3' : 'grid-cols-2', 
-             showSavingsTab ? 'grid-cols-4' : 'grid-cols-3', 
-             showScheduleTab ? 'grid-cols-5' : 'grid-cols-4'
-            ][Number(showExtraCostsTab) + Number(showSavingsTab) + Number(showScheduleTab)]
-          } mb-6`}>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing</TabsTrigger>
-            {showExtraCostsTab && <TabsTrigger value="costs">Extra Costs</TabsTrigger>}
-            {showSavingsTab && <TabsTrigger value="savings">Savings</TabsTrigger>}
-            {showScheduleTab && <TabsTrigger value="schedule">Schedule</TabsTrigger>}
-          </TabsList>
-          
-          <TabsContent value="details" className="space-y-6">
-            <Card className="p-6">
-              <QuoteDetailsSection form={form} currencies={currencies} />
-            </Card>
-            
-            <Card className="p-6">
-              <NotesSection control={form.control} />
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="pricing">
-            <Card className="p-6">
-              <PriceBreaksSection 
-                control={form.control} 
-                quoteRequest={quoteRequest}
-                selectedSupplier={selectedSupplier}
-              />
-            </Card>
-          </TabsContent>
-          
-          {showExtraCostsTab && (
-            <TabsContent value="costs">
-              <Card className="p-6">
-                <ExtraCostsSection 
-                  control={form.control} 
-                  extraCosts={filteredExtraCosts} 
-                  currency={form.watch("currency")} 
-                />
-              </Card>
-            </TabsContent>
-          )}
-          
-          {showSavingsTab && (
-            <TabsContent value="savings">
-              <Card className="p-6">
-                <SavingsSection 
-                  control={form.control} 
-                  savings={filteredSavings} 
-                  currency={form.watch("currency")} 
-                />
-              </Card>
-            </TabsContent>
-          )}
-          
-          {showScheduleTab && (
-            <TabsContent value="schedule">
-              <Card className="p-6">
-                <ScheduleSection 
-                  control={form.control} 
-                  requiredStepId={quoteRequest.required_step_id}
-                  requiredStepName={quoteRequest.required_step_name}
-                />
-              </Card>
-            </TabsContent>
-          )}
-        </Tabs>
+        <FormTabs 
+          control={form.control}
+          quoteRequest={quoteRequest}
+          selectedSupplier={selectedSupplier}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          filteredExtraCosts={filteredExtraCosts}
+          filteredSavings={filteredSavings}
+          currencies={currencies}
+          form={form}
+        />
         
         {/* Submit and cancel buttons */}
-        <div className="flex justify-end space-x-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || !form.formState.isValid}
-          >
-            {isSubmitting ? "Saving..." : "Save as Draft"}
-          </Button>
-        </div>
+        <FormActions 
+          isSubmitting={isSubmitting}
+          onCancel={onCancel}
+          isValid={form.formState.isValid}
+        />
       </form>
     </Form>
   );
