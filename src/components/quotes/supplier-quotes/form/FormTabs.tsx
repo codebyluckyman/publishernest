@@ -13,6 +13,7 @@ import { ExtraCostTableItem } from "@/types/extraCost";
 import { SavingTableItem } from "@/types/saving";
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { useEffect, useState } from "react";
 
 interface FormTabsProps {
   control: Control<SupplierQuoteFormValues>;
@@ -37,6 +38,8 @@ export function FormTabs({
   currencies,
   form
 }: FormTabsProps) {
+  const [gridColumnsClass, setGridColumnsClass] = useState("grid-cols-2");
+  
   // Determine if we should show the Schedule tab based on production_schedule_requested
   const showScheduleTab = quoteRequest.production_schedule_requested === true;
 
@@ -44,20 +47,20 @@ export function FormTabs({
   const showExtraCostsTab = filteredExtraCosts && filteredExtraCosts.length > 0;
   const showSavingsTab = filteredSavings && filteredSavings.length > 0;
 
-  // Calculate grid columns based on visible tabs
-  const getGridColumns = () => {
+  // Calculate grid columns based on visible tabs with useEffect to ensure it runs after arrays are loaded
+  useEffect(() => {
     const baseTabs = 2; // Details and Pricing are always visible
     const extraTabs = (showExtraCostsTab ? 1 : 0) + 
-                      (showSavingsTab ? 1 : 0) + 
-                      (showScheduleTab ? 1 : 0);
+                     (showSavingsTab ? 1 : 0) + 
+                     (showScheduleTab ? 1 : 0);
     
     const totalTabs = baseTabs + extraTabs;
-    return `grid-cols-${totalTabs}`;
-  };
+    setGridColumnsClass(`grid-cols-${totalTabs}`);
+  }, [filteredExtraCosts, filteredSavings, showScheduleTab, showExtraCostsTab, showSavingsTab]);
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className={`grid w-full ${getGridColumns()}`}>
+      <TabsList className={`grid w-full ${gridColumnsClass}`}>
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="pricing">Pricing</TabsTrigger>
         {showExtraCostsTab && <TabsTrigger value="costs">Extra Costs</TabsTrigger>}
