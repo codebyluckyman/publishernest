@@ -101,7 +101,8 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
           products: null,
           quantities: null,
           notes: null,
-          currency: quote.currency
+          currency: quote.currency,
+          production_schedule_requested: false // Add this line to include the required property
         } : undefined,
         formats: formats ? formats.map(f => ({
           id: f.id,
