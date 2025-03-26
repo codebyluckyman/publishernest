@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,7 +17,6 @@ import { FormTabs } from "./form/FormTabs";
 import { FormActions } from "./form/FormActions";
 import { SuccessView } from "./form/SuccessView";
 
-// Create a schema for form validation
 const formSchema = z.object({
   quote_request_id: z.string(),
   supplier_id: z.string(),
@@ -85,32 +83,32 @@ export function SupplierQuoteForm({
   const [filteredExtraCosts, setFilteredExtraCosts] = useState<ExtraCostTableItem[]>([]);
   const [filteredSavings, setFilteredSavings] = useState<SavingTableItem[]>([]);
 
-  // Filter extra costs and savings based on the quote request
   useEffect(() => {
     if (extraCosts && quoteRequest.extra_costs) {
-      // Filter the extra costs to only include those in the quote request
       const quoteRequestExtraCostIds = quoteRequest.extra_costs.map(cost => cost.id);
       const filtered = extraCosts.filter(cost => 
         quoteRequestExtraCostIds.includes(cost.id)
       );
+      
+      console.log("Filtered Extra Costs:", filtered);
       setFilteredExtraCosts(filtered);
     } else {
       setFilteredExtraCosts([]);
     }
 
     if (savings && quoteRequest.savings) {
-      // Filter the savings to only include those in the quote request
       const quoteRequestSavingIds = quoteRequest.savings.map(saving => saving.id);
       const filtered = savings.filter(saving => 
         quoteRequestSavingIds.includes(saving.id)
       );
+      
+      console.log("Filtered Savings:", filtered);
       setFilteredSavings(filtered);
     } else {
       setFilteredSavings([]);
     }
   }, [extraCosts, savings, quoteRequest]);
 
-  // Create a production schedule with the required step date from the quote request
   useEffect(() => {
     if (
       quoteRequest.production_schedule_requested &&
@@ -121,39 +119,31 @@ export function SupplierQuoteForm({
         "step name:", quoteRequest.required_step_name,
         "date:", quoteRequest.required_step_date);
       
-      // Create a production schedule object with the required step date
       const initialSchedule = {
         [quoteRequest.required_step_id]: quoteRequest.required_step_date
       };
       
-      // Update the form with the initial production schedule
       form.setValue("production_schedule", initialSchedule);
     }
   }, [quoteRequest.required_step_id, quoteRequest.required_step_date, quoteRequest.production_schedule_requested]);
 
-  // Set up the form with react-hook-form and explicitly cast the type for type safety
   const form = useForm<SupplierQuoteFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues as SupplierQuoteFormValues,
   });
 
-  // When the supplier changes, call the parent handler
   useEffect(() => {
     const supplierId = form.watch("supplier_id");
     if (supplierId) {
       onSupplierChange(supplierId);
-      // Update selected supplier
       const supplier = suppliers?.find(s => s.id === supplierId) || null;
       setSelectedSupplier(supplier);
     }
   }, [form.watch("supplier_id"), onSupplierChange, suppliers]);
 
-  // Set up price breaks when formats are available
   useEffect(() => {
     if (quoteRequest.formats && quoteRequest.formats.length > 0) {
-      // Only set up price breaks if none exist yet
-      const currentPriceBreaks = form.getValues("price_breaks");
-      if (currentPriceBreaks.length === 0) {
+      if (form.getValues("price_breaks").length === 0) {
         const priceBreaksToAdd: any[] = [];
         
         quoteRequest.formats.forEach((format) => {
@@ -179,17 +169,14 @@ export function SupplierQuoteForm({
     }
   }, [quoteRequest.formats, form]);
 
-  // Handle form submission
   const handleSubmit = (data: SupplierQuoteFormValues) => {
     onSubmit(data);
   };
 
-  // Show attachment management section if a quote has been created
   if (createdQuoteId) {
     return <SuccessView createdQuoteId={createdQuoteId} onDone={onDone} />;
   }
 
-  // Define currency options
   const currencies = [
     { label: "USD - US Dollar", value: "USD" },
     { label: "EUR - Euro", value: "EUR" },
@@ -206,7 +193,6 @@ export function SupplierQuoteForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Basic info and supplier selection */}
         <FormHeader 
           quoteRequest={quoteRequest}
           suppliers={suppliers}
@@ -214,7 +200,6 @@ export function SupplierQuoteForm({
           form={form}
         />
         
-        {/* Tabs for different sections */}
         <FormTabs 
           control={form.control}
           quoteRequest={quoteRequest}
@@ -227,7 +212,6 @@ export function SupplierQuoteForm({
           form={form}
         />
         
-        {/* Submit and cancel buttons */}
         <FormActions 
           isSubmitting={isSubmitting}
           onCancel={onCancel}
