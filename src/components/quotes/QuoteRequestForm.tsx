@@ -7,6 +7,7 @@ import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
 import { ExtraCostsField } from "./form/extra-costs/ExtraCostsField";
 import { SavingsField } from "./form/savings/SavingsField";
+import { ProductionScheduleField } from "./form/ProductionScheduleField";
 import { Supplier } from "@/types/supplier";
 import { Form } from "@/components/ui/form";
 import { useEffect, useState } from "react";
@@ -53,6 +54,7 @@ export function QuoteRequestForm({
       products: initialValues?.products || {},
       quantities: initialValues?.quantities || {},
       supplier_id: initialValues?.supplier_id,
+      production_schedule_requested: initialValues?.production_schedule_requested || false,
     },
   });
 
@@ -121,6 +123,7 @@ export function QuoteRequestForm({
         <FormatFieldArray form={form} />
         <ExtraCostsField />
         <SavingsField />
+        <ProductionScheduleField />
         <BasicFormFields 
           form={form} 
           suppliers={suppliers} 

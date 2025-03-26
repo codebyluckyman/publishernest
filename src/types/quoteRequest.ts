@@ -1,4 +1,3 @@
-
 import { ExtraCost, DefaultExtraCost } from "./extraCost";
 import { Saving, DefaultSaving } from "./saving";
 
@@ -24,6 +23,7 @@ export interface QuoteRequest {
   formats?: QuoteRequestFormat[]; // Added field for associated formats
   extra_costs?: ExtraCost[]; // Added field for extra costs
   savings?: Saving[]; // Added field for savings
+  production_schedule_requested?: boolean; // New field for production schedule request
 }
 
 export interface QuoteRequestFormat {
@@ -89,6 +89,7 @@ export interface QuoteRequestFormValues {
   savings?: DefaultSaving[]; // New field for savings
   currency?: string;
   reference_id?: string; // Added reference ID field
+  production_schedule_requested?: boolean; // New field for production schedule request
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';
