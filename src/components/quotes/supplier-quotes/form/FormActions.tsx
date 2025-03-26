@@ -9,7 +9,7 @@ interface FormActionsProps {
 
 export function FormActions({ isSubmitting, onCancel, isValid }: FormActionsProps) {
   return (
-    <div className="flex justify-end space-x-2">
+    <div className="flex justify-end space-x-2 mt-6">
       <Button 
         type="button" 
         variant="outline" 

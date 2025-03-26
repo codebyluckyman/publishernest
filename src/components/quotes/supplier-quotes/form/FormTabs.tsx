@@ -41,18 +41,23 @@ export function FormTabs({
   const showScheduleTab = quoteRequest.production_schedule_requested === true;
 
   // Determine if we should show Extra Costs and Savings tabs
-  const showExtraCostsTab = filteredExtraCosts.length > 0;
-  const showSavingsTab = filteredSavings.length > 0;
+  const showExtraCostsTab = filteredExtraCosts && filteredExtraCosts.length > 0;
+  const showSavingsTab = filteredSavings && filteredSavings.length > 0;
+
+  // Calculate grid columns based on visible tabs
+  const getGridColumns = () => {
+    const baseTabs = 2; // Details and Pricing are always visible
+    const extraTabs = (showExtraCostsTab ? 1 : 0) + 
+                      (showSavingsTab ? 1 : 0) + 
+                      (showScheduleTab ? 1 : 0);
+    
+    const totalTabs = baseTabs + extraTabs;
+    return `grid-cols-${totalTabs}`;
+  };
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className={`grid ${
-        ['grid-cols-2', 
-         showExtraCostsTab ? 'grid-cols-3' : 'grid-cols-2', 
-         showSavingsTab ? 'grid-cols-4' : 'grid-cols-3', 
-         showScheduleTab ? 'grid-cols-5' : 'grid-cols-4'
-        ][Number(showExtraCostsTab) + Number(showSavingsTab) + Number(showScheduleTab)]
-      } mb-6`}>
+      <TabsList className={`grid w-full ${getGridColumns()}`}>
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="pricing">Pricing</TabsTrigger>
         {showExtraCostsTab && <TabsTrigger value="costs">Extra Costs</TabsTrigger>}
