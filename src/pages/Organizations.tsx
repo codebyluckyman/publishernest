@@ -12,11 +12,12 @@ import { DefaultExtraCosts } from "@/components/organizations/DefaultExtraCosts"
 import { DefaultSavings } from "@/components/organizations/DefaultSavings";
 import { APIManagement } from "@/components/organizations/APIManagement";
 import { UnitOfMeasuresTable } from "@/components/organizations/unitOfMeasures/UnitOfMeasuresTable";
+import { ProductionStepsTable } from "@/components/organizations/ProductionStepsTable";
 import { Organization } from "@/types/organization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SavingsTable } from "@/components/quotes/form/savings/SavingsTable";
 import { ExtraCostsTable } from "@/components/quotes/form/extra-costs/ExtraCostsTable";
-import { Library, Settings, Users, Code, ListChecks, Ruler } from "lucide-react";
+import { Library, Settings, Users, Code, ListChecks, Ruler, GitMerge } from "lucide-react";
 
 type UserProfile = {
   id: string;
@@ -172,6 +173,10 @@ const Organizations = () => {
                 <Ruler className="h-4 w-4" />
                 <span>Units of Measure</span>
               </TabsTrigger>
+              <TabsTrigger value="production" className="flex items-center gap-1">
+                <GitMerge className="h-4 w-4" />
+                <span>Production Process</span>
+              </TabsTrigger>
               <TabsTrigger value="libraries" className="flex items-center gap-1 font-semibold">
                 <Library className="h-4 w-4" />
                 <span>Libraries</span>
@@ -191,6 +196,10 @@ const Organizations = () => {
 
             <TabsContent value="units" className="space-y-6">
               <UnitOfMeasuresTable />
+            </TabsContent>
+            
+            <TabsContent value="production" className="space-y-6">
+              <ProductionStepsTable />
             </TabsContent>
 
             <TabsContent value="libraries" className="space-y-6">
