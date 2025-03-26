@@ -17,9 +17,14 @@ export function SupplierDisplay({
   onClick, 
   request 
 }: SupplierDisplayProps) {
-  // If there's only one supplier or no suppliers, just show the name
-  if (!supplierNames || supplierNames.length <= 1) {
-    return <p className="font-medium">{supplierName || 'Unknown'}</p>;
+  // If there are no suppliers, show Unknown
+  if (!supplierNames || supplierNames.length === 0) {
+    return <p className="font-medium">Unknown</p>;
+  }
+  
+  // If there's only one supplier, just show that name (from supplierNames array for consistency)
+  if (supplierNames.length === 1) {
+    return <p className="font-medium">{supplierNames[0] || 'Unknown'}</p>;
   }
 
   const handleClick = (e: React.MouseEvent) => {
@@ -34,7 +39,7 @@ export function SupplierDisplay({
     <Popover>
       <PopoverTrigger asChild>
         <div className="flex items-center cursor-pointer" onClick={handleClick}>
-          <p className="font-medium mr-2">{supplierName}</p>
+          <p className="font-medium mr-2">{supplierNames[0]}</p>
           <Badge variant="outline">
             +{supplierNames.length - 1} more
           </Badge>

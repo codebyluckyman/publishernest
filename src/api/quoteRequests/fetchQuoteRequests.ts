@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -145,7 +144,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           : null
       }));
 
-      // Get the required step name - FIX: required_step returns an array, check if array exists and has items
+      // Get the required step name
       const required_step_name = request.required_step && Array.isArray(request.required_step) && request.required_step.length > 0 
         ? request.required_step[0]?.step_name 
         : null;
@@ -160,6 +159,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         status: validStatus,
         formats: formattedFormats || [],
         supplier_names: supplierNames,
+        // Set supplier_name from the first item in supplierNames array if available
+        supplier_name: supplierNames.length > 0 ? supplierNames[0] : null,
         extra_costs: formattedExtraCosts || [],
         savings: formattedSavings || [],
         required_step_name: required_step_name,
