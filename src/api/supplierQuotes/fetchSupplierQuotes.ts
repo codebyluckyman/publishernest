@@ -86,6 +86,7 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
       const typedQuote: SupplierQuote = {
         ...quote,
         status: quote.status as SupplierQuoteStatus,
+        production_schedule: quote.production_schedule as Record<string, string | null> | null,
         quote_request: quote.quote_request ? {
           id: quote.quote_request.id,
           organization_id: currentOrganization.id,
@@ -98,11 +99,8 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
           requested_at: '',
           updated_at: '',
           due_date: quote.quote_request.due_date,
-          products: null,
-          quantities: null,
-          notes: null,
           currency: quote.currency,
-          production_schedule_requested: false // Add this line to include the required property
+          production_schedule_requested: false
         } : undefined,
         formats: formats ? formats.map(f => ({
           id: f.id,

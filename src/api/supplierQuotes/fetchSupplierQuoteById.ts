@@ -120,6 +120,7 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     ...quote,
     quote_request: quote.quote_request as any, // Type assertion for the complex nested structure
     status: quote.status as SupplierQuote["status"],
+    production_schedule: quote.production_schedule as Record<string, string | null> | null,
     price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
     extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
     savings: savings as unknown as SupplierQuoteSaving[],

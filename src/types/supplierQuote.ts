@@ -25,7 +25,7 @@ export interface SupplierQuote {
   valid_to: string | null;
   terms: string | null;
   remarks: string | null;
-  production_schedule?: Record<string, string | null>;
+  production_schedule?: Record<string, string | null> | null;
   
   // Joined fields
   quote_request?: QuoteRequest;
