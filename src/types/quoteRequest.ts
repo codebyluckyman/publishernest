@@ -23,7 +23,7 @@ export interface QuoteRequest {
   formats?: QuoteRequestFormat[]; // Added field for associated formats
   extra_costs?: ExtraCost[]; // Added field for extra costs
   savings?: Saving[]; // Added field for savings
-  production_schedule_requested?: boolean; // New field for production schedule request
+  production_schedule_requested: boolean; // Field is now required since we added it to the database
 }
 
 export interface QuoteRequestFormat {

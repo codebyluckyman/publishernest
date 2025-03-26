@@ -931,6 +931,7 @@ export type Database = {
           id: string
           notes: string | null
           organization_id: string
+          production_schedule_requested: boolean
           products: Json | null
           quantities: Json | null
           reference_id: string | null
@@ -949,6 +950,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id: string
+          production_schedule_requested?: boolean
           products?: Json | null
           quantities?: Json | null
           reference_id?: string | null
@@ -967,6 +969,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id?: string
+          production_schedule_requested?: boolean
           products?: Json | null
           quantities?: Json | null
           reference_id?: string | null
