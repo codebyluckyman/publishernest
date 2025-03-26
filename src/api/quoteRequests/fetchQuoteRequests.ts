@@ -57,7 +57,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           unit_of_measure_id,
           unit_of_measures(id, name, abbreviation)
         ),
-        required_step:organization_production_steps(id, step_name)
+        required_step:organization_production_steps!quote_requests_required_step_id_fkey(id, step_name)
       `)
       .eq("organization_id", currentOrganization.id);
 
@@ -90,6 +90,9 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       console.error("Error fetching quote requests:", error);
       throw error;
     }
+
+    // For debugging
+    console.log("Raw quote requests data:", JSON.stringify(quoteRequests?.slice(0, 2), null, 2));
 
     // Enrich the data - map formats and supplier names
     const enrichedRequests = await Promise.all((quoteRequests || []).map(async (request) => {
@@ -145,10 +148,16 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           : null
       }));
 
-      // Get the required step name
-      const required_step_name = request.required_step && Array.isArray(request.required_step) && request.required_step.length > 0 
+      // Extract the required step name
+      // Debug the required_step field
+      console.log(`Quote Request ${request.reference_id} - required_step:`, request.required_step);
+      
+      // Get the required step name more safely
+      const required_step_name = Array.isArray(request.required_step) && request.required_step.length > 0 
         ? request.required_step[0]?.step_name 
         : null;
+      
+      console.log(`Quote Request ${request.reference_id} - required_step_name:`, required_step_name);
 
       // Ensure the status is one of the valid enum values
       const validStatus = ['pending', 'approved', 'declined'].includes(request.status) 

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
@@ -34,6 +35,11 @@ export function QuoteDetails({
   const printRef = useRef<HTMLDivElement>(null);
   const { currentOrganization } = useOrganization();
   const navigate = useNavigate();
+  
+  // Log the selectedRequest for debugging
+  console.log("Selected Request:", selectedRequest);
+  console.log("Required Step Name:", selectedRequest.required_step_name);
+  console.log("Required Step ID:", selectedRequest.required_step_id);
   
   const handleEdit = () => {
     if (onEdit) {
