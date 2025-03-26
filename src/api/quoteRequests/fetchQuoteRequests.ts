@@ -145,8 +145,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           : null
       }));
 
-      // Get the required step name
-      const required_step_name = request.required_step && request.required_step.length > 0 
+      // Get the required step name - FIX: required_step returns an array, check if array exists and has items
+      const required_step_name = request.required_step && Array.isArray(request.required_step) && request.required_step.length > 0 
         ? request.required_step[0]?.step_name 
         : null;
 
