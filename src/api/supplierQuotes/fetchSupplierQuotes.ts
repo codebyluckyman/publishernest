@@ -100,6 +100,9 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
           updated_at: '',
           due_date: quote.quote_request.due_date,
           currency: quote.currency,
+          products: null,  // Add the missing required properties
+          quantities: null,  // Add the missing required properties
+          notes: null,  // Add the missing required properties
           production_schedule_requested: false
         } : undefined,
         formats: formats ? formats.map(f => ({
