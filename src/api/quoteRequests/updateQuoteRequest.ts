@@ -76,7 +76,7 @@ export async function updateQuoteRequest(
       updated_at: new Date().toISOString(),
       production_schedule_requested: updates.production_schedule_requested !== undefined 
         ? updates.production_schedule_requested 
-        : currentQuoteRequest.production_schedule_requested
+        : (currentQuoteRequest as QuoteRequest).production_schedule_requested
     };
 
     // Update the quote request
