@@ -45,7 +45,9 @@ export const quoteRequestFormSchema = z.object({
   currency: z.string().default("USD"),
   products: z.record(z.any()).optional(),
   quantities: z.record(z.any()).optional(),
-  production_schedule_requested: z.boolean().default(false), // New field for production schedule request
+  production_schedule_requested: z.boolean().default(false), // Field for production schedule request
+  required_step_id: z.string().nullable().optional(), // ID of the required production step
+  required_step_date: z.date().nullable().optional(), // Required date for the selected step
 });
 
 export type QuoteRequestFormValues = z.infer<typeof quoteRequestFormSchema>;

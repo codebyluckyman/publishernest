@@ -1,3 +1,4 @@
+
 import { ExtraCost, DefaultExtraCost } from "./extraCost";
 import { Saving, DefaultSaving } from "./saving";
 
@@ -24,6 +25,8 @@ export interface QuoteRequest {
   extra_costs?: ExtraCost[]; // Added field for extra costs
   savings?: Saving[]; // Added field for savings
   production_schedule_requested: boolean; // Field is now required since we added it to the database
+  required_step_id?: string | null; // ID of the required production step
+  required_step_date?: string | null; // Required date for the selected step
 }
 
 export interface QuoteRequestFormat {
@@ -90,6 +93,8 @@ export interface QuoteRequestFormValues {
   currency?: string;
   reference_id?: string; // Added reference ID field
   production_schedule_requested?: boolean; // New field for production schedule request
+  required_step_id?: string | null; // ID of the required production step
+  required_step_date?: Date | null; // Required date for the selected step
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';

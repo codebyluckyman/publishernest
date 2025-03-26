@@ -55,6 +55,8 @@ export function QuoteRequestForm({
       quantities: initialValues?.quantities || {},
       supplier_id: initialValues?.supplier_id,
       production_schedule_requested: initialValues?.production_schedule_requested || false,
+      required_step_id: initialValues?.required_step_id || null,
+      required_step_date: initialValues?.required_step_date || null,
     },
   });
 
