@@ -57,6 +57,11 @@ export async function createQuoteRequest(
 
     console.log("Creating quote request with title:", title);
 
+    // Format the required step date if it exists
+    const requiredStepDate = formData.required_step_date 
+      ? formData.required_step_date.toISOString().split('T')[0] 
+      : null;
+
     const newQuoteRequest = {
       organization_id: organizationId,
       supplier_ids: formData.supplier_ids,
@@ -72,7 +77,9 @@ export async function createQuoteRequest(
       quantities: formData.quantities || null,
       notes: formData.notes || null,
       currency: formData.currency || "USD",
-      production_schedule_requested: formData.production_schedule_requested || false
+      production_schedule_requested: formData.production_schedule_requested || false,
+      required_step_id: formData.required_step_id || null,
+      required_step_date: requiredStepDate
     };
 
     console.log("Quote request data to insert:", newQuoteRequest);
@@ -210,3 +217,4 @@ export async function createQuoteRequest(
     throw error;
   }
 }
+
