@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 
 interface NumberInputProps {
   id?: string;
-  value: number;
+  value: number | undefined;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
@@ -42,11 +42,14 @@ export function NumberInput({
     onChange(newValue);
   };
 
+  // Safely convert the value to a string, handling undefined values
+  const stringValue = value !== undefined ? value.toString() : "";
+
   return (
     <Input
       id={id}
       type="number"
-      value={value.toString()}
+      value={stringValue}
       onChange={handleChange}
       min={min}
       max={max}
