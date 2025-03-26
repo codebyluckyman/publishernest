@@ -61,7 +61,9 @@ export function EditQuoteRequestDialog({
       products: request.products || {},
       quantities: request.quantities || {},
       supplier_id: request.supplier_id || undefined,
-      reference_id: request.reference_id
+      reference_id: request.reference_id,
+      // Properly include the production_schedule_requested flag
+      production_schedule_requested: request.production_schedule_requested
     };
   };
 
