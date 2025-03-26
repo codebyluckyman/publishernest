@@ -1415,6 +1415,7 @@ export type Database = {
           id: string
           notes: string | null
           organization_id: string
+          production_schedule: Json | null
           quote_request_id: string
           reference: string | null
           reference_id: string | null
@@ -1434,6 +1435,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id: string
+          production_schedule?: Json | null
           quote_request_id: string
           reference?: string | null
           reference_id?: string | null
@@ -1453,6 +1455,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id?: string
+          production_schedule?: Json | null
           quote_request_id?: string
           reference?: string | null
           reference_id?: string | null

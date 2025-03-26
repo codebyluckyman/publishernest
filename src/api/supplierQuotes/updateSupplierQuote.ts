@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -39,6 +38,10 @@ export async function updateSupplierQuote(
   
   if (updates.remarks !== undefined) {
     quoteUpdates.remarks = updates.remarks;
+  }
+
+  if (updates.production_schedule !== undefined) {
+    quoteUpdates.production_schedule = updates.production_schedule;
   }
 
   if (Object.keys(quoteUpdates).length > 0) {
