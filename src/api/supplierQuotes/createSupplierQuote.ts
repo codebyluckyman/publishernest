@@ -19,11 +19,12 @@ export async function createSupplierQuote(
       notes: formData.notes || null,
       status: "draft",
       reference: formData.reference || null,
-      // New fields
+      // Additional fields
       valid_from: formData.valid_from || null,
       valid_to: formData.valid_to || null,
       terms: formData.terms || null,
-      remarks: formData.remarks || null
+      remarks: formData.remarks || null,
+      production_schedule: formData.production_schedule || null
     })
     .select()
     .single();

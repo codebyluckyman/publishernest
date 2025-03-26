@@ -25,6 +25,7 @@ export interface SupplierQuote {
   valid_to: string | null;
   terms: string | null;
   remarks: string | null;
+  production_schedule?: Record<string, string | null>;
   
   // Joined fields
   quote_request?: QuoteRequest;
@@ -159,4 +160,5 @@ export interface SupplierQuoteFormValues {
   valid_to?: string;
   terms?: string;
   remarks?: string;
+  production_schedule?: Record<string, string | null>;
 }

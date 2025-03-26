@@ -12,6 +12,7 @@ import { PriceBreaksSection } from "./form/PriceBreaksSection";
 import { ExtraCostsSection } from "./form/ExtraCostsSection";
 import { SavingsSection } from "./form/SavingsSection";
 import { NotesSection } from "./form/NotesSection";
+import { ScheduleSection } from "./form/ScheduleSection";
 import { SupplierSelect } from "./form/SupplierSelect";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -56,6 +57,7 @@ const formSchema = z.object({
   valid_to: z.string().optional(),
   terms: z.string().optional(),
   remarks: z.string().optional(),
+  production_schedule: z.record(z.string(), z.string().nullable()).optional(),
 });
 
 interface SupplierQuoteFormProps {
@@ -175,6 +177,9 @@ export function SupplierQuoteForm({
     { label: "NOK - Norwegian Krone", value: "NOK" },
   ];
 
+  // Determine if we should show the Schedule tab based on production_schedule_requested
+  const showScheduleTab = quoteRequest.production_schedule_requested === true;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -196,11 +201,12 @@ export function SupplierQuoteForm({
         
         {/* Tabs for different sections */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-6">
+          <TabsList className={`grid ${showScheduleTab ? 'grid-cols-5' : 'grid-cols-4'} mb-6`}>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="costs">Extra Costs</TabsTrigger>
             <TabsTrigger value="savings">Savings</TabsTrigger>
+            {showScheduleTab && <TabsTrigger value="schedule">Schedule</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="details" className="space-y-6">
@@ -242,6 +248,14 @@ export function SupplierQuoteForm({
               />
             </Card>
           </TabsContent>
+          
+          {showScheduleTab && (
+            <TabsContent value="schedule">
+              <Card className="p-6">
+                <ScheduleSection control={form.control} />
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
         
         {/* Submit and cancel buttons */}
