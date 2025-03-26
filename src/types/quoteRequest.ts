@@ -26,6 +26,7 @@ export interface QuoteRequest {
   production_schedule_requested: boolean; // Field is now required since we added it to the database
   required_step_id?: string | null; // Added optional step ID
   required_step_date?: string | null; // Added optional step date
+  required_step_name?: string | null; // Added field for step name retrieval
 }
 
 export interface QuoteRequestFormat {

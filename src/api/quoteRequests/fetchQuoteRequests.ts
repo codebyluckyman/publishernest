@@ -56,7 +56,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           description,
           unit_of_measure_id,
           unit_of_measures(id, name, abbreviation)
-        )
+        ),
+        required_step:organization_production_steps(id, step_name)
       `)
       .eq("organization_id", currentOrganization.id);
 
@@ -144,6 +145,11 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           : null
       }));
 
+      // Get the required step name
+      const required_step_name = request.required_step && request.required_step.length > 0 
+        ? request.required_step[0]?.step_name 
+        : null;
+
       // Ensure the status is one of the valid enum values
       const validStatus = ['pending', 'approved', 'declined'].includes(request.status) 
         ? request.status as 'pending' | 'approved' | 'declined'
@@ -155,7 +161,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         formats: formattedFormats || [],
         supplier_names: supplierNames,
         extra_costs: formattedExtraCosts || [],
-        savings: formattedSavings || []
+        savings: formattedSavings || [],
+        required_step_name: required_step_name,
       } as QuoteRequest;
     }));
 

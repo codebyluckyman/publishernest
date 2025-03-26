@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
@@ -14,6 +15,7 @@ import { QuoteResponseButton } from "../QuoteResponseButton";
 import { FileText, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -81,17 +83,42 @@ export function QuoteDetails({
         </div>
       )}
 
-      <div className="bg-muted/30 p-4 rounded-md border border-border flex items-center space-x-3">
-        <Calendar className="h-5 w-5 text-primary" />
-        <div>
-          <h3 className="text-md font-medium mb-1">Production Schedule</h3>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm">Requested:</span>
-            <Badge 
-              variant={selectedRequest.production_schedule_requested ? "default" : "outline"}
-            >
-              {selectedRequest.production_schedule_requested ? "Yes" : "No"}
-            </Badge>
+      <div className="bg-muted/30 p-4 rounded-md border border-border">
+        <div className="flex items-start space-x-3">
+          <Calendar className="h-5 w-5 text-primary mt-0.5" />
+          <div className="space-y-3 w-full">
+            <div>
+              <h3 className="text-md font-medium mb-1">Production Schedule</h3>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm">Requested:</span>
+                <Badge 
+                  variant={selectedRequest.production_schedule_requested ? "default" : "outline"}
+                >
+                  {selectedRequest.production_schedule_requested ? "Yes" : "No"}
+                </Badge>
+              </div>
+            </div>
+            
+            {selectedRequest.production_schedule_requested && selectedRequest.required_step_id && (
+              <div className="pl-2 border-l-2 border-muted space-y-2">
+                <div>
+                  <span className="text-sm font-medium">Required Step:</span>
+                  <span className="text-sm ml-2">
+                    {/* This will need to be populated from the API */}
+                    {selectedRequest.required_step_name || "Unknown Step"}
+                  </span>
+                </div>
+                
+                {selectedRequest.required_step_date && (
+                  <div>
+                    <span className="text-sm font-medium">Required By:</span>
+                    <span className="text-sm ml-2">
+                      {format(new Date(selectedRequest.required_step_date), "PPP")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

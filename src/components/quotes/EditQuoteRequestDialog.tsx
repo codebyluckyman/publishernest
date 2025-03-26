@@ -62,8 +62,11 @@ export function EditQuoteRequestDialog({
       quantities: request.quantities || {},
       supplier_id: request.supplier_id || undefined,
       reference_id: request.reference_id,
-      // Properly include the production_schedule_requested flag
-      production_schedule_requested: request.production_schedule_requested
+      // Include production schedule fields
+      production_schedule_requested: request.production_schedule_requested,
+      // Map the required step ID and date
+      required_step_id: request.required_step_id || null,
+      required_step_date: request.required_step_date ? new Date(request.required_step_date) : null
     };
   };
 
