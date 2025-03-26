@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
@@ -72,7 +73,10 @@ export async function updateQuoteRequest(
       products: updates.products || currentQuoteRequest.products,
       quantities: updates.quantities || currentQuoteRequest.quantities,
       currency: updates.currency || currentQuoteRequest.currency || "USD",
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      production_schedule_requested: updates.production_schedule_requested !== undefined 
+        ? updates.production_schedule_requested 
+        : currentQuoteRequest.production_schedule_requested
     };
 
     // Update the quote request

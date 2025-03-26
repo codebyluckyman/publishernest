@@ -71,7 +71,8 @@ export async function createQuoteRequest(
       products: formData.products || null,
       quantities: formData.quantities || null,
       notes: formData.notes || null,
-      currency: formData.currency || "USD"
+      currency: formData.currency || "USD",
+      production_schedule_requested: formData.production_schedule_requested || false
     };
 
     console.log("Quote request data to insert:", newQuoteRequest);
