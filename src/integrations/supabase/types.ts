@@ -937,6 +937,8 @@ export type Database = {
           reference_id: string | null
           requested_at: string
           requested_by: string
+          required_step_date: string | null
+          required_step_id: string | null
           status: string
           supplier_id: string | null
           supplier_ids: string[] | null
@@ -956,6 +958,8 @@ export type Database = {
           reference_id?: string | null
           requested_at?: string
           requested_by: string
+          required_step_date?: string | null
+          required_step_id?: string | null
           status?: string
           supplier_id?: string | null
           supplier_ids?: string[] | null
@@ -975,6 +979,8 @@ export type Database = {
           reference_id?: string | null
           requested_at?: string
           requested_by?: string
+          required_step_date?: string | null
+          required_step_id?: string | null
           status?: string
           supplier_id?: string | null
           supplier_ids?: string[] | null
@@ -987,6 +993,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_requests_required_step_id_fkey"
+            columns: ["required_step_id"]
+            isOneToOne: false
+            referencedRelation: "organization_production_steps"
             referencedColumns: ["id"]
           },
           {

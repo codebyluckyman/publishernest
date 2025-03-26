@@ -1,17 +1,16 @@
-
 import { z } from "zod";
 
 export const quoteRequestFormSchema = z.object({
   id: z.string().optional(),
-  title: z.string().optional(), // Changed from required to optional
-  supplier_id: z.string().optional(), // Keep for backward compatibility
+  title: z.string().optional(),
+  supplier_id: z.string().optional(),
   supplier_ids: z.array(z.string()).min(1, "At least one supplier is required"),
   description: z.string().optional(),
   due_date: z.date().optional(),
   notes: z.string().optional(),
   formats: z.array(
     z.object({
-      format_id: z.string().min(1, "Format is required"), // Updated to require format_id
+      format_id: z.string().min(1, "Format is required"),
       notes: z.string().optional(),
       products: z.array(
         z.object({
@@ -45,9 +44,9 @@ export const quoteRequestFormSchema = z.object({
   currency: z.string().default("USD"),
   products: z.record(z.any()).optional(),
   quantities: z.record(z.any()).optional(),
-  production_schedule_requested: z.boolean().default(false), // Field for production schedule request
-  required_step_id: z.string().nullable().optional(), // ID of the required production step
-  required_step_date: z.date().nullable().optional(), // Required date for the selected step
+  production_schedule_requested: z.boolean().default(false),
+  required_step_id: z.string().nullable().optional(),
+  required_step_date: z.date().nullable().optional(),
 });
 
 export type QuoteRequestFormValues = z.infer<typeof quoteRequestFormSchema>;
