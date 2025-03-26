@@ -24,9 +24,11 @@ import { fetchProductionSteps } from "@/api/organizations/productionSteps";
 
 interface ScheduleSectionProps {
   control: Control<SupplierQuoteFormValues>;
+  requiredStepId?: string | null; // Added prop for required step
+  requiredStepName?: string | null; // Added prop for required step name
 }
 
-export function ScheduleSection({ control }: ScheduleSectionProps) {
+export function ScheduleSection({ control, requiredStepId, requiredStepName }: ScheduleSectionProps) {
   const { currentOrganization } = useOrganization();
   const [productionSteps, setProductionSteps] = useState<OrganizationProductionStep[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,11 @@ export function ScheduleSection({ control }: ScheduleSectionProps) {
         <h3 className="text-lg font-medium mb-2">Production Schedule</h3>
         <p className="text-muted-foreground">
           Please provide estimated dates for each production step.
+          {requiredStepName && requiredStepId && (
+            <span className="block mt-1 text-sm text-primary">
+              <strong>Required step:</strong> {requiredStepName} (date set automatically)
+            </span>
+          )}
         </p>
       </div>
 
@@ -81,7 +88,17 @@ export function ScheduleSection({ control }: ScheduleSectionProps) {
           .map((step) => (
             <div key={step.id} className="grid grid-cols-[1fr,auto] gap-4 items-center border-b pb-3">
               <div>
-                <h4 className="font-medium">{step.step_name}</h4>
+                <h4 className={cn(
+                  "font-medium",
+                  step.id === requiredStepId ? "text-primary" : ""
+                )}>
+                  {step.step_name}
+                  {step.id === requiredStepId && (
+                    <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      Required
+                    </span>
+                  )}
+                </h4>
                 {step.description && (
                   <p className="text-sm text-muted-foreground">{step.description}</p>
                 )}
@@ -103,7 +120,8 @@ export function ScheduleSection({ control }: ScheduleSectionProps) {
                             variant="outline"
                             className={cn(
                               "w-[180px] pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
+                              step.id === requiredStepId ? "border-primary" : ""
                             )}
                           >
                             {field.value ? (

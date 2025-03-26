@@ -35,6 +35,19 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
     }
   }, [open, quoteRequest]);
 
+  // Initialize production schedule based on quote request required step
+  const getInitialProductionSchedule = () => {
+    if (quoteRequest.production_schedule_requested && 
+        quoteRequest.required_step_id && 
+        quoteRequest.required_step_date) {
+      // Create a production schedule object with the required step date
+      return {
+        [quoteRequest.required_step_id]: quoteRequest.required_step_date
+      };
+    }
+    return {};
+  };
+
   const handleSubmit = (data: SupplierQuoteFormValues) => {
     if (!currentOrganization) return;
     
@@ -66,7 +79,8 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
                 extra_costs: [],
                 savings: [],
                 currency: quoteRequest.currency || "USD",
-                reference: ""
+                reference: "",
+                production_schedule: getInitialProductionSchedule()
               }}
               onSubmit={handleSubmit}
               isSubmitting={createMutation.isPending}

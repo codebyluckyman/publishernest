@@ -88,6 +88,27 @@ export function SupplierQuoteForm({
   const { savings } = useSavings();
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
+  // Create a production schedule with the required step date from the quote request
+  useEffect(() => {
+    if (
+      quoteRequest.production_schedule_requested &&
+      quoteRequest.required_step_id &&
+      quoteRequest.required_step_date
+    ) {
+      console.log("Setting schedule with required step:", quoteRequest.required_step_id, 
+        "step name:", quoteRequest.required_step_name,
+        "date:", quoteRequest.required_step_date);
+      
+      // Create a production schedule object with the required step date
+      const initialSchedule = {
+        [quoteRequest.required_step_id]: quoteRequest.required_step_date
+      };
+      
+      // Update the form with the initial production schedule
+      form.setValue("production_schedule", initialSchedule);
+    }
+  }, [quoteRequest.required_step_id, quoteRequest.required_step_date, quoteRequest.production_schedule_requested]);
+
   // Set up the form with react-hook-form and explicitly cast the type for type safety
   const form = useForm<SupplierQuoteFormValues>({
     resolver: zodResolver(formSchema),
@@ -252,7 +273,11 @@ export function SupplierQuoteForm({
           {showScheduleTab && (
             <TabsContent value="schedule">
               <Card className="p-6">
-                <ScheduleSection control={form.control} />
+                <ScheduleSection 
+                  control={form.control} 
+                  requiredStepId={quoteRequest.required_step_id}
+                  requiredStepName={quoteRequest.required_step_name}
+                />
               </Card>
             </TabsContent>
           )}
