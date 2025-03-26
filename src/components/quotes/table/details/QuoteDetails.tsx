@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
@@ -104,8 +103,7 @@ export function QuoteDetails({
                 <div>
                   <span className="text-sm font-medium">Required Step:</span>
                   <span className="text-sm ml-2">
-                    {/* This will need to be populated from the API */}
-                    {selectedRequest.required_step_name || "Unknown Step"}
+                    {selectedRequest.required_step_name || "No step selected"}
                   </span>
                 </div>
                 
