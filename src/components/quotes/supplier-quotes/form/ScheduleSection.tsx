@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useOrganization } from "@/hooks/useOrganization";
 import { OrganizationProductionStep } from "@/types/organization";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { fetchProductionSteps } from "@/api/organizations/productionSteps";
 
 interface ScheduleSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -28,26 +29,29 @@ interface ScheduleSectionProps {
 export function ScheduleSection({ control }: ScheduleSectionProps) {
   const { currentOrganization } = useOrganization();
   const [productionSteps, setProductionSteps] = useState<OrganizationProductionStep[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch production steps
-    const fetchProductionSteps = async () => {
-      if (!currentOrganization) return;
+    const getProductionSteps = async () => {
+      if (!currentOrganization?.id) return;
       
+      setLoading(true);
       try {
-        const { data, error } = await fetch(`/api/organizations/${currentOrganization.id}/production-steps`)
-          .then(res => res.json());
-        
-        if (data) {
-          setProductionSteps(data);
-        }
+        const steps = await fetchProductionSteps(currentOrganization.id);
+        setProductionSteps(steps);
       } catch (error) {
         console.error("Error fetching production steps:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchProductionSteps();
+    getProductionSteps();
   }, [currentOrganization]);
+
+  if (loading) {
+    return <div className="py-4 text-center">Loading production steps...</div>;
+  }
 
   if (productionSteps.length === 0) {
     return (
