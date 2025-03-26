@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
@@ -12,8 +11,9 @@ import { CollapsibleSection } from "./CollapsibleSection";
 import { generateQuotePDF } from "./PdfGenerator";
 import { Button } from "@/components/ui/button";
 import { QuoteResponseButton } from "../QuoteResponseButton";
-import { FileText } from "lucide-react";
+import { FileText, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -46,7 +46,6 @@ export function QuoteDetails({
     }
   };
 
-  // Handle print to PDF using react-to-print
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: `Quote Request - ${selectedRequest.title}`,
@@ -56,12 +55,10 @@ export function QuoteDetails({
     }),
   });
 
-  // Generate PDF using jsPDF
   const handleGeneratePDF = () => {
     generateQuotePDF(selectedRequest, currentOrganization);
   };
 
-  // Navigate to supplier quotes for this request
   const handleViewSupplierQuotes = () => {
     navigate(`/quotes?quoteRequestId=${selectedRequest.id}&tab=all`);
   };
@@ -84,7 +81,21 @@ export function QuoteDetails({
         </div>
       )}
 
-      {/* Format and Product Details */}
+      <div className="bg-muted/30 p-4 rounded-md border border-border flex items-center space-x-3">
+        <Calendar className="h-5 w-5 text-primary" />
+        <div>
+          <h3 className="text-md font-medium mb-1">Production Schedule</h3>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm">Requested:</span>
+            <Badge 
+              variant={selectedRequest.production_schedule_requested ? "default" : "outline"}
+            >
+              {selectedRequest.production_schedule_requested ? "Yes" : "No"}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
       {selectedRequest.formats && selectedRequest.formats.length > 0 && (
         <div>
           <h3 className="text-md font-medium mb-2">Format & Product Details</h3>
@@ -92,7 +103,6 @@ export function QuoteDetails({
         </div>
       )}
 
-      {/* Extra Costs */}
       <CollapsibleSection
         title="Extra Costs"
         isOpen={isExtraCostsOpen}
@@ -100,7 +110,6 @@ export function QuoteDetails({
         items={selectedRequest.extra_costs || []}
       />
       
-      {/* Savings */}
       <CollapsibleSection
         title="Savings"
         isOpen={isSavingsOpen}
@@ -108,7 +117,6 @@ export function QuoteDetails({
         items={selectedRequest.savings || []}
       />
 
-      {/* Response Buttons */}
       <div className="flex justify-between items-center">
         <Button 
           variant="outline" 
