@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
