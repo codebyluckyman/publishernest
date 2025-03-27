@@ -1,7 +1,6 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 import { ExtraCostItem } from "./ExtraCostItem";
 import { ExtraCostTableItem } from "@/types/extraCost";

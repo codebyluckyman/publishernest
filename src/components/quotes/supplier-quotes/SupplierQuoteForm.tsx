@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,8 +11,6 @@ import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Supplier } from "@/types/supplier";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { SavingTableItem } from "@/types/saving";
-import { useExtraCosts } from "@/hooks/useExtraCosts";
-import { useSavings } from "@/hooks/useSavings";
 import { FormHeader } from "./form/FormHeader";
 import { FormTabs } from "./form/FormTabs";
 import { FormActions } from "./form/FormActions";
@@ -77,37 +76,52 @@ export function SupplierQuoteForm({
   const { currentOrganization } = useOrganization();
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
   const [activeTab, setActiveTab] = useState("details");
-  const { extraCosts } = useExtraCosts();
-  const { savings } = useSavings();
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
-  const [filteredExtraCosts, setFilteredExtraCosts] = useState<ExtraCostTableItem[]>([]);
-  const [filteredSavings, setFilteredSavings] = useState<SavingTableItem[]>([]);
+  
+  // Use the extra costs and savings directly from the quote request
+  // No need to filter from a larger array
+  const [extraCostsForForm, setExtraCostsForForm] = useState<ExtraCostTableItem[]>([]);
+  const [savingsForForm, setSavingsForForm] = useState<SavingTableItem[]>([]);
 
   useEffect(() => {
-    if (extraCosts && quoteRequest.extra_costs) {
-      const quoteRequestExtraCostIds = quoteRequest.extra_costs.map(cost => cost.id);
-      const filtered = extraCosts.filter(cost => 
-        quoteRequestExtraCostIds.includes(cost.id)
-      );
+    // Convert quote request extra costs to the expected ExtraCostTableItem format
+    if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0) {
+      const formattedExtraCosts = quoteRequest.extra_costs.map(cost => ({
+        id: cost.id || "",
+        name: cost.name,
+        description: cost.description || "",
+        unit_of_measure_id: cost.unit_of_measure_id,
+        unit_of_measure_name: cost.unit_of_measure_name,
+        organization_id: currentOrganization?.id || "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }));
       
-      console.log("Filtered Extra Costs:", filtered);
-      setFilteredExtraCosts(filtered);
+      console.log("Extra Costs from Quote Request:", formattedExtraCosts);
+      setExtraCostsForForm(formattedExtraCosts);
     } else {
-      setFilteredExtraCosts([]);
+      setExtraCostsForForm([]);
     }
 
-    if (savings && quoteRequest.savings) {
-      const quoteRequestSavingIds = quoteRequest.savings.map(saving => saving.id);
-      const filtered = savings.filter(saving => 
-        quoteRequestSavingIds.includes(saving.id)
-      );
+    // Convert quote request savings to the expected SavingTableItem format
+    if (quoteRequest.savings && quoteRequest.savings.length > 0) {
+      const formattedSavings = quoteRequest.savings.map(saving => ({
+        id: saving.id || "",
+        name: saving.name,
+        description: saving.description || "",
+        unit_of_measure_id: saving.unit_of_measure_id,
+        unit_of_measure_name: saving.unit_of_measure_name,
+        organization_id: currentOrganization?.id || "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }));
       
-      console.log("Filtered Savings:", filtered);
-      setFilteredSavings(filtered);
+      console.log("Savings from Quote Request:", formattedSavings);
+      setSavingsForForm(formattedSavings);
     } else {
-      setFilteredSavings([]);
+      setSavingsForForm([]);
     }
-  }, [extraCosts, savings, quoteRequest]);
+  }, [quoteRequest, currentOrganization]);
 
   useEffect(() => {
     if (
@@ -206,8 +220,8 @@ export function SupplierQuoteForm({
           selectedSupplier={selectedSupplier}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          filteredExtraCosts={filteredExtraCosts}
-          filteredSavings={filteredSavings}
+          filteredExtraCosts={extraCostsForForm}
+          filteredSavings={savingsForForm}
           currencies={currencies}
           form={form}
         />
