@@ -58,10 +58,10 @@ export function ExtraCostItem({
                             className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
                             {...field}
                             onChange={(e) => {
-                              const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                              const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
                               field.onChange(value);
                             }}
-                            value={field.value === null ? "" : field.value}
+                            value={field.value === null ? "" : field.value.toFixed(3)}
                           />
                         </FormControl>
                       </FormItem>
@@ -81,13 +81,13 @@ export function ExtraCostItem({
                         step="0.001"
                         min="0"
                         placeholder="0.000"
-                        className="h-8 text-sm w-full rounded-md border border-input bg-background"
+                        className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
                         {...field}
                         onChange={(e) => {
-                          const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                          const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
                           field.onChange(value);
                         }}
-                        value={field.value === null ? "" : field.value}
+                        value={field.value === null ? "" : field.value.toFixed(3)}
                       />
                     </FormControl>
                   </FormItem>
