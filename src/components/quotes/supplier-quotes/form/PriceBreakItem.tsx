@@ -11,9 +11,17 @@ interface PriceBreakItemProps {
   quantity?: number;
   productName?: string;
   numProducts: number;
+  showLabels?: boolean;
 }
 
-export function PriceBreakItem({ control, index, quantity, productName, numProducts }: PriceBreakItemProps) {
+export function PriceBreakItem({ 
+  control, 
+  index, 
+  quantity, 
+  productName, 
+  numProducts,
+  showLabels = false
+}: PriceBreakItemProps) {
   // Generate unit cost fields based on the number of products
   const renderUnitCostFields = () => {
     if (numProducts <= 1) {
@@ -57,7 +65,7 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
             name={`price_breaks.${index}.unit_cost_${i}` as any}
             render={({ field }) => (
               <FormItem className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground">{i}</FormLabel>
+                {showLabels && <FormLabel className="text-xs text-muted-foreground">{i}</FormLabel>}
                 <FormControl>
                   <Input
                     type="number"
@@ -108,4 +116,3 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
     </Card>
   );
 }
-

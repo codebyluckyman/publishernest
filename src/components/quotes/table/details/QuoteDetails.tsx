@@ -41,8 +41,8 @@ export function QuoteDetails({
   console.log("Required Step Name:", selectedRequest.required_step_name);
   console.log("Required Step ID:", selectedRequest.required_step_id);
   
-  // Get the step name from the required_step object instead of required_step_name
-  const stepName = selectedRequest.required_step?.step_name || null;
+  // Get the step name from the required_step_name field
+  const stepName = selectedRequest.required_step_name || null;
   
   const handleEdit = () => {
     if (onEdit) {
