@@ -1,11 +1,12 @@
-
 import { BookOpen, Pencil, Eye, Image, PlusCircle, ArrowUpDown, ChevronUp, ChevronDown, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SortDirection, SortField } from "@/types/product";
-import { useState } from "react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useState, useMemo } from "react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { usePagination, PageSize } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface Product {
   id: string;
@@ -58,6 +59,21 @@ const ProductTableContent = ({
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
 
+  const {
+    currentData: paginatedProducts,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    nextPage,
+    previousPage,
+    changePageSize,
+  } = usePagination<any>({
+    data: products || [],
+    initialPageSize: 10,
+  });
+
   const renderSortIcon = (field: SortField) => {
     if (field !== sortField) {
       return <ArrowUpDown className="ml-1 h-4 w-4" />;
@@ -82,7 +98,6 @@ const ProductTableContent = ({
       setIsCopyDialogOpen(false);
       setCopyingProductId(null);
       
-      // Open the edit form for the newly created product
       if (newProductId) {
         handleEditProduct(newProductId);
       }
@@ -177,7 +192,7 @@ const ProductTableContent = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
+            {paginatedProducts.map((product) => (
               <TableRow 
                 key={product.id} 
                 className="cursor-pointer hover:bg-muted/70" 
@@ -244,6 +259,17 @@ const ProductTableContent = ({
           </TableBody>
         </Table>
       </div>
+
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onPageChange={goToPage}
+        onPreviousPage={previousPage}
+        onNextPage={nextPage}
+        onPageSizeChange={changePageSize}
+      />
 
       <AlertDialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
         <AlertDialogContent>

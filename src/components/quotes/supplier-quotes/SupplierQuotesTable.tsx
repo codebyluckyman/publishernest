@@ -44,6 +44,7 @@ export function SupplierQuotesTable({ statusFilter, searchQuery, quoteRequestId 
     searchQuery
   );
 
+  // Add pagination
   const {
     currentData: paginatedQuotes,
     currentPage,

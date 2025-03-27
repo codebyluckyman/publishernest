@@ -34,7 +34,7 @@ export function PaginationControls({
   onNextPage,
   onPageSizeChange,
 }: PaginationControlsProps) {
-  // Generate page numbers to display (show max 5 pages with ellipsis)
+  // Generate page numbers to display (show max 7 pages with ellipsis when needed)
   const getPageNumbers = () => {
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -74,19 +74,21 @@ export function PaginationControls({
     }
     
     // Always include last page
-    pages.push(totalPages);
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
     
     return pages;
   };
 
-  const startItem = (currentPage - 1) * pageSize + 1;
+  const startItem = totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
   const endItem = Math.min(startItem + pageSize - 1, totalItems);
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
       <div className="flex items-center gap-4">
         <div className="text-sm text-muted-foreground">
-          Showing {startItem} to {endItem} of {totalItems} entries
+          {totalItems > 0 ? `Showing ${startItem} to ${endItem} of ${totalItems} entries` : 'No entries to display'}
         </div>
         
         <div className="flex items-center gap-2">

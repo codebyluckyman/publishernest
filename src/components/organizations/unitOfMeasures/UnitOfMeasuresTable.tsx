@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { UnitOfMeasure } from "@/types/unitOfMeasure";
@@ -9,6 +8,8 @@ import { Plus, Trash2, Check, X, Edit } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { fetchUnitOfMeasures, createUnitOfMeasure, updateUnitOfMeasure, deleteUnitOfMeasure } from "./unitOfMeasuresService";
 import { toast } from "sonner";
+import { usePagination, PageSize } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export function UnitOfMeasuresTable() {
   const { currentOrganization } = useOrganization();
@@ -18,6 +19,21 @@ export function UnitOfMeasuresTable() {
   const [newUnit, setNewUnit] = useState({ name: "", abbreviation: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedUnit, setEditedUnit] = useState({ name: "", abbreviation: "" });
+
+  const {
+    currentData: paginatedUnits,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    nextPage,
+    previousPage,
+    changePageSize,
+  } = usePagination<UnitOfMeasure>({
+    data: units,
+    initialPageSize: 10,
+  });
 
   useEffect(() => {
     if (currentOrganization) {
@@ -141,7 +157,7 @@ export function UnitOfMeasuresTable() {
                   </TableRow>
                 ) : (
                   <>
-                    {units.map((unit) => (
+                    {paginatedUnits.map((unit) => (
                       <TableRow key={unit.id}>
                         {editingId === unit.id ? (
                           <>
@@ -253,6 +269,19 @@ export function UnitOfMeasuresTable() {
               </TableBody>
             </Table>
           </div>
+          
+          {units.length > 0 && (
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={goToPage}
+              onPreviousPage={previousPage}
+              onNextPage={nextPage}
+              onPageSizeChange={changePageSize}
+            />
+          )}
           
           {!isAdding && (
             <Button 

@@ -40,10 +40,10 @@ export function usePagination<T>({ data, initialPageSize = 10 }: UsePaginationPr
 
   const changePageSize = (size: PageSize) => {
     setPageSize(size);
-    // Adjust current page to maintain current view position as much as possible
+    // When changing page size, adjust current page to maintain view position
     const firstItemIndex = (currentPage - 1) * pageSize;
     const newPage = Math.floor(firstItemIndex / size) + 1;
-    setCurrentPage(newPage);
+    setCurrentPage(Math.min(newPage, Math.ceil(totalItems / size)));
   };
 
   return {
