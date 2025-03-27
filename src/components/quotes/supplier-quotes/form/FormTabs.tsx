@@ -91,7 +91,8 @@ export function FormTabs({
             <ExtraCostsSection 
               control={control} 
               extraCosts={filteredExtraCosts} 
-              currency={form.watch("currency")} 
+              currency={currentCurrency}
+              formats={quoteRequest.formats} 
             />
           </Card>
         </TabsContent>
@@ -103,7 +104,8 @@ export function FormTabs({
             <SavingsSection 
               control={control} 
               savings={filteredSavings} 
-              currency={form.watch("currency")} 
+              currency={currentCurrency}
+              formats={quoteRequest.formats}
             />
           </Card>
         </TabsContent>

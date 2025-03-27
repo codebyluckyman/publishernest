@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -114,7 +115,18 @@ export async function updateSupplierQuote(
       supplier_quote_id: id,
       extra_cost_id: ec.extra_cost_id,
       unit_cost: ec.unit_cost,
-      notes: ec.notes || null
+      notes: ec.notes || null,
+      // Add all unit cost fields for multiple products
+      unit_cost_1: ec.unit_cost_1,
+      unit_cost_2: ec.unit_cost_2,
+      unit_cost_3: ec.unit_cost_3,
+      unit_cost_4: ec.unit_cost_4,
+      unit_cost_5: ec.unit_cost_5,
+      unit_cost_6: ec.unit_cost_6,
+      unit_cost_7: ec.unit_cost_7,
+      unit_cost_8: ec.unit_cost_8,
+      unit_cost_9: ec.unit_cost_9,
+      unit_cost_10: ec.unit_cost_10
     }));
 
     const { error: insertError } = await supabase
@@ -143,7 +155,18 @@ export async function updateSupplierQuote(
       supplier_quote_id: id,
       saving_id: s.saving_id,
       unit_cost: s.unit_cost,
-      notes: s.notes || null
+      notes: s.notes || null,
+      // Add all unit cost fields for multiple products
+      unit_cost_1: s.unit_cost_1,
+      unit_cost_2: s.unit_cost_2,
+      unit_cost_3: s.unit_cost_3,
+      unit_cost_4: s.unit_cost_4,
+      unit_cost_5: s.unit_cost_5,
+      unit_cost_6: s.unit_cost_6,
+      unit_cost_7: s.unit_cost_7,
+      unit_cost_8: s.unit_cost_8,
+      unit_cost_9: s.unit_cost_9,
+      unit_cost_10: s.unit_cost_10
     }));
 
     const { error: insertError } = await supabase

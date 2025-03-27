@@ -11,13 +11,21 @@ interface SavingItemProps {
   control: Control<SupplierQuoteFormValues>;
   index: number;
   saving: Saving;
+  showMultiProducts?: boolean;
+  maxNumProducts?: number;
 }
 
-export function SavingItem({ control, index, saving }: SavingItemProps) {
+export function SavingItem({ 
+  control, 
+  index, 
+  saving,
+  showMultiProducts = false,
+  maxNumProducts = 1
+}: SavingItemProps) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-4">
           <div>
             <p className="text-sm font-medium">{saving.name}</p>
             {saving.description && (
@@ -30,30 +38,87 @@ export function SavingItem({ control, index, saving }: SavingItemProps) {
             )}
           </div>
           
-          <FormField
-            control={control}
-            name={`savings.${index}.unit_cost`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Unit Cost</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.001"
-                    min="0"
-                    placeholder="0.000"
-                    {...field}
-                    onChange={(e) => {
-                      const value = e.target.value === "" ? null : parseFloat(e.target.value);
-                      field.onChange(value);
-                    }}
-                    value={field.value === null ? "" : field.value}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {showMultiProducts ? (
+            <div className="space-y-3">
+              {saving.description && <hr className="my-2" />}
+              
+              <div className="grid grid-cols-12 gap-2">
+                <div className="col-span-1"></div>
+                <div className="col-span-11">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
+                    {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
+                      <div key={i} className="text-center">
+                        <span className="text-xs font-medium text-muted-foreground">{i}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-12 gap-2">
+                <div className="col-span-1 flex items-center">
+                  <span className="text-xs font-medium text-muted-foreground">Saving</span>
+                </div>
+                <div className="col-span-11">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
+                    {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
+                      <div key={i} className="space-y-0.5">
+                        <FormField
+                          control={control}
+                          name={`savings.${index}.unit_cost_${i}` as any}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.001"
+                                  min="0"
+                                  placeholder="0.000"
+                                  className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
+                                  {...field}
+                                  onChange={(e) => {
+                                    const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                    field.onChange(value);
+                                  }}
+                                  value={field.value === null ? "" : field.value}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <FormField
+              control={control}
+              name={`savings.${index}.unit_cost`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Unit Cost</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      placeholder="0.000"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                        field.onChange(value);
+                      }}
+                      value={field.value === null ? "" : field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           
           <FormField
             control={control}

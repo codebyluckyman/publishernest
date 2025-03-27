@@ -1,4 +1,3 @@
-
 import { QuoteRequest, QuoteRequestFormat, PriceBreak, QuoteRequestFormatProduct } from "./quoteRequest";
 import { ExtraCost } from "./extraCost";
 import { Saving } from "./saving";
@@ -103,6 +102,18 @@ export interface SupplierQuoteExtraCost {
   created_at: string;
   updated_at: string;
   
+  // Multiple product unit costs (up to 10)
+  unit_cost_1: number | null;
+  unit_cost_2: number | null;
+  unit_cost_3: number | null;
+  unit_cost_4: number | null;
+  unit_cost_5: number | null;
+  unit_cost_6: number | null;
+  unit_cost_7: number | null;
+  unit_cost_8: number | null;
+  unit_cost_9: number | null;
+  unit_cost_10: number | null;
+  
   // Joined fields
   extra_cost?: ExtraCost;
 }
@@ -115,6 +126,18 @@ export interface SupplierQuoteSaving {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  
+  // Multiple product unit costs (up to 10)
+  unit_cost_1: number | null;
+  unit_cost_2: number | null;
+  unit_cost_3: number | null;
+  unit_cost_4: number | null;
+  unit_cost_5: number | null;
+  unit_cost_6: number | null;
+  unit_cost_7: number | null;
+  unit_cost_8: number | null;
+  unit_cost_9: number | null;
+  unit_cost_10: number | null;
   
   // Joined fields
   saving?: Saving;
@@ -144,11 +167,33 @@ export interface SupplierQuoteFormValues {
   extra_costs: {
     extra_cost_id: string;
     unit_cost: number | null;
+    // Add multiple product unit costs (up to 10)
+    unit_cost_1: number | null;
+    unit_cost_2: number | null;
+    unit_cost_3: number | null;
+    unit_cost_4: number | null;
+    unit_cost_5: number | null;
+    unit_cost_6: number | null;
+    unit_cost_7: number | null;
+    unit_cost_8: number | null;
+    unit_cost_9: number | null;
+    unit_cost_10: number | null;
     notes?: string;
   }[];
   savings: {
     saving_id: string;
     unit_cost: number | null;
+    // Add multiple product unit costs (up to 10)
+    unit_cost_1: number | null;
+    unit_cost_2: number | null;
+    unit_cost_3: number | null;
+    unit_cost_4: number | null;
+    unit_cost_5: number | null;
+    unit_cost_6: number | null;
+    unit_cost_7: number | null;
+    unit_cost_8: number | null;
+    unit_cost_9: number | null;
+    unit_cost_10: number | null;
     notes?: string;
   }[];
   notes?: string;
