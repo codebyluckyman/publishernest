@@ -1,4 +1,3 @@
-
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -29,21 +28,19 @@ export function PriceBreaksSection({
       <h3 className="text-lg font-medium">Price Breaks</h3>
       
       {quoteRequest.formats.map((format, formatIndex) => {
-        // Fetch format details for each format
         const { data: formatDetails, isLoading } = useFormatDetails(format.format_id);
         
         return (
           <Card key={format.id} className="mb-4">
             <CardHeader className="pb-2">
               <CardTitle className="text-md">{format.format_name}</CardTitle>
-              {/* Add Format Specifications below format name */}
               <div className="mt-2">
                 <FormatSpecifications format={formatDetails} isLoading={isLoading} />
               </div>
             </CardHeader>
             <CardContent>
               {format.price_breaks && format.price_breaks.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-0">
                   {format.num_products > 1 && (
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
                       <div className="md:col-span-1"></div>
@@ -63,7 +60,6 @@ export function PriceBreaksSection({
                   )}
 
                   {format.price_breaks.map((priceBreak, priceBreakIndex) => {
-                    // Find the corresponding supplier quote price break from the form data
                     const priceBreakFormIndex = format.price_breaks ? 
                       formatIndex * format.price_breaks.length + priceBreakIndex : 0;
                     
@@ -77,7 +73,6 @@ export function PriceBreaksSection({
                           
                           <div className="md:col-span-11">
                             {format.num_products && format.num_products > 1 ? (
-                              // Multiple products case - create a horizontal grid for product costs
                               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
                                 {Array.from({ length: Math.min(format.num_products, 10) }, (_, i) => i + 1).map((i) => (
                                   <div key={i} className="space-y-0.5">
@@ -95,7 +90,6 @@ export function PriceBreaksSection({
                                 ))}
                               </div>
                             ) : (
-                              // Single product case - use the standard unit_cost field
                               <input
                                 type="number"
                                 step="0.001"
