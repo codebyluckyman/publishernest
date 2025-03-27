@@ -24,13 +24,14 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
           name={`price_breaks.${index}.unit_cost`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Unit Cost</FormLabel>
+              <FormLabel className="text-xs">Unit Cost</FormLabel>
               <FormControl>
                 <Input
                   type="number"
                   step="0.001"
                   min="0"
                   placeholder="0.000"
+                  className="h-8 text-sm"
                   {...field}
                   onChange={(e) => {
                     const value = e.target.value === "" ? null : parseFloat(e.target.value);
@@ -48,7 +49,7 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
 
     // Multiple products case - create a horizontal grid for product costs
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
         {Array.from({ length: Math.min(numProducts, 10) }, (_, i) => i + 1).map((i) => (
           <FormField
             key={`unit_cost_${i}`}
@@ -56,14 +57,14 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
             name={`price_breaks.${index}.unit_cost_${i}` as any}
             render={({ field }) => (
               <FormItem className="space-y-1">
-                <FormLabel className="text-xs">{i} product{i !== 1 ? 's' : ''}</FormLabel>
+                <FormLabel className="text-xs text-muted-foreground">{i}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     step="0.001"
                     min="0"
                     placeholder="0.000"
-                    className="h-8 text-sm"
+                    className="h-8 text-sm px-1.5"
                     {...field}
                     onChange={(e) => {
                       const value = e.target.value === "" ? null : parseFloat(e.target.value);
@@ -82,18 +83,18 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
   };
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <div className="space-y-2 md:col-span-1">
+    <Card className="border-none shadow-none">
+      <CardContent className="p-2">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+          <div className="space-y-1 md:col-span-1">
             <div>
-              <p className="text-sm font-medium">Quantity</p>
+              <p className="text-xs font-medium text-muted-foreground">Quantity</p>
               <p className="text-sm">{quantity?.toLocaleString()}</p>
             </div>
             
             {productName && (
               <div>
-                <p className="text-sm font-medium">Product</p>
+                <p className="text-xs font-medium text-muted-foreground">Product</p>
                 <p className="text-sm">{productName}</p>
               </div>
             )}
@@ -107,3 +108,4 @@ export function PriceBreakItem({ control, index, quantity, productName, numProdu
     </Card>
   );
 }
+
