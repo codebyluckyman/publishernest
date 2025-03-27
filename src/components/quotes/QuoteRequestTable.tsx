@@ -17,6 +17,8 @@ import { BulkActions } from "./table/BulkActions";
 import { BulkDueDateDialog } from "./table/BulkDueDateDialog";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { usePagination, PageSize } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface QuoteRequestTableProps {
   quoteRequests: QuoteRequest[];
@@ -30,6 +32,22 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
   
   // Sort functionality
   const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
+  
+  // Pagination functionality
+  const {
+    currentData: paginatedQuoteRequests,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    nextPage,
+    previousPage,
+    changePageSize,
+  } = usePagination<QuoteRequest>({
+    data: sortedQuoteRequests,
+    initialPageSize: 10,
+  });
   
   // Get all quote request IDs for bulk operations
   const allQuoteRequestIds = useMemo(() => quoteRequests.map(req => req.id), [quoteRequests]);
@@ -90,7 +108,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
           onSelectAll={(selected) => handleSelectAll(selected, allQuoteRequestIds)}
         />
         <TableBody>
-          {sortedQuoteRequests.map((request) => (
+          {paginatedQuoteRequests.map((request) => (
             <QuoteRequestRow
               key={request.id}
               request={request}
@@ -105,6 +123,17 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
           ))}
         </TableBody>
       </Table>
+
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onPageChange={goToPage}
+        onPreviousPage={previousPage}
+        onNextPage={nextPage}
+        onPageSizeChange={changePageSize}
+      />
 
       <QuoteDetailsSheet
         isOpen={detailsOpen}

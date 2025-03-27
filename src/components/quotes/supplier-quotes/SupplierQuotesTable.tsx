@@ -21,6 +21,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CircleDollarSign, Eye, FileCheck, FileX, BookOpen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { usePagination, PageSize } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface SupplierQuotesTableProps {
   statusFilter?: string[] | undefined;
@@ -41,6 +43,21 @@ export function SupplierQuotesTable({ statusFilter, searchQuery, quoteRequestId 
     quoteRequestId || undefined,
     searchQuery
   );
+
+  const {
+    currentData: paginatedQuotes,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    nextPage,
+    previousPage,
+    changePageSize,
+  } = usePagination<SupplierQuote>({
+    data: supplierQuotes,
+    initialPageSize: 10,
+  });
 
   const handleViewDetails = (quote: SupplierQuote) => {
     setSelectedQuote(quote);
@@ -98,7 +115,7 @@ export function SupplierQuotesTable({ statusFilter, searchQuery, quoteRequestId 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {supplierQuotes.map((quote) => (
+            {paginatedQuotes.map((quote) => (
               <TableRow key={quote.id} className="hover:bg-muted/50 cursor-pointer">
                 <TableCell 
                   className="font-mono text-sm"
@@ -198,6 +215,17 @@ export function SupplierQuotesTable({ statusFilter, searchQuery, quoteRequestId 
           </TableBody>
         </Table>
       </div>
+
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onPageChange={goToPage}
+        onPreviousPage={previousPage}
+        onNextPage={nextPage}
+        onPageSizeChange={changePageSize}
+      />
 
       <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-hidden">
