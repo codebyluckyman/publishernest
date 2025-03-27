@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -70,7 +69,17 @@ export async function createSupplierQuote(
       supplier_quote_id: supplierQuote.id,
       extra_cost_id: ec.extra_cost_id,
       unit_cost: ec.unit_cost,
-      notes: ec.notes || null
+      // Add multiple unit cost fields for each product
+      unit_cost_1: ec.unit_cost_1,
+      unit_cost_2: ec.unit_cost_2,
+      unit_cost_3: ec.unit_cost_3,
+      unit_cost_4: ec.unit_cost_4,
+      unit_cost_5: ec.unit_cost_5,
+      unit_cost_6: ec.unit_cost_6,
+      unit_cost_7: ec.unit_cost_7,
+      unit_cost_8: ec.unit_cost_8,
+      unit_cost_9: ec.unit_cost_9,
+      unit_cost_10: ec.unit_cost_10
     }));
 
     const { error: extraCostsError } = await supabase

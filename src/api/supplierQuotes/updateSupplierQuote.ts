@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -115,7 +114,6 @@ export async function updateSupplierQuote(
       supplier_quote_id: id,
       extra_cost_id: ec.extra_cost_id,
       unit_cost: ec.unit_cost,
-      notes: ec.notes || null,
       // Add all unit cost fields for multiple products
       unit_cost_1: ec.unit_cost_1,
       unit_cost_2: ec.unit_cost_2,

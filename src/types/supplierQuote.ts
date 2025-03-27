@@ -98,7 +98,6 @@ export interface SupplierQuoteExtraCost {
   supplier_quote_id: string;
   extra_cost_id: string;
   unit_cost: number | null;
-  notes: string | null;
   created_at: string;
   updated_at: string;
   
@@ -178,7 +177,6 @@ export interface SupplierQuoteFormValues {
     unit_cost_8: number | null;
     unit_cost_9: number | null;
     unit_cost_10: number | null;
-    notes?: string;
   }[];
   savings: {
     saving_id: string;

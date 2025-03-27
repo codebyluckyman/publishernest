@@ -1192,7 +1192,6 @@ export type Database = {
           created_at: string
           extra_cost_id: string
           id: string
-          notes: string | null
           supplier_quote_id: string
           unit_cost: number | null
           unit_cost_1: number | null
@@ -1211,7 +1210,6 @@ export type Database = {
           created_at?: string
           extra_cost_id: string
           id?: string
-          notes?: string | null
           supplier_quote_id: string
           unit_cost?: number | null
           unit_cost_1?: number | null
@@ -1230,7 +1228,6 @@ export type Database = {
           created_at?: string
           extra_cost_id?: string
           id?: string
-          notes?: string | null
           supplier_quote_id?: string
           unit_cost?: number | null
           unit_cost_1?: number | null
