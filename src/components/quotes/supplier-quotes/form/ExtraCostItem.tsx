@@ -24,8 +24,8 @@ export function ExtraCostItem({
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid grid-cols-12 gap-2">
-          <div className="col-span-4"> {/* Changed from col-span-6 to col-span-4 */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+          <div className="md:col-span-4">
             <div>
               <p className="text-sm font-medium">{extraCost.name}</p>
               {extraCost.description && (
@@ -39,7 +39,7 @@ export function ExtraCostItem({
             </div>
           </div>
           
-          <div className="col-span-8"> {/* Changed from col-span-6 to col-span-8 */}
+          <div className="md:col-span-8">
             {showMultiProducts ? (
               <div className="grid grid-cols-10 gap-1">
                 {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
@@ -100,4 +100,3 @@ export function ExtraCostItem({
     </Card>
   );
 }
-
