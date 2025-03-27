@@ -68,7 +68,7 @@ export function FormTabs({
         {showScheduleTab && <TabsTrigger value="schedule">Schedule</TabsTrigger>}
       </TabsList>
       
-      <TabsContent value="details" className="space-y-6">
+      <TabsContent value="details" className="mt-4 space-y-6">
         <Card className="p-6">
           <QuoteDetailsSection form={form} currencies={currencies} />
         </Card>
@@ -78,7 +78,7 @@ export function FormTabs({
         </Card>
       </TabsContent>
       
-      <TabsContent value="pricing">
+      <TabsContent value="pricing" className="mt-4">
         <Card className="p-6">
           <PriceBreaksSection 
             control={control} 
@@ -89,7 +89,7 @@ export function FormTabs({
       </TabsContent>
       
       {showExtraCostsTab && (
-        <TabsContent value="costs">
+        <TabsContent value="costs" className="mt-4">
           <Card className="p-6">
             <ExtraCostsSection 
               control={control} 
@@ -101,7 +101,7 @@ export function FormTabs({
       )}
       
       {showSavingsTab && (
-        <TabsContent value="savings">
+        <TabsContent value="savings" className="mt-4">
           <Card className="p-6">
             <SavingsSection 
               control={control} 
@@ -113,7 +113,7 @@ export function FormTabs({
       )}
       
       {showScheduleTab && (
-        <TabsContent value="schedule">
+        <TabsContent value="schedule" className="mt-4">
           <Card className="p-6">
             <ScheduleSection 
               control={control} 
