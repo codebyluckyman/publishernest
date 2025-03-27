@@ -64,7 +64,7 @@ export function PriceBreakItem({
             control={control}
             name={`price_breaks.${index}.unit_cost_${i}` as any}
             render={({ field }) => (
-              <FormItem className="space-y-1">
+              <FormItem className="space-y-0.5">
                 {showLabels && <FormLabel className="text-xs text-muted-foreground">{i}</FormLabel>}
                 <FormControl>
                   <Input
@@ -72,7 +72,7 @@ export function PriceBreakItem({
                     step="0.001"
                     min="0"
                     placeholder="0.000"
-                    className="h-8 text-sm px-1.5"
+                    className="h-7 text-xs px-1.5"
                     {...field}
                     onChange={(e) => {
                       const value = e.target.value === "" ? null : parseFloat(e.target.value);
@@ -81,7 +81,7 @@ export function PriceBreakItem({
                     value={field.value === null ? "" : field.value}
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -92,9 +92,9 @@ export function PriceBreakItem({
 
   return (
     <Card className="border-none shadow-none">
-      <CardContent className="p-2">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-          <div className="space-y-1 md:col-span-1">
+      <CardContent className="p-1">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-1">
+          <div className="space-y-0.5 md:col-span-1">
             <div>
               <p className="text-xs font-medium text-muted-foreground">Quantity</p>
               <p className="text-sm">{quantity?.toLocaleString()}</p>
