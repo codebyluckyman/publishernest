@@ -77,14 +77,14 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats }: Ex
         </div>
       </div>
       
-      {/* Display product numbers once at the top if we have multiple products */}
-      {showMultiProducts && maxNumProducts > 1 && (
-        <div className="mb-4 grid grid-cols-12 gap-2">
-          <div className="col-span-5">
+      {/* Display product numbers header at the top */}
+      {showMultiProducts && (
+        <div className="grid grid-cols-12 gap-2 mb-4">
+          <div className="col-span-6">
             {/* Empty space for cost names */}
           </div>
-          <div className="col-span-7">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
+          <div className="col-span-6">
+            <div className="grid grid-cols-10 gap-1">
               {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
                 <div key={i} className="text-center">
                   <span className="text-xs font-medium">Product {i}</span>
