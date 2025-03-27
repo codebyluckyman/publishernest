@@ -43,6 +43,19 @@ export function EditQuoteRequestDialog({
   
   // Convert the QuoteRequest to form values
   const mapQuoteRequestToFormValues = (request: QuoteRequest): QuoteRequestFormValues => {
+    // Debug the incoming savings data
+    console.log("Mapping quote request to form values:", request);
+    console.log("Savings from request:", request.savings);
+    
+    // Map savings from the database to the form format
+    const mappedSavings = request.savings?.map(saving => ({
+      name: saving.name,
+      description: saving.description || "",
+      unit_of_measure_id: saving.unit_of_measure_id || ""
+    })) || [];
+    
+    console.log("Mapped savings for form:", mappedSavings);
+    
     return {
       id: request.id,
       title: request.title || "", 
@@ -62,6 +75,16 @@ export function EditQuoteRequestDialog({
       quantities: request.quantities || {},
       supplier_id: request.supplier_id || undefined,
       reference_id: request.reference_id,
+      // Include extra costs
+      extra_costs: request.extra_costs?.map(cost => ({
+        name: cost.name,
+        description: cost.description || "",
+        unit_of_measure_id: cost.unit_of_measure_id || ""
+      })) || [],
+      // Include savings with proper mapping
+      savings: mappedSavings,
+      // Include currency
+      currency: request.currency || "USD",
       // Include production schedule fields
       production_schedule_requested: request.production_schedule_requested,
       // Map the required step ID and date

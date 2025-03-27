@@ -35,6 +35,10 @@ export function QuoteRequestForm({
   const { data: formats = [] } = useFormatsForSelect(currentOrganization);
   const [formatNames, setFormatNames] = useState<Record<string, string>>({});
 
+  // Log the initial values to debug what savings data is coming in
+  console.log("Quote Request Form initialValues:", initialValues);
+  console.log("Savings from initialValues:", initialValues?.savings);
+
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
     defaultValues: {
@@ -59,6 +63,12 @@ export function QuoteRequestForm({
       required_step_date: initialValues?.required_step_date || null,
     },
   });
+
+  // Log the form values after initialization
+  useEffect(() => {
+    console.log("Form values after initialization:", form.getValues());
+    console.log("Savings in form:", form.getValues("savings"));
+  }, [form]);
 
   // Load format names from the formats data
   useEffect(() => {

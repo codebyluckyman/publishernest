@@ -16,7 +16,7 @@ export function SavingsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, formState, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultSavingsAdded, setDefaultSavingsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Start with the section open for better visibility
+  const [isOpen, setIsOpen] = useState(true); // Start with the section open for better visibility
   const [libraryOpen, setLibraryOpen] = useState(false);
   
   // Set up the field array for savings
@@ -28,10 +28,27 @@ export function SavingsField() {
   // Force re-render when fields change
   const savings = watch("savings");
   
-  // Add default savings from organization settings if available
+  // Log savings state for debugging
+  useEffect(() => {
+    console.log("SavingsField rendered, current savings:", savings);
+    console.log("Fields in SavingsField:", fields);
+  }, [savings, fields]);
+
+  // Check if we already have savings from the form (existing quote being edited)
+  useEffect(() => {
+    const existingSavings = getValues("savings");
+    if (existingSavings && existingSavings.length > 0) {
+      console.log("Existing savings found:", existingSavings);
+      setDefaultSavingsAdded(true);
+    }
+  }, [getValues]);
+  
+  // Add default savings from organization settings if available and no existing savings
   useEffect(() => {
     if (!defaultSavingsAdded && currentOrganization?.default_savings && currentOrganization.default_savings.length > 0) {
-      if (!fields || fields.length === 0) {
+      const existingSavings = getValues("savings");
+      
+      if (!existingSavings || existingSavings.length === 0) {
         const defaultSavings = currentOrganization.default_savings.map((saving) => ({
           name: saving.name,
           description: saving.description || "",
@@ -42,7 +59,7 @@ export function SavingsField() {
         console.log("Default savings added:", defaultSavings);
       }
     }
-  }, [currentOrganization, setValue, defaultSavingsAdded, fields]);
+  }, [currentOrganization, setValue, defaultSavingsAdded, getValues, fields]);
 
   const handleLibraryOpen = () => {
     setLibraryOpen(true);
@@ -84,12 +101,6 @@ export function SavingsField() {
     // Show success toast for better user feedback
     toast.success("New saving field added");
   };
-
-  // Debug mount
-  useEffect(() => {
-    console.log("SavingsField mounted");
-    return () => console.log("SavingsField unmounted");
-  }, []);
 
   return (
     <Card className="mt-6">

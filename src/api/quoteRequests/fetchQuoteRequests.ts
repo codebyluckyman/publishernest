@@ -91,8 +91,13 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       throw error;
     }
 
-    // For debugging
-    console.log("Raw quote requests data:", JSON.stringify(quoteRequests?.slice(0, 2), null, 2));
+    // For debugging - log the first quote request to see its structure
+    if (quoteRequests && quoteRequests.length > 0) {
+      console.log("Sample quote request data (first item):", quoteRequests[0]);
+      if (quoteRequests[0].savings) {
+        console.log("Sample savings data:", quoteRequests[0].savings);
+      }
+    }
 
     // Enrich the data - map formats and supplier names
     const enrichedRequests = await Promise.all((quoteRequests || []).map(async (request) => {
@@ -135,18 +140,23 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       }));
       
       // Format the savings with correct unit_of_measure_name
-      const formattedSavings = request.savings?.map((saving: any) => ({
-        id: saving.id,
-        quote_request_id: request.id,
-        name: saving.name,
-        description: saving.description,
-        unit_of_measure_id: saving.unit_of_measure_id,
-        unit_of_measure_name: saving.unit_of_measures ? 
-          (saving.unit_of_measures.abbreviation 
-            ? `${saving.unit_of_measures.name} (${saving.unit_of_measures.abbreviation})` 
-            : saving.unit_of_measures.name) 
-          : null
-      }));
+      const formattedSavings = request.savings?.map((saving: any) => {
+        console.log("Formatting saving:", saving);
+        return {
+          id: saving.id,
+          quote_request_id: request.id,
+          name: saving.name,
+          description: saving.description,
+          unit_of_measure_id: saving.unit_of_measure_id,
+          unit_of_measure_name: saving.unit_of_measures ? 
+            (saving.unit_of_measures.abbreviation 
+              ? `${saving.unit_of_measures.name} (${saving.unit_of_measures.abbreviation})` 
+              : saving.unit_of_measures.name) 
+            : null
+        };
+      }) || [];
+      
+      console.log("Formatted savings for request:", formattedSavings);
 
       // Extract the required step name
       // Debug the required_step field
