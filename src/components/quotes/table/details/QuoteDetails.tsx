@@ -41,6 +41,9 @@ export function QuoteDetails({
   console.log("Required Step Name:", selectedRequest.required_step_name);
   console.log("Required Step ID:", selectedRequest.required_step_id);
   
+  // Get the step name from the required_step object instead of required_step_name
+  const stepName = selectedRequest.required_step?.step_name || null;
+  
   const handleEdit = () => {
     if (onEdit) {
       onEdit(selectedRequest);
@@ -109,7 +112,7 @@ export function QuoteDetails({
                 <div>
                   <span className="text-sm font-medium">Required Step:</span>
                   <span className="text-sm ml-2">
-                    {selectedRequest.required_step_name || "No step selected"}
+                    {stepName || "No step selected"}
                   </span>
                 </div>
                 

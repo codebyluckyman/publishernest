@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -97,6 +96,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       if (quoteRequests[0].savings) {
         console.log("Sample savings data:", quoteRequests[0].savings);
       }
+      // Debug the required_step field
+      console.log("Sample required_step data:", quoteRequests[0].required_step);
     }
 
     // Enrich the data - map formats and supplier names
