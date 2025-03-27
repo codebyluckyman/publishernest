@@ -42,50 +42,39 @@ export function ExtraCostItem({
               {extraCost.description && <hr className="my-2" />}
               
               <div className="grid grid-cols-12 gap-2">
-                <div className="col-span-1"></div>
-                <div className="col-span-11">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
-                    {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
-                      <div key={i} className="text-center">
-                        <span className="text-xs font-medium text-muted-foreground">{i}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-12 gap-2">
-                <div className="col-span-1 flex items-center">
+                <div className="col-span-1">
                   <span className="text-xs font-medium text-muted-foreground">Cost</span>
                 </div>
                 <div className="col-span-11">
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
                     {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
-                      <div key={i} className="space-y-0.5">
-                        <FormField
-                          control={control}
-                          name={`extra_costs.${index}.unit_cost_${i}` as any}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  step="0.001"
-                                  min="0"
-                                  placeholder="0.000"
-                                  className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                                  {...field}
-                                  onChange={(e) => {
-                                    const value = e.target.value === "" ? null : parseFloat(e.target.value);
-                                    field.onChange(value);
-                                  }}
-                                  value={field.value === null ? "" : field.value}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <FormField
+                        key={i}
+                        control={control}
+                        name={`extra_costs.${index}.unit_cost_${i}` as any}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-center block text-xs font-medium text-muted-foreground mb-1">
+                              {i}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                step="0.001"
+                                min="0"
+                                placeholder="0.000"
+                                className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                  field.onChange(value);
+                                }}
+                                value={field.value === null ? "" : field.value}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                     ))}
                   </div>
                 </div>
