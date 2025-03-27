@@ -4,6 +4,8 @@ import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 
 export function PriceBreaksSection({
   control,
@@ -26,89 +28,98 @@ export function PriceBreaksSection({
     <div className="space-y-6">
       <h3 className="text-lg font-medium">Price Breaks</h3>
       
-      {quoteRequest.formats.map((format, formatIndex) => (
-        <Card key={format.id} className="mb-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-md">{format.format_name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {format.price_breaks && format.price_breaks.length > 0 ? (
-              <div className="space-y-4">
-                {format.num_products > 1 && (
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-                    <div className="md:col-span-1"></div>
-                    <div className="md:col-span-11">
-                      <div className="text-center text-xs font-medium text-muted-foreground mb-1">
-                        Number of Products
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
-                        {Array.from({ length: Math.min(format.num_products || 1, 10) }, (_, i) => i + 1).map((i) => (
-                          <div key={i} className="text-center">
-                            <span className="text-xs font-medium text-muted-foreground">{i}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {format.price_breaks.map((priceBreak, priceBreakIndex) => {
-                  // Find the corresponding supplier quote price break from the form data
-                  const priceBreakFormIndex = format.price_breaks ? 
-                    formatIndex * format.price_breaks.length + priceBreakIndex : 0;
-                  
-                  return (
-                    <div key={priceBreak.id || `price-break-${priceBreakIndex}`} className="py-1 border-b last:border-0">
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-                        <div className="md:col-span-1">
-                          <div className="text-sm font-medium">{priceBreak.quantity.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground">Quantity</div>
-                        </div>
-                        
-                        <div className="md:col-span-11">
-                          {format.num_products && format.num_products > 1 ? (
-                            // Multiple products case - create a horizontal grid for product costs
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
-                              {Array.from({ length: Math.min(format.num_products, 10) }, (_, i) => i + 1).map((i) => (
-                                <div key={i} className="space-y-0.5">
-                                  <input
-                                    type="number"
-                                    step="0.001"
-                                    min="0"
-                                    placeholder="0.000"
-                                    className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                                    {...control.register(`price_breaks.${priceBreakFormIndex}.unit_cost_${i}` as any, {
-                                      setValueAs: (v) => v === "" ? null : parseFloat(v)
-                                    })}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            // Single product case - use the standard unit_cost field
-                            <input
-                              type="number"
-                              step="0.001"
-                              min="0"
-                              placeholder="0.000"
-                              className="h-8 text-sm w-full rounded-md border border-input bg-background"
-                              {...control.register(`price_breaks.${priceBreakFormIndex}.unit_cost`, {
-                                setValueAs: (v) => v === "" ? null : parseFloat(v)
-                              })}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+      {quoteRequest.formats.map((format, formatIndex) => {
+        // Fetch format details for each format
+        const { data: formatDetails, isLoading } = useFormatDetails(format.format_id);
+        
+        return (
+          <Card key={format.id} className="mb-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-md">{format.format_name}</CardTitle>
+              {/* Add Format Specifications below format name */}
+              <div className="mt-2">
+                <FormatSpecifications format={formatDetails} isLoading={isLoading} />
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No price breaks available for this format</p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+            </CardHeader>
+            <CardContent>
+              {format.price_breaks && format.price_breaks.length > 0 ? (
+                <div className="space-y-4">
+                  {format.num_products > 1 && (
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                      <div className="md:col-span-1"></div>
+                      <div className="md:col-span-11">
+                        <div className="text-center text-xs font-medium text-muted-foreground mb-1">
+                          Number of Products
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
+                          {Array.from({ length: Math.min(format.num_products || 1, 10) }, (_, i) => i + 1).map((i) => (
+                            <div key={i} className="text-center">
+                              <span className="text-xs font-medium text-muted-foreground">{i}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {format.price_breaks.map((priceBreak, priceBreakIndex) => {
+                    // Find the corresponding supplier quote price break from the form data
+                    const priceBreakFormIndex = format.price_breaks ? 
+                      formatIndex * format.price_breaks.length + priceBreakIndex : 0;
+                    
+                    return (
+                      <div key={priceBreak.id || `price-break-${priceBreakIndex}`} className="py-1 border-b last:border-0">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                          <div className="md:col-span-1">
+                            <div className="text-sm font-medium">{priceBreak.quantity.toLocaleString()}</div>
+                            <div className="text-xs text-muted-foreground">Quantity</div>
+                          </div>
+                          
+                          <div className="md:col-span-11">
+                            {format.num_products && format.num_products > 1 ? (
+                              // Multiple products case - create a horizontal grid for product costs
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
+                                {Array.from({ length: Math.min(format.num_products, 10) }, (_, i) => i + 1).map((i) => (
+                                  <div key={i} className="space-y-0.5">
+                                    <input
+                                      type="number"
+                                      step="0.001"
+                                      min="0"
+                                      placeholder="0.000"
+                                      className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
+                                      {...control.register(`price_breaks.${priceBreakFormIndex}.unit_cost_${i}` as any, {
+                                        setValueAs: (v) => v === "" ? null : parseFloat(v)
+                                      })}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              // Single product case - use the standard unit_cost field
+                              <input
+                                type="number"
+                                step="0.001"
+                                min="0"
+                                placeholder="0.000"
+                                className="h-8 text-sm w-full rounded-md border border-input bg-background"
+                                {...control.register(`price_breaks.${priceBreakFormIndex}.unit_cost`, {
+                                  setValueAs: (v) => v === "" ? null : parseFloat(v)
+                                })}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No price breaks available for this format</p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
