@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -286,9 +285,6 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
                   <tr key={index} className="border-b">
                     <td className="py-2">
                       {extraCost.extra_cost?.name || "Unknown"}
-                      {extraCost.notes && (
-                        <p className="text-xs text-muted-foreground">{extraCost.notes}</p>
-                      )}
                     </td>
                     <td className="text-right py-2">
                       {extraCost.unit_cost 
