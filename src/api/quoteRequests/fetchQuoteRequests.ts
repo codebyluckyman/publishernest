@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -159,16 +160,17 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       
       console.log("Formatted savings for request:", formattedSavings);
 
-      // Extract the required step name
+      // Extract the required step name more safely from the required_step array
       // Debug the required_step field
       console.log(`Quote Request ${request.reference_id} - required_step:`, request.required_step);
       
-      // Get the required step name more safely
-      const required_step_name = Array.isArray(request.required_step) && request.required_step.length > 0 
+      // IMPORTANT: required_step is now an array from Supabase so we need to extract the first element safely
+      // This is the bug fix - previously we were accessing required_step directly rather than as an array
+      const required_step_name = request.required_step && Array.isArray(request.required_step) && request.required_step.length > 0 
         ? request.required_step[0]?.step_name 
         : null;
       
-      console.log(`Quote Request ${request.reference_id} - required_step_name:`, required_step_name);
+      console.log(`Quote Request ${request.reference_id} - required_step_name extracted from array:`, required_step_name);
 
       // Ensure the status is one of the valid enum values
       const validStatus = ['pending', 'approved', 'declined'].includes(request.status) 

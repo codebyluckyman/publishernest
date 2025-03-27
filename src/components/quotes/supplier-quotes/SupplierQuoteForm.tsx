@@ -124,6 +124,9 @@ export function SupplierQuoteForm({
   }, [quoteRequest, currentOrganization]);
 
   useEffect(() => {
+    // IMPORTANT: Make sure to check if production_schedule_requested is true
+    // and that both required_step_id and required_step_date exist
+    // The required_step_name is the step name extracted from the required_step array
     if (
       quoteRequest.production_schedule_requested &&
       quoteRequest.required_step_id &&
