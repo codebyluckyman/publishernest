@@ -85,7 +85,7 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                   {item.submenu ? (
                     <div className="flex flex-col w-full">
                       <button 
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-gray-100`}
+                        className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-gray-100 w-full text-left`}
                         onClick={() => toggleSubmenu(item.title)}
                       >
                         <div className="flex items-center gap-3">
