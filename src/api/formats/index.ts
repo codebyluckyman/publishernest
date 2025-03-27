@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Format } from "@/types/format";
+import { PageSize } from "@/hooks/usePagination";
 
 export async function createFormat(formatData: Omit<Format, "id" | "created_at" | "updated_at">) {
   try {
@@ -46,6 +47,44 @@ export async function deleteFormat(id: string) {
     return true;
   } catch (error: any) {
     console.error("Error deleting format:", error);
+    throw error;
+  }
+}
+
+export async function fetchFormats(
+  organizationId: string, 
+  search?: string,
+  sort: string = 'format_name',
+  order: 'asc' | 'desc' = 'asc',
+  page: number = 0,
+  pageSize: PageSize = 10
+) {
+  try {
+    let query = supabase
+      .from("formats")
+      .select("*", { count: "exact" })
+      .eq("organization_id", organizationId);
+    
+    if (search) {
+      query = query.ilike("format_name", `%${search}%`);
+    }
+    
+    query = query.order(sort, { ascending: order === 'asc' });
+    
+    // Apply pagination
+    const from = page * pageSize;
+    query = query.range(from, from + pageSize - 1);
+    
+    const { data, error, count } = await query;
+    
+    if (error) throw error;
+    
+    return {
+      data: data || [],
+      total: count || 0
+    };
+  } catch (error: any) {
+    console.error("Error fetching formats:", error);
     throw error;
   }
 }

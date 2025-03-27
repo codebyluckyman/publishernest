@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
+import { PageSize } from "@/hooks/usePagination";
 
 export interface FormatApiOptions {
   organizationId?: string;
@@ -9,7 +10,7 @@ export interface FormatApiOptions {
   sort?: string;
   order?: 'asc' | 'desc';
   page?: number;
-  pageSize?: number;
+  pageSize?: PageSize;
 }
 
 export function useFormatsApi(currentOrganization: Organization | null, options: FormatApiOptions = {}) {

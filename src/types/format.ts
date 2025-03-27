@@ -16,3 +16,11 @@ export interface FormatCategory {
   created_at: string;
   updated_at: string;
 }
+
+export interface PaginatedFormats {
+  data: Format[];
+  total: number;
+}
+
+export type SortDirection = 'asc' | 'desc';
+export type SortField = 'format_name' | 'created_at' | 'extent_pages';
