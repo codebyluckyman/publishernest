@@ -44,6 +44,7 @@ export function QuoteDetails({
   // IMPORTANT: Get the step name from the required_step_name field
   // This field is populated in fetchQuoteRequests.ts by extracting from the required_step array
   // We're referencing the required_step_name here to avoid any issues with array vs. object access
+  // NEVER revert to using required_step directly as it's now an array from Supabase
   const stepName = selectedRequest.required_step_name || null;
   
   const handleEdit = () => {

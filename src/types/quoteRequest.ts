@@ -26,7 +26,11 @@ export interface QuoteRequest {
   production_schedule_requested: boolean; // Field is now required since we added it to the database
   required_step_id?: string | null; // Added optional step ID
   required_step_date?: string | null; // Added optional step date
-  required_step_name?: string | null; // Added field for step name retrieval
+  
+  // IMPORTANT: Supabase returns required_step as an array, but we extract the name into required_step_name
+  // Never use required_step directly in components - always use required_step_name instead
+  required_step?: Array<{ id: string, step_name: string }> | null; // The raw step data from Supabase (array)
+  required_step_name?: string | null; // The extracted step name for use in components
 }
 
 export interface QuoteRequestFormat {

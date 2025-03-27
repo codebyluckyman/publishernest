@@ -166,6 +166,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       
       // IMPORTANT: required_step is now an array from Supabase so we need to extract the first element safely
       // This is the bug fix - previously we were accessing required_step directly rather than as an array
+      // Always use this pattern when accessing required_step in the future to avoid regressions
       const required_step_name = request.required_step && Array.isArray(request.required_step) && request.required_step.length > 0 
         ? request.required_step[0]?.step_name 
         : null;
