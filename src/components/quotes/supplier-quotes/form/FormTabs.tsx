@@ -51,6 +51,9 @@ export function FormTabs({
                      (showSavingsTab ? 1 : 0) + 
                      (showScheduleTab ? 1 : 0);
 
+  // Get the current currency value from the form
+  const currentCurrency = form.watch("currency");
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="w-full grid" style={{ gridTemplateColumns: `repeat(${visibleTabs}, minmax(0, 1fr))` }}>
@@ -77,6 +80,7 @@ export function FormTabs({
             control={control} 
             quoteRequest={quoteRequest}
             selectedSupplier={selectedSupplier}
+            currency={currentCurrency}
           />
         </Card>
       </TabsContent>

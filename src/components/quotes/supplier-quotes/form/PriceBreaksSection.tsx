@@ -6,15 +6,18 @@ import { Supplier } from "@/types/supplier";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
+import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 
 export function PriceBreaksSection({
   control,
   quoteRequest,
-  selectedSupplier
+  selectedSupplier,
+  currency
 }: {
   control: Control<SupplierQuoteFormValues>;
   quoteRequest: QuoteRequest;
   selectedSupplier: Supplier | null;
+  currency: string;
 }) {
   if (!quoteRequest.formats || quoteRequest.formats.length === 0) {
     return (
@@ -24,9 +27,16 @@ export function PriceBreaksSection({
     );
   }
 
+  const currencySymbol = getSymbolForCurrency(currency);
+
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Price Breaks</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Price Breaks</h3>
+        <div className="text-md font-medium">
+          Unit Costs <span className="text-muted-foreground">({currencySymbol})</span>
+        </div>
+      </div>
       
       {quoteRequest.formats.map((format, formatIndex) => {
         const { data: formatDetails, isLoading } = useFormatDetails(format.format_id);
