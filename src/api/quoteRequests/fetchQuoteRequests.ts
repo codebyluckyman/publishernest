@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -116,16 +117,6 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         }
       }
       
-      // Format the format data
-      const formattedFormats = request.formats?.map((format: any) => ({
-        ...format,
-        format_name: format.format?.format_name,
-        products: format.products?.map((product: any) => ({
-          ...product,
-          product_name: product.product?.title,
-        })) || [],
-      }));
-
       // Format the extra costs with correct unit_of_measure_name
       const formattedExtraCosts = request.extra_costs?.map((cost: any) => ({
         id: cost.id,
@@ -142,7 +133,6 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       
       // Format the savings with correct unit_of_measure_name
       const formattedSavings = request.savings?.map((saving: any) => {
-        console.log("Formatting saving:", saving);
         return {
           id: saving.id,
           quote_request_id: request.id,
@@ -175,21 +165,22 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         ? request.status as 'pending' | 'approved' | 'declined'
         : 'pending'; // Default to 'pending' if invalid
 
-      // Cast the request to any first to avoid type errors with required_step
-      const enrichedRequest: any = {
+      // Create a new object with all the properties we need
+      const enrichedRequest = {
         ...request,
         status: validStatus,
         formats: request.formats || [],
-        supplier_names: request.supplier_names || [],
+        // Initialize supplier_names properly as an array with the fetched values
+        supplier_names: supplierNames,
         // Set supplier_name from the first item in supplierNames array if available
-        supplier_name: request.supplier_name || null,
+        supplier_name: supplierNames.length > 0 ? supplierNames[0] : null,
         extra_costs: formattedExtraCosts || [],
         savings: formattedSavings || [],
         required_step_name: required_step_name,
       };
 
-      // Return as QuoteRequest type after conversion
-      return enrichedRequest as QuoteRequest;
+      // Return as QuoteRequest type after explicit type assertion
+      return enrichedRequest as unknown as QuoteRequest;
     }));
 
     return enrichedRequests;
