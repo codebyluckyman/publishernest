@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -132,7 +131,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         id: cost.id,
         quote_request_id: request.id,
         name: cost.name,
-        description: cost.description,
+        description: cost.description || "",
         unit_of_measure_id: cost.unit_of_measure_id,
         unit_of_measure_name: cost.unit_of_measures ? 
           (cost.unit_of_measures.abbreviation 
@@ -148,7 +147,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           id: saving.id,
           quote_request_id: request.id,
           name: saving.name,
-          description: saving.description,
+          description: saving.description || "",
           unit_of_measure_id: saving.unit_of_measure_id,
           unit_of_measure_name: saving.unit_of_measures ? 
             (saving.unit_of_measures.abbreviation 
@@ -158,8 +157,6 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         };
       }) || [];
       
-      console.log("Formatted savings for request:", formattedSavings);
-
       // Extract the required step name more safely from the required_step array
       // Debug the required_step field
       console.log(`Quote Request ${request.reference_id} - required_step:`, request.required_step);
@@ -178,17 +175,21 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         ? request.status as 'pending' | 'approved' | 'declined'
         : 'pending'; // Default to 'pending' if invalid
 
-      return {
+      // Cast the request to any first to avoid type errors with required_step
+      const enrichedRequest: any = {
         ...request,
         status: validStatus,
-        formats: formattedFormats || [],
-        supplier_names: supplierNames,
+        formats: request.formats || [],
+        supplier_names: request.supplier_names || [],
         // Set supplier_name from the first item in supplierNames array if available
-        supplier_name: supplierNames.length > 0 ? supplierNames[0] : null,
+        supplier_name: request.supplier_name || null,
         extra_costs: formattedExtraCosts || [],
         savings: formattedSavings || [],
         required_step_name: required_step_name,
-      } as QuoteRequest;
+      };
+
+      // Return as QuoteRequest type after conversion
+      return enrichedRequest as QuoteRequest;
     }));
 
     return enrichedRequests;
