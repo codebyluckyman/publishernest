@@ -16,7 +16,7 @@ export function SavingsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, formState, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultSavingsAdded, setDefaultSavingsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(true); // Start with the section open for better visibility
+  const [isOpen, setIsOpen] = useState(false); // Start with the section open for better visibility
   const [libraryOpen, setLibraryOpen] = useState(false);
   
   // Set up the field array for savings
