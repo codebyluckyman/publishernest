@@ -19,25 +19,57 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
 
   // Render format extras badges
   const renderFormatExtras = (product: any) => {
-    if (!product.format_extras || product.format_extras.length === 0) return null;
+    if (!product.format_extras) return null;
 
-    return (
-      <div className="space-y-1">
-        <div className="flex flex-wrap gap-1 mt-1">
-          {product.format_extras.map((extra: any, index: number) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {extra.name}
-            </Badge>
-          ))}
-        </div>
-        
-        {product.format_extra_comments && (
-          <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-800">
-            <p>{product.format_extra_comments}</p>
+    // Check if format_extras is an object with boolean values
+    if (typeof product.format_extras === 'object') {
+      const activeExtras = Object.entries(product.format_extras)
+        .filter(([_, value]) => value === true)
+        .map(([key]) => key.replace('_', ' '));
+
+      if (activeExtras.length === 0) return null;
+
+      return (
+        <div className="space-y-1">
+          <div className="flex flex-wrap gap-1 mt-1">
+            {activeExtras.map((extra: string, index: number) => (
+              <Badge key={index} variant="outline" className="text-xs capitalize">
+                {extra}
+              </Badge>
+            ))}
           </div>
-        )}
-      </div>
-    );
+          
+          {product.format_extra_comments && (
+            <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-800">
+              <p>{product.format_extra_comments}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // If format_extras is an array of objects with a name property
+    if (Array.isArray(product.format_extras) && product.format_extras.length > 0) {
+      return (
+        <div className="space-y-1 mt-1">
+          <div className="flex flex-wrap gap-1">
+            {product.format_extras.map((extra: any, index: number) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {extra.name}
+              </Badge>
+            ))}
+          </div>
+          
+          {product.format_extra_comments && (
+            <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-800">
+              <p>{product.format_extra_comments}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   // Helper function to render the price breaks table

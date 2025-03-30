@@ -26,29 +26,55 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
   const renderFormatExtras = (product: any) => {
     if (!product.format_extras) return null;
 
-    const activeExtras = Object.entries(product.format_extras)
-      .filter(([_, value]) => value === true)
-      .map(([key]) => key);
+    // Check if format_extras is an object with boolean values
+    if (typeof product.format_extras === 'object') {
+      const activeExtras = Object.entries(product.format_extras)
+        .filter(([_, value]) => value === true)
+        .map(([key]) => key);
 
-    if (activeExtras.length === 0) return null;
+      if (activeExtras.length === 0) return null;
 
-    return (
-      <div className="space-y-1 mt-1">
-        <div className="flex flex-wrap gap-1">
-          {activeExtras.map((extra) => (
-            <Badge key={extra} variant="outline" className="capitalize text-xs">
-              {extra.replace('_', ' ')}
-            </Badge>
-          ))}
-        </div>
-        
-        {product.format_extra_comments && (
-          <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-700">
-            <p className="text-xs">{product.format_extra_comments}</p>
+      return (
+        <div className="space-y-1 mt-1">
+          <div className="flex flex-wrap gap-1">
+            {activeExtras.map((extra) => (
+              <Badge key={extra} variant="outline" className="capitalize text-xs">
+                {extra.replace('_', ' ')}
+              </Badge>
+            ))}
           </div>
-        )}
-      </div>
-    );
+          
+          {product.format_extra_comments && (
+            <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-700">
+              <p className="text-xs">{product.format_extra_comments}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // If format_extras is an array
+    if (Array.isArray(product.format_extras) && product.format_extras.length > 0) {
+      return (
+        <div className="space-y-1 mt-1">
+          <div className="flex flex-wrap gap-1">
+            {product.format_extras.map((extra, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {typeof extra === 'string' ? extra : extra.name}
+              </Badge>
+            ))}
+          </div>
+          
+          {product.format_extra_comments && (
+            <div className="mt-1 p-2 bg-slate-50 rounded-md border text-xs text-slate-700">
+              <p className="text-xs">{product.format_extra_comments}</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   // Helper function to render the price breaks section

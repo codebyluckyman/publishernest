@@ -29,7 +29,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           format_id, 
           notes,
           num_products,
-          format:formats(format_name),
+          format:formats(id, format_name),
           products:quote_request_format_products(
             id, 
             product_id, 
@@ -94,6 +94,10 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
     // For debugging - log the first quote request to see its structure
     if (quoteRequests && quoteRequests.length > 0) {
       console.log("Sample quote request data (first item):", quoteRequests[0]);
+      if (quoteRequests[0].formats && quoteRequests[0].formats.length > 0) {
+        console.log("Sample format data:", quoteRequests[0].formats[0]);
+        console.log("Format name access:", quoteRequests[0].formats[0].format?.format_name);
+      }
       if (quoteRequests[0].savings) {
         console.log("Sample savings data:", quoteRequests[0].savings);
       }
@@ -116,6 +120,18 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           supplierNames = suppliers.map(s => s.supplier_name);
         }
       }
+      
+      // Process formats to include format_name directly from format object
+      const processedFormats = request.formats?.map((formatItem: any) => {
+        return {
+          ...formatItem,
+          format_name: formatItem.format?.format_name || 'Unknown Format',
+          products: formatItem.products?.map((product: any) => ({
+            ...product,
+            product_name: product.product?.title || 'Unknown Product'
+          })) || []
+        };
+      }) || [];
       
       // Format the extra costs with correct unit_of_measure_name
       const formattedExtraCosts = request.extra_costs?.map((cost: any) => ({
@@ -148,12 +164,9 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       }) || [];
       
       // Extract the required step name more safely from the required_step array
-      // Debug the required_step field
       console.log(`Quote Request ${request.reference_id} - required_step:`, request.required_step);
       
       // IMPORTANT: required_step is now an array from Supabase so we need to extract the first element safely
-      // This is the bug fix - previously we were accessing required_step directly rather than as an array
-      // Always use this pattern when accessing required_step in the future to avoid regressions
       const required_step_name = request.required_step && Array.isArray(request.required_step) && request.required_step.length > 0 
         ? request.required_step[0]?.step_name 
         : null;
@@ -169,7 +182,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
       const enrichedRequest = {
         ...request,
         status: validStatus,
-        formats: request.formats || [],
+        formats: processedFormats,
         // Initialize supplier_names properly as an array with the fetched values
         supplier_names: supplierNames,
         // Set supplier_name from the first item in supplierNames array if available
