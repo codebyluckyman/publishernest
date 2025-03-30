@@ -1,8 +1,7 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useDropzone } from "react-dropzone";
 import { Upload, File, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -21,11 +20,11 @@ export function AttachmentsSection({ supplierQuote, supplierName }: AttachmentsS
   const { user } = useAuth();
 
   // Fetch attachments on initial load
-  useState(() => {
+  useEffect(() => {
     if (supplierQuote.id) {
       fetchAttachments();
     }
-  });
+  }, [supplierQuote.id]);
 
   const fetchAttachments = async () => {
     try {
