@@ -1,4 +1,3 @@
-
 import { ExtraCost, DefaultExtraCost } from "./extraCost";
 import { Saving, DefaultSaving } from "./saving";
 
@@ -31,6 +30,21 @@ export interface QuoteRequest {
   // UPDATED: required_step is now an object from Supabase, not an array
   required_step?: { id: string, step_name: string } | null; // The raw step data from Supabase
   required_step_name?: string | null; // The extracted step name for use in components
+  
+  // New field for attachments
+  attachments?: QuoteRequestAttachment[];
+}
+
+export interface QuoteRequestAttachment {
+  id: string;
+  quote_request_id: string;
+  file_name: string;
+  file_key: string;
+  file_size: number | null;
+  file_type: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface QuoteRequestFormat {

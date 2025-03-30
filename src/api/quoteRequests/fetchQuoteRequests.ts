@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -57,7 +56,8 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
           unit_of_measure_id,
           unit_of_measures(id, name, abbreviation)
         ),
-        required_step:organization_production_steps!quote_requests_required_step_id_fkey(id, step_name)
+        required_step:organization_production_steps!quote_requests_required_step_id_fkey(id, step_name),
+        attachments:quote_request_attachments(*)
       `)
       .eq("organization_id", currentOrganization.id);
 
@@ -163,6 +163,9 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         };
       }) || [];
       
+      // Format the attachments
+      const formattedAttachments = request.attachments || [];
+      
       // Extract the required step name more safely
       // UPDATED: required_step is now an object from Supabase, not an array
       console.log(`Quote Request ${request.reference_id} - required_step:`, request.required_step);
@@ -189,6 +192,7 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         extra_costs: formattedExtraCosts || [],
         savings: formattedSavings || [],
         required_step_name: required_step_name,
+        attachments: formattedAttachments,
       };
 
       // Return as QuoteRequest type after explicit type assertion
