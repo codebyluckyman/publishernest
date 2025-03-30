@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
-import { formatOperations } from "./operations/formatOperations";
+import { handleFormatOperations } from "./operations/formatOperations";
 
 /**
  * Updates an existing quote request
@@ -105,7 +105,7 @@ export async function updateQuoteRequest(
       }
 
       // Handle all format operations in a dedicated function
-      await formatOperations(id, updates.formats, existingFormats || []);
+      await handleFormatOperations(id, updates.formats, existingFormats || []);
     }
     
     // Handle extra costs updates if provided
