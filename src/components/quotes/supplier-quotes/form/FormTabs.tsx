@@ -1,6 +1,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Control } from "react-hook-form";
+import { Control, useWatch } from "react-hook-form";
 import { QuoteDetailsSection } from "./QuoteDetailsSection";
 import { PriceBreaksSection } from "./PriceBreaksSection";
 import { ExtraCostsSection } from "./ExtraCostsSection";
@@ -12,6 +12,7 @@ import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { SavingTableItem } from "@/types/saving";
+import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 
 export function FormTabs({ 
   control, 
@@ -24,7 +25,7 @@ export function FormTabs({
   currencies,
   form
 }: { 
-  control: Control<any>;
+  control: Control<SupplierQuoteFormValues>;
   quoteRequest: QuoteRequest;
   selectedSupplier: Supplier | null;
   activeTab: string;
@@ -34,6 +35,12 @@ export function FormTabs({
   currencies: { label: string; value: string }[];
   form: any;
 }) {
+  // Get the current currency value from the form
+  const currency = useWatch({
+    control,
+    name: "currency"
+  });
+
   return (
     <Tabs 
       defaultValue="details" 
@@ -56,13 +63,20 @@ export function FormTabs({
       </TabsContent>
       
       <TabsContent value="pricing" className="p-6">
-        <PriceBreaksSection control={control} quoteRequest={quoteRequest} />
+        <PriceBreaksSection 
+          control={control} 
+          quoteRequest={quoteRequest} 
+          selectedSupplier={selectedSupplier}
+          currency={currency}
+        />
       </TabsContent>
       
       <TabsContent value="extra-costs" className="p-6">
         <ExtraCostsSection 
           control={control} 
           extraCosts={filteredExtraCosts}
+          currency={currency}
+          formats={quoteRequest.formats}
         />
       </TabsContent>
       
@@ -70,6 +84,8 @@ export function FormTabs({
         <SavingsSection 
           control={control} 
           savings={filteredSavings}
+          currency={currency}
+          formats={quoteRequest.formats}
         />
       </TabsContent>
       

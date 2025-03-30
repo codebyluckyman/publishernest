@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -78,13 +77,10 @@ export function SupplierQuoteForm({
   const [activeTab, setActiveTab] = useState("details");
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   
-  // Use the extra costs and savings directly from the quote request
-  // No need to filter from a larger array
   const [extraCostsForForm, setExtraCostsForForm] = useState<ExtraCostTableItem[]>([]);
   const [savingsForForm, setSavingsForForm] = useState<SavingTableItem[]>([]);
 
   useEffect(() => {
-    // Convert quote request extra costs to the expected ExtraCostTableItem format
     if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0) {
       const formattedExtraCosts = quoteRequest.extra_costs.map(cost => ({
         id: cost.id || "",
@@ -103,7 +99,6 @@ export function SupplierQuoteForm({
       setExtraCostsForForm([]);
     }
 
-    // Convert quote request savings to the expected SavingTableItem format
     if (quoteRequest.savings && quoteRequest.savings.length > 0) {
       const formattedSavings = quoteRequest.savings.map(saving => ({
         id: saving.id || "",
@@ -124,10 +119,6 @@ export function SupplierQuoteForm({
   }, [quoteRequest, currentOrganization]);
 
   useEffect(() => {
-    // IMPORTANT: Make sure to check if production_schedule_requested is true
-    // and that both required_step_id and required_step_date exist
-    // The required_step_name is the step name extracted from the required_step array in fetchQuoteRequests.ts
-    // NEVER try to access required_step directly as it's now an array from Supabase
     if (
       quoteRequest.production_schedule_requested &&
       quoteRequest.required_step_id &&
