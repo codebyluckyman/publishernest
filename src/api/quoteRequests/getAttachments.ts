@@ -14,5 +14,5 @@ export async function getQuoteRequestAttachments(quoteRequestId: string): Promis
     return [];
   }
 
-  return data as QuoteRequestAttachment[];
+  return data as unknown as QuoteRequestAttachment[];
 }

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestAttachment } from "@/types/quoteRequest";
 import { useAuth } from "@/context/AuthContext";
+import { getQuoteRequestAttachments } from "@/api/quoteRequests";
 
 interface AttachmentsSectionProps {
   quoteRequestId: string;
@@ -27,14 +28,8 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
 
   const fetchAttachments = async () => {
     try {
-      const { data, error } = await supabase
-        .from('quote_request_attachments')
-        .select('*')
-        .eq('quote_request_id', quoteRequestId)
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      setAttachments(data || []);
+      const fetchedAttachments = await getQuoteRequestAttachments(quoteRequestId);
+      setAttachments(fetchedAttachments);
     } catch (error) {
       console.error("Error fetching attachments:", error);
       toast.error("Failed to load attachments");
@@ -149,8 +144,6 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">Attachments</h3>
-      
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors 

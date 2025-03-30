@@ -5,3 +5,4 @@ export { updateQuoteRequest } from './updateQuoteRequest';
 export { updateQuoteRequestStatus } from './updateQuoteRequestStatus';
 export { deleteQuoteRequest } from './deleteQuoteRequest';
 export { fetchQuoteRequestAudit, recordQuoteRequestAudit } from './quoteRequestAudit';
+export { getQuoteRequestAttachments } from './getAttachments';

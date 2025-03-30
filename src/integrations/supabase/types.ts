@@ -670,6 +670,50 @@ export type Database = {
           },
         ]
       }
+      quote_request_attachments: {
+        Row: {
+          created_at: string
+          file_key: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          quote_request_id: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_key: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          quote_request_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_key?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          quote_request_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_request_attachments_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_request_audit: {
         Row: {
           action: string
