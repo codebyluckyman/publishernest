@@ -113,6 +113,7 @@ export interface QuoteRequestFormValues {
   production_schedule_requested?: boolean; // New field for production schedule request
   required_step_id?: string | null; // Added optional step ID
   required_step_date?: Date | null; // Added optional step date
+  attachments?: File[]; // New field for file attachments
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
@@ -202,6 +201,40 @@ export async function createQuoteRequest(
       }
     }
 
+    // Process attachments if they exist
+    if (formData.attachments && formData.attachments.length > 0 && quoteRequestData) {
+      for (const file of formData.attachments) {
+        // Upload file to storage
+        const fileName = `${Date.now()}-${file.name}`;
+        const filePath = `quote-requests/${quoteRequestData.id}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('attachments')
+          .upload(filePath, file);
+          
+        if (uploadError) {
+          console.error("Error uploading file:", uploadError);
+          continue; // Continue with other files if one fails
+        }
+        
+        // Add record to database
+        const { error: dbError } = await supabase
+          .from('quote_request_attachments')
+          .insert({
+            quote_request_id: quoteRequestData.id,
+            file_name: file.name,
+            file_key: filePath,
+            file_size: file.size,
+            file_type: file.type,
+            uploaded_by: userId
+          });
+          
+        if (dbError) {
+          console.error("Error adding attachment record:", dbError);
+        }
+      }
+    }
+
     // Record the creation in the audit trail
     await recordQuoteRequestAudit(
       quoteRequestData.id,
@@ -217,4 +250,3 @@ export async function createQuoteRequest(
     throw error;
   }
 }
-

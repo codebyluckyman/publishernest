@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
@@ -8,6 +7,7 @@ import { FormActions } from "./form/FormActions";
 import { ExtraCostsField } from "./form/extra-costs/ExtraCostsField";
 import { SavingsField } from "./form/savings/SavingsField";
 import { ProductionScheduleField } from "./form/ProductionScheduleField";
+import { AttachmentsField } from "./form/AttachmentsField";
 import { Supplier } from "@/types/supplier";
 import { Form } from "@/components/ui/form";
 import { useEffect, useState } from "react";
@@ -35,7 +35,6 @@ export function QuoteRequestForm({
   const { data: formats = [] } = useFormatsForSelect(currentOrganization);
   const [formatNames, setFormatNames] = useState<Record<string, string>>({});
 
-  // Log the initial values to debug what savings data is coming in
   console.log("Quote Request Form initialValues:", initialValues);
   console.log("Savings from initialValues:", initialValues?.savings);
 
@@ -61,16 +60,15 @@ export function QuoteRequestForm({
       production_schedule_requested: initialValues?.production_schedule_requested || false,
       required_step_id: initialValues?.required_step_id || null,
       required_step_date: initialValues?.required_step_date || null,
+      attachments: [],
     },
   });
 
-  // Log the form values after initialization
   useEffect(() => {
     console.log("Form values after initialization:", form.getValues());
     console.log("Savings in form:", form.getValues("savings"));
   }, [form]);
 
-  // Load format names from the formats data
   useEffect(() => {
     if (formats.length > 0) {
       const namesMap: Record<string, string> = {};
@@ -81,7 +79,6 @@ export function QuoteRequestForm({
     }
   }, [formats]);
 
-  // When formats change, update the title
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       if (name?.startsWith('formats') && type === 'change') {
@@ -89,7 +86,6 @@ export function QuoteRequestForm({
         const formatsList = formData.formats || [];
         
         if (formatsList.length > 0) {
-          // Get format names for the selected format IDs
           const selectedFormatNames = formatsList
             .map(format => format.format_id ? formatNames[format.format_id] : null)
             .filter(Boolean);
@@ -105,12 +101,10 @@ export function QuoteRequestForm({
     return () => subscription.unsubscribe();
   }, [form, formatNames]);
 
-  const handleFormSubmit = (data: QuoteRequestFormValues) => {
-    // Set default title if none is provided or if formats are selected
+  const handleFormSubmit = async (data: QuoteRequestFormValues) => {
     if (!data.title || data.formats?.length) {
       const formatsList = data.formats || [];
       if (formatsList.length > 0) {
-        // Get format names for the selected format IDs
         const selectedFormatNames = formatsList
           .map(format => format.format_id ? formatNames[format.format_id] : null)
           .filter(Boolean);
@@ -136,6 +130,7 @@ export function QuoteRequestForm({
         <ExtraCostsField />
         <SavingsField />
         <ProductionScheduleField />
+        <AttachmentsField />
         <BasicFormFields 
           form={form} 
           suppliers={suppliers} 

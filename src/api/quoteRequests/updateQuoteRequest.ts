@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestFormValues, QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
-import { handleFormatOperations } from "./operations/formatOperations";
+import { formatOperations } from "./operations/formatOperations";
 
 /**
  * Updates an existing quote request
@@ -105,7 +105,7 @@ export async function updateQuoteRequest(
       }
 
       // Handle all format operations in a dedicated function
-      await handleFormatOperations(id, updates.formats, existingFormats || []);
+      await formatOperations(id, updates.formats, existingFormats || []);
     }
     
     // Handle extra costs updates if provided
@@ -170,6 +170,40 @@ export async function updateQuoteRequest(
         if (insertError) {
           console.error("Error inserting updated savings:", insertError);
           throw insertError;
+        }
+      }
+    }
+
+    // Process attachments if they exist
+    if (updates.attachments && updates.attachments.length > 0) {
+      for (const file of updates.attachments) {
+        // Upload file to storage
+        const fileName = `${Date.now()}-${file.name}`;
+        const filePath = `quote-requests/${id}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('attachments')
+          .upload(filePath, file);
+          
+        if (uploadError) {
+          console.error("Error uploading file:", uploadError);
+          continue; // Continue with other files if one fails
+        }
+        
+        // Add record to database
+        const { error: dbError } = await supabase
+          .from('quote_request_attachments')
+          .insert({
+            quote_request_id: id,
+            file_name: file.name,
+            file_key: filePath,
+            file_size: file.size,
+            file_type: file.type,
+            uploaded_by: userId
+          });
+          
+        if (dbError) {
+          console.error("Error adding attachment record:", dbError);
         }
       }
     }

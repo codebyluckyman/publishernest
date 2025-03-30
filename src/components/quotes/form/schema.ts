@@ -2,51 +2,53 @@ import { z } from "zod";
 
 export const quoteRequestFormSchema = z.object({
   id: z.string().optional(),
-  title: z.string().optional(),
+  title: z.string().min(1, "Title is required"),
+  supplier_ids: z.array(z.string()).min(1, "At least one supplier must be selected"),
   supplier_id: z.string().optional(),
-  supplier_ids: z.array(z.string()).min(1, "At least one supplier is required"),
   description: z.string().optional(),
   due_date: z.date().optional(),
   notes: z.string().optional(),
   formats: z.array(
     z.object({
-      format_id: z.string().min(1, "Format is required"),
+      format_id: z.string(),
       notes: z.string().optional(),
       products: z.array(
         z.object({
-          product_id: z.string().min(1, "Product is required"),
+          product_id: z.string(),
           quantity: z.number().min(1, "Quantity must be at least 1"),
           notes: z.string().optional(),
         })
-      ).optional().default([]),
+      ).optional(),
       price_breaks: z.array(
         z.object({
           quantity: z.number().min(1, "Quantity must be at least 1"),
         })
-      ).optional().default([]),
-      num_products: z.number().min(1, "Number of products must be at least 1").default(1),
+      ).optional(),
+      num_products: z.number().optional(),
     })
   ).optional(),
+  products: z.record(z.any()).optional(),
+  quantities: z.record(z.any()).optional(),
+  currency: z.string().default("USD"),
+  reference_id: z.string().optional(),
   extra_costs: z.array(
     z.object({
-      name: z.string().min(1, "Cost name is required"),
+      name: z.string().min(1, "Name is required"),
       description: z.string().optional(),
       unit_of_measure_id: z.string().optional(),
     })
   ).optional(),
   savings: z.array(
     z.object({
-      name: z.string().min(1, "Saving name is required"),
+      name: z.string().min(1, "Name is required"),
       description: z.string().optional(),
       unit_of_measure_id: z.string().optional(),
     })
   ).optional(),
-  currency: z.string().default("USD"),
-  products: z.record(z.any()).optional(),
-  quantities: z.record(z.any()).optional(),
-  production_schedule_requested: z.boolean().default(false),
+  production_schedule_requested: z.boolean().optional(),
   required_step_id: z.string().nullable().optional(),
   required_step_date: z.date().nullable().optional(),
+  attachments: z.array(z.any()).optional(),
 });
 
 export type QuoteRequestFormValues = z.infer<typeof quoteRequestFormSchema>;
