@@ -16,7 +16,7 @@ export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, formState, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Start with the section open for better visibility
+  const [isOpen, setIsOpen] = useState(false); // Start with the section closed
   const [libraryOpen, setLibraryOpen] = useState(false);
   
   // Set up the field array for extra_costs
@@ -27,6 +27,13 @@ export function ExtraCostsField() {
   
   // Force re-render when fields change
   const extraCosts = watch("extra_costs");
+  
+  // Open the section when there are costs
+  useEffect(() => {
+    if (extraCosts && extraCosts.length > 0 && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [extraCosts, isOpen]);
   
   // Add default extra costs from organization settings if available
   useEffect(() => {
@@ -56,6 +63,8 @@ export function ExtraCostsField() {
       unit_of_measure_id: cost.unit_of_measure_id || ""
     });
     setLibraryOpen(false);
+    // Ensure the section is open
+    setIsOpen(true);
     toast.success(`Added "${cost.name}" to extra costs`);
   };
 
@@ -77,19 +86,11 @@ export function ExtraCostsField() {
     }, 0);
     
     // Ensure the collapsible is open when adding a new cost
-    if (!isOpen) {
-      setIsOpen(true);
-    }
+    setIsOpen(true);
     
     // Show success toast for better user feedback
     toast.success("New extra cost field added");
   };
-
-  // Debug mount
-  useEffect(() => {
-    console.log("ExtraCostsField mounted");
-    return () => console.log("ExtraCostsField unmounted");
-  }, []);
 
   return (
     <Card className="mt-6">
