@@ -16,7 +16,7 @@ export function SavingsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, formState, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultSavingsAdded, setDefaultSavingsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Start with the section closed
+  const [isOpen, setIsOpen] = useState(false); // Start with the section open for better visibility
   const [libraryOpen, setLibraryOpen] = useState(false);
   
   // Set up the field array for savings
@@ -27,13 +27,6 @@ export function SavingsField() {
   
   // Force re-render when fields change
   const savings = watch("savings");
-  
-  // Open the section when there are savings
-  useEffect(() => {
-    if (savings && savings.length > 0 && !isOpen) {
-      setIsOpen(true);
-    }
-  }, [savings, isOpen]);
   
   // Log savings state for debugging
   useEffect(() => {
@@ -79,8 +72,6 @@ export function SavingsField() {
       description: saving.description || "",
       unit_of_measure_id: saving.unit_of_measure_id || ""
     });
-    // Ensure the section is open
-    setIsOpen(true);
     setLibraryOpen(false);
     toast.success(`Added "${saving.name}" to savings`);
   };
@@ -103,7 +94,9 @@ export function SavingsField() {
     }, 0);
     
     // Ensure the collapsible is open when adding a new saving
-    setIsOpen(true);
+    if (!isOpen) {
+      setIsOpen(true);
+    }
     
     // Show success toast for better user feedback
     toast.success("New saving field added");
