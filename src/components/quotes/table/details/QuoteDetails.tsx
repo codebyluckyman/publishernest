@@ -41,10 +41,7 @@ export function QuoteDetails({
   console.log("Required Step Name:", selectedRequest.required_step_name);
   console.log("Required Step ID:", selectedRequest.required_step_id);
   
-  // IMPORTANT: Get the step name from the required_step_name field
-  // This field is populated in fetchQuoteRequests.ts by extracting from the required_step array
-  // We're referencing the required_step_name here to avoid any issues with array vs. object access
-  // NEVER revert to using required_step directly as it's now an array from Supabase
+  // Using the required_step_name field populated in fetchQuoteRequests.ts
   const stepName = selectedRequest.required_step_name || null;
   
   const handleEdit = () => {

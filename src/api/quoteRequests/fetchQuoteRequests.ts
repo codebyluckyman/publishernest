@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Organization } from "@/types/organization";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -162,15 +163,14 @@ export async function fetchQuoteRequests(params: FetchQuoteRequestsParams): Prom
         };
       }) || [];
       
-      // Extract the required step name more safely from the required_step array
+      // Extract the required step name more safely
+      // UPDATED: required_step is now an object from Supabase, not an array
       console.log(`Quote Request ${request.reference_id} - required_step:`, request.required_step);
       
-      // IMPORTANT: required_step is now an array from Supabase so we need to extract the first element safely
-      const required_step_name = request.required_step && Array.isArray(request.required_step) && request.required_step.length > 0 
-        ? request.required_step[0]?.step_name 
-        : null;
+      // Extract step name from required_step object
+      const required_step_name = request.required_step ? request.required_step.step_name : null;
       
-      console.log(`Quote Request ${request.reference_id} - required_step_name extracted from array:`, required_step_name);
+      console.log(`Quote Request ${request.reference_id} - required_step_name extracted:`, required_step_name);
 
       // Ensure the status is one of the valid enum values
       const validStatus = ['pending', 'approved', 'declined'].includes(request.status) 

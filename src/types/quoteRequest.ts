@@ -1,3 +1,4 @@
+
 import { ExtraCost, DefaultExtraCost } from "./extraCost";
 import { Saving, DefaultSaving } from "./saving";
 
@@ -27,9 +28,8 @@ export interface QuoteRequest {
   required_step_id?: string | null; // Added optional step ID
   required_step_date?: string | null; // Added optional step date
   
-  // IMPORTANT: Supabase returns required_step as an array, but we extract the name into required_step_name
-  // Never use required_step directly in components - always use required_step_name instead
-  required_step?: Array<{ id: string, step_name: string }> | null; // The raw step data from Supabase (array)
+  // UPDATED: required_step is now an object from Supabase, not an array
+  required_step?: { id: string, step_name: string } | null; // The raw step data from Supabase
   required_step_name?: string | null; // The extracted step name for use in components
 }
 
