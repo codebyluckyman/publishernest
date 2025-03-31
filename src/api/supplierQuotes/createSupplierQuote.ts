@@ -63,60 +63,83 @@ export async function createSupplierQuote(
     }
   }
 
-  // Insert extra costs
+  // Insert extra costs price breaks
   if (formData.extra_costs && formData.extra_costs.length > 0) {
-    const extraCostsToInsert = formData.extra_costs.map(ec => ({
-      supplier_quote_id: supplierQuote.id,
-      extra_cost_id: ec.extra_cost_id,
-      unit_cost: ec.unit_cost,
-      // Add multiple unit cost fields for each product
-      unit_cost_1: ec.unit_cost_1,
-      unit_cost_2: ec.unit_cost_2,
-      unit_cost_3: ec.unit_cost_3,
-      unit_cost_4: ec.unit_cost_4,
-      unit_cost_5: ec.unit_cost_5,
-      unit_cost_6: ec.unit_cost_6,
-      unit_cost_7: ec.unit_cost_7,
-      unit_cost_8: ec.unit_cost_8,
-      unit_cost_9: ec.unit_cost_9,
-      unit_cost_10: ec.unit_cost_10
-    }));
+    const extraCostsPriceBreaksToInsert: any[] = [];
+    
+    formData.extra_costs.forEach(ec => {
+      if (ec.price_breaks && ec.price_breaks.length > 0) {
+        ec.price_breaks.forEach(pb => {
+          extraCostsPriceBreaksToInsert.push({
+            supplier_quote_id: supplierQuote.id,
+            extra_cost_id: ec.extra_cost_id,
+            price_break_id: pb.price_break_id,
+            unit_cost: pb.unit_cost,
+            unit_cost_1: pb.unit_cost_1,
+            unit_cost_2: pb.unit_cost_2,
+            unit_cost_3: pb.unit_cost_3,
+            unit_cost_4: pb.unit_cost_4,
+            unit_cost_5: pb.unit_cost_5,
+            unit_cost_6: pb.unit_cost_6,
+            unit_cost_7: pb.unit_cost_7,
+            unit_cost_8: pb.unit_cost_8,
+            unit_cost_9: pb.unit_cost_9,
+            unit_cost_10: pb.unit_cost_10
+          });
+        });
+      }
+    });
 
-    const { error: extraCostsError } = await supabase
-      .from("supplier_quote_extra_costs")
-      .insert(extraCostsToInsert);
+    if (extraCostsPriceBreaksToInsert.length > 0) {
+      const { error: extraCostsError } = await supabase
+        .from("supplier_quote_extra_costs_price_breaks")
+        .insert(extraCostsPriceBreaksToInsert);
 
-    if (extraCostsError) {
-      throw new Error(`Error inserting extra costs: ${extraCostsError.message}`);
+      if (extraCostsError) {
+        throw new Error(`Error inserting extra costs price breaks: ${extraCostsError.message}`);
+      }
     }
   }
 
-  // Insert savings
+  // Insert savings price breaks
   if (formData.savings && formData.savings.length > 0) {
-    const savingsToInsert = formData.savings.map(s => ({
-      supplier_quote_id: supplierQuote.id,
-      saving_id: s.saving_id,
-      unit_cost: s.unit_cost,
-      notes: s.notes || null,
-      // Add all unit cost fields for multiple products
-      unit_cost_1: s.unit_cost_1,
-      unit_cost_2: s.unit_cost_2,
-      unit_cost_3: s.unit_cost_3,
-      unit_cost_4: s.unit_cost_4,
-      unit_cost_5: s.unit_cost_5,
-      unit_cost_6: s.unit_cost_6,
-      unit_cost_7: s.unit_cost_7,
-      unit_cost_8: s.unit_cost_8,
-      unit_cost_9: s.unit_cost_9,
-      unit_cost_10: s.unit_cost_10
-    }));
+    const savingsPriceBreaksToInsert: any[] = [];
+    
+    formData.savings.forEach(s => {
+      // Keep track of notes for each saving
+      const notes = s.notes || null;
+      
+      if (s.price_breaks && s.price_breaks.length > 0) {
+        s.price_breaks.forEach(pb => {
+          savingsPriceBreaksToInsert.push({
+            supplier_quote_id: supplierQuote.id,
+            saving_id: s.saving_id,
+            price_break_id: pb.price_break_id,
+            unit_cost: pb.unit_cost,
+            notes: notes,
+            unit_cost_1: pb.unit_cost_1,
+            unit_cost_2: pb.unit_cost_2,
+            unit_cost_3: pb.unit_cost_3,
+            unit_cost_4: pb.unit_cost_4,
+            unit_cost_5: pb.unit_cost_5,
+            unit_cost_6: pb.unit_cost_6,
+            unit_cost_7: pb.unit_cost_7,
+            unit_cost_8: pb.unit_cost_8,
+            unit_cost_9: pb.unit_cost_9,
+            unit_cost_10: pb.unit_cost_10
+          });
+        });
+      }
+    });
 
-    const { error: savingsError } = await supabase
-      .from("supplier_quote_savings")
-      .insert(savingsToInsert);
+    if (savingsPriceBreaksToInsert.length > 0) {
+      const { error: savingsError } = await supabase
+        .from("supplier_quote_savings_price_breaks")
+        .insert(savingsPriceBreaksToInsert);
 
-    if (savingsError) {
-      throw new Error(`Error inserting savings: ${savingsError.message}`);
+      if (savingsError) {
+        throw new Error(`Error inserting savings price breaks: ${savingsError.message}`);
+      }
     }
   }
 

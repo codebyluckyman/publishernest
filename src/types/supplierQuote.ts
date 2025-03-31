@@ -1,9 +1,5 @@
 
-import { QuoteRequest, QuoteRequestFormat, PriceBreak, QuoteRequestFormatProduct } from "./quoteRequest";
-import { ExtraCost } from "./extraCost";
-import { Saving } from "./saving";
-
-export type SupplierQuoteStatus = 'draft' | 'submitted' | 'accepted' | 'declined';
+export interface SupplierQuoteStatus = 'draft' | 'submitted' | 'accepted' | 'declined';
 
 export interface SupplierQuote {
   id: string;
