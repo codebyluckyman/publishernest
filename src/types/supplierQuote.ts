@@ -1,5 +1,4 @@
-
-export interface SupplierQuoteStatus = 'draft' | 'submitted' | 'accepted' | 'declined';
+export type SupplierQuoteStatus = 'draft' | 'submitted' | 'accepted' | 'declined';
 
 export interface SupplierQuote {
   id: string;
