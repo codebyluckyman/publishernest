@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -77,6 +76,7 @@ interface SupplierQuoteFormProps {
   onSupplierChange: (supplierId: string) => void;
   createdQuoteId: string | null;
   onDone?: () => void;
+  onExistingQuoteFound?: (quoteId: string) => void;
 }
 
 export function SupplierQuoteForm({
@@ -87,7 +87,8 @@ export function SupplierQuoteForm({
   onCancel,
   onSupplierChange,
   createdQuoteId,
-  onDone
+  onDone,
+  onExistingQuoteFound
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
@@ -238,6 +239,7 @@ export function SupplierQuoteForm({
           suppliers={suppliers}
           loadingSuppliers={loadingSuppliers}
           form={form}
+          onExistingQuoteFound={onExistingQuoteFound}
         />
         
         <FormTabs 

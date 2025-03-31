@@ -7,6 +7,7 @@ import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
 import { useOrganization } from "@/context/OrganizationContext";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 interface SupplierQuoteDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
   const createMutation = useCreateSupplierQuote();
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
   const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Initialize the form with the selected supplier
   useEffect(() => {
@@ -61,6 +63,11 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
     });
   };
 
+  const handleExistingQuoteFound = (quoteId: string) => {
+    // We don't need to do anything here as the dialog will be shown by the SupplierSelect component
+    console.log("Existing quote found:", quoteId);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] max-h-[95vh] overflow-hidden">
@@ -88,6 +95,7 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
               onSupplierChange={setSelectedSupplierId}
               createdQuoteId={createdQuoteId}
               onDone={() => onOpenChange(false)}
+              onExistingQuoteFound={handleExistingQuoteFound}
             />
           </div>
         </ScrollArea>

@@ -7,3 +7,4 @@ export { submitSupplierQuote } from './submitSupplierQuote';
 export { recordSupplierQuoteAudit, fetchSupplierQuoteAudit } from './supplierQuoteAudit';
 export { acceptSupplierQuote, declineSupplierQuote } from './supplierQuoteStatusUpdate';
 export { getSupplierQuoteAttachments } from './getAttachments';
+export { checkExistingQuote } from './checkExistingQuote';
