@@ -1,4 +1,3 @@
-
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { useEffect, useState } from "react";
@@ -29,7 +28,7 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     name: "supplier_id"
   });
   
-  // Initialize savings when supplier changes
+  // Initialize savings when supplier changes, but preserve existing values
   useEffect(() => {
     if (!savings || savings.length === 0 || !supplierId) {
       replace([]);
@@ -45,28 +44,42 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
       })) || []
     ) || [];
     
-    const newSavings = savings.map(saving => ({
-      saving_id: saving.id || "",
-      notes: "",
-      price_breaks: allPriceBreaks.map(priceBreak => ({
-        price_break_id: priceBreak.id || "",
-        unit_cost: null,
-        // Add multiple unit costs for each product
-        unit_cost_1: null,
-        unit_cost_2: null,
-        unit_cost_3: null,
-        unit_cost_4: null,
-        unit_cost_5: null,
-        unit_cost_6: null,
-        unit_cost_7: null,
-        unit_cost_8: null,
-        unit_cost_9: null,
-        unit_cost_10: null,
-      }))
-    }));
+    // Get current form values to preserve them
+    const currentValues = control._formValues.savings || [];
+    
+    const newSavings = savings.map(saving => {
+      // Find existing saving data if it exists
+      const existingSaving = currentValues.find(s => s.saving_id === saving.id);
+      
+      if (existingSaving) {
+        // If the saving already exists, preserve its values
+        return existingSaving;
+      }
+      
+      // Otherwise create a new entry
+      return {
+        saving_id: saving.id || "",
+        notes: "",
+        price_breaks: allPriceBreaks.map(priceBreak => ({
+          price_break_id: priceBreak.id || "",
+          unit_cost: null,
+          // Add multiple unit costs for each product
+          unit_cost_1: null,
+          unit_cost_2: null,
+          unit_cost_3: null,
+          unit_cost_4: null,
+          unit_cost_5: null,
+          unit_cost_6: null,
+          unit_cost_7: null,
+          unit_cost_8: null,
+          unit_cost_9: null,
+          unit_cost_10: null,
+        }))
+      };
+    });
     
     replace(newSavings);
-  }, [supplierId, savings, replace, quoteRequest.formats]);
+  }, [supplierId, savings, replace, quoteRequest.formats, control._formValues.savings]);
 
   const handleOpenChange = (index: number, isOpen: boolean) => {
     setOpenItems(prev => ({
