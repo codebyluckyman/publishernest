@@ -99,12 +99,11 @@ export function SavingItem({
                               
                             return (
                               <div key={priceBreak.id} className="mb-4 last:mb-0">
-                                <p className="text-xs font-medium text-muted-foreground mb-2">
-                                  Quantity: {priceBreak.quantity.toLocaleString()}
-                                </p>
-                                
                                 {showMultiProducts ? (
-                                  <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-2">
+                                  <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2">
+                                    <div className="flex items-center">
+                                      <span className="text-xs text-muted-foreground">{priceBreak.quantity.toLocaleString()}</span>
+                                    </div>
                                     {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
                                       <div key={prodIndex} className="flex flex-col">
                                         <span className="text-xs text-muted-foreground mb-1">Product {prodIndex}</span>
@@ -135,29 +134,34 @@ export function SavingItem({
                                     ))}
                                   </div>
                                 ) : (
-                                  <FormField
-                                    control={control}
-                                    name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input
-                                            type="number"
-                                            step="0.001"
-                                            min="0"
-                                            placeholder="0.000"
-                                            className="h-8 text-sm px-2 w-full max-w-xs"
-                                            {...field}
-                                            onChange={(e) => {
-                                              const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
-                                              field.onChange(value);
-                                            }}
-                                            value={field.value === null ? "" : field.value}
-                                          />
-                                        </FormControl>
-                                      </FormItem>
-                                    )}
-                                  />
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex items-center">
+                                      <span className="text-xs text-muted-foreground">{priceBreak.quantity.toLocaleString()}</span>
+                                    </div>
+                                    <FormField
+                                      control={control}
+                                      name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              step="0.001"
+                                              min="0"
+                                              placeholder="0.000"
+                                              className="h-8 text-sm px-2 w-full max-w-xs"
+                                              {...field}
+                                              onChange={(e) => {
+                                                const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
+                                                field.onChange(value);
+                                              }}
+                                              value={field.value === null ? "" : field.value}
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
                                 )}
                               </div>
                             );
