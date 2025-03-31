@@ -109,7 +109,7 @@ export function ExtraCostItem({
                                                   step="0.001"
                                                   min="0"
                                                   placeholder="0.000"
-                                                  className="h-8 text-sm px-2"
+                                                  className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
                                                   {...field}
                                                   onChange={(e) => {
                                                     const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
@@ -140,7 +140,7 @@ export function ExtraCostItem({
                                               step="0.001"
                                               min="0"
                                               placeholder="0.000"
-                                              className="h-8 text-sm px-2 w-full max-w-xs"
+                                              className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
                                               {...field}
                                               onChange={(e) => {
                                                 const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
