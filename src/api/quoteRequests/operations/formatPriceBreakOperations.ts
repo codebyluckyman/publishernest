@@ -12,32 +12,26 @@ export async function updateFormatPriceBreaks(
 ): Promise<void> {
   if (!priceBreaks) return;
 
-  // First, delete existing price breaks for this format
-  const { error: deletePriceBreaksError } = await supabase
-    .from("quote_request_format_price_breaks")
-    .delete()
-    .eq("quote_request_format_id", formatId);
+  try {
+    // Convert priceBreaks to JSON format for our new function
+    const priceBreaksJson = JSON.stringify(priceBreaks);
+    
+    // Call the new database function that handles updates safely
+    const { error } = await supabase.rpc(
+      'update_format_price_breaks',
+      {
+        formatid: formatId,
+        pricebreaks: priceBreaksJson,
+        numproducts: numProducts
+      }
+    );
 
-  if (deletePriceBreaksError) {
-    console.error("Error deleting existing price breaks:", deletePriceBreaksError);
-    throw deletePriceBreaksError;
-  }
-
-  // Insert new price breaks if any are specified
-  if (priceBreaks.length > 0) {
-    const priceBreakEntries = priceBreaks.map(priceBreak => ({
-      quote_request_format_id: formatId,
-      quantity: priceBreak.quantity,
-      num_products: numProducts
-    }));
-
-    const { error: insertPriceBreakError } = await supabase
-      .from("quote_request_format_price_breaks")
-      .insert(priceBreakEntries);
-
-    if (insertPriceBreakError) {
-      console.error("Error inserting price breaks:", insertPriceBreakError);
-      throw insertPriceBreakError;
+    if (error) {
+      console.error("Error updating price breaks:", error);
+      throw error;
     }
+  } catch (error) {
+    console.error("Error in updateFormatPriceBreaks:", error);
+    throw error;
   }
 }

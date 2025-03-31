@@ -1996,6 +1996,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_format_price_breaks: {
+        Args: {
+          formatid: string
+          pricebreaks: Json
+          numproducts?: number
+        }
+        Returns: undefined
+      }
       update_quote_request_format_products: {
         Args: {
           format_id: string

@@ -1,54 +1,88 @@
 import { z } from "zod";
 
+// Define schemas for nested objects
+const productSchema = z.object({
+  product_id: z.string().min(1, { message: "Product ID is required" }),
+  quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
+  notes: z.string().optional(),
+});
+
+const priceBreakSchema = z.object({
+  quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
+});
+
+// Main schema for Quote Request Form
 export const quoteRequestFormSchema = z.object({
-  id: z.string().optional(),
-  title: z.string().min(1, "Title is required"),
-  supplier_ids: z.array(z.string()).min(1, "At least one supplier must be selected"),
-  supplier_id: z.string().optional(),
+  title: z.string().min(3, { message: "Title must be at least 3 characters" }),
+  supplier_ids: z.string().array().nonempty({ message: "At least one supplier must be selected" }),
   description: z.string().optional(),
   due_date: z.date().optional(),
   notes: z.string().optional(),
   formats: z.array(
     z.object({
-      format_id: z.string(),
+      format_id: z.string().min(1, { message: "Format is required" }),
       notes: z.string().optional(),
-      products: z.array(
-        z.object({
-          product_id: z.string(),
-          quantity: z.number().min(1, "Quantity must be at least 1"),
-          notes: z.string().optional(),
-        })
-      ).optional(),
-      price_breaks: z.array(
-        z.object({
-          quantity: z.number().min(1, "Quantity must be at least 1"),
-        })
-      ).optional(),
+      products: z.array(productSchema).optional(),
+      price_breaks: z.array(priceBreakSchema).optional(),
       num_products: z.number().optional(),
     })
   ).optional(),
   products: z.record(z.any()).optional(),
   quantities: z.record(z.any()).optional(),
-  currency: z.string().default("USD"),
+  extra_costs: z.array(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    unit_of_measure_id: z.string().optional()
+  })).optional(),
+  savings: z.array(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    unit_of_measure_id: z.string().optional()
+  })).optional(),
+  currency: z.string().optional(),
   reference_id: z.string().optional(),
-  extra_costs: z.array(
-    z.object({
-      name: z.string().min(1, "Name is required"),
-      description: z.string().optional(),
-      unit_of_measure_id: z.string().optional(),
-    })
-  ).optional(),
-  savings: z.array(
-    z.object({
-      name: z.string().min(1, "Name is required"),
-      description: z.string().optional(),
-      unit_of_measure_id: z.string().optional(),
-    })
-  ).optional(),
-  production_schedule_requested: z.boolean().optional(),
+  production_schedule_requested: z.boolean().default(false),
   required_step_id: z.string().nullable().optional(),
   required_step_date: z.date().nullable().optional(),
-  attachments: z.array(z.any()).optional(),
+  attachments: z.any().optional()
 });
 
-export type QuoteRequestFormValues = z.infer<typeof quoteRequestFormSchema>;
+export interface QuoteRequestFormValues {
+  title: string;
+  supplier_ids: string[];
+  description?: string;
+  due_date?: Date;
+  notes?: string;
+  formats?: {
+    format_id: string;
+    notes?: string;
+    products?: {
+      product_id: string;
+      quantity: number;
+      notes?: string;
+    }[];
+    price_breaks?: {
+      id?: string; // Add the ID field to preserve it when editing
+      quantity: number;
+    }[];
+    num_products?: number;
+  }[];
+  products?: Record<string, any>;
+  quantities?: Record<string, any>;
+  extra_costs?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
+  savings?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
+  currency?: string;
+  reference_id?: string;
+  production_schedule_requested?: boolean;
+  required_step_id?: string | null;
+  required_step_date?: Date | null;
+  attachments?: File[];
+}

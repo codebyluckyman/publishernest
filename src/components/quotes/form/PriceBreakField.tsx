@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 interface PriceBreakFieldProps {
   control: Control<QuoteRequestFormValues>;
   formatIndex: number;
-  priceBreakIndex: number; // Added this prop to specify which price break we're editing
+  priceBreakIndex: number;
   onRemove: () => void;
 }
 
@@ -18,6 +18,15 @@ export function PriceBreakField({ control, formatIndex, priceBreakIndex, onRemov
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-3 flex items-center justify-between">
+        {/* Hidden field to preserve the ID when editing */}
+        <FormField
+          control={control}
+          name={`formats.${formatIndex}.price_breaks.${priceBreakIndex}.id`}
+          render={({ field }) => (
+            <input type="hidden" {...field} />
+          )}
+        />
+        
         <FormField
           control={control}
           name={`formats.${formatIndex}.price_breaks.${priceBreakIndex}.quantity`}
