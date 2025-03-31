@@ -1,11 +1,13 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SavingItem } from "./SavingItem";
 import { SavingTableItem } from "@/types/saving";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 import { QuoteRequest } from "@/types/quoteRequest";
+import { CollapsibleSection } from "../CollapsibleSection";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface SavingsSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -25,6 +27,9 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     control,
     name: "supplier_id"
   });
+  
+  // Add state for the collapsible section with default closed
+  const [isOpen, setIsOpen] = useState(false);
   
   // Initialize savings when supplier changes
   useEffect(() => {
@@ -96,50 +101,57 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
   const sortedPriceBreaks = allPriceBreaks.sort((a, b) => a.quantity - b.quantity);
   
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Savings</h3>
-        <div className="text-md font-medium">
-          Unit Costs <span className="text-muted-foreground">({currencySymbol})</span>
-        </div>
-      </div>
-      
-      {/* Display product numbers header at the top if needed */}
-      {showMultiProducts && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
-          <div className="md:col-span-4">
-            {/* Empty space for saving names */}
+    <CollapsibleSection
+      title="Savings"
+      isOpen={isOpen}
+      onOpenChange={setIsOpen}
+      isEmpty={fields.length === 0}
+      emptyMessage="No savings were requested for this quote request."
+    >
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-md font-medium">
+            Unit Costs <span className="text-muted-foreground">({currencySymbol})</span>
           </div>
-          <div className="md:col-span-8">
-            <div className="grid grid-cols-10 gap-1">
-              {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
-                <div key={i} className="text-center">
-                  <span className="text-xs font-medium text-muted-foreground">Product {i}</span>
-                </div>
-              ))}
+        </div>
+        
+        {/* Display product numbers header at the top if needed */}
+        {showMultiProducts && (
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
+            <div className="md:col-span-4">
+              {/* Empty space for saving names */}
+            </div>
+            <div className="md:col-span-8">
+              <div className="grid grid-cols-10 gap-1">
+                {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
+                  <div key={i} className="text-center">
+                    <span className="text-xs font-medium text-muted-foreground">Product {i}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        )}
+        
+        <div className="space-y-4">
+          {fields.map((field, index) => {
+            const saving = savings.find(saving => saving.id === field.saving_id);
+            if (!saving) return null;
+            
+            return (
+              <SavingItem 
+                key={field.id}
+                control={control}
+                index={index}
+                saving={saving}
+                showMultiProducts={showMultiProducts}
+                maxNumProducts={maxNumProducts}
+                priceBreaks={sortedPriceBreaks}
+              />
+            );
+          })}
         </div>
-      )}
-      
-      <div className="space-y-4">
-        {fields.map((field, index) => {
-          const saving = savings.find(saving => saving.id === field.saving_id);
-          if (!saving) return null;
-          
-          return (
-            <SavingItem 
-              key={field.id}
-              control={control}
-              index={index}
-              saving={saving}
-              showMultiProducts={showMultiProducts}
-              maxNumProducts={maxNumProducts}
-              priceBreaks={sortedPriceBreaks}
-            />
-          );
-        })}
       </div>
-    </div>
+    </CollapsibleSection>
   );
 }

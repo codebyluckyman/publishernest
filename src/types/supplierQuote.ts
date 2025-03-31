@@ -1,3 +1,7 @@
+import { QuoteRequest } from "./quoteRequest";
+import { ExtraCostTableItem } from "./extraCost";
+import { SavingTableItem } from "./saving";
+
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'accepted' | 'declined';
 
 export interface SupplierQuote {
@@ -114,7 +118,7 @@ export interface SupplierQuoteExtraCost {
   unit_cost_10: number | null;
   
   // Joined fields
-  extra_cost?: ExtraCost;
+  extra_cost?: ExtraCostTableItem;
 }
 
 export interface SupplierQuoteExtraCostPriceBreak {
@@ -162,7 +166,7 @@ export interface SupplierQuoteSaving {
   unit_cost_10: number | null;
   
   // Joined fields
-  saving?: Saving;
+  saving?: SavingTableItem;
 }
 
 export interface SupplierQuoteSavingPriceBreak {
