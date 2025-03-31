@@ -39,7 +39,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead className="text-right">Cost</TableHead>
             </TableRow>
           </TableHeader>
@@ -47,7 +47,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
             {quote.extra_costs.map((extraCost) => (
               <TableRow key={extraCost.id}>
                 <TableCell>{extraCost.extra_cost?.description || 'Unknown'}</TableCell>
-                <TableCell>{extraCost.extra_cost?.category || 'N/A'}</TableCell>
+                <TableCell>{extraCost.extra_cost?.name || 'N/A'}</TableCell>
                 <TableCell className="text-right">
                   {extraCost.unit_cost 
                     ? `${quote.currency} ${extraCost.unit_cost.toFixed(2)}`

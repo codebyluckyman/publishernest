@@ -43,7 +43,7 @@ export function QuoteHeader({ quote, onEdit, onShowHistory }: QuoteHeaderProps) 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <CardTitle className="text-xl">
-              {quote.quote_request?.name || 'Quote'}
+              {quote.quote_request?.title || 'Quote'}
               <Badge className={`ml-2 ${getStatusColor(quote.status)}`}>
                 {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
               </Badge>

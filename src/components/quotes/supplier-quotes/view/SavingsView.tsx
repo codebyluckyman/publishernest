@@ -39,7 +39,7 @@ export function SavingsView({ quote }: SavingsViewProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Notes</TableHead>
             </TableRow>
@@ -48,7 +48,7 @@ export function SavingsView({ quote }: SavingsViewProps) {
             {quote.savings.map((saving) => (
               <TableRow key={saving.id}>
                 <TableCell>{saving.saving?.description || 'Unknown'}</TableCell>
-                <TableCell>{saving.saving?.category || 'N/A'}</TableCell>
+                <TableCell>{saving.saving?.name || 'N/A'}</TableCell>
                 <TableCell className="text-right">
                   {saving.unit_cost 
                     ? `${quote.currency} ${saving.unit_cost.toFixed(2)}`
