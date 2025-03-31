@@ -1,3 +1,4 @@
+
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { useEffect, useState } from "react";
@@ -28,12 +29,14 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     name: "supplier_id"
   });
   
+  // Initialize extra costs when supplier changes
   useEffect(() => {
     if (!extraCosts || extraCosts.length === 0 || !supplierId) {
       replace([]);
       return;
     }
     
+    // Get all price breaks from the quote request
     const allPriceBreaks = quoteRequest.formats?.flatMap(format => 
       format.price_breaks?.map(pb => ({
         ...pb,
@@ -42,36 +45,27 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
       })) || []
     ) || [];
     
-    const currentValues = control._formValues.extra_costs || [];
-    
-    const newExtraCosts = extraCosts.map(cost => {
-      const existingCost = currentValues.find(c => c.extra_cost_id === cost.id);
-      
-      if (existingCost) {
-        return existingCost;
-      }
-      
-      return {
-        extra_cost_id: cost.id || "",
-        price_breaks: allPriceBreaks.map(priceBreak => ({
-          price_break_id: priceBreak.id || "",
-          unit_cost: null,
-          unit_cost_1: null,
-          unit_cost_2: null,
-          unit_cost_3: null,
-          unit_cost_4: null,
-          unit_cost_5: null,
-          unit_cost_6: null,
-          unit_cost_7: null,
-          unit_cost_8: null,
-          unit_cost_9: null,
-          unit_cost_10: null,
-        }))
-      };
-    });
+    const newExtraCosts = extraCosts.map(cost => ({
+      extra_cost_id: cost.id || "",
+      price_breaks: allPriceBreaks.map(priceBreak => ({
+        price_break_id: priceBreak.id || "",
+        unit_cost: null,
+        // Add multiple unit costs for each product
+        unit_cost_1: null,
+        unit_cost_2: null,
+        unit_cost_3: null,
+        unit_cost_4: null,
+        unit_cost_5: null,
+        unit_cost_6: null,
+        unit_cost_7: null,
+        unit_cost_8: null,
+        unit_cost_9: null,
+        unit_cost_10: null,
+      }))
+    }));
     
     replace(newExtraCosts);
-  }, [supplierId, extraCosts, replace, quoteRequest.formats, control._formValues.extra_costs]);
+  }, [supplierId, extraCosts, replace, quoteRequest.formats]);
   
   const handleOpenChange = (index: number, isOpen: boolean) => {
     setOpenItems(prev => ({
@@ -88,14 +82,17 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     );
   }
 
+  // Get the maximum number of products across all formats
   const maxNumProducts = formats && formats.length > 0 
     ? Math.max(...formats.map(format => format.num_products || 1)) 
     : 1;
   
+  // Determine if we need to show multiple product columns
   const showMultiProducts = maxNumProducts > 1;
   
   const currencySymbol = getSymbolForCurrency(currency);
   
+  // Get all price breaks from the quote request for displaying
   const allPriceBreaks = quoteRequest.formats?.flatMap(format => 
     format.price_breaks?.map(pb => ({
       ...pb,
@@ -104,6 +101,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     })) || []
   ) || [];
   
+  // Sort price breaks by quantity in ascending order
   const sortedPriceBreaks = allPriceBreaks.sort((a, b) => a.quantity - b.quantity);
   
   return (
