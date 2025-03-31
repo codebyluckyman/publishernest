@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useOrganization } from "@/context/OrganizationContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Building } from "lucide-react";
+import { useOrganizationApi } from "@/hooks/useOrganizationApi";
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -15,6 +16,41 @@ const ProfilePage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const { updateOrganizationSetting } = useOrganizationApi(user?.id);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        try {
+          setIsLoadingProfile(true);
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, job_title')
+            .eq('id', user.id)
+            .single();
+
+          if (error) throw error;
+          
+          if (data) {
+            setFirstName(data.first_name || "");
+            setLastName(data.last_name || "");
+            setJobTitle(data.job_title || "");
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          toast.error("Failed to load profile information");
+        } finally {
+          setIsLoadingProfile(false);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +83,31 @@ const ProfilePage = () => {
     }
   };
 
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          job_title: jobTitle
+        })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      toast.success("Profile updated successfully");
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.message || "Failed to update profile");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Profile</h1>
@@ -59,12 +120,60 @@ const ProfilePage = () => {
             <CardDescription>Your account details</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Email</p>
-                <p className="text-base">{user?.email}</p>
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user?.email || ""}
+                  disabled
+                  className="bg-muted"
+                />
               </div>
-            </div>
+
+              <div className="space-y-2">
+                <label htmlFor="firstName" className="text-sm font-medium">
+                  First Name
+                </label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter your first name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="lastName" className="text-sm font-medium">
+                  Last Name
+                </label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Enter your last name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="jobTitle" className="text-sm font-medium">
+                  Job Title
+                </label>
+                <Input
+                  id="jobTitle"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  placeholder="Enter your job title"
+                />
+              </div>
+
+              <Button type="submit" disabled={isUpdating || isLoadingProfile}>
+                {isUpdating ? "Updating..." : "Update Profile"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
