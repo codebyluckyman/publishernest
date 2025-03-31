@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -71,24 +72,28 @@ interface SupplierQuoteFormProps {
   quoteRequest: QuoteRequest;
   initialValues: SupplierQuoteFormValues;
   onSubmit: (data: SupplierQuoteFormValues) => void;
+  onFinalSubmit?: () => void;
   isSubmitting: boolean;
   onCancel: () => void;
   onSupplierChange: (supplierId: string) => void;
   createdQuoteId: string | null;
   onDone?: () => void;
   onFormChange?: (hasChanges: boolean) => void;
+  setCurrentFormData?: (data: SupplierQuoteFormValues) => void;
 }
 
 export function SupplierQuoteForm({
   quoteRequest,
   initialValues,
   onSubmit,
+  onFinalSubmit,
   isSubmitting,
   onCancel,
   onSupplierChange,
   createdQuoteId,
   onDone,
-  onFormChange
+  onFormChange,
+  setCurrentFormData
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
@@ -97,6 +102,7 @@ export function SupplierQuoteForm({
   
   const [extraCostsForForm, setExtraCostsForForm] = useState<ExtraCostTableItem[]>([]);
   const [savingsForForm, setSavingsForForm] = useState<SavingTableItem[]>([]);
+  const [isFormComplete, setIsFormComplete] = useState(false);
 
   useEffect(() => {
     if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0) {
@@ -211,20 +217,39 @@ export function SupplierQuoteForm({
 
   useEffect(() => {
     const subscription = form.watch(() => {
+      // Check if form has changes
       if (onFormChange && form.formState.isDirty) {
         onFormChange(true);
       }
+      
+      // Store current form data
+      if (setCurrentFormData) {
+        setCurrentFormData(form.getValues());
+      }
+      
+      // Check if form is valid for submission
+      // For this example, we'll consider the form ready for submission if all price breaks have values
+      const values = form.getValues();
+      const priceBreaksComplete = values.price_breaks?.every(pb => pb.unit_cost !== null);
+      
+      setIsFormComplete(!!priceBreaksComplete && createdQuoteId !== null);
     });
     
     return () => subscription.unsubscribe();
-  }, [form, onFormChange]);
+  }, [form, onFormChange, setCurrentFormData, createdQuoteId]);
 
   const handleSubmit = (data: SupplierQuoteFormValues) => {
     onSubmit(data);
   };
 
   if (createdQuoteId) {
-    return <SuccessView createdQuoteId={createdQuoteId} onDone={onDone} />;
+    return <SuccessView 
+      createdQuoteId={createdQuoteId} 
+      onDone={onDone} 
+      onSubmit={onFinalSubmit}
+      isSubmitReady={isFormComplete}
+      isSubmitting={isSubmitting}
+    />;
   }
 
   const currencies = [

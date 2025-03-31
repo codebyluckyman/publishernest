@@ -7,6 +7,7 @@ import { SavingTableItem } from "@/types/saving";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { CollapsibleSection } from "../CollapsibleSection";
+import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
 interface SavingsSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -29,6 +30,8 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     name: "supplier_id"
   });
   
+  const { unitOfMeasures } = useUnitOfMeasures();
+  
   // Initialize savings when supplier changes
   useEffect(() => {
     if (!savings || savings.length === 0 || !supplierId) {
@@ -45,28 +48,34 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
       })) || []
     ) || [];
     
-    const newSavings = savings.map(saving => ({
-      saving_id: saving.id || "",
-      notes: "",
-      price_breaks: allPriceBreaks.map(priceBreak => ({
-        price_break_id: priceBreak.id || "",
-        unit_cost: null,
-        // Add multiple unit costs for each product
-        unit_cost_1: null,
-        unit_cost_2: null,
-        unit_cost_3: null,
-        unit_cost_4: null,
-        unit_cost_5: null,
-        unit_cost_6: null,
-        unit_cost_7: null,
-        unit_cost_8: null,
-        unit_cost_9: null,
-        unit_cost_10: null,
-      }))
-    }));
+    const newSavings = savings.map(saving => {
+      // Check if this is an inventory unit
+      const unitOfMeasure = unitOfMeasures?.find(u => u.id === saving.unit_of_measure_id);
+      const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
+      
+      return {
+        saving_id: saving.id || "",
+        notes: "",
+        price_breaks: allPriceBreaks.map(priceBreak => ({
+          price_break_id: priceBreak.id || "",
+          unit_cost: null,
+          // Add multiple unit costs for each product
+          unit_cost_1: null,
+          unit_cost_2: null,
+          unit_cost_3: null,
+          unit_cost_4: null,
+          unit_cost_5: null,
+          unit_cost_6: null,
+          unit_cost_7: null,
+          unit_cost_8: null,
+          unit_cost_9: null,
+          unit_cost_10: null,
+        }))
+      };
+    });
     
     replace(newSavings);
-  }, [supplierId, savings, replace, quoteRequest.formats]);
+  }, [supplierId, savings, replace, quoteRequest.formats, unitOfMeasures]);
 
   const handleOpenChange = (savingId: string, isOpen: boolean) => {
     setOpenItems(prev => ({
@@ -125,7 +134,7 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
       <div>
         <div className="flex justify-between items-center mb-4">
           <div className="text-md font-medium">
-            Unit Savings <span className="text-muted-foreground">({currencySymbol})</span>
+            {currencySymbol} Savings
           </div>
         </div>
         

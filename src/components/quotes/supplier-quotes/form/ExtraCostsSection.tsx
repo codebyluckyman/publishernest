@@ -7,6 +7,7 @@ import { ExtraCostTableItem } from "@/types/extraCost";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { CollapsibleSection } from "../CollapsibleSection";
+import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
 interface ExtraCostsSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -29,6 +30,8 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     name: "supplier_id"
   });
   
+  const { unitOfMeasures } = useUnitOfMeasures();
+  
   // Initialize extra costs when supplier changes
   useEffect(() => {
     if (!extraCosts || extraCosts.length === 0 || !supplierId) {
@@ -45,28 +48,34 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
       })) || []
     ) || [];
     
-    const newExtraCosts = extraCosts.map(cost => ({
-      extra_cost_id: cost.id || "",
-      price_breaks: allPriceBreaks.map(priceBreak => ({
-        price_break_id: priceBreak.id || "",
-        unit_cost: null,
-        // Add multiple unit costs for each product
-        unit_cost_1: null,
-        unit_cost_2: null,
-        unit_cost_3: null,
-        unit_cost_4: null,
-        unit_cost_5: null,
-        unit_cost_6: null,
-        unit_cost_7: null,
-        unit_cost_8: null,
-        unit_cost_9: null,
-        unit_cost_10: null,
-      }))
-    }));
+    const newExtraCosts = extraCosts.map(cost => {
+      // Check if this is an inventory unit
+      const unitOfMeasure = unitOfMeasures?.find(u => u.id === cost.unit_of_measure_id);
+      const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
+      
+      return {
+        extra_cost_id: cost.id || "",
+        price_breaks: allPriceBreaks.map(priceBreak => ({
+          price_break_id: priceBreak.id || "",
+          unit_cost: null,
+          // Add multiple unit costs for each product
+          unit_cost_1: null,
+          unit_cost_2: null,
+          unit_cost_3: null,
+          unit_cost_4: null,
+          unit_cost_5: null,
+          unit_cost_6: null,
+          unit_cost_7: null,
+          unit_cost_8: null,
+          unit_cost_9: null,
+          unit_cost_10: null,
+        }))
+      };
+    });
     
     replace(newExtraCosts);
-  }, [supplierId, extraCosts, replace, quoteRequest.formats]);
-  
+  }, [supplierId, extraCosts, replace, quoteRequest.formats, unitOfMeasures]);
+
   const handleOpenChange = (costId: string, isOpen: boolean) => {
     setOpenItems(prev => ({
       ...prev,
@@ -124,7 +133,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
       <div>
         <div className="flex justify-between items-center mb-4">
           <div className="text-md font-medium">
-            Unit Costs <span className="text-muted-foreground">({currencySymbol})</span>
+            {currencySymbol} Costs
           </div>
         </div>
         

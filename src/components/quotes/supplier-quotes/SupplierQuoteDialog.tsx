@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useEffect, useState } from "react";
@@ -17,12 +16,15 @@ interface SupplierQuoteDialogProps {
 
 export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: SupplierQuoteDialogProps) {
   const { currentOrganization } = useOrganization();
-  const { useCreateSupplierQuote } = useSupplierQuotes();
+  const { useCreateSupplierQuote, useSubmitSupplierQuote } = useSupplierQuotes();
   const createMutation = useCreateSupplierQuote();
+  const submitMutation = useSubmitSupplierQuote();
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
   const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+  const [submissionType, setSubmissionType] = useState<'draft' | 'submit'>('draft');
+  const [currentFormData, setCurrentFormData] = useState<SupplierQuoteFormValues | null>(null);
 
   // Initialize the form with the selected supplier
   useEffect(() => {
@@ -53,16 +55,51 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
 
   const handleSubmit = (data: SupplierQuoteFormValues) => {
     if (!currentOrganization) return;
+    setCurrentFormData(data);
     
-    createMutation.mutate({
-      formData: data,
-      organizationId: currentOrganization.id
-    }, {
-      onSuccess: (quoteId) => {
-        setCreatedQuoteId(quoteId);
-        setHasUnsavedChanges(false);
-      }
-    });
+    if (submissionType === 'draft') {
+      createMutation.mutate({
+        formData: data,
+        organizationId: currentOrganization.id
+      }, {
+        onSuccess: (quoteId) => {
+          setCreatedQuoteId(quoteId);
+          setHasUnsavedChanges(false);
+        }
+      });
+    } else if (submissionType === 'submit' && createdQuoteId) {
+      submitMutation.mutate({
+        quoteId: createdQuoteId,
+        organizationId: currentOrganization.id
+      }, {
+        onSuccess: () => {
+          setHasUnsavedChanges(false);
+        }
+      });
+    }
+  };
+
+  const handleSubmitClick = () => {
+    setSubmissionType('submit');
+    if (currentFormData && createdQuoteId) {
+      // If we already have a quote ID, submit it directly
+      submitMutation.mutate({
+        quoteId: createdQuoteId,
+        organizationId: currentOrganization?.id || ""
+      }, {
+        onSuccess: () => {
+          setHasUnsavedChanges(false);
+        }
+      });
+    } else if (currentFormData) {
+      // Otherwise create and submit in sequence
+      handleSubmit(currentFormData);
+    }
+  };
+
+  const handleDraftSave = (data: SupplierQuoteFormValues) => {
+    setSubmissionType('draft');
+    handleSubmit(data);
   };
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -111,13 +148,15 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
                   reference: "",
                   production_schedule: getInitialProductionSchedule()
                 }}
-                onSubmit={handleSubmit}
-                isSubmitting={createMutation.isPending}
+                onSubmit={handleDraftSave}
+                onFinalSubmit={handleSubmitClick}
+                isSubmitting={createMutation.isPending || submitMutation.isPending}
                 onCancel={() => handleOpenChange(false)}
                 onSupplierChange={setSelectedSupplierId}
                 createdQuoteId={createdQuoteId}
                 onDone={() => onOpenChange(false)}
                 onFormChange={handleFormChange}
+                setCurrentFormData={setCurrentFormData}
               />
             </div>
           </ScrollArea>

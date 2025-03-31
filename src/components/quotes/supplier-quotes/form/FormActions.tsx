@@ -7,9 +7,17 @@ interface FormActionsProps {
   isSubmitting: boolean;
   onCancel: () => void;
   isValid: boolean;
+  onSubmit?: () => void;
+  isSubmitReady?: boolean;
 }
 
-export function FormActions({ isSubmitting, onCancel, isValid }: FormActionsProps) {
+export function FormActions({ 
+  isSubmitting, 
+  onCancel, 
+  isValid, 
+  onSubmit,
+  isSubmitReady = false
+}: FormActionsProps) {
   return (
     <div className="flex justify-end space-x-2 mt-6">
       <Button 
@@ -20,6 +28,7 @@ export function FormActions({ isSubmitting, onCancel, isValid }: FormActionsProp
       >
         Cancel
       </Button>
+      
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -39,6 +48,18 @@ export function FormActions({ isSubmitting, onCancel, isValid }: FormActionsProp
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      
+      {onSubmit && (
+        <Button 
+          type="button"
+          onClick={onSubmit}
+          disabled={isSubmitting || !isSubmitReady}
+          variant="default"
+          className="bg-green-600 hover:bg-green-700"
+        >
+          {isSubmitting ? "Submitting..." : "Submit Quote"}
+        </Button>
+      )}
     </div>
   );
 }
