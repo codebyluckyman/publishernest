@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import OrganizationSwitcher from "../OrganizationSwitcher";
 import { MenuItem } from "./NavigationMenuItems";
 import { useState, useEffect } from "react";
+import UserAvatar from "../UserAvatar";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DesktopSidebarProps {
   menuItems: MenuItem[];
@@ -24,6 +26,11 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
   
   // Track open submenus
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+  const [userProfile, setUserProfile] = useState<{
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  } | null>(null);
 
   // Auto-expand submenus based on current route
   useEffect(() => {
@@ -48,6 +55,31 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
     });
   }, [location.pathname, menuItems]);
 
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, avatar_url')
+            .eq('id', user.id)
+            .single();
+
+          if (error) throw error;
+          
+          if (data) {
+            setUserProfile(data);
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
+
   const toggleSubmenu = (title: string) => {
     setOpenSubmenus(prev => ({
       ...prev,
@@ -64,6 +96,22 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
       console.error("Error signing out:", error);
       toast.error("Error signing out");
     }
+  };
+
+  // Generate user initials for avatar fallback
+  const getUserInitials = () => {
+    if (userProfile?.first_name && userProfile?.last_name) {
+      return `${userProfile.first_name[0]}${userProfile.last_name[0]}`.toUpperCase();
+    }
+    return user?.email ? user.email[0].toUpperCase() : undefined;
+  };
+
+  // Get display name
+  const getDisplayName = () => {
+    if (userProfile?.first_name && userProfile?.last_name) {
+      return `${userProfile.first_name} ${userProfile.last_name}`;
+    }
+    return user?.email || "";
   };
 
   return (
@@ -133,12 +181,19 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
           
           {user && (
             <div className="mt-auto p-4 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm font-medium truncate">
+              <div className="flex items-center gap-3 mb-3">
+                <UserAvatar 
+                  avatarUrl={userProfile?.avatar_url}
+                  fallback={getUserInitials()}
+                  className="h-9 w-9"
+                />
+                <div className="overflow-hidden">
+                  <p className="text-sm font-medium truncate">
+                    {getDisplayName()}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {user.email}
-                  </span>
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">

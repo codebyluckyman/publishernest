@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import OrganizationSwitcher from "../OrganizationSwitcher";
 import { MenuItem } from "./NavigationMenuItems";
+import UserAvatar from "../UserAvatar";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MobileNavigationProps {
   menuItems: MenuItem[];
@@ -22,6 +24,11 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { currentOrganization } = useOrganization();
+  const [userProfile, setUserProfile] = useState<{
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  } | null>(null);
 
   // Auto-expand submenus based on current route
   useEffect(() => {
@@ -46,6 +53,31 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
     });
   }, [location.pathname, menuItems]);
 
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, avatar_url')
+            .eq('id', user.id)
+            .single();
+
+          if (error) throw error;
+          
+          if (data) {
+            setUserProfile(data);
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
+
   const toggleSubmenu = (title: string) => {
     setOpenSubmenus(prev => ({
       ...prev,
@@ -62,6 +94,22 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
       console.error("Error signing out:", error);
       toast.error("Error signing out");
     }
+  };
+
+  // Generate user initials for avatar fallback
+  const getUserInitials = () => {
+    if (userProfile?.first_name && userProfile?.last_name) {
+      return `${userProfile.first_name[0]}${userProfile.last_name[0]}`.toUpperCase();
+    }
+    return user?.email ? user.email[0].toUpperCase() : undefined;
+  };
+
+  // Get display name
+  const getDisplayName = () => {
+    if (userProfile?.first_name && userProfile?.last_name) {
+      return `${userProfile.first_name} ${userProfile.last_name}`;
+    }
+    return user?.email || "";
   };
 
   return (
@@ -160,9 +208,20 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
             {/* User profile section */}
             {user && (
               <div className="p-4 border-t mt-auto">
-                <div className="flex items-center gap-2 mb-3">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm font-medium truncate">{user.email}</span>
+                <div className="flex items-center gap-3 mb-3">
+                  <UserAvatar 
+                    avatarUrl={userProfile?.avatar_url}
+                    fallback={getUserInitials()}
+                    className="h-9 w-9"
+                  />
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-medium truncate">
+                      {getDisplayName()}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user.email}
+                    </p>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <button 

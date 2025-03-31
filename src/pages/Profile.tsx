@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Building } from "lucide-react";
 import { useOrganizationApi } from "@/hooks/useOrganizationApi";
+import { AvatarUpload } from "@/components/profile/AvatarUpload";
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ const ProfilePage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const { updateOrganizationSetting } = useOrganizationApi(user?.id);
 
@@ -29,7 +31,7 @@ const ProfilePage = () => {
           setIsLoadingProfile(true);
           const { data, error } = await supabase
             .from('profiles')
-            .select('first_name, last_name, job_title')
+            .select('first_name, last_name, job_title, avatar_url')
             .eq('id', user.id)
             .single();
 
@@ -39,6 +41,7 @@ const ProfilePage = () => {
             setFirstName(data.first_name || "");
             setLastName(data.last_name || "");
             setJobTitle(data.job_title || "");
+            setAvatarUrl(data.avatar_url || null);
           }
         } catch (error) {
           console.error("Error fetching profile:", error);
@@ -93,7 +96,8 @@ const ProfilePage = () => {
         .update({
           first_name: firstName,
           last_name: lastName,
-          job_title: jobTitle
+          job_title: jobTitle,
+          avatar_url: avatarUrl
         })
         .eq('id', user?.id);
 
@@ -106,6 +110,10 @@ const ProfilePage = () => {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleAvatarChange = (url: string) => {
+    setAvatarUrl(url);
   };
 
   return (
@@ -121,6 +129,16 @@ const ProfilePage = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div className="flex justify-center mb-6">
+                {user?.id && (
+                  <AvatarUpload 
+                    userId={user.id} 
+                    avatarUrl={avatarUrl} 
+                    onAvatarChange={handleAvatarChange}
+                  />
+                )}
+              </div>
+              
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
                   Email
