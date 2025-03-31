@@ -1,3 +1,4 @@
+
 import { QuoteRequest, QuoteRequestFormat, PriceBreak, QuoteRequestFormatProduct } from "./quoteRequest";
 import { ExtraCost } from "./extraCost";
 import { Saving } from "./saving";
@@ -34,6 +35,10 @@ export interface SupplierQuote {
   savings?: SupplierQuoteSaving[];
   attachments?: SupplierQuoteAttachment[];
   formats?: SupplierQuoteFormat[];
+  
+  // New tables for price break specific costs and savings
+  extra_costs_price_breaks?: SupplierQuoteExtraCostPriceBreak[];
+  savings_price_breaks?: SupplierQuoteSavingPriceBreak[];
 }
 
 export interface SupplierQuoteFormat {
@@ -117,6 +122,29 @@ export interface SupplierQuoteExtraCost {
   extra_cost?: ExtraCost;
 }
 
+export interface SupplierQuoteExtraCostPriceBreak {
+  id: string;
+  supplier_quote_id: string;
+  extra_cost_id: string;
+  price_break_id: string;
+  unit_cost: number | null;
+  
+  // Multiple product unit costs (up to 10)
+  unit_cost_1: number | null;
+  unit_cost_2: number | null;
+  unit_cost_3: number | null;
+  unit_cost_4: number | null;
+  unit_cost_5: number | null;
+  unit_cost_6: number | null;
+  unit_cost_7: number | null;
+  unit_cost_8: number | null;
+  unit_cost_9: number | null;
+  unit_cost_10: number | null;
+  
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SupplierQuoteSaving {
   id: string;
   supplier_quote_id: string;
@@ -142,6 +170,30 @@ export interface SupplierQuoteSaving {
   saving?: Saving;
 }
 
+export interface SupplierQuoteSavingPriceBreak {
+  id: string;
+  supplier_quote_id: string;
+  saving_id: string;
+  price_break_id: string;
+  unit_cost: number | null;
+  notes: string | null;
+  
+  // Multiple product unit costs (up to 10)
+  unit_cost_1: number | null;
+  unit_cost_2: number | null;
+  unit_cost_3: number | null;
+  unit_cost_4: number | null;
+  unit_cost_5: number | null;
+  unit_cost_6: number | null;
+  unit_cost_7: number | null;
+  unit_cost_8: number | null;
+  unit_cost_9: number | null;
+  unit_cost_10: number | null;
+  
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SupplierQuoteFormValues {
   quote_request_id: string;
   supplier_id: string;
@@ -165,33 +217,39 @@ export interface SupplierQuoteFormValues {
   }[];
   extra_costs: {
     extra_cost_id: string;
-    unit_cost: number | null;
-    // Add multiple product unit costs (up to 10)
-    unit_cost_1: number | null;
-    unit_cost_2: number | null;
-    unit_cost_3: number | null;
-    unit_cost_4: number | null;
-    unit_cost_5: number | null;
-    unit_cost_6: number | null;
-    unit_cost_7: number | null;
-    unit_cost_8: number | null;
-    unit_cost_9: number | null;
-    unit_cost_10: number | null;
+    price_breaks: {
+      price_break_id: string;
+      unit_cost: number | null;
+      // Multiple product unit costs (up to 10)
+      unit_cost_1: number | null;
+      unit_cost_2: number | null;
+      unit_cost_3: number | null;
+      unit_cost_4: number | null;
+      unit_cost_5: number | null;
+      unit_cost_6: number | null;
+      unit_cost_7: number | null;
+      unit_cost_8: number | null;
+      unit_cost_9: number | null;
+      unit_cost_10: number | null;
+    }[];
   }[];
   savings: {
     saving_id: string;
-    unit_cost: number | null;
-    // Add multiple product unit costs (up to 10)
-    unit_cost_1: number | null;
-    unit_cost_2: number | null;
-    unit_cost_3: number | null;
-    unit_cost_4: number | null;
-    unit_cost_5: number | null;
-    unit_cost_6: number | null;
-    unit_cost_7: number | null;
-    unit_cost_8: number | null;
-    unit_cost_9: number | null;
-    unit_cost_10: number | null;
+    price_breaks: {
+      price_break_id: string;
+      unit_cost: number | null;
+      // Multiple product unit costs (up to 10)
+      unit_cost_1: number | null;
+      unit_cost_2: number | null;
+      unit_cost_3: number | null;
+      unit_cost_4: number | null;
+      unit_cost_5: number | null;
+      unit_cost_6: number | null;
+      unit_cost_7: number | null;
+      unit_cost_8: number | null;
+      unit_cost_9: number | null;
+      unit_cost_10: number | null;
+    }[];
     notes?: string;
   }[];
   notes?: string;

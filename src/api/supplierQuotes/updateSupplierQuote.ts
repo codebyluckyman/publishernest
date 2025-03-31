@@ -99,80 +99,121 @@ export async function updateSupplierQuote(
 
   // Update extra costs if provided
   if (updates.extra_costs && updates.extra_costs.length > 0) {
-    // First delete existing extra costs for this supplier quote
-    const { error: deleteError } = await supabase
+    // First delete existing extra costs and their price breaks for this supplier quote
+    const { error: deleteCostsError } = await supabase
       .from("supplier_quote_extra_costs")
       .delete()
       .eq("supplier_quote_id", id);
 
-    if (deleteError) {
-      throw new Error(`Error deleting existing extra costs: ${deleteError.message}`);
+    if (deleteCostsError) {
+      throw new Error(`Error deleting existing extra costs: ${deleteCostsError.message}`);
+    }
+    
+    const { error: deleteCostsPriceBreaksError } = await supabase
+      .from("supplier_quote_extra_costs_price_breaks")
+      .delete()
+      .eq("supplier_quote_id", id);
+
+    if (deleteCostsPriceBreaksError) {
+      throw new Error(`Error deleting existing extra costs price breaks: ${deleteCostsPriceBreaksError.message}`);
     }
 
-    // Insert updated extra costs
-    const extraCostsToInsert = updates.extra_costs.map(ec => ({
-      supplier_quote_id: id,
-      extra_cost_id: ec.extra_cost_id,
-      unit_cost: ec.unit_cost,
-      // Add all unit cost fields for multiple products
-      unit_cost_1: ec.unit_cost_1,
-      unit_cost_2: ec.unit_cost_2,
-      unit_cost_3: ec.unit_cost_3,
-      unit_cost_4: ec.unit_cost_4,
-      unit_cost_5: ec.unit_cost_5,
-      unit_cost_6: ec.unit_cost_6,
-      unit_cost_7: ec.unit_cost_7,
-      unit_cost_8: ec.unit_cost_8,
-      unit_cost_9: ec.unit_cost_9,
-      unit_cost_10: ec.unit_cost_10
-    }));
+    // Insert extra costs price breaks for each price break
+    const extraCostsPriceBreaksToInsert: any[] = [];
+    
+    updates.extra_costs.forEach(ec => {
+      if (ec.price_breaks && ec.price_breaks.length > 0) {
+        ec.price_breaks.forEach(pb => {
+          extraCostsPriceBreaksToInsert.push({
+            supplier_quote_id: id,
+            extra_cost_id: ec.extra_cost_id,
+            price_break_id: pb.price_break_id,
+            unit_cost: pb.unit_cost,
+            unit_cost_1: pb.unit_cost_1,
+            unit_cost_2: pb.unit_cost_2,
+            unit_cost_3: pb.unit_cost_3,
+            unit_cost_4: pb.unit_cost_4,
+            unit_cost_5: pb.unit_cost_5,
+            unit_cost_6: pb.unit_cost_6,
+            unit_cost_7: pb.unit_cost_7,
+            unit_cost_8: pb.unit_cost_8,
+            unit_cost_9: pb.unit_cost_9,
+            unit_cost_10: pb.unit_cost_10
+          });
+        });
+      }
+    });
 
-    const { error: insertError } = await supabase
-      .from("supplier_quote_extra_costs")
-      .insert(extraCostsToInsert);
-
-    if (insertError) {
-      throw new Error(`Error inserting updated extra costs: ${insertError.message}`);
+    if (extraCostsPriceBreaksToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from("supplier_quote_extra_costs_price_breaks")
+        .insert(extraCostsPriceBreaksToInsert);
+        
+      if (insertError) {
+        throw new Error(`Error inserting extra costs price breaks: ${insertError.message}`);
+      }
     }
   }
 
   // Update savings if provided
   if (updates.savings && updates.savings.length > 0) {
-    // First delete existing savings for this supplier quote
-    const { error: deleteError } = await supabase
+    // First delete existing savings and their price breaks for this supplier quote
+    const { error: deleteSavingsError } = await supabase
       .from("supplier_quote_savings")
       .delete()
       .eq("supplier_quote_id", id);
 
-    if (deleteError) {
-      throw new Error(`Error deleting existing savings: ${deleteError.message}`);
+    if (deleteSavingsError) {
+      throw new Error(`Error deleting existing savings: ${deleteSavingsError.message}`);
+    }
+    
+    const { error: deleteSavingsPriceBreaksError } = await supabase
+      .from("supplier_quote_savings_price_breaks")
+      .delete()
+      .eq("supplier_quote_id", id);
+
+    if (deleteSavingsPriceBreaksError) {
+      throw new Error(`Error deleting existing savings price breaks: ${deleteSavingsPriceBreaksError.message}`);
     }
 
-    // Insert updated savings
-    const savingsToInsert = updates.savings.map(s => ({
-      supplier_quote_id: id,
-      saving_id: s.saving_id,
-      unit_cost: s.unit_cost,
-      notes: s.notes || null,
-      // Add all unit cost fields for multiple products
-      unit_cost_1: s.unit_cost_1,
-      unit_cost_2: s.unit_cost_2,
-      unit_cost_3: s.unit_cost_3,
-      unit_cost_4: s.unit_cost_4,
-      unit_cost_5: s.unit_cost_5,
-      unit_cost_6: s.unit_cost_6,
-      unit_cost_7: s.unit_cost_7,
-      unit_cost_8: s.unit_cost_8,
-      unit_cost_9: s.unit_cost_9,
-      unit_cost_10: s.unit_cost_10
-    }));
+    // Insert savings price breaks for each price break
+    const savingsPriceBreaksToInsert: any[] = [];
+    
+    updates.savings.forEach(s => {
+      // Keep track of notes for each saving
+      const notes = s.notes || null;
+      
+      if (s.price_breaks && s.price_breaks.length > 0) {
+        s.price_breaks.forEach(pb => {
+          savingsPriceBreaksToInsert.push({
+            supplier_quote_id: id,
+            saving_id: s.saving_id,
+            price_break_id: pb.price_break_id,
+            unit_cost: pb.unit_cost,
+            notes: notes,
+            unit_cost_1: pb.unit_cost_1,
+            unit_cost_2: pb.unit_cost_2,
+            unit_cost_3: pb.unit_cost_3,
+            unit_cost_4: pb.unit_cost_4,
+            unit_cost_5: pb.unit_cost_5,
+            unit_cost_6: pb.unit_cost_6,
+            unit_cost_7: pb.unit_cost_7,
+            unit_cost_8: pb.unit_cost_8,
+            unit_cost_9: pb.unit_cost_9,
+            unit_cost_10: pb.unit_cost_10
+          });
+        });
+      }
+    });
 
-    const { error: insertError } = await supabase
-      .from("supplier_quote_savings")
-      .insert(savingsToInsert);
-
-    if (insertError) {
-      throw new Error(`Error inserting updated savings: ${insertError.message}`);
+    if (savingsPriceBreaksToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from("supplier_quote_savings_price_breaks")
+        .insert(savingsPriceBreaksToInsert);
+        
+      if (insertError) {
+        throw new Error(`Error inserting savings price breaks: ${insertError.message}`);
+      }
     }
   }
 

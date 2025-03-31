@@ -13,7 +13,7 @@ interface ExtraCostItemProps {
   extraCost: ExtraCost;
   showMultiProducts?: boolean;
   maxNumProducts?: number;
-  priceBreaks?: (PriceBreak & { format_name?: string })[];
+  priceBreaks?: (PriceBreak & { format_name?: string; format_id?: string })[];
 }
 
 export function ExtraCostItem({ 
@@ -27,119 +27,108 @@ export function ExtraCostItem({
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-          <div className="md:col-span-4">
-            <div>
-              <p className="text-sm font-medium">{extraCost.name}</p>
-              {extraCost.description && (
-                <p className="text-sm text-muted-foreground">{extraCost.description}</p>
-              )}
-              {extraCost.unit_of_measure_name && (
-                <p className="text-xs text-muted-foreground">
-                  Unit: {extraCost.unit_of_measure_name}
-                </p>
-              )}
-            </div>
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <p className="text-sm font-medium">{extraCost.name}</p>
+            {extraCost.description && (
+              <p className="text-sm text-muted-foreground">{extraCost.description}</p>
+            )}
+            {extraCost.unit_of_measure_name && (
+              <p className="text-xs text-muted-foreground">
+                Unit: {extraCost.unit_of_measure_name}
+              </p>
+            )}
           </div>
           
-          <div className="md:col-span-8">
+          <div className="space-y-4">
             {priceBreaks && priceBreaks.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {/* Group by format name to avoid duplicate quantities */}
                 {Array.from(new Set(priceBreaks.map(pb => pb.format_name))).map((formatName) => {
                   const formatBreaks = priceBreaks.filter(pb => pb.format_name === formatName);
+                  
                   return (
-                    <div key={formatName} className="space-y-2">
-                      {formatName && <p className="text-xs font-medium">{formatName}</p>}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                        {formatBreaks.map((priceBreak, pbIndex) => (
-                          <div key={pbIndex} className="border rounded p-2">
-                            <p className="text-xs text-muted-foreground mb-1">
-                              Quantity: {priceBreak.quantity.toLocaleString()}
-                            </p>
-                            <FormField
-                              control={control}
-                              name={`extra_costs.${index}.unit_cost`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      type="number"
-                                      step="0.001"
-                                      min="0"
-                                      placeholder="0.000"
-                                      className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                                      {...field}
-                                      onChange={(e) => {
-                                        const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
-                                        field.onChange(value);
-                                      }}
-                                      value={field.value === null ? "" : field.value.toFixed(3)}
+                    <div key={formatName} className="border rounded-md p-3">
+                      {formatName && <p className="text-sm font-medium mb-2">{formatName}</p>}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {formatBreaks.map((priceBreak, pbIndex) => {
+                          // Find price break index in the extra_costs.price_breaks array
+                          const priceBreakFieldIndex = Array.isArray(control._formValues.extra_costs[index]?.price_breaks) 
+                            ? control._formValues.extra_costs[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
+                            : -1;
+                          
+                          if (priceBreakFieldIndex === -1) return null;
+                            
+                          return (
+                            <div key={priceBreak.id} className="border rounded p-2">
+                              <p className="text-xs text-muted-foreground mb-1">
+                                Quantity: {priceBreak.quantity.toLocaleString()}
+                              </p>
+                              
+                              {showMultiProducts ? (
+                                <div className="grid grid-cols-10 gap-1 mt-2">
+                                  {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
+                                    <FormField
+                                      key={prodIndex}
+                                      control={control}
+                                      name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost_${prodIndex}` as any}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              step="0.001"
+                                              min="0"
+                                              placeholder="0.000"
+                                              className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
+                                              {...field}
+                                              onChange={(e) => {
+                                                const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
+                                                field.onChange(value);
+                                              }}
+                                              value={field.value === null ? "" : field.value}
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
                                     />
-                                  </FormControl>
-                                </FormItem>
+                                  ))}
+                                </div>
+                              ) : (
+                                <FormField
+                                  control={control}
+                                  name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.001"
+                                          min="0"
+                                          placeholder="0.000"
+                                          className="h-8 text-sm px-2 w-full rounded-md border border-input bg-background"
+                                          {...field}
+                                          onChange={(e) => {
+                                            const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
+                                            field.onChange(value);
+                                          }}
+                                          value={field.value === null ? "" : field.value}
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
                               )}
-                            />
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
                 })}
               </div>
-            ) : showMultiProducts ? (
-              <div className="grid grid-cols-10 gap-1">
-                {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
-                  <FormField
-                    key={i}
-                    control={control}
-                    name={`extra_costs.${index}.unit_cost_${i}` as any}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.001"
-                            min="0"
-                            placeholder="0.000"
-                            className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                            {...field}
-                            onChange={(e) => {
-                              const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
-                              field.onChange(value);
-                            }}
-                            value={field.value === null ? "" : field.value.toFixed(3)}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
             ) : (
-              <FormField
-                control={control}
-                name={`extra_costs.${index}.unit_cost`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.001"
-                        min="0"
-                        placeholder="0.000"
-                        className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                        {...field}
-                        onChange={(e) => {
-                          const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
-                          field.onChange(value);
-                        }}
-                        value={field.value === null ? "" : field.value.toFixed(3)}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              <p className="text-sm text-muted-foreground">No price breaks available</p>
             )}
           </div>
         </div>

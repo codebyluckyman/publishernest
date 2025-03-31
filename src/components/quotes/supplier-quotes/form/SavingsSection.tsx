@@ -33,25 +33,37 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
       return;
     }
     
+    // Get all price breaks from the quote request
+    const allPriceBreaks = quoteRequest.formats?.flatMap(format => 
+      format.price_breaks?.map(pb => ({
+        ...pb,
+        format_name: format.format_name,
+        format_id: format.format_id
+      })) || []
+    ) || [];
+    
     const newSavings = savings.map(saving => ({
       saving_id: saving.id || "",
-      unit_cost: null,
       notes: "",
-      // Add multiple unit costs for each product
-      unit_cost_1: null,
-      unit_cost_2: null,
-      unit_cost_3: null,
-      unit_cost_4: null,
-      unit_cost_5: null,
-      unit_cost_6: null,
-      unit_cost_7: null,
-      unit_cost_8: null,
-      unit_cost_9: null,
-      unit_cost_10: null,
+      price_breaks: allPriceBreaks.map(priceBreak => ({
+        price_break_id: priceBreak.id || "",
+        unit_cost: null,
+        // Add multiple unit costs for each product
+        unit_cost_1: null,
+        unit_cost_2: null,
+        unit_cost_3: null,
+        unit_cost_4: null,
+        unit_cost_5: null,
+        unit_cost_6: null,
+        unit_cost_7: null,
+        unit_cost_8: null,
+        unit_cost_9: null,
+        unit_cost_10: null,
+      }))
     }));
     
     replace(newSavings);
-  }, [supplierId, savings, replace]);
+  }, [supplierId, savings, replace, quoteRequest.formats]);
   
   if (!savings || savings.length === 0) {
     return (
@@ -75,7 +87,8 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
   const allPriceBreaks = quoteRequest.formats?.flatMap(format => 
     format.price_breaks?.map(pb => ({
       ...pb,
-      format_name: format.format_name
+      format_name: format.format_name,
+      format_id: format.format_id
     })) || []
   ) || [];
   
@@ -91,21 +104,7 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
         </div>
       </div>
       
-      {/* Display quantity breaks header if there are price breaks */}
-      {sortedPriceBreaks.length > 0 && (
-        <div className="bg-muted p-2 rounded mb-4">
-          <h4 className="font-medium text-sm mb-2">Price Breaks (Quantities)</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-            {sortedPriceBreaks.map((break_, index) => (
-              <div key={index} className="text-sm">
-                <span className="font-medium">{break_.format_name}:</span> {break_.quantity.toLocaleString()}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* Display product numbers header at the top */}
+      {/* Display product numbers header at the top if needed */}
       {showMultiProducts && (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
           <div className="md:col-span-4">

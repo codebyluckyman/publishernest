@@ -1,6 +1,15 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote, SupplierQuoteAttachment, SupplierQuoteExtraCost, SupplierQuoteFormat, SupplierQuotePriceBreak, SupplierQuoteSaving } from "@/types/supplierQuote";
+import { 
+  SupplierQuote, 
+  SupplierQuoteAttachment, 
+  SupplierQuoteExtraCost, 
+  SupplierQuoteExtraCostPriceBreak, 
+  SupplierQuoteFormat, 
+  SupplierQuotePriceBreak, 
+  SupplierQuoteSaving, 
+  SupplierQuoteSavingPriceBreak 
+} from "@/types/supplierQuote";
 
 export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote | null> {
   // Fetch the quote
@@ -14,11 +23,15 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
         description,
         currency,
         due_date,
+        required_step_id,
+        required_step_name,
         formats:quote_request_formats(
           id,
           format_id,
+          format_name,
           notes,
-          price_breaks:quote_request_price_breaks(*)
+          num_products,
+          price_breaks:quote_request_format_price_breaks(*)
         )
       ),
       supplier:suppliers(id, supplier_name, contact_name, contact_email)
@@ -71,6 +84,25 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     throw extraCostsError;
   }
 
+  // Fetch extra costs price breaks
+  const { data: extraCostsPriceBreaks, error: extraCostsPriceBreaksError } = await supabase
+    .from("supplier_quote_extra_costs_price_breaks")
+    .select(`
+      *,
+      extra_cost:extra_costs(*),
+      price_break:quote_request_format_price_breaks(
+        id,
+        quote_request_format_id,
+        quantity
+      )
+    `)
+    .eq("supplier_quote_id", id);
+
+  if (extraCostsPriceBreaksError) {
+    console.error("Error fetching extra costs price breaks:", extraCostsPriceBreaksError);
+    throw extraCostsPriceBreaksError;
+  }
+
   // Fetch savings
   const { data: savings, error: savingsError } = await supabase
     .from("supplier_quote_savings")
@@ -83,6 +115,25 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
   if (savingsError) {
     console.error("Error fetching savings:", savingsError);
     throw savingsError;
+  }
+
+  // Fetch savings price breaks
+  const { data: savingsPriceBreaks, error: savingsPriceBreaksError } = await supabase
+    .from("supplier_quote_savings_price_breaks")
+    .select(`
+      *,
+      saving:savings(*),
+      price_break:quote_request_format_price_breaks(
+        id,
+        quote_request_format_id,
+        quantity
+      )
+    `)
+    .eq("supplier_quote_id", id);
+
+  if (savingsPriceBreaksError) {
+    console.error("Error fetching savings price breaks:", savingsPriceBreaksError);
+    throw savingsPriceBreaksError;
   }
 
   // Fetch formats
@@ -124,6 +175,8 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
     extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
     savings: savings as unknown as SupplierQuoteSaving[],
+    extra_costs_price_breaks: extraCostsPriceBreaks as unknown as SupplierQuoteExtraCostPriceBreak[],
+    savings_price_breaks: savingsPriceBreaks as unknown as SupplierQuoteSavingPriceBreak[],
     attachments: attachments as SupplierQuoteAttachment[],
     formats: formats ? formats.map(f => ({
       id: f.id,
