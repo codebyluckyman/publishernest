@@ -1,4 +1,3 @@
-
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ExtraCostTableItem } from "@/types/extraCost";
@@ -61,13 +60,10 @@ export function ExtraCostItem({
       }
     });
     
-    // Force re-render of the form
+    // Force re-render of the form without modifying dirtyFields directly
     control._subjects.state.next({
       ...control._formState,
-      dirtyFields: {
-        ...control._formState.dirtyFields,
-        extra_costs: true
-      }
+      isDirty: true // Mark form as dirty instead of modifying dirtyFields structure
     });
   };
   
@@ -119,7 +115,7 @@ export function ExtraCostItem({
                         </div>
                         <FormField
                           control={control}
-                          name={`extra_costs.${index}.unit_cost` as any}
+                          name={`extra_costs.${index}.unit_cost` as const}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>

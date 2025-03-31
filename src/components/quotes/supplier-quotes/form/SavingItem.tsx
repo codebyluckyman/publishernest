@@ -1,4 +1,3 @@
-
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { SavingTableItem } from "@/types/saving";
@@ -61,13 +60,10 @@ export function SavingItem({
       }
     });
     
-    // Force re-render of the form
+    // Force re-render of the form without modifying dirtyFields directly
     control._subjects.state.next({
       ...control._formState,
-      dirtyFields: {
-        ...control._formState.dirtyFields,
-        savings: true
-      }
+      isDirty: true // Mark form as dirty instead of modifying dirtyFields structure
     });
   };
   
@@ -119,7 +115,7 @@ export function SavingItem({
                         </div>
                         <FormField
                           control={control}
-                          name={`savings.${index}.unit_cost` as any}
+                          name={`savings.${index}.unit_cost` as const}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
@@ -147,7 +143,7 @@ export function SavingItem({
                         <div className="mt-3">
                           <FormField
                             control={control}
-                            name={`savings.${index}.notes` as any}
+                            name={`savings.${index}.notes` as const}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
