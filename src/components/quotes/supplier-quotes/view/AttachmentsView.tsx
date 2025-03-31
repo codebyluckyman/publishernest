@@ -3,9 +3,11 @@ import { useState, useEffect } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileIcon, Download, Paperclip } from "lucide-react";
+import { FileIcon, Download, Paperclip, Eye } from "lucide-react";
 import { getSupplierQuoteAttachments } from "@/api/supplierQuotes/getAttachments";
+import { getPublicUrl } from "@/api/supplierQuotes";
 import { useToast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface AttachmentsViewProps {
   quote: SupplierQuote;
@@ -14,6 +16,8 @@ interface AttachmentsViewProps {
 export function AttachmentsView({ quote }: AttachmentsViewProps) {
   const [files, setFiles] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<any | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,13 +43,55 @@ export function AttachmentsView({ quote }: AttachmentsViewProps) {
     fetchAttachments();
   }, [quote.id, toast]);
 
-  function getFileIcon(fileType: string) {
-    if (fileType.includes('pdf')) return 'pdf';
-    if (fileType.includes('image')) return 'image';
-    if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'excel';
-    if (fileType.includes('word') || fileType.includes('document')) return 'word';
-    return 'generic';
-  }
+  const handlePreview = async (file: any) => {
+    try {
+      setPreviewFile(file);
+      // Get signed URL for the file
+      const signedUrl = await getPublicUrl('quote-attachments', file.file_key);
+      setPreviewUrl(signedUrl);
+    } catch (error) {
+      console.error("Error getting preview URL:", error);
+      toast({
+        title: "Error",
+        description: "Failed to preview file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewFile(null);
+    setPreviewUrl(null);
+  };
+
+  const renderPreviewContent = () => {
+    if (!previewFile || !previewUrl) return null;
+
+    const fileType = previewFile.file_type || '';
+
+    if (fileType.startsWith('image/')) {
+      return <img src={previewUrl} alt={previewFile.file_name} className="max-w-full max-h-[70vh]" />;
+    } else if (fileType === 'application/pdf') {
+      return (
+        <iframe 
+          src={`${previewUrl}#toolbar=0`} 
+          className="w-full h-[70vh]" 
+          title={previewFile.file_name}
+        />
+      );
+    } else {
+      return (
+        <div className="text-center p-10">
+          <FileIcon className="h-16 w-16 mx-auto mb-4 text-primary" />
+          <p>Preview not available for this file type.</p>
+          <Button onClick={() => window.open(previewFile.url, '_blank')} className="mt-4">
+            <Download className="h-4 w-4 mr-2" />
+            Download to view
+          </Button>
+        </div>
+      );
+    }
+  };
 
   // If no attachments
   if (files.length === 0 && !isLoading) {
@@ -91,19 +137,52 @@ export function AttachmentsView({ quote }: AttachmentsViewProps) {
                     </p>
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => window.open(file.url, '_blank')}
-                >
-                  <Download className="h-4 w-4 mr-1" />
-                  Download
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handlePreview(file)}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    Preview
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => window.open(file.url, '_blank')}
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </CardContent>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewFile} onOpenChange={(open) => !open && closePreview()}>
+        <DialogContent className="max-w-4xl w-full">
+          <DialogHeader>
+            <DialogTitle>{previewFile?.file_name}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 flex justify-center overflow-auto">
+            {renderPreviewContent()}
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={closePreview} className="mr-2">
+              Close
+            </Button>
+            {previewFile && (
+              <Button onClick={() => window.open(previewFile.url, '_blank')}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

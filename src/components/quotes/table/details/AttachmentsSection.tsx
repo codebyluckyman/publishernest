@@ -1,14 +1,15 @@
-
 import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDropzone } from "react-dropzone";
-import { Upload, File, Trash2 } from "lucide-react";
+import { Upload, File, Trash2, Eye, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequestAttachment } from "@/types/quoteRequest";
 import { useAuth } from "@/context/AuthContext";
 import { getQuoteRequestAttachments } from "@/api/quoteRequests";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getPublicUrl } from "@/api/supplierQuotes";
 
 interface AttachmentsSectionProps {
   quoteRequestId: string;
@@ -17,6 +18,8 @@ interface AttachmentsSectionProps {
 export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) {
   const [attachments, setAttachments] = useState<QuoteRequestAttachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [previewAttachment, setPreviewAttachment] = useState<QuoteRequestAttachment | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { user } = useAuth();
 
   // Fetch attachments on initial load
@@ -46,7 +49,6 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
     
     try {
       for (const file of acceptedFiles) {
-        // Upload file to storage
         const fileName = `${Date.now()}-${file.name}`;
         const filePath = `quote-requests/${quoteRequestId}/${fileName}`;
         
@@ -56,7 +58,6 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
           
         if (uploadError) throw uploadError;
         
-        // Add record to database
         const { error: dbError } = await supabase
           .from('quote_request_attachments')
           .insert({
@@ -94,6 +95,22 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
     }
   });
 
+  const handlePreview = async (attachment: QuoteRequestAttachment) => {
+    try {
+      setPreviewAttachment(attachment);
+      const signedUrl = await getPublicUrl('attachments', attachment.file_key);
+      setPreviewUrl(signedUrl);
+    } catch (error) {
+      console.error("Error getting preview URL:", error);
+      toast.error("Failed to preview file");
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewAttachment(null);
+    setPreviewUrl(null);
+  };
+
   const downloadAttachment = async (attachment: QuoteRequestAttachment) => {
     try {
       const { data, error } = await supabase.storage
@@ -102,7 +119,6 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
         
       if (error) throw error;
       
-      // Create download link
       const url = URL.createObjectURL(data);
       const link = document.createElement('a');
       link.href = url;
@@ -118,7 +134,6 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
 
   const deleteAttachment = async (id: string, fileKey: string) => {
     try {
-      // Delete record from database
       const { error: dbError } = await supabase
         .from('quote_request_attachments')
         .delete()
@@ -126,19 +141,57 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
         
       if (dbError) throw dbError;
       
-      // Delete file from storage
       const { error: storageError } = await supabase.storage
         .from('attachments')
         .remove([fileKey]);
         
       if (storageError) throw storageError;
       
-      // Update UI
       setAttachments(attachments.filter(a => a.id !== id));
       toast.success("File deleted successfully");
     } catch (error) {
       console.error("Error deleting file:", error);
       toast.error("Failed to delete file");
+    }
+  };
+
+  const renderPreviewContent = () => {
+    if (!previewAttachment || !previewUrl) return null;
+
+    const fileType = previewAttachment.file_type || '';
+
+    if (fileType.startsWith('image/')) {
+      return <img src={previewUrl} alt={previewAttachment.file_name} className="max-w-full max-h-[70vh]" />;
+    } else if (fileType === 'application/pdf') {
+      return (
+        <iframe 
+          src={`${previewUrl}#toolbar=0`} 
+          className="w-full h-[70vh]" 
+          title={previewAttachment.file_name}
+        />
+      );
+    } else if (fileType.includes('word') || fileType.includes('excel') || fileType.includes('spreadsheet')) {
+      return (
+        <div className="text-center p-10">
+          <File className="h-16 w-16 mx-auto mb-4 text-primary" />
+          <p>Preview not available for this file type.</p>
+          <Button onClick={() => downloadAttachment(previewAttachment)} className="mt-4">
+            <Download className="h-4 w-4 mr-2" />
+            Download to view
+          </Button>
+        </div>
+      );
+    } else {
+      return (
+        <div className="text-center p-10">
+          <File className="h-16 w-16 mx-auto mb-4 text-primary" />
+          <p>Preview not available for this file type.</p>
+          <Button onClick={() => downloadAttachment(previewAttachment)} className="mt-4">
+            <Download className="h-4 w-4 mr-2" />
+            Download to view
+          </Button>
+        </div>
+      );
     }
   };
 
@@ -200,8 +253,17 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => handlePreview(attachment)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Preview
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => downloadAttachment(attachment)}
                       >
+                        <Download className="h-4 w-4 mr-1" />
                         Download
                       </Button>
                       <Button
@@ -223,6 +285,28 @@ export function AttachmentsSection({ quoteRequestId }: AttachmentsSectionProps) 
           No attachments yet
         </div>
       )}
+
+      <Dialog open={!!previewAttachment} onOpenChange={(open) => !open && closePreview()}>
+        <DialogContent className="max-w-4xl w-full">
+          <DialogHeader>
+            <DialogTitle>{previewAttachment?.file_name}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 flex justify-center overflow-auto">
+            {renderPreviewContent()}
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={closePreview} className="mr-2">
+              Close
+            </Button>
+            {previewAttachment && (
+              <Button onClick={() => downloadAttachment(previewAttachment)}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
