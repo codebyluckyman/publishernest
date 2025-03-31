@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -197,7 +198,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.formats && supplierQuote.formats.length > 0 && (
         <CollapsibleSection 
           title="Formats" 
-          defaultOpen={true}
+          isEmpty={false}
+          emptyMessage="No formats available"
         >
           <div className="space-y-4">
             {supplierQuote.formats.map((format, index) => (
@@ -232,7 +234,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.price_breaks && supplierQuote.price_breaks.length > 0 && (
         <CollapsibleSection 
           title="Pricing" 
-          defaultOpen={true}
+          isEmpty={false}
+          emptyMessage="No pricing information available"
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -269,8 +272,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.extra_costs && supplierQuote.extra_costs.length > 0 && (
         <CollapsibleSection 
           title="Extra Costs"
-          isOpen={isExtraCostsOpen}
-          onOpenChange={setIsExtraCostsOpen}
+          isEmpty={supplierQuote.extra_costs.length === 0}
+          emptyMessage="No extra costs available"
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -303,8 +306,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.savings && supplierQuote.savings.length > 0 && (
         <CollapsibleSection 
           title="Savings"
-          isOpen={isSavingsOpen}
-          onOpenChange={setIsSavingsOpen}
+          isEmpty={supplierQuote.savings.length === 0}
+          emptyMessage="No savings available"
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -340,8 +343,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.notes && (
         <CollapsibleSection 
           title="Notes"
-          isOpen={isNotesOpen}
-          onOpenChange={setIsNotesOpen}
+          isEmpty={!supplierQuote.notes}
+          emptyMessage="No notes available"
         >
           <div className="p-4 bg-muted/30 rounded-md">
             <p className="text-sm whitespace-pre-wrap">{supplierQuote.notes}</p>
@@ -353,8 +356,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.terms && (
         <CollapsibleSection
           title="Terms"
-          isOpen={isTermsOpen}
-          onOpenChange={setIsTermsOpen}
+          isEmpty={!supplierQuote.terms}
+          emptyMessage="No terms available"
         >
           <div className="p-4 bg-muted/30 rounded-md">
             <p className="text-sm whitespace-pre-wrap">{supplierQuote.terms}</p>
@@ -366,8 +369,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.remarks && (
         <CollapsibleSection
           title="Remarks"
-          isOpen={isRemarksOpen}
-          onOpenChange={setIsRemarksOpen}
+          isEmpty={!supplierQuote.remarks}
+          emptyMessage="No remarks available"
         >
           <div className="p-4 bg-muted/30 rounded-md">
             <p className="text-sm whitespace-pre-wrap">{supplierQuote.remarks}</p>
@@ -379,8 +382,8 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       {supplierQuote.attachments && supplierQuote.attachments.length > 0 && (
         <CollapsibleSection 
           title="Attachments"
-          isOpen={false}
-          onOpenChange={() => {}}
+          isEmpty={!supplierQuote.attachments || supplierQuote.attachments.length === 0}
+          emptyMessage="No attachments available"
         >
           <SupplierQuoteAttachments 
             supplierQuote={{ id: supplierQuote.id }}

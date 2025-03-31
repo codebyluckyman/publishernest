@@ -80,34 +80,35 @@ export function SavingItem({
                 />
                 
                 {priceBreaks && priceBreaks.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {/* Group by format name to avoid duplicate quantities */}
                     {Array.from(new Set(priceBreaks.map(pb => pb.format_name))).map((formatName) => {
                       const formatBreaks = priceBreaks.filter(pb => pb.format_name === formatName);
                       
                       return (
                         <div key={formatName} className="border rounded-md p-3">
-                          {formatName && <p className="text-sm font-medium mb-2">{formatName}</p>}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                            {formatBreaks.map((priceBreak, pbIndex) => {
-                              // Find price break index in the savings.price_breaks array
-                              const priceBreakFieldIndex = Array.isArray(control._formValues.savings[index]?.price_breaks) 
-                                ? control._formValues.savings[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
-                                : -1;
+                          {formatName && <p className="text-sm font-medium mb-3">{formatName}</p>}
+                          
+                          {formatBreaks.map((priceBreak) => {
+                            // Find price break index in the savings.price_breaks array
+                            const priceBreakFieldIndex = Array.isArray(control._formValues.savings[index]?.price_breaks) 
+                              ? control._formValues.savings[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
+                              : -1;
+                            
+                            if (priceBreakFieldIndex === -1) return null;
                               
-                              if (priceBreakFieldIndex === -1) return null;
+                            return (
+                              <div key={priceBreak.id} className="mb-4 last:mb-0">
+                                <p className="text-xs font-medium text-muted-foreground mb-2">
+                                  Quantity: {priceBreak.quantity.toLocaleString()}
+                                </p>
                                 
-                              return (
-                                <div key={priceBreak.id} className="border rounded p-2">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    Quantity: {priceBreak.quantity.toLocaleString()}
-                                  </p>
-                                  
-                                  {showMultiProducts ? (
-                                    <div className="grid grid-cols-10 gap-1 mt-2">
-                                      {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
+                                {showMultiProducts ? (
+                                  <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-2">
+                                    {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
+                                      <div key={prodIndex} className="flex flex-col">
+                                        <span className="text-xs text-muted-foreground mb-1">Product {prodIndex}</span>
                                         <FormField
-                                          key={prodIndex}
                                           control={control}
                                           name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost_${prodIndex}` as any}
                                           render={({ field }) => (
@@ -118,7 +119,7 @@ export function SavingItem({
                                                   step="0.001"
                                                   min="0"
                                                   placeholder="0.000"
-                                                  className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
+                                                  className="h-8 text-sm px-2"
                                                   {...field}
                                                   onChange={(e) => {
                                                     const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
@@ -130,37 +131,37 @@ export function SavingItem({
                                             </FormItem>
                                           )}
                                         />
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <FormField
-                                      control={control}
-                                      name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <Input
-                                              type="number"
-                                              step="0.001"
-                                              min="0"
-                                              placeholder="0.000"
-                                              className="h-8 text-sm px-2 w-full rounded-md border border-input bg-background"
-                                              {...field}
-                                              onChange={(e) => {
-                                                const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
-                                                field.onChange(value);
-                                              }}
-                                              value={field.value === null ? "" : field.value}
-                                            />
-                                          </FormControl>
-                                        </FormItem>
-                                      )}
-                                    />
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <FormField
+                                    control={control}
+                                    name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input
+                                            type="number"
+                                            step="0.001"
+                                            min="0"
+                                            placeholder="0.000"
+                                            className="h-8 text-sm px-2 w-full max-w-xs"
+                                            {...field}
+                                            onChange={(e) => {
+                                              const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
+                                              field.onChange(value);
+                                            }}
+                                            value={field.value === null ? "" : field.value}
+                                          />
+                                        </FormControl>
+                                      </FormItem>
+                                    )}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       );
                     })}

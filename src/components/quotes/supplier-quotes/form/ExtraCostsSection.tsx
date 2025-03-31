@@ -108,25 +108,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
           </div>
         </div>
         
-        {/* Display product numbers header at the top if needed */}
-        {showMultiProducts && (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
-            <div className="md:col-span-4">
-              {/* Empty space for cost names */}
-            </div>
-            <div className="md:col-span-8">
-              <div className="grid grid-cols-10 gap-1">
-                {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
-                  <div key={i} className="text-center">
-                    <span className="text-xs font-medium text-muted-foreground">Product {i}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {fields.map((field, index) => {
             const extraCost = extraCosts.find(cost => cost.id === field.extra_cost_id);
             if (!extraCost) return null;
