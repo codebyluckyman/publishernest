@@ -1,3 +1,4 @@
+
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ExtraCostTableItem } from "@/types/extraCost";
@@ -115,7 +116,7 @@ export function ExtraCostItem({
                         </div>
                         <FormField
                           control={control}
-                          name={`extra_costs.${index}.unit_cost` as const}
+                          name={`extra_costs.${index}.unit_cost` as any}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>

@@ -1,3 +1,4 @@
+
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { SavingTableItem } from "@/types/saving";
@@ -115,7 +116,7 @@ export function SavingItem({
                         </div>
                         <FormField
                           control={control}
-                          name={`savings.${index}.unit_cost` as const}
+                          name={`savings.${index}.unit_cost` as any}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
@@ -143,7 +144,7 @@ export function SavingItem({
                         <div className="mt-3">
                           <FormField
                             control={control}
-                            name={`savings.${index}.notes` as const}
+                            name={`savings.${index}.notes` as any}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
