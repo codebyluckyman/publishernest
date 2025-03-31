@@ -39,6 +39,14 @@ export function useUnitOfMeasures() {
     value: unit.id
   }));
 
+  // Get only inventory units
+  const inventoryUnitOptions = unitOfMeasures
+    .filter(unit => unit.is_inventory_unit)
+    .map(unit => ({
+      label: unit.abbreviation ? `${unit.name} (${unit.abbreviation})` : unit.name,
+      value: unit.id
+    }));
+
   // Helper to get unit name from id
   const getUnitNameById = (id: string | null | undefined): string | null => {
     if (!id) return null;
@@ -49,6 +57,7 @@ export function useUnitOfMeasures() {
   return {
     unitOfMeasures,
     unitOptions,
+    inventoryUnitOptions,
     isLoading,
     error,
     getUnitNameById

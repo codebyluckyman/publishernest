@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { UnitOfMeasure } from "@/types/unitOfMeasure";
@@ -10,15 +11,17 @@ import { fetchUnitOfMeasures, createUnitOfMeasure, updateUnitOfMeasure, deleteUn
 import { toast } from "sonner";
 import { usePagination, PageSize } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export function UnitOfMeasuresTable() {
   const { currentOrganization } = useOrganization();
   const [units, setUnits] = useState<UnitOfMeasure[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
-  const [newUnit, setNewUnit] = useState({ name: "", abbreviation: "" });
+  const [newUnit, setNewUnit] = useState({ name: "", abbreviation: "", is_inventory_unit: false });
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editedUnit, setEditedUnit] = useState({ name: "", abbreviation: "" });
+  const [editedUnit, setEditedUnit] = useState({ name: "", abbreviation: "", is_inventory_unit: false });
 
   const {
     currentData: paginatedUnits,
@@ -58,7 +61,7 @@ export function UnitOfMeasuresTable() {
 
   const handleAddClick = () => {
     setIsAdding(true);
-    setNewUnit({ name: "", abbreviation: "" });
+    setNewUnit({ name: "", abbreviation: "", is_inventory_unit: false });
   };
 
   const handleAddCancel = () => {
@@ -88,6 +91,7 @@ export function UnitOfMeasuresTable() {
     setEditedUnit({
       name: unit.name,
       abbreviation: unit.abbreviation || "",
+      is_inventory_unit: unit.is_inventory_unit
     });
   };
 
@@ -139,19 +143,20 @@ export function UnitOfMeasuresTable() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Abbreviation</TableHead>
+                  <TableHead>Inventory Unit</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center py-4">
+                    <TableCell colSpan={4} className="text-center py-4">
                       Loading units of measure...
                     </TableCell>
                   </TableRow>
                 ) : units.length === 0 && !isAdding ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center py-4">
+                    <TableCell colSpan={4} className="text-center py-4">
                       No units of measure defined. Add one below.
                     </TableCell>
                   </TableRow>
@@ -174,6 +179,20 @@ export function UnitOfMeasuresTable() {
                                 onChange={(e) => setEditedUnit({...editedUnit, abbreviation: e.target.value})}
                                 className="w-full"
                               />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-2">
+                                <Switch 
+                                  id={`inventory-unit-${unit.id}`}
+                                  checked={editedUnit.is_inventory_unit}
+                                  onCheckedChange={(checked) => 
+                                    setEditedUnit({...editedUnit, is_inventory_unit: checked})
+                                  }
+                                />
+                                <Label htmlFor={`inventory-unit-${unit.id}`}>
+                                  {editedUnit.is_inventory_unit ? "Yes" : "No"}
+                                </Label>
+                              </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex space-x-1">
@@ -200,6 +219,11 @@ export function UnitOfMeasuresTable() {
                           <>
                             <TableCell>{unit.name}</TableCell>
                             <TableCell>{unit.abbreviation || '-'}</TableCell>
+                            <TableCell>
+                              <span className={unit.is_inventory_unit ? "text-primary" : "text-muted-foreground"}>
+                                {unit.is_inventory_unit ? "Yes" : "No"}
+                              </span>
+                            </TableCell>
                             <TableCell>
                               <div className="flex space-x-1">
                                 <Button 
@@ -241,6 +265,20 @@ export function UnitOfMeasuresTable() {
                             onChange={(e) => setNewUnit({...newUnit, abbreviation: e.target.value})}
                             className="w-full"
                           />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Switch 
+                              id="new-inventory-unit"
+                              checked={newUnit.is_inventory_unit}
+                              onCheckedChange={(checked) => 
+                                setNewUnit({...newUnit, is_inventory_unit: checked})
+                              }
+                            />
+                            <Label htmlFor="new-inventory-unit">
+                              {newUnit.is_inventory_unit ? "Yes" : "No"}
+                            </Label>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-1">

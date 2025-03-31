@@ -17,13 +17,14 @@ export async function fetchUnitOfMeasures(organizationId?: string): Promise<Unit
 
 export async function createUnitOfMeasure(
   organizationId: string, 
-  newUnit: { name: string; abbreviation?: string }
+  newUnit: { name: string; abbreviation?: string; is_inventory_unit: boolean }
 ): Promise<UnitOfMeasure> {
   const { data, error } = await supabase
     .from('unit_of_measures')
     .insert({
       name: newUnit.name,
       abbreviation: newUnit.abbreviation || null,
+      is_inventory_unit: newUnit.is_inventory_unit,
       organization_id: organizationId
     })
     .select();
@@ -39,13 +40,14 @@ export async function createUnitOfMeasure(
 
 export async function updateUnitOfMeasure(
   id: string,
-  updates: { name: string; abbreviation?: string }
+  updates: { name: string; abbreviation?: string; is_inventory_unit: boolean }
 ): Promise<UnitOfMeasure> {
   const { data, error } = await supabase
     .from('unit_of_measures')
     .update({
       name: updates.name,
-      abbreviation: updates.abbreviation || null
+      abbreviation: updates.abbreviation || null,
+      is_inventory_unit: updates.is_inventory_unit
     })
     .eq('id', id)
     .select();
