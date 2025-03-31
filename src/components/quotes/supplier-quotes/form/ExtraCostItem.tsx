@@ -1,3 +1,4 @@
+
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ExtraCost } from "@/types/extraCost";
@@ -67,6 +68,17 @@ export function ExtraCostItem({
                         <div key={formatName} className="border rounded-md p-3">
                           {formatName && <p className="text-sm font-medium mb-3">{formatName}</p>}
                           
+                          {showMultiProducts && (
+                            <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2 mb-3">
+                              <div></div> {/* Empty cell for quantity column */}
+                              {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
+                                <div key={prodIndex} className="flex items-center justify-center">
+                                  <span className="text-xs text-muted-foreground">{prodIndex}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
                           {formatBreaks.map((priceBreak) => {
                             const priceBreakFieldIndex = Array.isArray(control._formValues.extra_costs[index]?.price_breaks) 
                               ? control._formValues.extra_costs[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
@@ -82,8 +94,7 @@ export function ExtraCostItem({
                                       <span className="text-xs text-muted-foreground">{priceBreak.quantity.toLocaleString()}</span>
                                     </div>
                                     {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
-                                      <div key={prodIndex} className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground mb-1">{prodIndex}</span>
+                                      <div key={prodIndex}>
                                         <FormField
                                           control={control}
                                           name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost_${prodIndex}` as any}
