@@ -1,4 +1,3 @@
-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User, LogOut, Building, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,6 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
   const { user, signOut } = useAuth();
   const { currentOrganization } = useOrganization();
   
-  // Track open submenus
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
   const [userProfile, setUserProfile] = useState<{
     first_name: string | null;
@@ -32,14 +30,11 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
     avatar_url: string | null;
   } | null>(null);
 
-  // Auto-expand submenus based on current route
   useEffect(() => {
     const currentPath = location.pathname;
     
-    // Check all menu items with submenus
     menuItems.forEach(item => {
       if (item.submenu) {
-        // Check if current path matches any submenu item
         const isSubmenuActive = item.submenu.some(subItem => 
           currentPath === subItem.path || 
           (currentPath.includes('/quote-requests') && subItem.path === '/quote-requests')
@@ -55,7 +50,6 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
     });
   }, [location.pathname, menuItems]);
 
-  // Fetch user profile
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user?.id) {
@@ -69,6 +63,7 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
           if (error) throw error;
           
           if (data) {
+            console.log("Fetched profile in sidebar:", data);
             setUserProfile(data);
           }
         } catch (error) {
@@ -98,7 +93,6 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
     }
   };
 
-  // Generate user initials for avatar fallback
   const getUserInitials = () => {
     if (userProfile?.first_name && userProfile?.last_name) {
       return `${userProfile.first_name[0]}${userProfile.last_name[0]}`.toUpperCase();
@@ -106,7 +100,6 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
     return user?.email ? user.email[0].toUpperCase() : undefined;
   };
 
-  // Get display name
   const getDisplayName = () => {
     if (userProfile?.first_name && userProfile?.last_name) {
       return `${userProfile.first_name} ${userProfile.last_name}`;
@@ -137,7 +130,6 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                         onClick={() => toggleSubmenu(item.title)}
                       >
                         <div className="flex items-center gap-3">
-                          {/* @ts-ignore - passing the real icon component here */}
                           <item.icon className="w-5 h-5" />
                           <span>{item.label}</span>
                         </div>
@@ -156,7 +148,6 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                                 to={subItem.path} 
                                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === subItem.path || (location.pathname.includes(subItem.path) && subItem.path !== '/') ? "bg-accent text-white" : "hover:bg-gray-100"}`}
                               >
-                                {/* @ts-ignore - passing the real icon component here */}
                                 <subItem.icon className="w-5 h-5" />
                                 <span>{subItem.label}</span>
                               </Link>
@@ -168,7 +159,6 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                   ) : (
                     <SidebarMenuButton asChild tooltip={item.label}>
                       <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
-                        {/* @ts-ignore - passing the real icon component here */}
                         <item.icon className="w-5 h-5" />
                         <span>{item.label}</span>
                       </Link>

@@ -67,6 +67,7 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
           if (error) throw error;
           
           if (data) {
+            console.log("Fetched profile in mobile nav:", data);
             setUserProfile(data);
           }
         } catch (error) {

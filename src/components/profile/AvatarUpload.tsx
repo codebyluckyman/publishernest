@@ -61,6 +61,14 @@ export function AvatarUpload({ userId, avatarUrl, onAvatarChange }: AvatarUpload
         .from('avatars')
         .getPublicUrl(filePath);
       
+      // Update the avatar URL in the profiles table
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrlData.publicUrl })
+        .eq('id', userId);
+        
+      if (updateError) throw updateError;
+      
       onAvatarChange(publicUrlData.publicUrl);
       toast.success('Avatar updated successfully');
       
@@ -86,6 +94,14 @@ export function AvatarUpload({ userId, avatarUrl, onAvatarChange }: AvatarUpload
       if (error && !error.message.includes('Object not found')) {
         throw error;
       }
+      
+      // Update the profile to remove the avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('id', userId);
+        
+      if (updateError) throw updateError;
       
       onAvatarChange('');
       toast.success('Avatar removed successfully');

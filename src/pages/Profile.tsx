@@ -42,6 +42,7 @@ const ProfilePage = () => {
             setLastName(data.last_name || "");
             setJobTitle(data.job_title || "");
             setAvatarUrl(data.avatar_url || null);
+            console.log("Avatar URL from profile:", data.avatar_url);
           }
         } catch (error) {
           console.error("Error fetching profile:", error);
