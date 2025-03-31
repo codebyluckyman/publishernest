@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, User } from "lucide-react";
 import { OrganizationMember } from "@/context/OrganizationContext";
+import UserAvatar from "@/components/UserAvatar";
 
 type UserProfile = {
   id: string;
   email: string;
   first_name: string | null;
   last_name: string | null;
+  avatar_url: string | null;
 };
 
 interface MemberItemProps {
@@ -29,18 +31,33 @@ export const MemberItem = ({
     ? `${member.profile.first_name} ${member.profile.last_name}`
     : member.profile?.email || "Unknown User";
 
+  const getUserInitials = () => {
+    if (member.profile?.first_name && member.profile?.last_name) {
+      return `${member.profile.first_name[0]}${member.profile.last_name[0]}`.toUpperCase();
+    }
+    return member.profile?.email ? member.profile.email[0].toUpperCase() : "?";
+  };
+
   return (
     <div className="flex items-center justify-between py-2 border-b">
-      <div className="flex items-center gap-2">
-        <div className={`p-1 rounded ${isOwner ? "bg-amber-100" : member.role === "admin" ? "bg-blue-100" : "bg-gray-100"}`}>
-          {isOwner ? (
-            <Shield className="h-4 w-4 text-amber-600" />
-          ) : member.role === "admin" ? (
-            <Shield className="h-4 w-4 text-blue-600" />
-          ) : (
-            <User className="h-4 w-4 text-gray-600" />
-          )}
-        </div>
+      <div className="flex items-center gap-3">
+        {member.profile?.avatar_url ? (
+          <UserAvatar 
+            avatarUrl={member.profile.avatar_url}
+            fallback={getUserInitials()}
+            className="h-9 w-9"
+          />
+        ) : (
+          <div className={`p-1 rounded ${isOwner ? "bg-amber-100" : member.role === "admin" ? "bg-blue-100" : "bg-gray-100"}`}>
+            {isOwner ? (
+              <Shield className="h-4 w-4 text-amber-600" />
+            ) : member.role === "admin" ? (
+              <Shield className="h-4 w-4 text-blue-600" />
+            ) : (
+              <User className="h-4 w-4 text-gray-600" />
+            )}
+          </div>
+        )}
         <div>
           <div className="font-medium">{displayName}</div>
           <div className="text-xs text-gray-500">

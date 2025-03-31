@@ -28,6 +28,7 @@ type UserProfile = {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  avatar_url: string | null;
 };
 
 export function OrganizationMembersTable() {
@@ -48,7 +49,7 @@ export function OrganizationMembersTable() {
         
         const { data: profiles, error } = await supabase
           .from('profiles')
-          .select('id, email, first_name, last_name')
+          .select('id, email, first_name, last_name, avatar_url')
           .in('id', memberIds);
         
         if (error) throw error;

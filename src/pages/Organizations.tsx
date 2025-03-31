@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useOrganization, OrganizationMember } from "@/context/OrganizationContext";
 import { useAuth } from "@/context/AuthContext";
@@ -24,6 +25,7 @@ type UserProfile = {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  avatar_url: string | null;
 };
 
 const Organizations = () => {
@@ -51,7 +53,7 @@ const Organizations = () => {
         
         const { data: profiles, error } = await supabase
           .from('profiles')
-          .select('id, email, first_name, last_name')
+          .select('id, email, first_name, last_name, avatar_url')
           .in('id', memberIds);
         
         if (error) throw error;
