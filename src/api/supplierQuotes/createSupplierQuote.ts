@@ -76,29 +76,48 @@ export async function createSupplierQuote(
     }
   }
 
-  // Insert extra costs price breaks
+  // First, insert each extra cost as a record in supplier_quote_extra_costs
   if (formData.extra_costs && formData.extra_costs.length > 0) {
+    // Step 1: Create regular extra cost entries first
+    const extraCostsToInsert = formData.extra_costs.map(ec => ({
+      supplier_quote_id: supplierQuote.id,
+      extra_cost_id: ec.extra_cost_id,
+      unit_cost: null // We'll store price break specific costs separately
+    }));
+
+    const { error: extraCostsInsertError } = await supabase
+      .from("supplier_quote_extra_costs")
+      .insert(extraCostsToInsert);
+
+    if (extraCostsInsertError) {
+      console.error("Error inserting extra costs:", extraCostsInsertError);
+      throw new Error(`Error inserting extra costs: ${extraCostsInsertError.message}`);
+    }
+
+    // Step 2: Now insert the price break specific values
     const extraCostsPriceBreaksToInsert: any[] = [];
     
     formData.extra_costs.forEach(ec => {
       if (ec.price_breaks && ec.price_breaks.length > 0) {
         ec.price_breaks.forEach(pb => {
-          extraCostsPriceBreaksToInsert.push({
-            supplier_quote_id: supplierQuote.id,
-            extra_cost_id: ec.extra_cost_id,
-            price_break_id: pb.price_break_id,
-            unit_cost: pb.unit_cost,
-            unit_cost_1: pb.unit_cost_1,
-            unit_cost_2: pb.unit_cost_2,
-            unit_cost_3: pb.unit_cost_3,
-            unit_cost_4: pb.unit_cost_4,
-            unit_cost_5: pb.unit_cost_5,
-            unit_cost_6: pb.unit_cost_6,
-            unit_cost_7: pb.unit_cost_7,
-            unit_cost_8: pb.unit_cost_8,
-            unit_cost_9: pb.unit_cost_9,
-            unit_cost_10: pb.unit_cost_10
-          });
+          if (pb.price_break_id) {
+            extraCostsPriceBreaksToInsert.push({
+              supplier_quote_id: supplierQuote.id,
+              extra_cost_id: ec.extra_cost_id,
+              price_break_id: pb.price_break_id,
+              unit_cost: pb.unit_cost,
+              unit_cost_1: pb.unit_cost_1,
+              unit_cost_2: pb.unit_cost_2,
+              unit_cost_3: pb.unit_cost_3,
+              unit_cost_4: pb.unit_cost_4,
+              unit_cost_5: pb.unit_cost_5,
+              unit_cost_6: pb.unit_cost_6,
+              unit_cost_7: pb.unit_cost_7,
+              unit_cost_8: pb.unit_cost_8,
+              unit_cost_9: pb.unit_cost_9,
+              unit_cost_10: pb.unit_cost_10
+            });
+          }
         });
       }
     });
@@ -109,6 +128,7 @@ export async function createSupplierQuote(
         .insert(extraCostsPriceBreaksToInsert);
 
       if (extraCostsError) {
+        console.error("Error inserting extra costs price breaks:", extraCostsError);
         throw new Error(`Error inserting extra costs price breaks: ${extraCostsError.message}`);
       }
     }

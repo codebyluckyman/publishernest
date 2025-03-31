@@ -45,8 +45,11 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
       })) || []
     ) || [];
     
-    const newExtraCosts = extraCosts.map(cost => ({
-      extra_cost_id: cost.id || "",
+    // Make sure we're working with validated data
+    const validExtraCosts = extraCosts.filter(cost => cost && cost.id);
+    
+    const newExtraCosts = validExtraCosts.map(cost => ({
+      extra_cost_id: cost.id,
       price_breaks: allPriceBreaks.map(priceBreak => ({
         price_break_id: priceBreak.id || "",
         unit_cost: null,
@@ -64,6 +67,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
       }))
     }));
     
+    console.log("Setting extra costs form fields:", newExtraCosts);
     replace(newExtraCosts);
   }, [supplierId, extraCosts, replace, quoteRequest.formats]);
   
@@ -108,6 +112,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
   const groupedExtraCosts: Record<string, ExtraCostTableItem[]> = {};
   
   extraCosts.forEach(cost => {
+    if (!cost) return; // Skip invalid costs
     const unitKey = cost.unit_of_measure_name || 'Other';
     if (!groupedExtraCosts[unitKey]) {
       groupedExtraCosts[unitKey] = [];
@@ -133,6 +138,8 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
             <h3 className="text-sm font-medium mb-3 text-muted-foreground">{unitName}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {costsGroup.map(extraCost => {
+                if (!extraCost || !extraCost.id) return null;
+                
                 const fieldIndex = fields.findIndex(f => f.extra_cost_id === extraCost.id);
                 if (fieldIndex === -1) return null;
                 
