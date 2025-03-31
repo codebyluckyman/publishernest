@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -77,6 +76,7 @@ interface SupplierQuoteFormProps {
   onSupplierChange: (supplierId: string) => void;
   createdQuoteId: string | null;
   onDone?: () => void;
+  onFormChange?: (hasChanges: boolean) => void;
 }
 
 export function SupplierQuoteForm({
@@ -87,7 +87,8 @@ export function SupplierQuoteForm({
   onCancel,
   onSupplierChange,
   createdQuoteId,
-  onDone
+  onDone,
+  onFormChange
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
@@ -157,7 +158,6 @@ export function SupplierQuoteForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...initialValues,
-      // Initialize packaging details with null values
       packaging_carton_quantity: initialValues.packaging_carton_quantity || null,
       packaging_carton_weight: initialValues.packaging_carton_weight || null,
       packaging_carton_length: initialValues.packaging_carton_length || null,
@@ -208,6 +208,16 @@ export function SupplierQuoteForm({
       }
     }
   }, [quoteRequest.formats, form]);
+
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      if (onFormChange && form.formState.isDirty) {
+        onFormChange(true);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, onFormChange]);
 
   const handleSubmit = (data: SupplierQuoteFormValues) => {
     onSubmit(data);
