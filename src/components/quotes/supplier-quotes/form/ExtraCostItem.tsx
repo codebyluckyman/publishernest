@@ -1,4 +1,3 @@
-
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ExtraCost } from "@/types/extraCost";
@@ -28,7 +27,6 @@ export function ExtraCostItem({
   maxNumProducts = 1,
   priceBreaks = []
 }: ExtraCostItemProps) {
-  // Set default collapsed state
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -62,7 +60,6 @@ export function ExtraCostItem({
               <div className="space-y-4">
                 {priceBreaks && priceBreaks.length > 0 ? (
                   <div className="space-y-6">
-                    {/* Group by format name to avoid duplicate quantities */}
                     {Array.from(new Set(priceBreaks.map(pb => pb.format_name))).map((formatName) => {
                       const formatBreaks = priceBreaks.filter(pb => pb.format_name === formatName);
                       
@@ -71,7 +68,6 @@ export function ExtraCostItem({
                           {formatName && <p className="text-sm font-medium mb-3">{formatName}</p>}
                           
                           {formatBreaks.map((priceBreak) => {
-                            // Find price break index in the extra_costs.price_breaks array
                             const priceBreakFieldIndex = Array.isArray(control._formValues.extra_costs[index]?.price_breaks) 
                               ? control._formValues.extra_costs[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
                               : -1;
@@ -87,7 +83,7 @@ export function ExtraCostItem({
                                     </div>
                                     {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
                                       <div key={prodIndex} className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground mb-1">Product {prodIndex}</span>
+                                        <span className="text-xs text-muted-foreground mb-1">{prodIndex}</span>
                                         <FormField
                                           control={control}
                                           name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost_${prodIndex}` as any}
