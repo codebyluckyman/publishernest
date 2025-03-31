@@ -46,7 +46,15 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     ) || [];
     
     // Make sure we're working with validated data
-    const validExtraCosts = extraCosts.filter(cost => cost && cost.id);
+    // Filter out any null or undefined extra costs and ensure they have valid IDs
+    const validExtraCosts = extraCosts.filter(cost => 
+      cost && 
+      cost.id && 
+      typeof cost.id === 'string' && 
+      cost.id.trim() !== ''
+    );
+    
+    console.log("Valid extra costs:", validExtraCosts.map(c => c.id));
     
     const newExtraCosts = validExtraCosts.map(cost => ({
       extra_cost_id: cost.id,
@@ -112,7 +120,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
   const groupedExtraCosts: Record<string, ExtraCostTableItem[]> = {};
   
   extraCosts.forEach(cost => {
-    if (!cost) return; // Skip invalid costs
+    if (!cost || !cost.id) return; // Skip invalid costs
     const unitKey = cost.unit_of_measure_name || 'Other';
     if (!groupedExtraCosts[unitKey]) {
       groupedExtraCosts[unitKey] = [];
