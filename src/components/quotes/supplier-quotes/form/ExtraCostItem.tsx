@@ -6,7 +6,6 @@ import { FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { PriceBreak } from "@/types/quoteRequest";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
@@ -18,6 +17,8 @@ interface ExtraCostItemProps {
   showMultiProducts?: boolean;
   maxNumProducts?: number;
   priceBreaks?: (PriceBreak & { format_name?: string; format_id?: string })[];
+  isOpen: boolean;
+  onOpenChange: (index: number, open: boolean) => void;
 }
 
 export function ExtraCostItem({ 
@@ -26,10 +27,10 @@ export function ExtraCostItem({
   extraCost,
   showMultiProducts = false,
   maxNumProducts = 1,
-  priceBreaks = []
+  priceBreaks = [],
+  isOpen,
+  onOpenChange
 }: ExtraCostItemProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <Card>
       <CardContent className="p-4">
@@ -49,14 +50,14 @@ export function ExtraCostItem({
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => onOpenChange(index, !isOpen)}
               className="p-0 h-8 w-8"
             >
               {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           </div>
           
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <Collapsible open={isOpen} onOpenChange={(open) => onOpenChange(index, open)}>
             <CollapsibleContent>
               <div className="space-y-4">
                 {priceBreaks && priceBreaks.length > 0 ? (

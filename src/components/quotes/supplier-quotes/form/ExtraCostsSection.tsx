@@ -1,7 +1,7 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ExtraCostItem } from "./ExtraCostItem";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
@@ -21,6 +21,8 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     control,
     name: "extra_costs"
   });
+  
+  const [openItems, setOpenItems] = useState<Record<number, boolean>>({});
   
   const supplierId = useWatch({
     control,
@@ -64,6 +66,13 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     
     replace(newExtraCosts);
   }, [supplierId, extraCosts, replace, quoteRequest.formats]);
+  
+  const handleOpenChange = (index: number, isOpen: boolean) => {
+    setOpenItems(prev => ({
+      ...prev,
+      [index]: isOpen
+    }));
+  };
   
   if (!extraCosts || extraCosts.length === 0) {
     return (
@@ -122,6 +131,8 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
                 showMultiProducts={showMultiProducts}
                 maxNumProducts={maxNumProducts}
                 priceBreaks={sortedPriceBreaks}
+                isOpen={!!openItems[index]}
+                onOpenChange={handleOpenChange}
               />
             );
           })}
