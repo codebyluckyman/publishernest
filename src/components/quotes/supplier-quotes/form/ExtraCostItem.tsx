@@ -60,7 +60,7 @@ export function ExtraCostItem({
             <CollapsibleContent>
               <div className="space-y-4">
                 {priceBreaks && priceBreaks.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="space-y-0">
                     {Array.from(new Set(priceBreaks.map(pb => pb.format_name))).map((formatName) => {
                       const formatBreaks = priceBreaks.filter(pb => pb.format_name === formatName);
                       
@@ -79,7 +79,7 @@ export function ExtraCostItem({
                             </div>
                           )}
                           
-                          {formatBreaks.map((priceBreak) => {
+                          {formatBreaks.map((priceBreak, breakIndex) => {
                             const priceBreakFieldIndex = Array.isArray(control._formValues.extra_costs[index]?.price_breaks) 
                               ? control._formValues.extra_costs[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
                               : -1;
@@ -87,7 +87,10 @@ export function ExtraCostItem({
                             if (priceBreakFieldIndex === -1) return null;
                               
                             return (
-                              <div key={priceBreak.id} className="mb-4 last:mb-0">
+                              <div 
+                                key={priceBreak.id} 
+                                className={`py-2 ${breakIndex < formatBreaks.length - 1 ? 'border-b border-gray-200/50' : ''}`}
+                              >
                                 {showMultiProducts ? (
                                   <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2">
                                     <div className="flex items-center">
