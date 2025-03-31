@@ -1,3 +1,4 @@
+
 import { ExtraCost, DefaultExtraCost } from "./extraCost";
 import { Saving, DefaultSaving } from "./saving";
 
@@ -100,6 +101,7 @@ export interface QuoteRequestFormValues {
       notes?: string;
     }[];
     price_breaks?: {
+      id?: string; // Add the ID field for price breaks
       quantity: number;
     }[];
     num_products?: number; // Single number of products for all price breaks

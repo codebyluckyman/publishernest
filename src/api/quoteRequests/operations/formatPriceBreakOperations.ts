@@ -13,22 +13,43 @@ export async function updateFormatPriceBreaks(
   if (!priceBreaks) return;
 
   try {
-    // Convert priceBreaks to JSON format for our new function
+    // Convert priceBreaks to JSON format for our function
     const priceBreaksJson = JSON.stringify(priceBreaks);
     
-    // Call the new database function that handles updates safely
-    const { error } = await supabase.rpc(
-      'update_format_price_breaks',
-      {
-        formatid: formatId,
-        pricebreaks: priceBreaksJson,
-        numproducts: numProducts
-      }
-    );
+    // Call the database function through raw SQL instead of RPC
+    // since the RPC function may not be correctly registered
+    const { error } = await supabase.from('quote_request_format_price_breaks')
+      .upsert(
+        priceBreaks.map(pb => ({
+          id: pb.id, // Preserve the ID if it exists
+          quote_request_format_id: formatId,
+          quantity: pb.quantity,
+          num_products: numProducts
+        })),
+        { onConflict: 'id' }
+      );
 
     if (error) {
       console.error("Error updating price breaks:", error);
       throw error;
+    }
+
+    // Delete any price breaks that were removed and aren't referenced by supplier quotes
+    const existingIds = priceBreaks.filter(pb => pb.id).map(pb => pb.id);
+    
+    if (existingIds.length > 0) {
+      const { error: deleteError } = await supabase.rpc(
+        'delete_unused_price_breaks',
+        {
+          format_id: formatId,
+          preserved_ids: existingIds
+        }
+      );
+      
+      if (deleteError) {
+        console.error("Error cleaning up unused price breaks:", deleteError);
+        // Don't throw on cleanup errors to avoid breaking the main flow
+      }
     }
   } catch (error) {
     console.error("Error in updateFormatPriceBreaks:", error);

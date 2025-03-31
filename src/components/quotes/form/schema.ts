@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 // Define schemas for nested objects
@@ -8,13 +9,16 @@ const productSchema = z.object({
 });
 
 const priceBreakSchema = z.object({
+  id: z.string().optional(), // Add the id field for price breaks
   quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
 });
 
 // Main schema for Quote Request Form
 export const quoteRequestFormSchema = z.object({
+  id: z.string().optional(), // Add the ID field for the quote request
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
   supplier_ids: z.string().array().nonempty({ message: "At least one supplier must be selected" }),
+  supplier_id: z.string().optional(), // Add supplier_id for backward compatibility
   description: z.string().optional(),
   due_date: z.date().optional(),
   notes: z.string().optional(),
@@ -48,8 +52,10 @@ export const quoteRequestFormSchema = z.object({
 });
 
 export interface QuoteRequestFormValues {
+  id?: string; // Add the ID field
   title: string;
   supplier_ids: string[];
+  supplier_id?: string; // Add supplier_id for backward compatibility
   description?: string;
   due_date?: Date;
   notes?: string;
