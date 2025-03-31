@@ -15,7 +15,7 @@ export async function createSupplierQuote(
       organization_id: organizationId,
       quote_request_id: formData.quote_request_id,
       supplier_id: formData.supplier_id,
-      currency: formData.currency,
+      currency: formData.currency || 'USD',  // Default to USD if currency is not provided
       notes: formData.notes || null,
       status: "draft",
       reference: formData.reference || null,

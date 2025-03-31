@@ -17,10 +17,13 @@ import { FormActions } from "./form/FormActions";
 import { SuccessView } from "./form/SuccessView";
 
 const formSchema = z.object({
+  // Required foreign keys that can't be null
   quote_request_id: z.string(),
   supplier_id: z.string(),
+  
+  // All other fields are optional for draft save
   notes: z.string().optional(),
-  currency: z.string(),
+  currency: z.string().optional().default("USD"),
   price_breaks: z.array(
     z.object({
       quote_request_format_id: z.string(),
@@ -29,21 +32,21 @@ const formSchema = z.object({
       product_id: z.string().optional(),
       unit_cost: z.number().nullable(),
     })
-  ),
+  ).optional().default([]),
   extra_costs: z.array(
     z.object({
       extra_cost_id: z.string(),
       unit_cost: z.number().nullable(),
       notes: z.string().optional(),
     })
-  ),
+  ).optional().default([]),
   savings: z.array(
     z.object({
       saving_id: z.string(),
       unit_cost: z.number().nullable(),
       notes: z.string().optional(),
     })
-  ),
+  ).optional().default([]),
   reference: z.string().optional(),
   valid_from: z.string().optional(),
   valid_to: z.string().optional(),
@@ -51,7 +54,7 @@ const formSchema = z.object({
   remarks: z.string().optional(),
   production_schedule: z.record(z.string(), z.string().nullable()).optional(),
   
-  // Packaging details
+  // Packaging details - all optional
   packaging_carton_quantity: z.number().nullable().optional(),
   packaging_carton_weight: z.number().nullable().optional(),
   packaging_carton_length: z.number().nullable().optional(),
