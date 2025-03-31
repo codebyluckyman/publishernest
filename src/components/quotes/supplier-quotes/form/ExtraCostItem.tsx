@@ -1,7 +1,7 @@
 
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { ExtraCost } from "@/types/extraCost";
+import { ExtraCostTableItem } from "@/types/extraCost";
 import { FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,12 +13,12 @@ import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 interface ExtraCostItemProps {
   control: Control<SupplierQuoteFormValues>;
   index: number;
-  extraCost: ExtraCost;
+  extraCost: ExtraCostTableItem;
   showMultiProducts?: boolean;
   maxNumProducts?: number;
   priceBreaks?: (PriceBreak & { format_name?: string; format_id?: string })[];
   isOpen: boolean;
-  onOpenChange: (index: number, open: boolean) => void;
+  onOpenChange: (costId: string, open: boolean) => void;
 }
 
 export function ExtraCostItem({ 
@@ -41,23 +41,18 @@ export function ExtraCostItem({
               {extraCost.description && (
                 <p className="text-sm text-muted-foreground">{extraCost.description}</p>
               )}
-              {extraCost.unit_of_measure_name && (
-                <p className="text-xs text-muted-foreground">
-                  Unit: {extraCost.unit_of_measure_name}
-                </p>
-              )}
             </div>
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => onOpenChange(index, !isOpen)}
+              onClick={() => onOpenChange(extraCost.id, !isOpen)}
               className="p-0 h-8 w-8"
             >
               {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           </div>
           
-          <Collapsible open={isOpen} onOpenChange={(open) => onOpenChange(index, open)}>
+          <Collapsible open={isOpen} onOpenChange={(open) => onOpenChange(extraCost.id, open)}>
             <CollapsibleContent>
               <div className="space-y-4">
                 {priceBreaks && priceBreaks.length > 0 ? (

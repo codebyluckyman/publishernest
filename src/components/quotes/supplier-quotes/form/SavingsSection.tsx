@@ -22,7 +22,7 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     name: "savings"
   });
   
-  const [openItems, setOpenItems] = useState<Record<number, boolean>>({});
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   
   const supplierId = useWatch({
     control,
@@ -68,10 +68,10 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     replace(newSavings);
   }, [supplierId, savings, replace, quoteRequest.formats]);
 
-  const handleOpenChange = (index: number, isOpen: boolean) => {
+  const handleOpenChange = (savingId: string, isOpen: boolean) => {
     setOpenItems(prev => ({
       ...prev,
-      [index]: isOpen
+      [savingId]: isOpen
     }));
   };
   
@@ -105,6 +105,17 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
   // Sort price breaks by quantity in ascending order
   const sortedPriceBreaks = allPriceBreaks.sort((a, b) => a.quantity - b.quantity);
   
+  // Group savings by unit of measure
+  const groupedSavings: Record<string, SavingTableItem[]> = {};
+  
+  savings.forEach(saving => {
+    const unitKey = saving.unit_of_measure_name || 'Other';
+    if (!groupedSavings[unitKey]) {
+      groupedSavings[unitKey] = [];
+    }
+    groupedSavings[unitKey].push(saving);
+  });
+  
   return (
     <CollapsibleSection
       title="Savings"
@@ -118,26 +129,33 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {fields.map((field, index) => {
-            const saving = savings.find(s => s.id === field.saving_id);
-            if (!saving) return null;
-            
-            return (
-              <SavingItem 
-                key={field.id}
-                control={control}
-                index={index}
-                saving={saving}
-                showMultiProducts={showMultiProducts}
-                maxNumProducts={maxNumProducts}
-                priceBreaks={sortedPriceBreaks}
-                isOpen={!!openItems[index]}
-                onOpenChange={handleOpenChange}
-              />
-            );
-          })}
-        </div>
+        {Object.entries(groupedSavings).map(([unitName, savingsGroup]) => (
+          <div key={unitName} className="mb-6">
+            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{unitName}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {savingsGroup.map(saving => {
+                const fieldIndex = fields.findIndex(f => f.saving_id === saving.id);
+                if (fieldIndex === -1) return null;
+                
+                const field = fields[fieldIndex];
+                
+                return (
+                  <SavingItem 
+                    key={field.id}
+                    control={control}
+                    index={fieldIndex}
+                    saving={saving}
+                    showMultiProducts={showMultiProducts}
+                    maxNumProducts={maxNumProducts}
+                    priceBreaks={sortedPriceBreaks}
+                    isOpen={!!openItems[saving.id]}
+                    onOpenChange={handleOpenChange}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </CollapsibleSection>
   );

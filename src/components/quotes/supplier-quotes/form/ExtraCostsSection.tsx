@@ -22,7 +22,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     name: "extra_costs"
   });
   
-  const [openItems, setOpenItems] = useState<Record<number, boolean>>({});
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   
   const supplierId = useWatch({
     control,
@@ -67,10 +67,10 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     replace(newExtraCosts);
   }, [supplierId, extraCosts, replace, quoteRequest.formats]);
   
-  const handleOpenChange = (index: number, isOpen: boolean) => {
+  const handleOpenChange = (costId: string, isOpen: boolean) => {
     setOpenItems(prev => ({
       ...prev,
-      [index]: isOpen
+      [costId]: isOpen
     }));
   };
   
@@ -104,6 +104,17 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
   // Sort price breaks by quantity in ascending order
   const sortedPriceBreaks = allPriceBreaks.sort((a, b) => a.quantity - b.quantity);
   
+  // Group extra costs by unit of measure
+  const groupedExtraCosts: Record<string, ExtraCostTableItem[]> = {};
+  
+  extraCosts.forEach(cost => {
+    const unitKey = cost.unit_of_measure_name || 'Other';
+    if (!groupedExtraCosts[unitKey]) {
+      groupedExtraCosts[unitKey] = [];
+    }
+    groupedExtraCosts[unitKey].push(cost);
+  });
+  
   return (
     <CollapsibleSection
       title="Extra Costs"
@@ -117,26 +128,33 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {fields.map((field, index) => {
-            const extraCost = extraCosts.find(cost => cost.id === field.extra_cost_id);
-            if (!extraCost) return null;
-            
-            return (
-              <ExtraCostItem 
-                key={field.id}
-                control={control}
-                index={index}
-                extraCost={extraCost}
-                showMultiProducts={showMultiProducts}
-                maxNumProducts={maxNumProducts}
-                priceBreaks={sortedPriceBreaks}
-                isOpen={!!openItems[index]}
-                onOpenChange={handleOpenChange}
-              />
-            );
-          })}
-        </div>
+        {Object.entries(groupedExtraCosts).map(([unitName, costsGroup]) => (
+          <div key={unitName} className="mb-6">
+            <h3 className="text-sm font-medium mb-3 text-muted-foreground">{unitName}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {costsGroup.map(extraCost => {
+                const fieldIndex = fields.findIndex(f => f.extra_cost_id === extraCost.id);
+                if (fieldIndex === -1) return null;
+                
+                const field = fields[fieldIndex];
+                
+                return (
+                  <ExtraCostItem 
+                    key={field.id}
+                    control={control}
+                    index={fieldIndex}
+                    extraCost={extraCost}
+                    showMultiProducts={showMultiProducts}
+                    maxNumProducts={maxNumProducts}
+                    priceBreaks={sortedPriceBreaks}
+                    isOpen={!!openItems[extraCost.id]}
+                    onOpenChange={handleOpenChange}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </CollapsibleSection>
   );
