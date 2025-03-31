@@ -6,6 +6,7 @@ import { FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { PriceBreak } from "@/types/quoteRequest";
 
 interface SavingItemProps {
   control: Control<SupplierQuoteFormValues>;
@@ -13,6 +14,7 @@ interface SavingItemProps {
   saving: Saving;
   showMultiProducts?: boolean;
   maxNumProducts?: number;
+  priceBreaks?: (PriceBreak & { format_name?: string })[];
 }
 
 export function SavingItem({ 
@@ -20,12 +22,13 @@ export function SavingItem({
   index, 
   saving,
   showMultiProducts = false,
-  maxNumProducts = 1
+  maxNumProducts = 1,
+  priceBreaks = []
 }: SavingItemProps) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-4">
             <div>
               <p className="text-sm font-medium">{saving.name}</p>
@@ -37,6 +40,7 @@ export function SavingItem({
                   Unit: {saving.unit_of_measure_name}
                 </p>
               )}
+              
               <div className="mt-2">
                 <FormField
                   control={control}
@@ -45,8 +49,8 @@ export function SavingItem({
                     <FormItem>
                       <FormControl>
                         <Textarea
-                          placeholder="Notes"
-                          className="min-h-[60px] text-sm resize-none"
+                          placeholder="Add notes about this saving"
+                          className="min-h-20 text-sm"
                           {...field}
                         />
                       </FormControl>
@@ -58,7 +62,51 @@ export function SavingItem({
           </div>
           
           <div className="md:col-span-8">
-            {showMultiProducts ? (
+            {priceBreaks && priceBreaks.length > 0 ? (
+              <div className="space-y-2">
+                {/* Group by format name to avoid duplicate quantities */}
+                {Array.from(new Set(priceBreaks.map(pb => pb.format_name))).map((formatName) => {
+                  const formatBreaks = priceBreaks.filter(pb => pb.format_name === formatName);
+                  return (
+                    <div key={formatName} className="space-y-2">
+                      {formatName && <p className="text-xs font-medium">{formatName}</p>}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {formatBreaks.map((priceBreak, pbIndex) => (
+                          <div key={pbIndex} className="border rounded p-2">
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Quantity: {priceBreak.quantity.toLocaleString()}
+                            </p>
+                            <FormField
+                              control={control}
+                              name={`savings.${index}.unit_cost`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="number"
+                                      step="0.001"
+                                      min="0"
+                                      placeholder="0.000"
+                                      className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
+                                      {...field}
+                                      onChange={(e) => {
+                                        const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
+                                        field.onChange(value);
+                                      }}
+                                      value={field.value === null ? "" : field.value.toFixed(3)}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : showMultiProducts ? (
               <div className="grid grid-cols-10 gap-1">
                 {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
                   <FormField

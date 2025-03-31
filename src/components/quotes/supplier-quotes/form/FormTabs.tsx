@@ -90,6 +90,7 @@ export function FormTabs({
             extraCosts={filteredExtraCosts}
             currency={currency}
             formats={quoteRequest.formats}
+            quoteRequest={quoteRequest}
           />
         </TabsContent>
         
@@ -99,6 +100,7 @@ export function FormTabs({
             savings={filteredSavings}
             currency={currency}
             formats={quoteRequest.formats}
+            quoteRequest={quoteRequest}
           />
         </TabsContent>
         

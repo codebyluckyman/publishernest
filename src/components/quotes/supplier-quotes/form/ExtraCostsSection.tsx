@@ -5,15 +5,17 @@ import { useEffect } from "react";
 import { ExtraCostItem } from "./ExtraCostItem";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
+import { QuoteRequest } from "@/types/quoteRequest";
 
 interface ExtraCostsSectionProps {
   control: Control<SupplierQuoteFormValues>;
   extraCosts: ExtraCostTableItem[];
   currency: string;
   formats?: any[];
+  quoteRequest: QuoteRequest;
 }
 
-export function ExtraCostsSection({ control, extraCosts, currency, formats }: ExtraCostsSectionProps) {
+export function ExtraCostsSection({ control, extraCosts, currency, formats, quoteRequest }: ExtraCostsSectionProps) {
   const { fields, replace } = useFieldArray({
     control,
     name: "extra_costs"
@@ -68,6 +70,17 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats }: Ex
   
   const currencySymbol = getSymbolForCurrency(currency);
   
+  // Get all price breaks from the quote request for displaying
+  const allPriceBreaks = quoteRequest.formats?.flatMap(format => 
+    format.price_breaks?.map(pb => ({
+      ...pb,
+      format_name: format.format_name
+    })) || []
+  ) || [];
+  
+  // Sort price breaks by quantity in ascending order
+  const sortedPriceBreaks = allPriceBreaks.sort((a, b) => a.quantity - b.quantity);
+  
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -76,6 +89,20 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats }: Ex
           Unit Costs <span className="text-muted-foreground">({currencySymbol})</span>
         </div>
       </div>
+      
+      {/* Display quantity breaks header if there are price breaks */}
+      {sortedPriceBreaks.length > 0 && (
+        <div className="bg-muted p-2 rounded mb-4">
+          <h4 className="font-medium text-sm mb-2">Price Breaks (Quantities)</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {sortedPriceBreaks.map((break_, index) => (
+              <div key={index} className="text-sm">
+                <span className="font-medium">{break_.format_name}:</span> {break_.quantity.toLocaleString()}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Display product numbers header at the top */}
       {showMultiProducts && (
@@ -108,6 +135,7 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats }: Ex
               extraCost={extraCost}
               showMultiProducts={showMultiProducts}
               maxNumProducts={maxNumProducts}
+              priceBreaks={sortedPriceBreaks}
             />
           );
         })}
