@@ -1,3 +1,4 @@
+
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { useEffect, useState } from "react";
@@ -21,7 +22,7 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     name: "savings"
   });
   
-  const [openItems, setOpenItems] = useState<Record<number, boolean>>({});
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   
   const supplierId = useWatch({
     control,
@@ -81,10 +82,10 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     replace(newSavings);
   }, [supplierId, savings, replace, quoteRequest.formats, control._formValues.savings]);
 
-  const handleOpenChange = (index: number, isOpen: boolean) => {
+  const handleOpenChange = (savingId: string, isOpen: boolean) => {
     setOpenItems(prev => ({
       ...prev,
-      [index]: isOpen
+      [savingId]: isOpen
     }));
   };
   
@@ -145,8 +146,8 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
                 showMultiProducts={showMultiProducts}
                 maxNumProducts={maxNumProducts}
                 priceBreaks={sortedPriceBreaks}
-                isOpen={!!openItems[index]}
-                onOpenChange={handleOpenChange}
+                isOpen={!!openItems[saving.id]}
+                onOpenChange={(open) => handleOpenChange(saving.id, open)}
               />
             );
           })}
