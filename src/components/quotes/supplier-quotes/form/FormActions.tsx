@@ -26,7 +26,8 @@ export function FormActions({ isSubmitting, onCancel, isValid }: FormActionsProp
             <span className="flex items-center">
               <Button 
                 type="submit" 
-                disabled={isSubmitting || !isValid}
+                // IMPORTANT: Do not add isValid check to disabled as draft can be submitted without validation.
+                disabled={isSubmitting}
               >
                 {isSubmitting ? "Saving..." : "Save as Draft"}
               </Button>
