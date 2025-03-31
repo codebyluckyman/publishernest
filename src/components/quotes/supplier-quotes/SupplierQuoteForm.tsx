@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -49,6 +50,19 @@ const formSchema = z.object({
   terms: z.string().optional(),
   remarks: z.string().optional(),
   production_schedule: z.record(z.string(), z.string().nullable()).optional(),
+  
+  // Packaging details
+  packaging_carton_quantity: z.number().nullable().optional(),
+  packaging_carton_weight: z.number().nullable().optional(),
+  packaging_carton_length: z.number().nullable().optional(),
+  packaging_carton_width: z.number().nullable().optional(),
+  packaging_carton_height: z.number().nullable().optional(),
+  packaging_carton_volume: z.number().nullable().optional(),
+  packaging_cartons_per_pallet: z.number().nullable().optional(),
+  packaging_copies_per_20ft_palletized: z.number().nullable().optional(),
+  packaging_copies_per_40ft_palletized: z.number().nullable().optional(),
+  packaging_copies_per_20ft_unpalletized: z.number().nullable().optional(),
+  packaging_copies_per_40ft_unpalletized: z.number().nullable().optional(),
 });
 
 interface SupplierQuoteFormProps {
@@ -138,7 +152,21 @@ export function SupplierQuoteForm({
 
   const form = useForm<SupplierQuoteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialValues as SupplierQuoteFormValues,
+    defaultValues: {
+      ...initialValues,
+      // Initialize packaging details with null values
+      packaging_carton_quantity: initialValues.packaging_carton_quantity || null,
+      packaging_carton_weight: initialValues.packaging_carton_weight || null,
+      packaging_carton_length: initialValues.packaging_carton_length || null,
+      packaging_carton_width: initialValues.packaging_carton_width || null,
+      packaging_carton_height: initialValues.packaging_carton_height || null,
+      packaging_carton_volume: initialValues.packaging_carton_volume || null,
+      packaging_cartons_per_pallet: initialValues.packaging_cartons_per_pallet || null,
+      packaging_copies_per_20ft_palletized: initialValues.packaging_copies_per_20ft_palletized || null,
+      packaging_copies_per_40ft_palletized: initialValues.packaging_copies_per_40ft_palletized || null,
+      packaging_copies_per_20ft_unpalletized: initialValues.packaging_copies_per_20ft_unpalletized || null,
+      packaging_copies_per_40ft_unpalletized: initialValues.packaging_copies_per_40ft_unpalletized || null,
+    },
   });
 
   useEffect(() => {

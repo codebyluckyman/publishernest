@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -42,6 +43,51 @@ export async function updateSupplierQuote(
 
   if (updates.production_schedule !== undefined) {
     quoteUpdates.production_schedule = updates.production_schedule;
+  }
+  
+  // Packaging details
+  if (updates.packaging_carton_quantity !== undefined) {
+    quoteUpdates.packaging_carton_quantity = updates.packaging_carton_quantity;
+  }
+  
+  if (updates.packaging_carton_weight !== undefined) {
+    quoteUpdates.packaging_carton_weight = updates.packaging_carton_weight;
+  }
+  
+  if (updates.packaging_carton_length !== undefined) {
+    quoteUpdates.packaging_carton_length = updates.packaging_carton_length;
+  }
+  
+  if (updates.packaging_carton_width !== undefined) {
+    quoteUpdates.packaging_carton_width = updates.packaging_carton_width;
+  }
+  
+  if (updates.packaging_carton_height !== undefined) {
+    quoteUpdates.packaging_carton_height = updates.packaging_carton_height;
+  }
+  
+  if (updates.packaging_carton_volume !== undefined) {
+    quoteUpdates.packaging_carton_volume = updates.packaging_carton_volume;
+  }
+  
+  if (updates.packaging_cartons_per_pallet !== undefined) {
+    quoteUpdates.packaging_cartons_per_pallet = updates.packaging_cartons_per_pallet;
+  }
+  
+  if (updates.packaging_copies_per_20ft_palletized !== undefined) {
+    quoteUpdates.packaging_copies_per_20ft_palletized = updates.packaging_copies_per_20ft_palletized;
+  }
+  
+  if (updates.packaging_copies_per_40ft_palletized !== undefined) {
+    quoteUpdates.packaging_copies_per_40ft_palletized = updates.packaging_copies_per_40ft_palletized;
+  }
+  
+  if (updates.packaging_copies_per_20ft_unpalletized !== undefined) {
+    quoteUpdates.packaging_copies_per_20ft_unpalletized = updates.packaging_copies_per_20ft_unpalletized;
+  }
+  
+  if (updates.packaging_copies_per_40ft_unpalletized !== undefined) {
+    quoteUpdates.packaging_copies_per_40ft_unpalletized = updates.packaging_copies_per_40ft_unpalletized;
   }
 
   if (Object.keys(quoteUpdates).length > 0) {

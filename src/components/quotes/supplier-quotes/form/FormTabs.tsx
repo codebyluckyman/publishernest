@@ -9,6 +9,7 @@ import { ExtraCostsSection } from "./ExtraCostsSection";
 import { SavingsSection } from "./SavingsSection";
 import { ScheduleSection } from "./ScheduleSection";
 import { AttachmentsSection } from "./AttachmentsSection";
+import { PackagingDetailsSection } from "./PackagingDetailsSection";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
@@ -43,7 +44,7 @@ export function FormTabs({
   
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full h-auto">
+      <TabsList className="grid grid-cols-3 md:grid-cols-8 w-full h-auto">
         <TabsTrigger value="details" className="py-2 text-xs md:text-sm">
           Details
         </TabsTrigger>
@@ -61,6 +62,9 @@ export function FormTabs({
         </TabsTrigger>
         <TabsTrigger value="schedule" className="py-2 text-xs md:text-sm">
           Schedule
+        </TabsTrigger>
+        <TabsTrigger value="packaging" className="py-2 text-xs md:text-sm">
+          Packaging
         </TabsTrigger>
         <TabsTrigger value="attachments" className="py-2 text-xs md:text-sm">
           Attachments
@@ -114,6 +118,10 @@ export function FormTabs({
             requiredStepId={quoteRequest.required_step_id}
             requiredStepName={quoteRequest.required_step_name}
           />
+        </TabsContent>
+        
+        <TabsContent value="packaging">
+          <PackagingDetailsSection control={control} />
         </TabsContent>
         
         <TabsContent value="attachments">

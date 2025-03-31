@@ -1,3 +1,4 @@
+
 import { QuoteRequest } from "./quoteRequest";
 import { ExtraCostTableItem } from "./extraCost";
 import { SavingTableItem } from "./saving";
@@ -25,6 +26,19 @@ export interface SupplierQuote {
   terms: string | null;
   remarks: string | null;
   production_schedule?: Record<string, string | null> | null;
+  
+  // Packaging details
+  packaging_carton_quantity?: number | null;
+  packaging_carton_weight?: number | null;
+  packaging_carton_length?: number | null;
+  packaging_carton_width?: number | null;
+  packaging_carton_height?: number | null;
+  packaging_carton_volume?: number | null;
+  packaging_cartons_per_pallet?: number | null;
+  packaging_copies_per_20ft_palletized?: number | null;
+  packaging_copies_per_40ft_palletized?: number | null;
+  packaging_copies_per_20ft_unpalletized?: number | null;
+  packaging_copies_per_40ft_unpalletized?: number | null;
   
   // Joined fields
   quote_request?: QuoteRequest;
@@ -261,4 +275,17 @@ export interface SupplierQuoteFormValues {
   terms?: string;
   remarks?: string;
   production_schedule?: Record<string, string | null>;
+  
+  // Packaging details
+  packaging_carton_quantity?: number | null;
+  packaging_carton_weight?: number | null;
+  packaging_carton_length?: number | null;
+  packaging_carton_width?: number | null;
+  packaging_carton_height?: number | null;
+  packaging_carton_volume?: number | null;
+  packaging_cartons_per_pallet?: number | null;
+  packaging_copies_per_20ft_palletized?: number | null;
+  packaging_copies_per_40ft_palletized?: number | null;
+  packaging_copies_per_20ft_unpalletized?: number | null;
+  packaging_copies_per_40ft_unpalletized?: number | null;
 }

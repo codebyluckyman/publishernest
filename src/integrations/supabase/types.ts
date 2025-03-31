@@ -1696,6 +1696,17 @@ export type Database = {
           id: string
           notes: string | null
           organization_id: string
+          packaging_carton_height: number | null
+          packaging_carton_length: number | null
+          packaging_carton_quantity: number | null
+          packaging_carton_volume: number | null
+          packaging_carton_weight: number | null
+          packaging_carton_width: number | null
+          packaging_cartons_per_pallet: number | null
+          packaging_copies_per_20ft_palletized: number | null
+          packaging_copies_per_20ft_unpalletized: number | null
+          packaging_copies_per_40ft_palletized: number | null
+          packaging_copies_per_40ft_unpalletized: number | null
           production_schedule: Json | null
           quote_request_id: string
           reference: string | null
@@ -1716,6 +1727,17 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id: string
+          packaging_carton_height?: number | null
+          packaging_carton_length?: number | null
+          packaging_carton_quantity?: number | null
+          packaging_carton_volume?: number | null
+          packaging_carton_weight?: number | null
+          packaging_carton_width?: number | null
+          packaging_cartons_per_pallet?: number | null
+          packaging_copies_per_20ft_palletized?: number | null
+          packaging_copies_per_20ft_unpalletized?: number | null
+          packaging_copies_per_40ft_palletized?: number | null
+          packaging_copies_per_40ft_unpalletized?: number | null
           production_schedule?: Json | null
           quote_request_id: string
           reference?: string | null
@@ -1736,6 +1758,17 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id?: string
+          packaging_carton_height?: number | null
+          packaging_carton_length?: number | null
+          packaging_carton_quantity?: number | null
+          packaging_carton_volume?: number | null
+          packaging_carton_weight?: number | null
+          packaging_carton_width?: number | null
+          packaging_cartons_per_pallet?: number | null
+          packaging_copies_per_20ft_palletized?: number | null
+          packaging_copies_per_20ft_unpalletized?: number | null
+          packaging_copies_per_40ft_palletized?: number | null
+          packaging_copies_per_40ft_unpalletized?: number | null
           production_schedule?: Json | null
           quote_request_id?: string
           reference?: string | null

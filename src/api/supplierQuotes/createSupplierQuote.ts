@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -23,7 +24,19 @@ export async function createSupplierQuote(
       valid_to: formData.valid_to || null,
       terms: formData.terms || null,
       remarks: formData.remarks || null,
-      production_schedule: formData.production_schedule || null
+      production_schedule: formData.production_schedule || null,
+      // Packaging details
+      packaging_carton_quantity: formData.packaging_carton_quantity || null,
+      packaging_carton_weight: formData.packaging_carton_weight || null,
+      packaging_carton_length: formData.packaging_carton_length || null,
+      packaging_carton_width: formData.packaging_carton_width || null,
+      packaging_carton_height: formData.packaging_carton_height || null,
+      packaging_carton_volume: formData.packaging_carton_volume || null,
+      packaging_cartons_per_pallet: formData.packaging_cartons_per_pallet || null,
+      packaging_copies_per_20ft_palletized: formData.packaging_copies_per_20ft_palletized || null,
+      packaging_copies_per_40ft_palletized: formData.packaging_copies_per_40ft_palletized || null,
+      packaging_copies_per_20ft_unpalletized: formData.packaging_copies_per_20ft_unpalletized || null,
+      packaging_copies_per_40ft_unpalletized: formData.packaging_copies_per_40ft_unpalletized || null
     })
     .select()
     .single();
