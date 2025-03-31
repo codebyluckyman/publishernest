@@ -34,6 +34,7 @@ export function SavingsSection({ control, savings, currency, formats }: SavingsS
     const newSavings = savings.map(saving => ({
       saving_id: saving.id || "",
       unit_cost: null,
+      notes: "",
       // Add multiple unit costs for each product
       unit_cost_1: null,
       unit_cost_2: null,
@@ -45,7 +46,6 @@ export function SavingsSection({ control, savings, currency, formats }: SavingsS
       unit_cost_8: null,
       unit_cost_9: null,
       unit_cost_10: null,
-      notes: ""
     }));
     
     replace(newSavings);
@@ -58,7 +58,7 @@ export function SavingsSection({ control, savings, currency, formats }: SavingsS
       </div>
     );
   }
-  
+
   // Get the maximum number of products across all formats
   const maxNumProducts = formats && formats.length > 0 
     ? Math.max(...formats.map(format => format.num_products || 1)) 
@@ -78,9 +78,27 @@ export function SavingsSection({ control, savings, currency, formats }: SavingsS
         </div>
       </div>
       
+      {/* Display product numbers header at the top */}
+      {showMultiProducts && (
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-2">
+          <div className="md:col-span-4">
+            {/* Empty space for saving names */}
+          </div>
+          <div className="md:col-span-8">
+            <div className="grid grid-cols-10 gap-1">
+              {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((i) => (
+                <div key={i} className="text-center">
+                  <span className="text-xs font-medium text-muted-foreground">Product {i}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="space-y-4">
         {fields.map((field, index) => {
-          const saving = savings.find(s => s.id === field.saving_id);
+          const saving = savings.find(saving => saving.id === field.saving_id);
           if (!saving) return null;
           
           return (

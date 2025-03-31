@@ -1,30 +1,21 @@
 
+import { Control, useFormContext } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Control, useWatch } from "react-hook-form";
 import { QuoteDetailsSection } from "./QuoteDetailsSection";
+import { NotesSection } from "./NotesSection";
+import { TermsSection } from "./TermsSection";
 import { PriceBreaksSection } from "./PriceBreaksSection";
 import { ExtraCostsSection } from "./ExtraCostsSection";
 import { SavingsSection } from "./SavingsSection";
-import { TermsSection } from "./TermsSection";
-import { AttachmentsSection } from "./AttachmentsSection";
 import { ScheduleSection } from "./ScheduleSection";
+import { AttachmentsSection } from "./AttachmentsSection";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
+import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { SavingTableItem } from "@/types/saving";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 
-export function FormTabs({ 
-  control, 
-  quoteRequest, 
-  selectedSupplier,
-  activeTab,
-  setActiveTab,
-  filteredExtraCosts,
-  filteredSavings,
-  currencies,
-  form
-}: { 
+interface FormTabsProps {
   control: Control<SupplierQuoteFormValues>;
   quoteRequest: QuoteRequest;
   selectedSupplier: Supplier | null;
@@ -34,79 +25,102 @@ export function FormTabs({
   filteredSavings: SavingTableItem[];
   currencies: { label: string; value: string }[];
   form: any;
-}) {
-  // Get the current currency value from the form
-  const currency = useWatch({
-    control,
-    name: "currency"
-  });
+}
 
+export function FormTabs({
+  control,
+  quoteRequest,
+  selectedSupplier,
+  activeTab,
+  setActiveTab,
+  filteredExtraCosts,
+  filteredSavings,
+  currencies,
+  form
+}: FormTabsProps) {
+  const formContext = useFormContext<SupplierQuoteFormValues>();
+  const currency = formContext.watch("currency");
+  
   return (
-    <Tabs 
-      defaultValue="details" 
-      className="w-full" 
-      value={activeTab} 
-      onValueChange={setActiveTab}
-    >
-      <TabsList className="grid grid-cols-4 md:grid-cols-7 w-full">
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="pricing">Pricing</TabsTrigger>
-        <TabsTrigger value="extra-costs">Extra Costs</TabsTrigger>
-        <TabsTrigger value="savings">Savings</TabsTrigger>
-        <TabsTrigger value="terms">Terms</TabsTrigger>
-        <TabsTrigger value="attachments">Attachments</TabsTrigger>
-        <TabsTrigger value="schedule">Schedule</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full h-auto">
+        <TabsTrigger value="details" className="py-2 text-xs md:text-sm">
+          Details
+        </TabsTrigger>
+        <TabsTrigger value="pricing" className="py-2 text-xs md:text-sm">
+          Pricing
+        </TabsTrigger>
+        <TabsTrigger value="extraCosts" className="py-2 text-xs md:text-sm">
+          Extra Costs
+        </TabsTrigger>
+        <TabsTrigger value="savings" className="py-2 text-xs md:text-sm">
+          Savings
+        </TabsTrigger>
+        <TabsTrigger value="terms" className="py-2 text-xs md:text-sm">
+          Terms
+        </TabsTrigger>
+        <TabsTrigger value="schedule" className="py-2 text-xs md:text-sm">
+          Schedule
+        </TabsTrigger>
+        <TabsTrigger value="attachments" className="py-2 text-xs md:text-sm">
+          Attachments
+        </TabsTrigger>
       </TabsList>
       
-      <TabsContent value="details" className="p-6">
-        <QuoteDetailsSection form={form} currencies={currencies} />
-      </TabsContent>
-      
-      <TabsContent value="pricing" className="p-6">
-        <PriceBreaksSection 
-          control={control} 
-          quoteRequest={quoteRequest} 
-          selectedSupplier={selectedSupplier}
-          currency={currency}
-        />
-      </TabsContent>
-      
-      <TabsContent value="extra-costs" className="p-6">
-        <ExtraCostsSection 
-          control={control} 
-          extraCosts={filteredExtraCosts}
-          currency={currency}
-          formats={quoteRequest.formats}
-        />
-      </TabsContent>
-      
-      <TabsContent value="savings" className="p-6">
-        <SavingsSection 
-          control={control} 
-          savings={filteredSavings}
-          currency={currency}
-          formats={quoteRequest.formats}
-        />
-      </TabsContent>
-      
-      <TabsContent value="terms" className="p-6">
-        <TermsSection control={control} />
-      </TabsContent>
-      
-      <TabsContent value="attachments" className="p-6">
-        <AttachmentsSection 
-          supplierQuote={{ id: form.getValues('id') }} 
-          supplierName={selectedSupplier?.supplier_name}
-        />
-      </TabsContent>
-      
-      <TabsContent value="schedule" className="p-6">
-        <ScheduleSection 
-          control={control} 
-          requiredStepId={quoteRequest.required_step_id}
-          requiredStepName={quoteRequest.required_step_name}
-        />
-      </TabsContent>
+      <div className="mt-4">
+        <TabsContent value="details">
+          <QuoteDetailsSection 
+            control={control}
+            quoteRequest={quoteRequest}
+            currencies={currencies}
+          />
+        </TabsContent>
+        
+        <TabsContent value="pricing" className="space-y-4">
+          <PriceBreaksSection 
+            control={control}
+            quoteRequest={quoteRequest}
+            selectedSupplier={selectedSupplier}
+            currency={currency}
+          />
+        </TabsContent>
+        
+        <TabsContent value="extraCosts">
+          <ExtraCostsSection 
+            control={control}
+            extraCosts={filteredExtraCosts}
+            currency={currency}
+            formats={quoteRequest.formats}
+          />
+        </TabsContent>
+        
+        <TabsContent value="savings">
+          <SavingsSection 
+            control={control}
+            savings={filteredSavings}
+            currency={currency}
+            formats={quoteRequest.formats}
+          />
+        </TabsContent>
+        
+        <TabsContent value="terms">
+          <TermsSection control={control} />
+        </TabsContent>
+        
+        <TabsContent value="schedule">
+          <ScheduleSection 
+            control={control}
+            quoteRequest={quoteRequest}
+          />
+        </TabsContent>
+        
+        <TabsContent value="attachments">
+          <AttachmentsSection 
+            form={form}
+            quoteRequestId={quoteRequest.id}
+          />
+        </TabsContent>
+      </div>
     </Tabs>
   );
 }
