@@ -31,58 +31,19 @@ const formSchema = z.object({
       quantity: z.number(),
       product_id: z.string().optional(),
       unit_cost: z.number().nullable(),
-      unit_cost_1: z.number().nullable().optional(),
-      unit_cost_2: z.number().nullable().optional(),
-      unit_cost_3: z.number().nullable().optional(),
-      unit_cost_4: z.number().nullable().optional(),
-      unit_cost_5: z.number().nullable().optional(),
-      unit_cost_6: z.number().nullable().optional(),
-      unit_cost_7: z.number().nullable().optional(),
-      unit_cost_8: z.number().nullable().optional(),
-      unit_cost_9: z.number().nullable().optional(),
-      unit_cost_10: z.number().nullable().optional(),
     })
   ).optional().default([]),
   extra_costs: z.array(
     z.object({
       extra_cost_id: z.string(),
-      price_breaks: z.array(
-        z.object({
-          price_break_id: z.string(),
-          unit_cost: z.number().nullable().optional(),
-          unit_cost_1: z.number().nullable().optional(),
-          unit_cost_2: z.number().nullable().optional(),
-          unit_cost_3: z.number().nullable().optional(),
-          unit_cost_4: z.number().nullable().optional(),
-          unit_cost_5: z.number().nullable().optional(),
-          unit_cost_6: z.number().nullable().optional(),
-          unit_cost_7: z.number().nullable().optional(),
-          unit_cost_8: z.number().nullable().optional(),
-          unit_cost_9: z.number().nullable().optional(),
-          unit_cost_10: z.number().nullable().optional(),
-        })
-      ).optional().default([]),
+      unit_cost: z.number().nullable(),
+      notes: z.string().optional(),
     })
   ).optional().default([]),
   savings: z.array(
     z.object({
       saving_id: z.string(),
-      price_breaks: z.array(
-        z.object({
-          price_break_id: z.string(),
-          unit_cost: z.number().nullable().optional(),
-          unit_cost_1: z.number().nullable().optional(),
-          unit_cost_2: z.number().nullable().optional(),
-          unit_cost_3: z.number().nullable().optional(),
-          unit_cost_4: z.number().nullable().optional(),
-          unit_cost_5: z.number().nullable().optional(),
-          unit_cost_6: z.number().nullable().optional(),
-          unit_cost_7: z.number().nullable().optional(),
-          unit_cost_8: z.number().nullable().optional(),
-          unit_cost_9: z.number().nullable().optional(),
-          unit_cost_10: z.number().nullable().optional(),
-        })
-      ).optional().default([]),
+      unit_cost: z.number().nullable(),
       notes: z.string().optional(),
     })
   ).optional().default([]),
@@ -116,7 +77,6 @@ interface SupplierQuoteFormProps {
   onSupplierChange: (supplierId: string) => void;
   createdQuoteId: string | null;
   onDone?: () => void;
-  onExistingQuoteFound?: (quoteId: string) => void;
 }
 
 export function SupplierQuoteForm({
@@ -127,8 +87,7 @@ export function SupplierQuoteForm({
   onCancel,
   onSupplierChange,
   createdQuoteId,
-  onDone,
-  onExistingQuoteFound
+  onDone
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
@@ -211,7 +170,6 @@ export function SupplierQuoteForm({
       packaging_copies_per_20ft_unpalletized: initialValues.packaging_copies_per_20ft_unpalletized || null,
       packaging_copies_per_40ft_unpalletized: initialValues.packaging_copies_per_40ft_unpalletized || null,
     },
-    mode: "onChange"
   });
 
   useEffect(() => {
@@ -280,7 +238,6 @@ export function SupplierQuoteForm({
           suppliers={suppliers}
           loadingSuppliers={loadingSuppliers}
           form={form}
-          onExistingQuoteFound={onExistingQuoteFound}
         />
         
         <FormTabs 
@@ -298,7 +255,7 @@ export function SupplierQuoteForm({
         <FormActions 
           isSubmitting={isSubmitting}
           onCancel={onCancel}
-          isValid={true} // Always allow saving as draft
+          isValid={form.formState.isValid}
         />
       </form>
     </Form>

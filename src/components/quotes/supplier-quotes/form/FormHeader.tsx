@@ -8,16 +8,9 @@ interface FormHeaderProps {
   suppliers: Supplier[] | undefined;
   loadingSuppliers: boolean;
   form: any;
-  onExistingQuoteFound?: (quoteId: string) => void;
 }
 
-export function FormHeader({ 
-  quoteRequest, 
-  suppliers, 
-  loadingSuppliers, 
-  form,
-  onExistingQuoteFound
-}: FormHeaderProps) {
+export function FormHeader({ quoteRequest, suppliers, loadingSuppliers, form }: FormHeaderProps) {
   return (
     <div className="space-y-4">
       <div className="border rounded-md p-4 bg-muted/20">
@@ -31,7 +24,6 @@ export function FormHeader({
         isLoading={loadingSuppliers}
         defaultSupplierId={quoteRequest.supplier_id}
         quoteRequest={quoteRequest}
-        onExistingQuoteFound={onExistingQuoteFound}
       />
     </div>
   );
