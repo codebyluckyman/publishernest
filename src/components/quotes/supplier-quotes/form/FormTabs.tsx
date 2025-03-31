@@ -70,8 +70,7 @@ export function FormTabs({
       <div className="mt-4">
         <TabsContent value="details">
           <QuoteDetailsSection 
-            control={control}
-            quoteRequest={quoteRequest}
+            form={form}
             currencies={currencies}
           />
         </TabsContent>
@@ -110,14 +109,15 @@ export function FormTabs({
         <TabsContent value="schedule">
           <ScheduleSection 
             control={control}
-            quoteRequest={quoteRequest}
+            requiredStepId={quoteRequest.required_step_id}
+            requiredStepName={quoteRequest.required_step_name}
           />
         </TabsContent>
         
         <TabsContent value="attachments">
           <AttachmentsSection 
-            form={form}
-            quoteRequestId={quoteRequest.id}
+            supplierQuote={{ id: quoteRequest.id }}
+            supplierName={quoteRequest.supplier_name}
           />
         </TabsContent>
       </div>
