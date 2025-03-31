@@ -1942,6 +1942,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      delete_unused_price_breaks: {
+        Args: {
+          format_id: string
+          preserved_ids: string[]
+        }
+        Returns: undefined
+      }
       generate_api_key: {
         Args: Record<PropertyKey, never>
         Returns: string

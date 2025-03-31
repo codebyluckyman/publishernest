@@ -38,13 +38,11 @@ export async function updateFormatPriceBreaks(
     const existingIds = priceBreaks.filter(pb => pb.id).map(pb => pb.id);
     
     if (existingIds.length > 0) {
-      const { error: deleteError } = await supabase.rpc(
-        'delete_unused_price_breaks',
-        {
-          format_id: formatId,
-          preserved_ids: existingIds
-        }
-      );
+      // Instead of using RPC, let's use a direct query with our function
+      // This avoids TypeScript issues with the RPC function not being in the type definitions
+      const { error: deleteError } = await supabase.query(`
+        SELECT delete_unused_price_breaks($1, $2)
+      `, [formatId, existingIds]);
       
       if (deleteError) {
         console.error("Error cleaning up unused price breaks:", deleteError);
