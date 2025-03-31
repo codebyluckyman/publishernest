@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Control } from "react-hook-form";
+import { Control, useFormContext } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Supplier } from "@/types/supplier";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -33,6 +33,7 @@ export function SupplierSelect({
   const [showExistingQuoteDialog, setShowExistingQuoteDialog] = useState(false);
   const [existingQuoteId, setExistingQuoteId] = useState<string | null>(null);
   const [pendingSupplierChange, setPendingSupplierChange] = useState<string | null>(null);
+  const formContext = useFormContext<SupplierQuoteFormValues>();
 
   // Filter suppliers to only those in the quote request
   const filteredSuppliers = suppliers.filter(supplier => {
@@ -78,16 +79,12 @@ export function SupplierSelect({
   };
 
   const handleContinueNew = () => {
-    if (pendingSupplierChange && control) {
-      // Apply the pending supplier change
-      control._formValues.supplier_id = pendingSupplierChange;
-      // Force form update with the new value
-      if (control.setValue) {
-        control.setValue("supplier_id", pendingSupplierChange, { 
-          shouldValidate: true,
-          shouldDirty: true
-        });
-      }
+    if (pendingSupplierChange) {
+      // We need to use the formContext setValue method rather than directly accessing control
+      formContext.setValue("supplier_id", pendingSupplierChange, { 
+        shouldValidate: true,
+        shouldDirty: true
+      });
     }
     setPendingSupplierChange(null);
   };
