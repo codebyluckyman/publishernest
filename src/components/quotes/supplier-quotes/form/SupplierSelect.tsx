@@ -82,10 +82,12 @@ export function SupplierSelect({
       // Apply the pending supplier change
       control._formValues.supplier_id = pendingSupplierChange;
       // Force form update with the new value
-      control._updateFormState({
-        name: "supplier_id",
-        value: pendingSupplierChange
-      });
+      if (control.setValue) {
+        control.setValue("supplier_id", pendingSupplierChange, { 
+          shouldValidate: true,
+          shouldDirty: true
+        });
+      }
     }
     setPendingSupplierChange(null);
   };

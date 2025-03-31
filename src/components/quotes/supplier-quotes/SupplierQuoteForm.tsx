@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -30,19 +31,58 @@ const formSchema = z.object({
       quantity: z.number(),
       product_id: z.string().optional(),
       unit_cost: z.number().nullable(),
+      unit_cost_1: z.number().nullable().optional(),
+      unit_cost_2: z.number().nullable().optional(),
+      unit_cost_3: z.number().nullable().optional(),
+      unit_cost_4: z.number().nullable().optional(),
+      unit_cost_5: z.number().nullable().optional(),
+      unit_cost_6: z.number().nullable().optional(),
+      unit_cost_7: z.number().nullable().optional(),
+      unit_cost_8: z.number().nullable().optional(),
+      unit_cost_9: z.number().nullable().optional(),
+      unit_cost_10: z.number().nullable().optional(),
     })
   ).optional().default([]),
   extra_costs: z.array(
     z.object({
       extra_cost_id: z.string(),
-      unit_cost: z.number().nullable(),
-      notes: z.string().optional(),
+      price_breaks: z.array(
+        z.object({
+          price_break_id: z.string(),
+          unit_cost: z.number().nullable().optional(),
+          unit_cost_1: z.number().nullable().optional(),
+          unit_cost_2: z.number().nullable().optional(),
+          unit_cost_3: z.number().nullable().optional(),
+          unit_cost_4: z.number().nullable().optional(),
+          unit_cost_5: z.number().nullable().optional(),
+          unit_cost_6: z.number().nullable().optional(),
+          unit_cost_7: z.number().nullable().optional(),
+          unit_cost_8: z.number().nullable().optional(),
+          unit_cost_9: z.number().nullable().optional(),
+          unit_cost_10: z.number().nullable().optional(),
+        })
+      ).optional().default([]),
     })
   ).optional().default([]),
   savings: z.array(
     z.object({
       saving_id: z.string(),
-      unit_cost: z.number().nullable(),
+      price_breaks: z.array(
+        z.object({
+          price_break_id: z.string(),
+          unit_cost: z.number().nullable().optional(),
+          unit_cost_1: z.number().nullable().optional(),
+          unit_cost_2: z.number().nullable().optional(),
+          unit_cost_3: z.number().nullable().optional(),
+          unit_cost_4: z.number().nullable().optional(),
+          unit_cost_5: z.number().nullable().optional(),
+          unit_cost_6: z.number().nullable().optional(),
+          unit_cost_7: z.number().nullable().optional(),
+          unit_cost_8: z.number().nullable().optional(),
+          unit_cost_9: z.number().nullable().optional(),
+          unit_cost_10: z.number().nullable().optional(),
+        })
+      ).optional().default([]),
       notes: z.string().optional(),
     })
   ).optional().default([]),
@@ -171,6 +211,7 @@ export function SupplierQuoteForm({
       packaging_copies_per_20ft_unpalletized: initialValues.packaging_copies_per_20ft_unpalletized || null,
       packaging_copies_per_40ft_unpalletized: initialValues.packaging_copies_per_40ft_unpalletized || null,
     },
+    mode: "onChange"
   });
 
   useEffect(() => {
@@ -257,7 +298,7 @@ export function SupplierQuoteForm({
         <FormActions 
           isSubmitting={isSubmitting}
           onCancel={onCancel}
-          isValid={form.formState.isValid}
+          isValid={true} // Always allow saving as draft
         />
       </form>
     </Form>
