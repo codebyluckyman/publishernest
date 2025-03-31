@@ -1,13 +1,12 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { SavingItem } from "./SavingItem";
 import { SavingTableItem } from "@/types/saving";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { CollapsibleSection } from "../CollapsibleSection";
-import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface SavingsSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -27,9 +26,6 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
     control,
     name: "supplier_id"
   });
-  
-  // Add state for the collapsible section with default closed
-  const [isOpen, setIsOpen] = useState(false);
   
   // Initialize savings when supplier changes
   useEffect(() => {
@@ -103,15 +99,13 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
   return (
     <CollapsibleSection
       title="Savings"
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
       isEmpty={fields.length === 0}
       emptyMessage="No savings were requested for this quote request."
     >
       <div>
         <div className="flex justify-between items-center mb-4">
           <div className="text-md font-medium">
-            Unit Costs <span className="text-muted-foreground">({currencySymbol})</span>
+            Unit Savings <span className="text-muted-foreground">({currencySymbol})</span>
           </div>
         </div>
         
@@ -135,7 +129,7 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
         
         <div className="space-y-4">
           {fields.map((field, index) => {
-            const saving = savings.find(saving => saving.id === field.saving_id);
+            const saving = savings.find(s => s.id === field.saving_id);
             if (!saving) return null;
             
             return (

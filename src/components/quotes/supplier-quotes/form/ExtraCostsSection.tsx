@@ -1,13 +1,12 @@
 
 import { Control, useFieldArray, useWatch } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ExtraCostItem } from "./ExtraCostItem";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { CollapsibleSection } from "../CollapsibleSection";
-import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ExtraCostsSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -27,9 +26,6 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
     control,
     name: "supplier_id"
   });
-  
-  // Add state for the collapsible section with default closed
-  const [isOpen, setIsOpen] = useState(false);
   
   // Initialize extra costs when supplier changes
   useEffect(() => {
@@ -102,8 +98,6 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
   return (
     <CollapsibleSection
       title="Extra Costs"
-      isOpen={isOpen}
-      onOpenChange={setIsOpen}
       isEmpty={fields.length === 0}
       emptyMessage="No extra costs were requested for this quote request."
     >
