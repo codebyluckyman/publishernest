@@ -81,10 +81,9 @@ export function SupplierSelect({
     if (pendingSupplierChange && control) {
       // Apply the pending supplier change
       control._formValues.supplier_id = pendingSupplierChange;
-      // Force rerender
+      // Force rerender - fix the type error by using the correct structure
       control._subjects.state.next({
         name: "supplier_id",
-        type: "change",
         values: { ...control._formValues }
       });
     }
