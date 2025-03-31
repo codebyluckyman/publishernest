@@ -46,6 +46,31 @@ export function ExtraCostItem({
     }
   }, [extraCost.unit_of_measure_id, unitOfMeasures]);
   
+  // Function to calculate unit costs based on total cost
+  const calculateUnitCosts = (totalCost: number | null) => {
+    if (totalCost === null || !priceBreaks.length) return;
+    
+    const formValues = control._formValues.extra_costs;
+    if (!formValues || !formValues[index] || !formValues[index].price_breaks) return;
+    
+    formValues[index].price_breaks.forEach((pb, pbIndex) => {
+      const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
+      if (priceBreak && priceBreak.quantity) {
+        const unitCost = totalCost / priceBreak.quantity;
+        formValues[index].price_breaks[pbIndex].unit_cost = parseFloat(unitCost.toFixed(3));
+      }
+    });
+    
+    // Force re-render of the form
+    control._subjects.state.next({
+      ...control._formState,
+      dirtyFields: {
+        ...control._formState.dirtyFields,
+        extra_costs: true
+      }
+    });
+  };
+  
   return (
     <Card>
       <CardContent className="p-4">
@@ -109,20 +134,8 @@ export function ExtraCostItem({
                                     const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(2));
                                     field.onChange(value);
                                     
-                                    // Auto-calculate unit costs for each price break
-                                    if (value !== null) {
-                                      const totalCost = value;
-                                      const formValues = control._formValues.extra_costs;
-                                      if (formValues && formValues[index] && formValues[index].price_breaks) {
-                                        formValues[index].price_breaks.forEach((pb, pbIndex) => {
-                                          const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
-                                          if (priceBreak && priceBreak.quantity) {
-                                            const unitCost = totalCost / priceBreak.quantity;
-                                            formValues[index].price_breaks[pbIndex].unit_cost = parseFloat(unitCost.toFixed(3));
-                                          }
-                                        });
-                                      }
-                                    }
+                                    // Calculate unit costs immediately when total cost changes
+                                    calculateUnitCosts(value);
                                   }}
                                   value={field.value === null ? "" : field.value}
                                 />

@@ -63,8 +63,8 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
         formData: data,
         organizationId: currentOrganization.id
       }, {
-        onSuccess: (quoteId) => {
-          setCreatedQuoteId(quoteId);
+        onSuccess: (id) => {
+          setCreatedQuoteId(id);
           setHasUnsavedChanges(false);
         }
       });

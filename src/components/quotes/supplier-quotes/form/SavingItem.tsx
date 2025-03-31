@@ -46,6 +46,31 @@ export function SavingItem({
     }
   }, [saving.unit_of_measure_id, unitOfMeasures]);
   
+  // Function to calculate unit savings based on total savings
+  const calculateUnitSavings = (totalSavings: number | null) => {
+    if (totalSavings === null || !priceBreaks.length) return;
+    
+    const formValues = control._formValues.savings;
+    if (!formValues || !formValues[index] || !formValues[index].price_breaks) return;
+    
+    formValues[index].price_breaks.forEach((pb, pbIndex) => {
+      const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
+      if (priceBreak && priceBreak.quantity) {
+        const unitSavings = totalSavings / priceBreak.quantity;
+        formValues[index].price_breaks[pbIndex].unit_cost = parseFloat(unitSavings.toFixed(3));
+      }
+    });
+    
+    // Force re-render of the form
+    control._subjects.state.next({
+      ...control._formState,
+      dirtyFields: {
+        ...control._formState.dirtyFields,
+        savings: true
+      }
+    });
+  };
+  
   return (
     <Card>
       <CardContent className="p-4">
@@ -109,20 +134,8 @@ export function SavingItem({
                                     const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(2));
                                     field.onChange(value);
                                     
-                                    // Auto-calculate unit costs for each price break
-                                    if (value !== null) {
-                                      const totalSavings = value;
-                                      const formValues = control._formValues.savings;
-                                      if (formValues && formValues[index] && formValues[index].price_breaks) {
-                                        formValues[index].price_breaks.forEach((pb, pbIndex) => {
-                                          const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
-                                          if (priceBreak && priceBreak.quantity) {
-                                            const unitSavings = totalSavings / priceBreak.quantity;
-                                            formValues[index].price_breaks[pbIndex].unit_cost = parseFloat(unitSavings.toFixed(3));
-                                          }
-                                        });
-                                      }
-                                    }
+                                    // Calculate unit savings immediately when total savings changes
+                                    calculateUnitSavings(value);
                                   }}
                                   value={field.value === null ? "" : field.value}
                                 />
