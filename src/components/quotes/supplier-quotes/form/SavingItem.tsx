@@ -94,7 +94,7 @@ export function SavingItem({
                         </div>
                         <FormField
                           control={control}
-                          name={`savings.${index}.unit_cost`}
+                          name={`savings.${index}.unit_cost` as any}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
@@ -112,13 +112,16 @@ export function SavingItem({
                                     // Auto-calculate unit costs for each price break
                                     if (value !== null) {
                                       const totalSavings = value;
-                                      control._formValues.savings[index].price_breaks.forEach((pb, pbIndex) => {
-                                        const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
-                                        if (priceBreak && priceBreak.quantity) {
-                                          const unitSavings = totalSavings / priceBreak.quantity;
-                                          control._formValues.savings[index].price_breaks[pbIndex].unit_cost = parseFloat(unitSavings.toFixed(3));
-                                        }
-                                      });
+                                      const formValues = control._formValues.savings;
+                                      if (formValues && formValues[index] && formValues[index].price_breaks) {
+                                        formValues[index].price_breaks.forEach((pb, pbIndex) => {
+                                          const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
+                                          if (priceBreak && priceBreak.quantity) {
+                                            const unitSavings = totalSavings / priceBreak.quantity;
+                                            formValues[index].price_breaks[pbIndex].unit_cost = parseFloat(unitSavings.toFixed(3));
+                                          }
+                                        });
+                                      }
                                     }
                                   }}
                                   value={field.value === null ? "" : field.value}
@@ -131,7 +134,7 @@ export function SavingItem({
                         <div className="mt-3">
                           <FormField
                             control={control}
-                            name={`savings.${index}.notes`}
+                            name={`savings.${index}.notes` as any}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
@@ -168,7 +171,7 @@ export function SavingItem({
                           )}
                           
                           {formatBreaks.map((priceBreak, breakIndex) => {
-                            const priceBreakFieldIndex = Array.isArray(control._formValues.savings[index]?.price_breaks) 
+                            const priceBreakFieldIndex = Array.isArray(control._formValues.savings?.[index]?.price_breaks) 
                               ? control._formValues.savings[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
                               : -1;
                             
@@ -220,7 +223,7 @@ export function SavingItem({
                                       </div>
                                       <FormField
                                         control={control}
-                                        name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
+                                        name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost` as any}
                                         render={({ field }) => (
                                           <FormItem>
                                             <FormControl>
@@ -250,7 +253,7 @@ export function SavingItem({
                                     </div>
                                     <FormField
                                       control={control}
-                                      name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
+                                      name={`savings.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost` as any}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormControl>

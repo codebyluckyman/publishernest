@@ -94,7 +94,7 @@ export function ExtraCostItem({
                         </div>
                         <FormField
                           control={control}
-                          name={`extra_costs.${index}.unit_cost`}
+                          name={`extra_costs.${index}.unit_cost` as any}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
@@ -112,13 +112,16 @@ export function ExtraCostItem({
                                     // Auto-calculate unit costs for each price break
                                     if (value !== null) {
                                       const totalCost = value;
-                                      control._formValues.extra_costs[index].price_breaks.forEach((pb, pbIndex) => {
-                                        const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
-                                        if (priceBreak && priceBreak.quantity) {
-                                          const unitCost = totalCost / priceBreak.quantity;
-                                          control._formValues.extra_costs[index].price_breaks[pbIndex].unit_cost = parseFloat(unitCost.toFixed(3));
-                                        }
-                                      });
+                                      const formValues = control._formValues.extra_costs;
+                                      if (formValues && formValues[index] && formValues[index].price_breaks) {
+                                        formValues[index].price_breaks.forEach((pb, pbIndex) => {
+                                          const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
+                                          if (priceBreak && priceBreak.quantity) {
+                                            const unitCost = totalCost / priceBreak.quantity;
+                                            formValues[index].price_breaks[pbIndex].unit_cost = parseFloat(unitCost.toFixed(3));
+                                          }
+                                        });
+                                      }
                                     }
                                   }}
                                   value={field.value === null ? "" : field.value}
@@ -149,7 +152,7 @@ export function ExtraCostItem({
                           )}
                           
                           {formatBreaks.map((priceBreak, breakIndex) => {
-                            const priceBreakFieldIndex = Array.isArray(control._formValues.extra_costs[index]?.price_breaks) 
+                            const priceBreakFieldIndex = Array.isArray(control._formValues.extra_costs?.[index]?.price_breaks) 
                               ? control._formValues.extra_costs[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
                               : -1;
                             
@@ -201,7 +204,7 @@ export function ExtraCostItem({
                                       </div>
                                       <FormField
                                         control={control}
-                                        name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
+                                        name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost` as any}
                                         render={({ field }) => (
                                           <FormItem>
                                             <FormControl>
@@ -231,7 +234,7 @@ export function ExtraCostItem({
                                     </div>
                                     <FormField
                                       control={control}
-                                      name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost`}
+                                      name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost` as any}
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormControl>
