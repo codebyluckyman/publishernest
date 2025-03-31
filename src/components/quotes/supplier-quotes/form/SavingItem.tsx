@@ -18,7 +18,7 @@ interface SavingItemProps {
   maxNumProducts?: number;
   priceBreaks?: (PriceBreak & { format_name?: string; format_id?: string })[];
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (index: number, open: boolean) => void;
 }
 
 export function SavingItem({ 
@@ -50,14 +50,14 @@ export function SavingItem({
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => onOpenChange(!isOpen)}
+              onClick={() => onOpenChange(index, !isOpen)}
               className="p-0 h-8 w-8"
             >
               {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           </div>
           
-          <Collapsible open={isOpen} onOpenChange={onOpenChange}>
+          <Collapsible open={isOpen} onOpenChange={(open) => onOpenChange(index, open)}>
             <CollapsibleContent>
               <div className="space-y-4">
                 {priceBreaks && priceBreaks.length > 0 ? (
