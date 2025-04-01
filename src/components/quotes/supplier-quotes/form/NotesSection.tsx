@@ -2,7 +2,7 @@
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 
 interface NotesSectionProps {
@@ -21,10 +21,11 @@ export function NotesSection({ control }: NotesSectionProps) {
           name="notes"
           render={({ field }) => (
             <FormItem>
+              <FormLabel>Additional Notes</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Add any additional notes or comments here..."
-                  className="min-h-[120px]"
+                <Textarea 
+                  placeholder="Enter any additional notes or comments about the quote..."
+                  className="min-h-32"
                   {...field}
                   value={field.value || ''}
                 />

@@ -1,59 +1,59 @@
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check, ChevronRight } from "lucide-react";
 
 interface SuccessViewProps {
   createdQuoteId: string;
   onDone?: () => void;
   onSubmit?: () => void;
-  isSubmitReady?: boolean;
-  isSubmitting?: boolean;
+  isSubmitReady: boolean;
+  isSubmitting: boolean;
 }
 
-export function SuccessView({ 
-  createdQuoteId, 
-  onDone, 
+export function SuccessView({
+  createdQuoteId,
+  onDone,
   onSubmit,
-  isSubmitReady = false,
-  isSubmitting = false
+  isSubmitReady,
+  isSubmitting
 }: SuccessViewProps) {
   return (
-    <div className="flex flex-col items-center justify-center space-y-6 py-10">
-      <div className="bg-green-100 p-4 rounded-full">
-        <CheckCircle2 className="h-16 w-16 text-green-600" />
-      </div>
-      
-      <div className="text-center">
-        <h3 className="text-xl font-semibold mb-2">Draft Quote Saved!</h3>
-        <p className="text-muted-foreground mb-6">
-          You can continue editing the quote or finalize it now.
+    <Card className="mx-auto max-w-xl mt-8 border shadow">
+      <CardHeader className="bg-muted/50">
+        <CardTitle className="flex items-center text-green-600">
+          <Check className="mr-2 h-6 w-6" />
+          Quote Created Successfully
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-6 pb-4">
+        <p className="text-muted-foreground">
+          Your supplier quote has been saved as a draft. You can now:
         </p>
-      </div>
-      
-      <div className="flex flex-col sm:flex-row gap-3">
-        {onSubmit && (
-          <Button 
-            onClick={onSubmit} 
-            className="bg-green-600 hover:bg-green-700"
-            disabled={!isSubmitReady || isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit Quote"}
-          </Button>
-        )}
         
-        <Button asChild variant="outline">
-          <Link to={`/supplier-quotes/${createdQuoteId}`}>
-            View Quote Details
-          </Link>
+        <ul className="list-disc list-inside mt-4 space-y-2 text-muted-foreground ml-4">
+          <li>Submit the quote if you've completed all price breaks</li>
+          <li>Exit and return to the quotes list</li>
+          <li>Edit the quote details later</li>
+        </ul>
+      </CardContent>
+      <CardFooter className="flex justify-end space-x-4 pt-2">
+        <Button variant="outline" onClick={onDone}>
+          Done
         </Button>
         
-        {onDone && (
-          <Button onClick={onDone} variant="ghost">
-            Done
+        {onSubmit && (
+          <Button 
+            onClick={onSubmit}
+            disabled={!isSubmitReady || isSubmitting}
+            variant="default"
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Quote"}
+            <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }
