@@ -1,245 +1,161 @@
+
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote, SupplierQuoteAttachment } from "@/types/supplierQuote";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Paperclip, Trash2, Download } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { getSupplierQuoteAttachments } from "@/api/supplierQuotes/getAttachments";
+import { FileIcon, Download, Paperclip, Eye } from "lucide-react";
+import { getPublicUrl } from "@/api/supplierQuotes";
+import { useToast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SupplierQuote } from "@/types/supplierQuote";
 
 interface SupplierQuoteAttachmentsProps {
-  supplierQuote: SupplierQuote | { id: string; attachments?: SupplierQuoteAttachment[] };
-  readOnly?: boolean;
-  onAttachmentsChange?: () => void;
+  quote: SupplierQuote;
 }
 
-export function SupplierQuoteAttachments({
-  supplierQuote,
-  readOnly = false,
-  onAttachmentsChange
-}: SupplierQuoteAttachmentsProps) {
-  const { user } = useAuth();
-  const [isUploading, setIsUploading] = useState(false);
-  const [attachmentToDelete, setAttachmentToDelete] = useState<SupplierQuoteAttachment | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [attachments, setAttachments] = useState<SupplierQuoteAttachment[]>(
-    supplierQuote.attachments || []
-  );
+export function SupplierQuoteAttachments({ quote }: SupplierQuoteAttachmentsProps) {
+  const [previewFile, setPreviewFile] = useState<any | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const loadAttachments = async () => {
-      const fetched = await getSupplierQuoteAttachments(supplierQuote.id);
-      setAttachments(fetched);
-    };
-    
-    loadAttachments();
-  }, [supplierQuote.id]);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
-    setIsUploading(true);
-    
+  const handlePreview = async (file: any) => {
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `${supplierQuote.id}/${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('quote-attachments')
-          .upload(filePath, file);
-          
-        if (uploadError) {
-          throw uploadError;
-        }
-        
-        const { error: dbError } = await supabase.rpc('add_quote_attachment', {
-          p_supplier_quote_id: supplierQuote.id,
-          p_file_name: file.name,
-          p_file_key: filePath,
-          p_file_size: file.size,
-          p_file_type: file.type,
-          p_uploaded_by: user?.id
-        });
-        
-        if (dbError) {
-          console.error("Error creating attachment record:", dbError);
-          throw dbError;
-        }
+      setPreviewFile(file);
+      // Get signed URL for the file if it doesn't already have one
+      if (!file.url) {
+        const signedUrl = await getPublicUrl('supplier-quote-attachments', file.file_key);
+        file.url = signedUrl;
       }
-      
-      toast.success("Files uploaded successfully");
-      const refreshed = await getSupplierQuoteAttachments(supplierQuote.id);
-      setAttachments(refreshed);
-      
-      if (onAttachmentsChange) {
-        onAttachmentsChange();
-      }
+      setPreviewUrl(file.url);
     } catch (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Error uploading file");
-    } finally {
-      setIsUploading(false);
-      e.target.value = '';
-    }
-  };
-  
-  const handleDownload = async (attachment: SupplierQuoteAttachment) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from('quote-attachments')
-        .download(attachment.file_key);
-        
-      if (error) {
-        throw error;
-      }
-      
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = attachment.file_name;
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
-      a.remove();
-    } catch (error) {
-      console.error("Error downloading file:", error);
-      toast.error("Error downloading file");
-    }
-  };
-  
-  const handleDeleteClick = (attachment: SupplierQuoteAttachment) => {
-    setAttachmentToDelete(attachment);
-    setDeleteDialogOpen(true);
-  };
-  
-  const handleDelete = async () => {
-    if (!attachmentToDelete) return;
-    
-    try {
-      const { error: storageError } = await supabase.storage
-        .from('quote-attachments')
-        .remove([attachmentToDelete.file_key]);
-        
-      if (storageError) {
-        throw storageError;
-      }
-      
-      const { error: dbError } = await supabase.rpc('delete_quote_attachment', {
-        attachment_id: attachmentToDelete.id
+      console.error("Error getting preview URL:", error);
+      toast({
+        title: "Error",
+        description: "Failed to preview file",
+        variant: "destructive",
       });
-      
-      if (dbError) {
-        console.error("Error deleting with RPC:", dbError);
-        throw dbError;
-      }
-      
-      toast.success("File deleted successfully");
-      setAttachments(attachments.filter(a => a.id !== attachmentToDelete.id));
-      
-      if (onAttachmentsChange) {
-        onAttachmentsChange();
-      }
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      toast.error("Error deleting file");
-    } finally {
-      setDeleteDialogOpen(false);
-      setAttachmentToDelete(null);
     }
   };
-  
-  const formatFileSize = (bytes: number | null) => {
-    if (bytes === null) return "Unknown size";
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    if (bytes === 0) return "0 Byte";
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i)) + " " + sizes[i];
+
+  const closePreview = () => {
+    setPreviewFile(null);
+    setPreviewUrl(null);
   };
+
+  const renderPreviewContent = () => {
+    if (!previewFile || !previewUrl) return null;
+
+    const fileType = previewFile.file_type || '';
+
+    if (fileType.startsWith('image/')) {
+      return <img src={previewUrl} alt={previewFile.file_name} className="max-w-full max-h-[70vh]" />;
+    } else if (fileType === 'application/pdf') {
+      return (
+        <iframe 
+          src={`${previewUrl}#toolbar=0`} 
+          className="w-full h-[70vh]" 
+          title={previewFile.file_name}
+        />
+      );
+    } else {
+      return (
+        <div className="text-center p-10">
+          <FileIcon className="h-16 w-16 mx-auto mb-4 text-primary" />
+          <p>Preview not available for this file type.</p>
+          <Button onClick={() => window.open(previewUrl, '_blank')} className="mt-4">
+            <Download className="h-4 w-4 mr-2" />
+            Download to view
+          </Button>
+        </div>
+      );
+    }
+  };
+
+  // If no attachments
+  if (!quote.attachments || quote.attachments.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center">
+            <Paperclip className="w-5 h-5 mr-2" />
+            Attachments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-sm italic">No attachments</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {!readOnly && (
-        <div className="mb-4">
-          <Label htmlFor="file-upload" className="block mb-2">Upload Attachments</Label>
-          <Input
-            id="file-upload"
-            type="file"
-            multiple
-            disabled={isUploading}
-            onChange={handleFileChange}
-            className="cursor-pointer"
-          />
-          {isUploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
-        </div>
-      )}
-      
-      <div className="space-y-2">
-        {attachments && attachments.length > 0 ? (
-          attachments.map((attachment) => (
-            <div
-              key={attachment.id}
-              className="flex items-center justify-between border rounded-md p-3 shadow-sm"
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg flex items-center">
+          <Paperclip className="w-5 h-5 mr-2" />
+          Attachments
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {quote.attachments.map((file) => (
+            <div 
+              key={file.id} 
+              className="flex items-center justify-between rounded-md border p-3"
             >
-              <div className="flex items-center gap-2 overflow-hidden">
-                <Paperclip className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                <div className="overflow-hidden">
-                  <p className="font-medium truncate">{attachment.file_name}</p>
+              <div className="flex items-center space-x-3">
+                <FileIcon className="h-6 w-6 text-blue-500" />
+                <div>
+                  <p className="text-sm font-medium">{file.file_name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatFileSize(attachment.file_size)}
+                    {file.file_size ? `${(file.file_size / 1024).toFixed(2)} KB` : 'Unknown size'}
                   </p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button 
                   variant="outline" 
-                  size="sm"
-                  onClick={() => handleDownload(attachment)}
+                  size="sm" 
+                  onClick={() => handlePreview(file)}
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  Preview
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => file.url ? window.open(file.url, '_blank') : handlePreview(file)}
                 >
                   <Download className="h-4 w-4 mr-1" />
                   Download
                 </Button>
-                {!readOnly && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => handleDeleteClick(attachment)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
               </div>
             </div>
-          ))
-        ) : (
-          <p className="text-sm text-muted-foreground">No attachments</p>
-        )}
-      </div>
-      
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Attachment</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this attachment? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+          ))}
+        </div>
+      </CardContent>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewFile} onOpenChange={(open) => !open && closePreview()}>
+        <DialogContent className="max-w-4xl w-full">
+          <DialogHeader>
+            <DialogTitle>{previewFile?.file_name}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 flex justify-center overflow-auto">
+            {renderPreviewContent()}
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={closePreview} className="mr-2">
+              Close
+            </Button>
+            {previewFile && (
+              <Button onClick={() => previewUrl && window.open(previewUrl, '_blank')}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </Card>
   );
 }

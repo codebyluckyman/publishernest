@@ -1,9 +1,9 @@
 
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 
 interface NotesSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -12,8 +12,8 @@ interface NotesSectionProps {
 export function NotesSection({ control }: NotesSectionProps) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Additional Notes</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Notes</CardTitle>
       </CardHeader>
       <CardContent>
         <FormField
@@ -21,12 +21,12 @@ export function NotesSection({ control }: NotesSectionProps) {
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Add any additional notes about this quote..."
-                  className="min-h-[100px]"
+                  placeholder="Add any additional notes or comments here..."
+                  className="min-h-[120px]"
                   {...field}
+                  value={field.value || ''}
                 />
               </FormControl>
               <FormMessage />

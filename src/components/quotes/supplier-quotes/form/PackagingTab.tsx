@@ -1,11 +1,10 @@
 
 import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface PackagingTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -14,39 +13,35 @@ interface PackagingTabProps {
 export function PackagingTab({ control }: PackagingTabProps) {
   return (
     <div className="space-y-6">
-      <Alert className="bg-blue-50">
-        <InfoIcon className="h-4 w-4" />
-        <AlertTitle>Packaging Information</AlertTitle>
-        <AlertDescription>
-          Please provide the packaging details for this quote. This information will help with shipping calculations.
-        </AlertDescription>
-      </Alert>
-      
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="text-lg">Carton Information</CardTitle>
+          <CardDescription>
+            Specify the packaging details for this quote
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
               name="packaging_carton_quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Copies per Carton</FormLabel>
+                  <FormLabel>Copies Per Carton</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter quantity"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter quantity" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
             <FormField
               control={control}
               name="packaging_carton_weight"
@@ -54,13 +49,12 @@ export function PackagingTab({ control }: PackagingTabProps) {
                 <FormItem>
                   <FormLabel>Carton Weight (kg)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter weight"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter weight" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -69,58 +63,107 @@ export function PackagingTab({ control }: PackagingTabProps) {
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Separator className="my-2" />
+          
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Carton Dimensions</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={control}
+                name="packaging_carton_length"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Length (mm)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="Length" 
+                        {...field} 
+                        value={field.value || ''} 
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={control}
+                name="packaging_carton_width"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Width (mm)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="Width" 
+                        {...field} 
+                        value={field.value || ''} 
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={control}
+                name="packaging_carton_height"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Height (mm)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="Height" 
+                        {...field} 
+                        value={field.value || ''} 
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
-              name="packaging_carton_length"
+              name="packaging_carton_volume"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Length (mm)</FormLabel>
+                  <FormLabel>Carton Volume (m³)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter length"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter volume" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
             <FormField
               control={control}
-              name="packaging_carton_width"
+              name="packaging_cartons_per_pallet"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Width (mm)</FormLabel>
+                  <FormLabel>Cartons Per Pallet</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter width"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="packaging_carton_height"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Height (mm)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter height"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter quantity" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -128,108 +171,91 @@ export function PackagingTab({ control }: PackagingTabProps) {
               )}
             />
           </div>
-          
-          <FormField
-            control={control}
-            name="packaging_cartons_per_pallet"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cartons per Pallet</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Enter cartons per pallet"
-                    {...field}
-                    value={field.value === null ? '' : field.value}
-                    onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Container Information</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Container Capacity</CardTitle>
+          <CardDescription>
+            How many copies can fit in standard shipping containers
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
               name="packaging_copies_per_20ft_palletized"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Copies per 20ft Container (Palletized)</FormLabel>
+                  <FormLabel>20ft Container (Palletized)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter quantity"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter quantity" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
             <FormField
               control={control}
               name="packaging_copies_per_40ft_palletized"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Copies per 40ft Container (Palletized)</FormLabel>
+                  <FormLabel>40ft Container (Palletized)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter quantity"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter quantity" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
             <FormField
               control={control}
               name="packaging_copies_per_20ft_unpalletized"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Copies per 20ft Container (Unpalletized)</FormLabel>
+                  <FormLabel>20ft Container (Unpalletized)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter quantity"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter quantity" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
             <FormField
               control={control}
               name="packaging_copies_per_40ft_unpalletized"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Copies per 40ft Container (Unpalletized)</FormLabel>
+                  <FormLabel>40ft Container (Unpalletized)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter quantity"
-                      {...field}
-                      value={field.value === null ? '' : field.value}
-                      onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                    <Input 
+                      type="number" 
+                      placeholder="Enter quantity" 
+                      {...field} 
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                     />
                   </FormControl>
                   <FormMessage />

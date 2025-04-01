@@ -1,16 +1,14 @@
 
-import { Control, useFormContext } from "react-hook-form";
+import { useState, useEffect } from "react";
+import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { Supplier } from "@/types/supplier";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { DatePicker } from "@/components/ui/date-picker";
-import { format, parseISO } from "date-fns";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { useOrganization } from "@/context/OrganizationContext";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CalendarIcon, AlertCircle } from "lucide-react";
+import { Supplier } from "@/types/supplier";
+import { useOrganization } from "@/hooks/useOrganization";
 
 interface ProductionScheduleSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -23,85 +21,88 @@ export function ProductionScheduleSection({
   scheduleRequested,
   selectedSupplier
 }: ProductionScheduleSectionProps) {
-  const { currentOrganization } = useOrganization();
-  const [productionSteps, setProductionSteps] = useState<any[]>([]);
-  const { setValue, getValues } = useFormContext<SupplierQuoteFormValues>();
+  const { useProductionSteps } = useOrganization();
+  const { data: productionSteps, isLoading } = useProductionSteps();
   
-  // Fetch production steps for the organization
-  useEffect(() => {
-    if (currentOrganization?.id) {
-      const fetchProductionSteps = async () => {
-        const { data, error } = await supabase
-          .from("organization_production_steps")
-          .select("*")
-          .eq("organization_id", currentOrganization.id)
-          .eq("is_active", true)
-          .order("order_number", { ascending: true });
-          
-        if (error) {
-          console.error("Error fetching production steps:", error);
-        } else {
-          setProductionSteps(data || []);
-        }
-      };
-      
-      fetchProductionSteps();
-    }
-  }, [currentOrganization?.id]);
-
+  // If schedule not requested, show a message instead
   if (!scheduleRequested) {
     return (
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Production schedule not requested</AlertTitle>
-        <AlertDescription>
-          The publisher has not requested a production schedule for this quote.
-        </AlertDescription>
-      </Alert>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Production Schedule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="info">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Production schedule wasn't requested for this quote.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
     );
   }
-
-  if (productionSteps.length === 0) {
+  
+  // If loading production steps, show loading state
+  if (isLoading) {
     return (
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>No production steps defined</AlertTitle>
-        <AlertDescription>
-          No production steps have been defined for this organization. The publisher needs to configure production steps before you can provide a schedule.
-        </AlertDescription>
-      </Alert>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Production Schedule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Loading production steps...</p>
+        </CardContent>
+      </Card>
     );
   }
-
+  
+  // If no production steps defined, show guidance
+  if (!productionSteps || productionSteps.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Production Schedule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="warning">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              No production steps have been defined for your organization.
+              Please define production steps in the Organization Settings.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="text-lg">Production Schedule</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Please provide estimated dates for each production step:
+          Please provide the estimated dates for each production step.
         </p>
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {productionSteps.map((step) => (
             <FormField
               key={step.id}
               control={control}
-              name={`production_schedule.${step.id}`}
+              name={`production_schedule.${step.step_name}`}
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>{step.step_name}</FormLabel>
-                  <FormControl>
-                    <DatePicker
-                      value={field.value ? parseISO(field.value) : undefined}
-                      onChange={(date) => {
-                        const value = date ? format(date, 'yyyy-MM-dd') : null;
-                        setValue(`production_schedule.${step.id}`, value);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
+                  <DatePicker
+                    date={field.value ? new Date(field.value) : undefined}
+                    setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                  />
+                  {step.description && (
+                    <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
+                  )}
                 </FormItem>
               )}
             />

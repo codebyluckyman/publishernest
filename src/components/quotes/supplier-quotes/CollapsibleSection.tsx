@@ -1,35 +1,54 @@
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-interface SectionProps {
+interface CollapsibleSectionProps {
   title: string;
   children: React.ReactNode;
+  onOpenChange?: () => void;
   isEmpty?: boolean;
-  emptyMessage?: string;
 }
 
 export function CollapsibleSection({ 
   title, 
   children, 
-  isEmpty = false,
-  emptyMessage = "No items available"
-}: SectionProps) {
+  onOpenChange, 
+  isEmpty = false 
+}: CollapsibleSectionProps) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  const toggleOpen = () => {
+    setIsOpen(!isOpen);
+    if (onOpenChange) {
+      onOpenChange();
+    }
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="font-medium">{title}</h4>
-      </div>
-      
-      {isEmpty ? (
-        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
-      ) : (
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            {children}
-          </CardContent>
-        </Card>
+    <Card>
+      <CardHeader 
+        className="py-3 cursor-pointer" 
+        onClick={toggleOpen}
+      >
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg">{title}</CardTitle>
+          {isOpen ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </div>
+      </CardHeader>
+      {isOpen && (
+        <CardContent>
+          {isEmpty ? (
+            <p className="text-muted-foreground text-sm italic">No information available</p>
+          ) : (
+            children
+          )}
+        </CardContent>
       )}
-    </div>
+    </Card>
   );
 }

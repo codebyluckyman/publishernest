@@ -6,7 +6,26 @@ import {
   SupplierQuoteAttachment, 
   SupplierQuotePriceBreak 
 } from "@/types/supplierQuote";
-import { getPublicUrls } from "./getPublicUrls";
+import { getPublicUrl } from "./getPublicUrls";
+
+// Function to get public URLs for multiple attachments
+async function getPublicUrls(attachments: any[], bucket: string): Promise<SupplierQuoteAttachment[]> {
+  const processedAttachments: SupplierQuoteAttachment[] = [];
+  
+  for (const attachment of attachments) {
+    try {
+      const url = await getPublicUrl(bucket, attachment.file_key);
+      processedAttachments.push({
+        ...attachment,
+        url
+      });
+    } catch (error) {
+      console.error(`Error getting URL for attachment ${attachment.id}:`, error);
+    }
+  }
+  
+  return processedAttachments;
+}
 
 export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote> {
   // Fetch the supplier quote
@@ -113,7 +132,8 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     quote_request: quoteRequest || null,
     price_breaks: priceBreaks || [],
     formats: processedFormats,
-    attachments: processedAttachments
+    attachments: processedAttachments,
+    status: quoteData.status as SupplierQuoteStatus // Ensure status is cast to the correct type
   };
 
   return supplierQuote;

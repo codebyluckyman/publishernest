@@ -3,13 +3,15 @@ import { Control } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
-import { format, parseISO } from "date-fns";
+import { QuoteDetailsSection } from "./QuoteDetailsSection";
+import { NotesSection } from "./NotesSection";
+import { TermsSection } from "./TermsSection";
 
 interface DetailsTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -18,31 +20,39 @@ interface DetailsTabProps {
   currencies: { label: string; value: string }[];
 }
 
-export function DetailsTab({
-  control,
-  quoteRequest,
+export function DetailsTab({ 
+  control, 
+  quoteRequest, 
   selectedSupplier,
-  currencies
+  currencies 
 }: DetailsTabProps) {
   return (
     <div className="space-y-6">
+      <QuoteDetailsSection 
+        quoteRequest={quoteRequest}
+        selectedSupplier={selectedSupplier}
+      />
+      
       <Card>
-        <CardContent className="space-y-6 pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Quote Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
               name="reference"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quote Reference</FormLabel>
+                  <FormLabel>Reference</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter quote reference" {...field} />
+                    <Input placeholder="Enter reference number" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={control}
               name="currency"
@@ -55,7 +65,7 @@ export function DetailsTab({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a currency" />
+                        <SelectValue placeholder="Select currency" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -70,9 +80,7 @@ export function DetailsTab({
                 </FormItem>
               )}
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
             <FormField
               control={control}
               name="valid_from"
@@ -80,14 +88,14 @@ export function DetailsTab({
                 <FormItem className="flex flex-col">
                   <FormLabel>Valid From</FormLabel>
                   <DatePicker
-                    value={field.value ? parseISO(field.value) : undefined}
-                    onChange={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                    date={field.value ? new Date(field.value) : undefined}
+                    setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
                   />
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={control}
               name="valid_to"
@@ -95,73 +103,20 @@ export function DetailsTab({
                 <FormItem className="flex flex-col">
                   <FormLabel>Valid To</FormLabel>
                   <DatePicker
-                    value={field.value ? parseISO(field.value) : undefined}
-                    onChange={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                    date={field.value ? new Date(field.value) : undefined}
+                    setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
                   />
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-
-          <FormField
-            control={control}
-            name="terms"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Terms</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Enter terms and conditions" 
-                    className="min-h-24" 
-                    {...field} 
-                    value={field.value || ''}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={control}
-            name="notes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Notes</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Enter notes" 
-                    className="min-h-24" 
-                    {...field} 
-                    value={field.value || ''}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={control}
-            name="remarks"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Remarks</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Enter any remarks" 
-                    className="min-h-24" 
-                    {...field} 
-                    value={field.value || ''}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </CardContent>
       </Card>
+      
+      <TermsSection control={control} />
+      
+      <NotesSection control={control} />
     </div>
   );
 }
