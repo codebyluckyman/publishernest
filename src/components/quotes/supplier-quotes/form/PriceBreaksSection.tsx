@@ -34,32 +34,36 @@ export function PriceBreaksSection({
   const currencySymbol = getSymbolForCurrency(currency);
 
   // Function to copy unit costs down to all price breaks below the current one
-  const handleCopyDown = (index: number) => {
+  const handleCopyDown = (index: number, fieldType: string = 'price_break') => {
     const priceBreaks = getValues("price_breaks");
     if (!priceBreaks || index >= priceBreaks.length) return;
 
     const currentPriceBreak = priceBreaks[index];
     const targetFormatId = currentPriceBreak.quote_request_format_id;
     
-    // Check if we're dealing with a single unit cost or multiple
-    const hasSingleUnitCost = currentPriceBreak.unit_cost !== undefined;
-    
-    // Get the value to copy
-    let valueToCopy = hasSingleUnitCost ? currentPriceBreak.unit_cost : null;
-    
-    // Find all price breaks below the current one that belong to the same format
-    for (let i = index + 1; i < priceBreaks.length; i++) {
-      if (priceBreaks[i].quote_request_format_id === targetFormatId) {
-        if (hasSingleUnitCost) {
-          // For single product case
+    if (fieldType === 'price_break') {
+      // For single product case (standard unit_cost field)
+      const valueToCopy = currentPriceBreak.unit_cost;
+      
+      // Find all price breaks below the current one that belong to the same format
+      for (let i = index + 1; i < priceBreaks.length; i++) {
+        if (priceBreaks[i].quote_request_format_id === targetFormatId) {
           setValue(`price_breaks.${i}.unit_cost`, valueToCopy);
-        } else {
-          // For multiple products case
-          // Extract the product number from the index
-          const productNumber = index % 10 + 1;
-          const fieldName = `unit_cost_${productNumber}` as keyof typeof currentPriceBreak;
-          const multiValueToCopy = currentPriceBreak[fieldName];
-          
+        }
+      }
+    } else if (fieldType === 'price_break_product') {
+      // For multiple products case
+      // Extract the product number from the index
+      // The format is: index = baseIndex * numProducts + (productNumber - 1)
+      // So we need to find the base index and product number
+      const formatIndex = Math.floor(index / 10); // Assuming max 10 products
+      const productNumber = (index % 10) + 1;
+      
+      const fieldName = `unit_cost_${productNumber}` as keyof typeof currentPriceBreak;
+      const multiValueToCopy = currentPriceBreak[fieldName];
+      
+      for (let i = formatIndex + 1; i < priceBreaks.length; i++) {
+        if (priceBreaks[i].quote_request_format_id === targetFormatId) {
           setValue(`price_breaks.${i}.${fieldName}`, multiValueToCopy);
         }
       }

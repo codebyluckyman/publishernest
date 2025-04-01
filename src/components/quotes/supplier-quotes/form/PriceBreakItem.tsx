@@ -19,7 +19,7 @@ interface PriceBreakItemProps {
   productName?: string;
   numProducts: number;
   showLabels?: boolean;
-  onCopyDown?: (index: number) => void;
+  onCopyDown?: (index: number, fieldType?: string) => void;
 }
 
 export function PriceBreakItem({ 
@@ -60,7 +60,7 @@ export function PriceBreakItem({
                     />
                   </ContextMenuTrigger>
                   <ContextMenuContent>
-                    <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index)}>
+                    <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index, 'price_break')}>
                       <Copy className="mr-2 h-4 w-4" />
                       <span>Copy to rows below</span>
                     </ContextMenuItem>
@@ -103,7 +103,7 @@ export function PriceBreakItem({
                       />
                     </ContextMenuTrigger>
                     <ContextMenuContent>
-                      <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index * numProducts + (i - 1))}>
+                      <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index * numProducts + (i - 1), 'price_break_product')}>
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copy to rows below</span>
                       </ContextMenuItem>

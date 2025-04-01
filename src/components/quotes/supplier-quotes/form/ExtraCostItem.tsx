@@ -1,287 +1,257 @@
 
-import { Control } from "react-hook-form";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { ExtraCostTableItem } from "@/types/extraCost";
-import { FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { PriceBreak } from "@/types/quoteRequest";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 import { useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Control, useFormContext } from "react-hook-form";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { ExtraCostTableItem } from "@/types/extraCost";
+import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
 
 interface ExtraCostItemProps {
   control: Control<SupplierQuoteFormValues>;
   index: number;
   extraCost: ExtraCostTableItem;
-  showMultiProducts?: boolean;
-  maxNumProducts?: number;
-  priceBreaks?: (PriceBreak & { format_name?: string; format_id?: string })[];
+  showMultiProducts: boolean;
+  maxNumProducts: number;
+  priceBreaks: any[];
   isOpen: boolean;
-  onOpenChange: (costId: string, open: boolean) => void;
+  onOpenChange: (id: string, isOpen: boolean) => void;
 }
 
-export function ExtraCostItem({ 
-  control, 
-  index, 
+export function ExtraCostItem({
+  control,
+  index,
   extraCost,
-  showMultiProducts = false,
-  maxNumProducts = 1,
-  priceBreaks = [],
+  showMultiProducts,
+  maxNumProducts,
+  priceBreaks,
   isOpen,
-  onOpenChange
+  onOpenChange,
 }: ExtraCostItemProps) {
-  const { unitOfMeasures } = useUnitOfMeasures();
-  const [isInventoryUnit, setIsInventoryUnit] = useState<boolean>(false);
-  
+  const { setValue, getValues } = useFormContext<SupplierQuoteFormValues>();
+  const [sortedBreaks, setSortedBreaks] = useState<any[]>([]);
+
   useEffect(() => {
-    if (extraCost.unit_of_measure_id && unitOfMeasures) {
-      const unitOfMeasure = unitOfMeasures.find(u => u.id === extraCost.unit_of_measure_id);
-      setIsInventoryUnit(unitOfMeasure?.is_inventory_unit || false);
-    } else {
-      setIsInventoryUnit(false);
-    }
-  }, [extraCost.unit_of_measure_id, unitOfMeasures]);
-  
-  // Function to calculate unit costs based on total cost
-  const calculateUnitCosts = (totalCost: number | null) => {
-    if (totalCost === null || !priceBreaks.length) return;
-    
-    const formValues = control._formValues.extra_costs;
-    if (!formValues || !formValues[index] || !formValues[index].price_breaks) return;
-    
-    formValues[index].price_breaks.forEach((pb, pbIndex) => {
-      const priceBreak = priceBreaks.find(p => p.id === pb.price_break_id);
-      if (priceBreak && priceBreak.quantity) {
-        const unitCost = totalCost / priceBreak.quantity;
-        formValues[index].price_breaks[pbIndex].unit_cost = parseFloat(unitCost.toFixed(3));
+    // Group price breaks by format and sort by quantity
+    const grouped = priceBreaks.reduce((acc, pb) => {
+      const formatKey = pb.format_id || "unknown";
+      if (!acc[formatKey]) {
+        acc[formatKey] = {
+          format_name: pb.format_name || "Unknown Format",
+          breaks: [],
+        };
       }
+      acc[formatKey].breaks.push(pb);
+      return acc;
+    }, {} as Record<string, { format_name: string; breaks: any[] }>);
+
+    // Sort each group's breaks by quantity
+    Object.values(grouped).forEach((group) => {
+      group.breaks.sort((a, b) => a.quantity - b.quantity);
     });
-    
-    // Force re-render of the form without modifying dirtyFields directly
-    control._subjects.state.next({
-      ...control._formState,
-      isDirty: true // Mark form as dirty instead of modifying dirtyFields structure
+
+    // Flatten back to array but maintain grouping
+    const result: any[] = [];
+    Object.values(grouped).forEach((group) => {
+      result.push({
+        type: "header",
+        format_name: group.format_name,
+      });
+      group.breaks.forEach((pb) => {
+        result.push({
+          type: "price_break",
+          ...pb,
+        });
+      });
     });
+
+    setSortedBreaks(result);
+  }, [priceBreaks]);
+
+  const handleCopyDown = (priceBreakIndex: number, productIndex?: number) => {
+    const extraCosts = getValues("extra_costs");
+    if (!extraCosts || !extraCosts[index] || !extraCosts[index].price_breaks) return;
+
+    const priceBreak = extraCosts[index].price_breaks[priceBreakIndex];
+    if (!priceBreak) return;
+
+    // Get the value to copy
+    let valueToCopy: number | null = null;
+    if (productIndex !== undefined) {
+      // Copy specific product cost
+      const fieldName = `unit_cost_${productIndex + 1}` as keyof typeof priceBreak;
+      valueToCopy = priceBreak[fieldName] as number | null;
+    } else {
+      // Copy standard unit cost
+      valueToCopy = priceBreak.unit_cost;
+    }
+
+    // Apply value to all price breaks below the current one
+    for (let i = priceBreakIndex + 1; i < extraCosts[index].price_breaks.length; i++) {
+      if (productIndex !== undefined) {
+        const fieldName = `unit_cost_${productIndex + 1}`;
+        setValue(`extra_costs.${index}.price_breaks.${i}.${fieldName}`, valueToCopy);
+      } else {
+        setValue(`extra_costs.${index}.price_breaks.${i}.unit_cost`, valueToCopy);
+      }
+    }
+
+    toast.success(`Value copied to all rows below`);
   };
-  
+
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 gap-4">
+    <Card className="overflow-hidden">
+      <Collapsible
+        open={isOpen}
+        onOpenChange={(open) => onOpenChange(extraCost.id, open)}
+      >
+        <CardHeader className="p-3">
           <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm font-medium">{extraCost.name}</p>
-              {extraCost.description && (
-                <p className="text-sm text-muted-foreground">{extraCost.description}</p>
-              )}
-              {extraCost.unit_of_measure_name && (
-                <p className="text-xs text-muted-foreground">
-                  Unit: {extraCost.unit_of_measure_name} {isInventoryUnit ? "(Inventory Unit)" : "(Non-Inventory Unit)"}
-                </p>
-              )}
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => onOpenChange(extraCost.id, !isOpen)}
-              className="p-0 h-8 w-8"
-            >
-              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
+            <div className="font-medium">{extraCost.name}</div>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
+                {isOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
           </div>
-          
-          <Collapsible open={isOpen} onOpenChange={(open) => onOpenChange(extraCost.id, open)}>
-            <CollapsibleContent>
-              <div className="space-y-4">
-                {priceBreaks && priceBreaks.length > 0 ? (
-                  <div className="space-y-0">
-                    {!isInventoryUnit && (
-                      <div className="mb-3 p-3 border rounded-md">
-                        <div className="flex items-center mb-2">
-                          <p className="text-sm font-medium">Total Cost</p>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <HelpCircle className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-sm max-w-xs">For non-inventory units, enter the total cost. The unit cost will be calculated automatically based on quantity.</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+          {extraCost.description && (
+            <p className="text-sm text-muted-foreground">{extraCost.description}</p>
+          )}
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="p-3 pt-0">
+            {extraCost.unit_of_measure_id && (
+              <div className="mb-3 text-sm text-muted-foreground">
+                Unit: {extraCost.unit_of_measure_name}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {sortedBreaks.map((item, i) => {
+                if (item.type === "header") {
+                  return (
+                    <div
+                      key={`header-${i}`}
+                      className="text-sm font-medium pt-2 first:pt-0"
+                    >
+                      {item.format_name}
+                    </div>
+                  );
+                }
+
+                // Find the index of this price break in the form data
+                const priceBreakIndex = getValues("extra_costs")[index]?.price_breaks?.findIndex(
+                  (pb) => pb.price_break_id === item.id
+                );
+
+                if (priceBreakIndex === undefined || priceBreakIndex === -1) {
+                  return null;
+                }
+
+                return (
+                  <div key={item.id} className="flex items-center space-x-3">
+                    <div className="w-24 text-sm">{item.quantity.toLocaleString()}</div>
+                    <div className="flex-1">
+                      {showMultiProducts ? (
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-1">
+                          {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, idx) => (
+                            <FormField
+                              key={`${item.id}-product-${idx}`}
+                              control={control}
+                              name={`extra_costs.${index}.price_breaks.${priceBreakIndex}.unit_cost_${idx + 1}` as any}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <ContextMenu>
+                                      <ContextMenuTrigger>
+                                        <Input
+                                          type="number"
+                                          step="0.001"
+                                          min="0"
+                                          placeholder="0.000"
+                                          className="h-8"
+                                          {...field}
+                                          onChange={(e) => {
+                                            const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                            field.onChange(value);
+                                          }}
+                                          value={field.value === null ? "" : field.value}
+                                        />
+                                      </ContextMenuTrigger>
+                                      <ContextMenuContent>
+                                        <ContextMenuItem onClick={() => handleCopyDown(priceBreakIndex, idx)}>
+                                          <Copy className="mr-2 h-4 w-4" />
+                                          <span>Copy to rows below</span>
+                                        </ContextMenuItem>
+                                      </ContextMenuContent>
+                                    </ContextMenu>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          ))}
                         </div>
+                      ) : (
                         <FormField
                           control={control}
-                          name={`extra_costs.${index}.unit_cost` as any}
+                          name={`extra_costs.${index}.price_breaks.${priceBreakIndex}.unit_cost`}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  placeholder="0.00"
-                                  className="w-full rounded-md border border-input bg-background"
-                                  {...field}
-                                  onChange={(e) => {
-                                    const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(2));
-                                    field.onChange(value);
-                                    
-                                    // Calculate unit costs immediately when total cost changes
-                                    calculateUnitCosts(value);
-                                  }}
-                                  value={field.value === null ? "" : field.value}
-                                />
+                                <ContextMenu>
+                                  <ContextMenuTrigger>
+                                    <Input
+                                      type="number"
+                                      step="0.001"
+                                      min="0"
+                                      placeholder="0.000"
+                                      className="h-8"
+                                      {...field}
+                                      onChange={(e) => {
+                                        const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                                        field.onChange(value);
+                                      }}
+                                      value={field.value === null ? "" : field.value}
+                                    />
+                                  </ContextMenuTrigger>
+                                  <ContextMenuContent>
+                                    <ContextMenuItem onClick={() => handleCopyDown(priceBreakIndex)}>
+                                      <Copy className="mr-2 h-4 w-4" />
+                                      <span>Copy to rows below</span>
+                                    </ContextMenuItem>
+                                  </ContextMenuContent>
+                                </ContextMenu>
                               </FormControl>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />
-                      </div>
-                    )}
-                    
-                    {Array.from(new Set(priceBreaks.map(pb => pb.format_name))).map((formatName) => {
-                      const formatBreaks = priceBreaks.filter(pb => pb.format_name === formatName);
-                      
-                      return (
-                        <div key={formatName} className="border rounded-md p-3">
-                          {formatName && <p className="text-sm font-medium mb-3">{formatName}</p>}
-                          
-                          {isInventoryUnit && showMultiProducts && (
-                            <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2 mb-3">
-                              <div></div> {/* Empty cell for quantity column */}
-                              {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
-                                <div key={prodIndex} className="flex items-center justify-center">
-                                  <span className="text-xs text-muted-foreground">{prodIndex}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          
-                          {formatBreaks.map((priceBreak, breakIndex) => {
-                            const priceBreakFieldIndex = Array.isArray(control._formValues.extra_costs?.[index]?.price_breaks) 
-                              ? control._formValues.extra_costs[index]?.price_breaks.findIndex(pb => pb.price_break_id === priceBreak.id)
-                              : -1;
-                            
-                            if (priceBreakFieldIndex === -1) return null;
-                              
-                            return (
-                              <div 
-                                key={priceBreak.id} 
-                                className={`py-2 ${breakIndex < formatBreaks.length - 1 ? 'border-b border-gray-200/50' : ''}`}
-                              >
-                                {isInventoryUnit ? (
-                                  showMultiProducts ? (
-                                    <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2">
-                                      <div className="flex items-center">
-                                        <span className="text-xs text-muted-foreground">{priceBreak.quantity.toLocaleString()}</span>
-                                      </div>
-                                      {Array.from({ length: Math.min(maxNumProducts, 10) }, (_, i) => i + 1).map((prodIndex) => (
-                                        <div key={prodIndex}>
-                                          <FormField
-                                            control={control}
-                                            name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost_${prodIndex}` as any}
-                                            render={({ field }) => (
-                                              <FormItem>
-                                                <FormControl>
-                                                  <Input
-                                                    type="number"
-                                                    step="0.001"
-                                                    min="0"
-                                                    placeholder="0.000"
-                                                    className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                                                    {...field}
-                                                    onChange={(e) => {
-                                                      const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
-                                                      field.onChange(value);
-                                                    }}
-                                                    value={field.value === null ? "" : field.value}
-                                                  />
-                                                </FormControl>
-                                              </FormItem>
-                                            )}
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div className="flex items-center">
-                                        <span className="text-xs text-muted-foreground">{priceBreak.quantity.toLocaleString()}</span>
-                                      </div>
-                                      <FormField
-                                        control={control}
-                                        name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost` as any}
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormControl>
-                                              <Input
-                                                type="number"
-                                                step="0.001"
-                                                min="0"
-                                                placeholder="0.000"
-                                                className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                                                {...field}
-                                                onChange={(e) => {
-                                                  const value = e.target.value === "" ? null : parseFloat(parseFloat(e.target.value).toFixed(3));
-                                                  field.onChange(value);
-                                                }}
-                                                value={field.value === null ? "" : field.value}
-                                              />
-                                            </FormControl>
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                  )
-                                ) : (
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <div className="flex items-center">
-                                      <span className="text-xs text-muted-foreground">{priceBreak.quantity.toLocaleString()}</span>
-                                    </div>
-                                    <FormField
-                                      control={control}
-                                      name={`extra_costs.${index}.price_breaks.${priceBreakFieldIndex}.unit_cost` as any}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <Input
-                                              type="number"
-                                              step="0.001"
-                                              min="0"
-                                              placeholder="0.000"
-                                              className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background bg-gray-100"
-                                              readOnly
-                                              {...field}
-                                              value={field.value === null ? "" : field.value}
-                                            />
-                                          </FormControl>
-                                        </FormItem>
-                                      )}
-                                    />
-                                    <div className="flex items-center">
-                                      <span className="text-xs text-muted-foreground">= Total Cost ÷ {priceBreak.quantity.toLocaleString()}</span>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No price breaks available</p>
-                )}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-      </CardContent>
+                );
+              })}
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }
