@@ -109,7 +109,8 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
               <CardTitle className="text-base">{formatName}</CardTitle>
               <CardDescription className="text-xs">
                 {numProducts > 0 
-                  ? `${numProducts} Product${numProducts > 1 ? 's' : ''}`
+                // In book publishing "Titles" and "Products" are used interchangably. In this screen, we will use "Titles" when we refer to products.
+                  ? `${numProducts} Title${numProducts > 1 ? 's' : ''}`
                   : 'No products for this format'}
               </CardDescription>
             </CardHeader>
