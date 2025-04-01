@@ -32,6 +32,11 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
           (unit) => unit.id === extraCost.unit_of_measure_id
         );
 
+        // Find the matching supplier quote extra cost
+        const supplierExtraCost = quote.extra_costs?.find(
+          (ec) => ec.extra_cost_id === extraCost.id
+        );
+
         // Check if it's an inventory unit that needs price breaks
         if (unitOfMeasure?.is_inventory_unit) {
           // Prepare price breaks if they exist
@@ -52,7 +57,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
           );
         }
 
-        // For non-inventory units, show a simple card
+        // For non-inventory units, show a simple card with the unit cost
         return (
           <Card key={extraCost.id} className="mb-2">
             <CardHeader>
@@ -62,9 +67,25 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
               )}
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between">
-                <span>Unit of Measure:</span>
-                <span>{unitOfMeasure?.name || 'Not specified'}</span>
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between">
+                  <span>Unit of Measure:</span>
+                  <span>{unitOfMeasure?.name || 'Not specified'}</span>
+                </div>
+                
+                {supplierExtraCost?.unit_cost !== null && supplierExtraCost?.unit_cost !== undefined && (
+                  <div className="flex justify-between font-medium">
+                    <span>Unit Cost:</span>
+                    <span>{formatCurrency(supplierExtraCost.unit_cost, quote.currency)}</span>
+                  </div>
+                )}
+                
+                {(!supplierExtraCost || supplierExtraCost.unit_cost === null || supplierExtraCost.unit_cost === undefined) && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Unit Cost:</span>
+                    <span>Not specified</span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
