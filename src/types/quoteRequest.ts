@@ -29,6 +29,28 @@ export interface QuoteRequest {
   
   // New field for attachments
   attachments?: QuoteRequestAttachment[];
+
+  // Add extra_costs and savings fields
+  extra_costs?: QuoteRequestExtraCost[];
+  savings?: QuoteRequestSaving[];
+}
+
+export interface QuoteRequestExtraCost {
+  id: string;
+  quote_request_id: string;
+  name: string;
+  description: string | null;
+  unit_of_measure_id: string | null;
+  unit_of_measure_name?: string; // Joined field
+}
+
+export interface QuoteRequestSaving {
+  id: string;
+  quote_request_id: string;
+  name: string;
+  description: string | null;
+  unit_of_measure_id: string | null;
+  unit_of_measure_name?: string; // Joined field
 }
 
 export interface QuoteRequestAttachment {
@@ -109,6 +131,17 @@ export interface QuoteRequestFormValues {
   required_step_id?: string | null; // Added optional step ID
   required_step_date?: Date | null; // Added optional step date
   attachments?: File[]; // New field for file attachments
+  // Add the missing fields
+  extra_costs?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
+  savings?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
 }
 
 export type SortQuoteRequestField = 'title' | 'requested_at' | 'status' | 'supplier_name' | 'due_date';

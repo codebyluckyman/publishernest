@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -9,8 +8,6 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Supplier } from "@/types/supplier";
-import { ExtraCostTableItem } from "@/types/extraCost";
-import { SavingTableItem } from "@/types/saving";
 import { FormHeader } from "./form/FormHeader";
 import { FormTabs } from "./form/FormTabs";
 import { FormActions } from "./form/FormActions";
@@ -99,55 +96,12 @@ export function SupplierQuoteForm({
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
   const [activeTab, setActiveTab] = useState("details");
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
-  
-  const [extraCostsForForm, setExtraCostsForForm] = useState<ExtraCostTableItem[]>([]);
-  const [savingsForForm, setSavingsForForm] = useState<SavingTableItem[]>([]);
   const [isFormComplete, setIsFormComplete] = useState(false);
 
   useEffect(() => {
-    if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0) {
-      const formattedExtraCosts = quoteRequest.extra_costs.map(cost => ({
-        id: cost.id || "",
-        name: cost.name,
-        description: cost.description || "",
-        unit_of_measure_id: cost.unit_of_measure_id,
-        unit_of_measure_name: cost.unit_of_measure_name,
-        organization_id: currentOrganization?.id || "",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
-      
-      console.log("Extra Costs from Quote Request:", formattedExtraCosts);
-      setExtraCostsForForm(formattedExtraCosts);
-    } else {
-      setExtraCostsForForm([]);
-    }
-
-    if (quoteRequest.savings && quoteRequest.savings.length > 0) {
-      const formattedSavings = quoteRequest.savings.map(saving => ({
-        id: saving.id || "",
-        name: saving.name,
-        description: saving.description || "",
-        unit_of_measure_id: saving.unit_of_measure_id,
-        unit_of_measure_name: saving.unit_of_measure_name,
-        organization_id: currentOrganization?.id || "",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
-      
-      console.log("Savings from Quote Request:", formattedSavings);
-      setSavingsForForm(formattedSavings);
-    } else {
-      setSavingsForForm([]);
-    }
-  }, [quoteRequest, currentOrganization]);
-
-  useEffect(() => {
-    if (
-      quoteRequest.production_schedule_requested &&
+    if (quoteRequest.production_schedule_requested &&
       quoteRequest.required_step_id &&
-      quoteRequest.required_step_date
-    ) {
+      quoteRequest.required_step_date) {
       console.log("Setting schedule with required step:", quoteRequest.required_step_id, 
         "step name:", quoteRequest.required_step_name,
         "date:", quoteRequest.required_step_date);
@@ -281,8 +235,6 @@ export function SupplierQuoteForm({
           selectedSupplier={selectedSupplier}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          filteredExtraCosts={extraCostsForForm}
-          filteredSavings={savingsForForm}
           currencies={currencies}
           form={form}
         />

@@ -13,6 +13,18 @@ const priceBreakSchema = z.object({
   quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
 });
 
+const extraCostSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  description: z.string().optional(),
+  unit_of_measure_id: z.string().optional(),
+});
+
+const savingSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  description: z.string().optional(),
+  unit_of_measure_id: z.string().optional(),
+});
+
 // Main schema for Quote Request Form
 export const quoteRequestFormSchema = z.object({
   id: z.string().optional(), // Add the ID field for the quote request
@@ -38,7 +50,10 @@ export const quoteRequestFormSchema = z.object({
   production_schedule_requested: z.boolean().default(false),
   required_step_id: z.string().nullable().optional(),
   required_step_date: z.date().nullable().optional(),
-  attachments: z.any().optional()
+  attachments: z.any().optional(),
+  // Add the missing fields
+  extra_costs: z.array(extraCostSchema).optional(),
+  savings: z.array(savingSchema).optional()
 });
 
 export interface QuoteRequestFormValues {
@@ -71,4 +86,15 @@ export interface QuoteRequestFormValues {
   required_step_id?: string | null;
   required_step_date?: Date | null;
   attachments?: File[];
+  // Add the missing fields
+  extra_costs?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
+  savings?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
 }
