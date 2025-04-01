@@ -46,7 +46,6 @@ export interface SupplierQuote {
   // Joined fields
   quote_request?: any;
   supplier?: { supplier_name: string }; 
-  price_breaks?: SupplierQuotePriceBreak[];
   attachments?: SupplierQuoteAttachment[];
   formats?: SupplierQuoteFormat[];
 }
@@ -71,65 +70,12 @@ export interface SupplierQuoteAttachment {
   uploaded_by: string | null;
   created_at: string;
   updated_at: string;
-}
-
-export interface SupplierQuotePriceBreak {
-  id: string;
-  supplier_quote_id: string;
-  quote_request_format_id: string;
-  price_break_id: string;
-  quantity: number;
-  product_id: string | null;
-  unit_cost: number | null;
-  // Expanded fields for multiple product unit costs (up to 10)
-  unit_cost_1: number | null;
-  unit_cost_2: number | null;
-  unit_cost_3: number | null;
-  unit_cost_4: number | null;
-  unit_cost_5: number | null;
-  unit_cost_6: number | null;
-  unit_cost_7: number | null;
-  unit_cost_8: number | null;
-  unit_cost_9: number | null;
-  unit_cost_10: number | null;
-  created_at: string;
-  updated_at: string;
-  
-  // Joined fields
-  format?: {
-    format_id: string;
-    quote_request_id: string;
-    notes?: string | null;
-  };
-  product?: {
-    product_id: string;
-    quantity: number;
-    notes?: string | null;
-  };
+  url?: string;
 }
 
 export interface SupplierQuoteFormValues {
   quote_request_id: string;
   supplier_id: string;
-  price_breaks: {
-    quote_request_format_id: string;
-    price_break_id: string;
-    quantity: number;
-    product_id?: string;
-    // For single product case
-    unit_cost?: number | null;
-    // Expanded fields for multiple product unit costs (up to 10)
-    unit_cost_1?: number | null;
-    unit_cost_2?: number | null;
-    unit_cost_3?: number | null;
-    unit_cost_4?: number | null;
-    unit_cost_5?: number | null;
-    unit_cost_6?: number | null;
-    unit_cost_7?: number | null;
-    unit_cost_8?: number | null;
-    unit_cost_9?: number | null;
-    unit_cost_10?: number | null;
-  }[];
   notes?: string;
   currency: string;
   reference?: string;

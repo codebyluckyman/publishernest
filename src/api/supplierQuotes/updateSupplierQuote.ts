@@ -103,56 +103,6 @@ export async function updateSupplierQuote(
     }
   }
 
-  // Update price breaks if provided
-  if (updates.price_breaks && updates.price_breaks.length > 0) {
-    console.log('Price Breaks to Update:', JSON.stringify(updates.price_breaks, null, 2));
-    
-    // First delete existing price breaks for this supplier quote
-    const { error: deleteError } = await supabase
-      .from("supplier_quote_price_breaks")
-      .delete()
-      .eq("supplier_quote_id", id);
-
-    if (deleteError) {
-      throw new Error(`Error deleting existing price breaks: ${deleteError.message}`);
-    }
-
-    // Insert updated price breaks
-    const priceBreaksToInsert = updates.price_breaks.map(pb => {
-      // Create a base object with the required fields
-      const priceBreakData: Record<string, any> = {
-        supplier_quote_id: id,
-        quote_request_format_id: pb.quote_request_format_id,
-        price_break_id: pb.price_break_id,
-        quantity: pb.quantity,
-        product_id: pb.product_id || null,
-      };
-      
-      // Check for unit_cost_1 through unit_cost_10 fields specifically and filter out nulls and undefineds
-      for (let i = 1; i <= 10; i++) {
-        const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
-        if (pb[unitCostKey] !== undefined && pb[unitCostKey] !== null) {
-          priceBreakData[unitCostKey] = pb[unitCostKey];
-        }
-      }
-      
-      return priceBreakData;
-    });
-
-    console.log('Formatted Price Breaks for Update:', JSON.stringify(priceBreaksToInsert, null, 2));
-
-    // Use type assertion to fix the TypeScript error
-    const { error: insertError } = await supabase
-      .from("supplier_quote_price_breaks")
-      .insert(priceBreaksToInsert as any[]);
-
-    console.log('Price Breaks Update Error:', insertError);
-
-    if (insertError) {
-      throw new Error(`Error inserting updated price breaks: ${insertError.message}`);
-    }
-  }
-
   // Record audit entry
   await recordSupplierQuoteAudit(
     id,

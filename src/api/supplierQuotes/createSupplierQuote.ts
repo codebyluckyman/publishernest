@@ -11,7 +11,7 @@ export async function createSupplierQuote(
   // Log the entire form data for debugging
   console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
 
-  // Start a transaction
+  // Insert the supplier quote record
   const { data: supplierQuote, error } = await supabase
     .from("supplier_quotes")
     .insert({
@@ -49,77 +49,6 @@ export async function createSupplierQuote(
 
   if (error) {
     throw new Error(`Error creating supplier quote: ${error.message}`);
-  }
-
-  // Insert price breaks
-  if (formData.price_breaks && formData.price_breaks.length > 0) {
-    console.log('Price Breaks to Insert:', JSON.stringify(formData.price_breaks, null, 2));
-
-    const priceBreaksToInsert = formData.price_breaks.map(pb => {
-      // Create a base object with the required fields
-      const priceBreakData: Record<string, any> = {
-        supplier_quote_id: supplierQuote.id,
-        quote_request_format_id: pb.quote_request_format_id,
-        price_break_id: pb.price_break_id,
-        quantity: pb.quantity,
-        product_id: pb.product_id || null,
-      };
-      
-      // Check for unit_cost_1 through unit_cost_10 fields specifically and filter out nulls and undefineds
-      for (let i = 1; i <= 10; i++) {
-        const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
-        if (pb[unitCostKey] !== undefined && pb[unitCostKey] !== null) {
-          priceBreakData[unitCostKey] = pb[unitCostKey];
-        }
-      }
-      
-      return priceBreakData;
-    });
-
-    console.log('Formatted Price Breaks:', JSON.stringify(priceBreaksToInsert, null, 2));
-
-    // Insert price breaks
-    const { error: priceBreaksError } = await supabase
-      .from("supplier_quote_price_breaks")
-      .insert(priceBreaksToInsert as any[]);
-
-    console.log('Price Breaks Insertion Error:', priceBreaksError);
-
-    if (priceBreaksError) {
-      throw new Error(`Error inserting price breaks: ${priceBreaksError.message}`);
-    }
-  }
-
-  // Insert formats
-  if (formData.price_breaks && formData.price_breaks.length > 0) {
-    // Get unique quote_request_format_ids from price breaks
-    const uniqueFormatIds = [...new Set(formData.price_breaks.map(pb => pb.quote_request_format_id))];
-    
-    // Get format information for each quote request format
-    const { data: quoteRequestFormats, error: formatError } = await supabase
-      .from("quote_request_formats")
-      .select("id, format_id")
-      .in("id", uniqueFormatIds);
-    
-    if (formatError) {
-      throw new Error(`Error fetching format information: ${formatError.message}`);
-    }
-    
-    if (quoteRequestFormats && quoteRequestFormats.length > 0) {
-      const formatsToInsert = quoteRequestFormats.map(qrf => ({
-        supplier_quote_id: supplierQuote.id,
-        format_id: qrf.format_id,
-        quote_request_format_id: qrf.id
-      }));
-      
-      const { error: insertFormatsError } = await supabase
-        .from("supplier_quote_formats")
-        .insert(formatsToInsert);
-        
-      if (insertFormatsError) {
-        throw new Error(`Error inserting formats: ${insertFormatsError.message}`);
-      }
-    }
   }
 
   // Record audit entry

@@ -15,15 +15,6 @@ const formSchema = z.object({
   // All other fields are optional for draft save
   notes: z.string().optional(),
   currency: z.string().optional().default("USD"),
-  price_breaks: z.array(
-    z.object({
-      quote_request_format_id: z.string(),
-      price_break_id: z.string(),
-      quantity: z.number(),
-      product_id: z.string().optional(),
-      unit_cost: z.number().nullable(),
-    })
-  ).optional().default([]),
   reference: z.string().optional(),
   valid_from: z.string().optional(),
   valid_to: z.string().optional(),
@@ -107,35 +98,6 @@ export function useSupplierQuoteForm({
       onSupplierChange(supplierId);
     }
   }, [form.watch("supplier_id"), onSupplierChange]);
-
-  // Set up initial price breaks based on quote request formats
-  useEffect(() => {
-    if (quoteRequest.formats && quoteRequest.formats.length > 0) {
-      if (form.getValues("price_breaks").length === 0) {
-        const priceBreaksToAdd: any[] = [];
-        
-        quoteRequest.formats.forEach((format) => {
-          format.price_breaks?.forEach((priceBreak) => {
-            const productId = format.products && format.products.length > 0 
-              ? format.products[0].product_id 
-              : undefined;
-              
-            priceBreaksToAdd.push({
-              quote_request_format_id: format.id,
-              price_break_id: priceBreak.id,
-              quantity: priceBreak.quantity,
-              product_id: productId,
-              unit_cost: null,
-            });
-          });
-        });
-        
-        if (priceBreaksToAdd.length > 0) {
-          form.setValue("price_breaks", priceBreaksToAdd);
-        }
-      }
-    }
-  }, [quoteRequest.formats, form]);
   
   // Track form changes and completeness
   useEffect(() => {
@@ -151,10 +113,7 @@ export function useSupplierQuoteForm({
       }
       
       // Check if form is valid for submission
-      const values = form.getValues();
-      const priceBreaksComplete = values.price_breaks?.every(pb => pb.unit_cost !== null);
-      
-      setIsFormComplete(!!priceBreaksComplete && createdQuoteId !== null);
+      setIsFormComplete(createdQuoteId !== null);
     });
     
     return () => subscription.unsubscribe();

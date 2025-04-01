@@ -4,7 +4,6 @@ import { Control, UseFormReturn } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { PriceBreaksSection } from "./PriceBreaksSection";
 import { DetailsTab } from "./DetailsTab";
 import { ProductionScheduleSection } from "./ProductionScheduleSection";
 import { PackagingTab } from "./PackagingTab";
@@ -30,9 +29,8 @@ export function FormTabs({
 }: FormTabsProps) {  
   return (
     <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-4">
+      <TabsList className="grid grid-cols-3">
         <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="pricing">Pricing</TabsTrigger>
         <TabsTrigger value="production">Production</TabsTrigger>
         <TabsTrigger value="packaging">Packaging</TabsTrigger>
       </TabsList>
@@ -43,15 +41,6 @@ export function FormTabs({
           quoteRequest={quoteRequest}
           selectedSupplier={selectedSupplier}
           currencies={currencies}
-        />
-      </TabsContent>
-      
-      <TabsContent value="pricing" className="space-y-4 pt-4">
-        <PriceBreaksSection 
-          control={control}
-          quoteRequest={quoteRequest}
-          selectedSupplier={selectedSupplier}
-          currency={form.watch("currency")}
         />
       </TabsContent>
       
