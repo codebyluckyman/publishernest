@@ -22,7 +22,7 @@ const Quotes = () => {
     
     // Get and set tab parameter
     const tabParam = queryParams.get("tab");
-    if (tabParam && ["active", "completed", "all"].includes(tabParam)) {
+    if (tabParam && ["active", "completed", "all", "draft", "submitted", "approved", "rejected"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     
@@ -37,7 +37,15 @@ const Quotes = () => {
       case "active":
         return ["draft", "submitted"];
       case "completed":
-        return ["accepted", "declined"];
+        return ["approved", "rejected"];
+      case "draft":
+        return ["draft"];
+      case "submitted":
+        return ["submitted"];
+      case "approved":
+        return ["approved"];
+      case "rejected":
+        return ["rejected"];
       default:
         return undefined;
     }
@@ -80,12 +88,43 @@ const Quotes = () => {
             >
               <TabsList>
                 <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="completed">Completed</TabsTrigger>
+                <TabsTrigger value="draft">Draft</TabsTrigger>
+                <TabsTrigger value="submitted">Submitted</TabsTrigger>
+                <TabsTrigger value="approved">Approved</TabsTrigger>
+                <TabsTrigger value="rejected">Rejected</TabsTrigger>
                 <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
               <TabsContent value="active" className="space-y-4">
                 <SupplierQuotesTable 
                   statusFilter={getStatusFilter("active")} 
+                  searchQuery={searchQuery}
+                  quoteRequestId={quoteRequestId}
+                />
+              </TabsContent>
+              <TabsContent value="draft" className="space-y-4">
+                <SupplierQuotesTable 
+                  statusFilter={getStatusFilter("draft")} 
+                  searchQuery={searchQuery}
+                  quoteRequestId={quoteRequestId}
+                />
+              </TabsContent>
+              <TabsContent value="submitted" className="space-y-4">
+                <SupplierQuotesTable 
+                  statusFilter={getStatusFilter("submitted")} 
+                  searchQuery={searchQuery}
+                  quoteRequestId={quoteRequestId}
+                />
+              </TabsContent>
+              <TabsContent value="approved" className="space-y-4">
+                <SupplierQuotesTable 
+                  statusFilter={getStatusFilter("approved")} 
+                  searchQuery={searchQuery}
+                  quoteRequestId={quoteRequestId}
+                />
+              </TabsContent>
+              <TabsContent value="rejected" className="space-y-4">
+                <SupplierQuotesTable 
+                  statusFilter={getStatusFilter("rejected")} 
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />

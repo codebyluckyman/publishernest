@@ -1,5 +1,5 @@
 
-export type SupplierQuoteStatus = 'draft' | 'submitted' | 'accepted' | 'declined';
+export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface SupplierQuote {
   id: string;
@@ -22,6 +22,13 @@ export interface SupplierQuote {
   terms: string | null;
   remarks: string | null;
   production_schedule?: Record<string, string | null> | null;
+  
+  // Approval/Rejection fields
+  approved_at?: string | null;
+  approved_by?: string | null;
+  rejected_at?: string | null;
+  rejected_by?: string | null;
+  rejection_reason?: string | null;
   
   // Packaging details
   packaging_carton_quantity?: number | null;

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -14,6 +13,8 @@ import {
   acceptSupplierQuote,
   declineSupplierQuote
 } from "@/api/supplierQuotes";
+import { approveSupplierQuote } from "@/api/supplierQuotes/approveSupplierQuote";
+import { rejectSupplierQuote } from "@/api/supplierQuotes/rejectSupplierQuote";
 
 /**
  * Custom hook for managing supplier quotes with React Query
@@ -177,6 +178,50 @@ export function useSupplierQuotes() {
   };
 
   /**
+   * Hook to approve a supplier quote
+   */
+  const useApproveSupplierQuote = () => {
+    return useMutation({
+      mutationFn: ({ id, approvedCost }: { id: string; approvedCost: number }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return approveSupplierQuote(id, approvedCost, user.id);
+      },
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
+        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        toast.success("Supplier quote approved successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to approve supplier quote");
+      }
+    });
+  };
+
+  /**
+   * Hook to reject a supplier quote
+   */
+  const useRejectSupplierQuote = () => {
+    return useMutation({
+      mutationFn: ({ id, reason }: { id: string; reason: string }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return rejectSupplierQuote(id, user.id, reason);
+      },
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
+        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        toast.success("Supplier quote rejected successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to reject supplier quote");
+      }
+    });
+  };
+
+  /**
    * Hook to fetch supplier quote audit
    */
   const useSupplierQuoteAudit = (supplierQuoteId: string | null) => {
@@ -198,6 +243,8 @@ export function useSupplierQuotes() {
     useSubmitSupplierQuote,
     useAcceptSupplierQuote,
     useDeclineSupplierQuote,
+    useApproveSupplierQuote,
+    useRejectSupplierQuote,
     useSupplierQuoteAudit
   };
 }

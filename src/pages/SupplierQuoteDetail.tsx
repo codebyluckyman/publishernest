@@ -8,14 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, FileText } from "lucide-react";
 import { SupplierQuoteDetail } from "@/components/quotes/supplier-quotes/view/SupplierQuoteDetail";
+import { toast } from "sonner";
 
 const SupplierQuoteDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
-  const { useSupplierQuoteById } = useSupplierQuotes();
+  const { 
+    useSupplierQuoteById, 
+    useSubmitSupplierQuote, 
+    useApproveSupplierQuote, 
+    useRejectSupplierQuote 
+  } = useSupplierQuotes();
   
   const { data: quote, isLoading, error } = useSupplierQuoteById(id || null);
+  const submitMutation = useSubmitSupplierQuote();
+  const approveMutation = useApproveSupplierQuote();
+  const rejectMutation = useRejectSupplierQuote();
   
   // Check if the current organization is a publisher
   const isPublisher = currentOrganization?.organization_type === 'publisher';
@@ -26,6 +35,56 @@ const SupplierQuoteDetailPage = () => {
       navigate("/quotes");
     }
   }, [error, navigate]);
+
+  const handleSubmit = () => {
+    if (!quote || !quote.id) {
+      toast.error("Quote information is missing");
+      return;
+    }
+    
+    if (!quote.total_cost) {
+      toast.error("Total cost must be calculated before submission");
+      return;
+    }
+    
+    submitMutation.mutate({
+      id: quote.id,
+      totalCost: quote.total_cost
+    }, {
+      onSuccess: () => {
+        toast.success("Quote submitted successfully");
+      }
+    });
+  };
+  
+  const handleApprove = () => {
+    if (!quote || !quote.id || !quote.total_cost) {
+      toast.error("Quote information is incomplete");
+      return;
+    }
+    
+    approveMutation.mutate({
+      id: quote.id,
+      approvedCost: quote.total_cost
+    });
+  };
+  
+  const handleReject = (reason?: string) => {
+    if (!quote || !quote.id) {
+      toast.error("Quote information is missing");
+      return;
+    }
+    
+    if (!reason) {
+      toast.error("Rejection reason is required");
+      return;
+    }
+    
+    rejectMutation.mutate({
+      id: quote.id,
+      reason
+    });
+  };
 
   if (isLoading) {
     return (
@@ -80,7 +139,13 @@ const SupplierQuoteDetailPage = () => {
         </Button>
       </div>
       
-      <SupplierQuoteDetail quote={quote} isPublisher={isPublisher} />
+      <SupplierQuoteDetail 
+        quote={quote} 
+        isPublisher={isPublisher}
+        onSubmit={handleSubmit}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
     </div>
   );
 };

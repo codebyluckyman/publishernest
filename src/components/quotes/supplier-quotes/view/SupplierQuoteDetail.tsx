@@ -9,14 +9,14 @@ import { NotesView } from "./NotesView";
 import { ScheduleView } from "./ScheduleView";
 import { PackagingDetailsView } from "./PackagingDetailsView";
 import { AttachmentsView } from "./AttachmentsView";
-import { QuoteStatusBar } from "./QuoteStatusBar";
+import { QuoteStatusActions } from "./QuoteStatusActions";
 
 interface SupplierQuoteDetailProps {
   quote: SupplierQuote;
   onEdit?: () => void;
   onSubmit?: () => void;
-  onAccept?: () => void;
-  onDecline?: () => void;
+  onApprove?: () => void;
+  onReject?: (reason?: string) => void;
   onShowHistory?: () => void;
   isPublisher: boolean;
 }
@@ -25,8 +25,8 @@ export function SupplierQuoteDetail({
   quote,
   onEdit,
   onSubmit,
-  onAccept,
-  onDecline,
+  onApprove,
+  onReject,
   onShowHistory,
   isPublisher
 }: SupplierQuoteDetailProps) {
@@ -85,11 +85,11 @@ export function SupplierQuoteDetail({
         </div>
       </Tabs>
       
-      <QuoteStatusBar
-        status={quote.status}
+      <QuoteStatusActions
+        quote={quote}
         onSubmit={onSubmit}
-        onAccept={onAccept}
-        onDecline={onDecline}
+        onApprove={onApprove}
+        onReject={onReject}
         isPublisher={isPublisher}
       />
     </div>
