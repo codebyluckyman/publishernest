@@ -1,4 +1,3 @@
-
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface SupplierQuotePriceBreak {
@@ -8,6 +7,23 @@ export interface SupplierQuotePriceBreak {
   price_break_id: string;
   product_id?: string | null;
   quantity: number;
+  unit_cost?: number | null;
+  unit_cost_1?: number | null;
+  unit_cost_2?: number | null;
+  unit_cost_3?: number | null;
+  unit_cost_4?: number | null;
+  unit_cost_5?: number | null;
+  unit_cost_6?: number | null;
+  unit_cost_7?: number | null;
+  unit_cost_8?: number | null;
+  unit_cost_9?: number | null;
+  unit_cost_10?: number | null;
+}
+
+export interface SupplierQuoteExtraCost {
+  id?: string;
+  supplier_quote_id?: string;
+  extra_cost_id: string;
   unit_cost?: number | null;
   unit_cost_1?: number | null;
   unit_cost_2?: number | null;
@@ -69,6 +85,7 @@ export interface SupplierQuote {
   attachments?: SupplierQuoteAttachment[];
   formats?: SupplierQuoteFormat[];
   price_breaks?: SupplierQuotePriceBreak[];
+  extra_costs?: SupplierQuoteExtraCost[];
 }
 
 export interface SupplierQuoteFormat {
@@ -123,4 +140,7 @@ export interface SupplierQuoteFormValues {
   packaging_copies_per_40ft_palletized?: number | null;
   packaging_copies_per_20ft_unpalletized?: number | null;
   packaging_copies_per_40ft_unpalletized?: number | null;
+  
+  // Extra costs
+  extra_costs?: SupplierQuoteExtraCost[];
 }
