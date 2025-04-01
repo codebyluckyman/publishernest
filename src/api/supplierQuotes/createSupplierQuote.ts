@@ -47,6 +47,8 @@ export async function createSupplierQuote(
 
   // Insert price breaks
   if (formData.price_breaks && formData.price_breaks.length > 0) {
+    console.log('Price Breaks to Insert:', formData.price_breaks);
+
     const priceBreaksToInsert = formData.price_breaks.map(pb => {
       // Create a base object with the required fields
       const priceBreakData: Record<string, any> = {
@@ -74,10 +76,14 @@ export async function createSupplierQuote(
       return priceBreakData;
     });
 
-    // Instead of passing the array directly to insert, destructure it to avoid the TypeScript error
+    console.log('Formatted Price Breaks:', priceBreaksToInsert);
+
+    // Insert price breaks
     const { error: priceBreaksError } = await supabase
       .from("supplier_quote_price_breaks")
       .insert(priceBreaksToInsert as any[]);
+
+    console.log('Price Breaks Insertion Error:', priceBreaksError);
 
     if (priceBreaksError) {
       throw new Error(`Error inserting price breaks: ${priceBreaksError.message}`);
