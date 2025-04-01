@@ -38,7 +38,7 @@ export function PriceBreakItem({
       return (
         <FormField
           control={control}
-          name={`price_breaks.${index}.unit_cost`}
+          name={`price_breaks.${index}.unit_cost` as const}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-xs">Unit Cost</FormLabel>

@@ -4,7 +4,6 @@ import { Control, useFormContext } from "react-hook-form";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -19,13 +18,26 @@ import {
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
+interface PriceBreak {
+  id: string;
+  quantity: number;
+  format_id?: string;
+  format_name?: string;
+  [key: string]: any;
+}
+
+interface GroupedFormat {
+  format_name: string;
+  breaks: PriceBreak[];
+}
+
 interface ExtraCostItemProps {
   control: Control<SupplierQuoteFormValues>;
   index: number;
   extraCost: ExtraCostTableItem;
   showMultiProducts: boolean;
   maxNumProducts: number;
-  priceBreaks: any[];
+  priceBreaks: PriceBreak[];
   isOpen: boolean;
   onOpenChange: (id: string, isOpen: boolean) => void;
 }
@@ -41,7 +53,7 @@ export function ExtraCostItem({
   onOpenChange,
 }: ExtraCostItemProps) {
   const { setValue, getValues } = useFormContext<SupplierQuoteFormValues>();
-  const [sortedBreaks, setSortedBreaks] = useState<any[]>([]);
+  const [sortedBreaks, setSortedBreaks] = useState<Array<{type: string; format_name?: string; [key: string]: any}>>([]);
 
   useEffect(() => {
     // Group price breaks by format and sort by quantity
@@ -53,9 +65,9 @@ export function ExtraCostItem({
           breaks: [],
         };
       }
-      acc[formatKey].breaks.push(pb);
+      (acc[formatKey] as GroupedFormat).breaks.push(pb);
       return acc;
-    }, {} as Record<string, { format_name: string; breaks: any[] }>);
+    }, {} as Record<string, GroupedFormat>);
 
     // Sort each group's breaks by quantity
     Object.values(grouped).forEach((group) => {
@@ -63,7 +75,7 @@ export function ExtraCostItem({
     });
 
     // Flatten back to array but maintain grouping
-    const result: any[] = [];
+    const result: Array<{type: string; format_name?: string; [key: string]: any}> = [];
     Object.values(grouped).forEach((group) => {
       result.push({
         type: "header",
@@ -102,9 +114,10 @@ export function ExtraCostItem({
     for (let i = priceBreakIndex + 1; i < extraCosts[index].price_breaks.length; i++) {
       if (productIndex !== undefined) {
         const fieldName = `unit_cost_${productIndex + 1}`;
-        setValue(`extra_costs.${index}.price_breaks.${i}.${fieldName}`, valueToCopy);
+        // Use the correct type for setValue path
+        setValue(`extra_costs.${index}.price_breaks.${i}.${fieldName}` as any, valueToCopy);
       } else {
-        setValue(`extra_costs.${index}.price_breaks.${i}.unit_cost`, valueToCopy);
+        setValue(`extra_costs.${index}.price_breaks.${i}.unit_cost` as any, valueToCopy);
       }
     }
 
@@ -211,7 +224,7 @@ export function ExtraCostItem({
                       ) : (
                         <FormField
                           control={control}
-                          name={`extra_costs.${index}.price_breaks.${priceBreakIndex}.unit_cost`}
+                          name={`extra_costs.${index}.price_breaks.${priceBreakIndex}.unit_cost` as any}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>

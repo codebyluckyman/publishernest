@@ -19,13 +19,26 @@ import {
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
+interface PriceBreak {
+  id: string;
+  quantity: number;
+  format_id?: string;
+  format_name?: string;
+  [key: string]: any;
+}
+
+interface GroupedFormat {
+  format_name: string;
+  breaks: PriceBreak[];
+}
+
 interface SavingItemProps {
   control: Control<SupplierQuoteFormValues>;
   index: number;
   saving: SavingTableItem;
   showMultiProducts: boolean;
   maxNumProducts: number;
-  priceBreaks: any[];
+  priceBreaks: PriceBreak[];
   isOpen: boolean;
   onOpenChange: (id: string, isOpen: boolean) => void;
 }
@@ -41,7 +54,7 @@ export function SavingItem({
   onOpenChange,
 }: SavingItemProps) {
   const { setValue, getValues } = useFormContext<SupplierQuoteFormValues>();
-  const [sortedBreaks, setSortedBreaks] = useState<any[]>([]);
+  const [sortedBreaks, setSortedBreaks] = useState<Array<{type: string; format_name?: string; [key: string]: any}>>([]);
 
   useEffect(() => {
     // Group price breaks by format and sort by quantity
@@ -53,9 +66,9 @@ export function SavingItem({
           breaks: [],
         };
       }
-      acc[formatKey].breaks.push(pb);
+      (acc[formatKey] as GroupedFormat).breaks.push(pb);
       return acc;
-    }, {} as Record<string, { format_name: string; breaks: any[] }>);
+    }, {} as Record<string, GroupedFormat>);
 
     // Sort each group's breaks by quantity
     Object.values(grouped).forEach((group) => {
@@ -63,7 +76,7 @@ export function SavingItem({
     });
 
     // Flatten back to array but maintain grouping
-    const result: any[] = [];
+    const result: Array<{type: string; format_name?: string; [key: string]: any}> = [];
     Object.values(grouped).forEach((group) => {
       result.push({
         type: "header",
@@ -102,9 +115,10 @@ export function SavingItem({
     for (let i = priceBreakIndex + 1; i < savings[index].price_breaks.length; i++) {
       if (productIndex !== undefined) {
         const fieldName = `unit_cost_${productIndex + 1}`;
-        setValue(`savings.${index}.price_breaks.${i}.${fieldName}`, valueToCopy);
+        // Use the correct type for setValue path
+        setValue(`savings.${index}.price_breaks.${i}.${fieldName}` as any, valueToCopy);
       } else {
-        setValue(`savings.${index}.price_breaks.${i}.unit_cost`, valueToCopy);
+        setValue(`savings.${index}.price_breaks.${i}.unit_cost` as any, valueToCopy);
       }
     }
 
@@ -229,7 +243,7 @@ export function SavingItem({
                       ) : (
                         <FormField
                           control={control}
-                          name={`savings.${index}.price_breaks.${priceBreakIndex}.unit_cost`}
+                          name={`savings.${index}.price_breaks.${priceBreakIndex}.unit_cost` as any}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
