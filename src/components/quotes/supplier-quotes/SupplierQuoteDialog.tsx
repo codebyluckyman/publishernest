@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useEffect, useState } from "react";
@@ -143,7 +142,6 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
                   quote_request_id: quoteRequest.id,
                   supplier_id: selectedSupplierId,
                   price_breaks: [],
-                  extra_costs: [],
                   savings: [],
                   currency: quoteRequest.currency || "USD",
                   reference: "",

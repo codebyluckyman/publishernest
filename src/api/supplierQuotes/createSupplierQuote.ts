@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -76,43 +75,7 @@ export async function createSupplierQuote(
     }
   }
 
-  // Insert extra costs price breaks
-  if (formData.extra_costs && formData.extra_costs.length > 0) {
-    const extraCostsPriceBreaksToInsert: any[] = [];
-    
-    formData.extra_costs.forEach(ec => {
-      if (ec.price_breaks && ec.price_breaks.length > 0) {
-        ec.price_breaks.forEach(pb => {
-          extraCostsPriceBreaksToInsert.push({
-            supplier_quote_id: supplierQuote.id,
-            extra_cost_id: ec.extra_cost_id,
-            price_break_id: pb.price_break_id,
-            unit_cost: pb.unit_cost,
-            unit_cost_1: pb.unit_cost_1,
-            unit_cost_2: pb.unit_cost_2,
-            unit_cost_3: pb.unit_cost_3,
-            unit_cost_4: pb.unit_cost_4,
-            unit_cost_5: pb.unit_cost_5,
-            unit_cost_6: pb.unit_cost_6,
-            unit_cost_7: pb.unit_cost_7,
-            unit_cost_8: pb.unit_cost_8,
-            unit_cost_9: pb.unit_cost_9,
-            unit_cost_10: pb.unit_cost_10
-          });
-        });
-      }
-    });
-
-    if (extraCostsPriceBreaksToInsert.length > 0) {
-      const { error: extraCostsError } = await supabase
-        .from("supplier_quote_extra_costs_price_breaks")
-        .insert(extraCostsPriceBreaksToInsert);
-
-      if (extraCostsError) {
-        throw new Error(`Error inserting extra costs price breaks: ${extraCostsError.message}`);
-      }
-    }
-  }
+  // Extra costs functionality removed
 
   // Insert savings price breaks
   if (formData.savings && formData.savings.length > 0) {

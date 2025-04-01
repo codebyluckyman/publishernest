@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -140,64 +139,6 @@ export async function updateSupplierQuote(
 
     if (insertError) {
       throw new Error(`Error inserting updated price breaks: ${insertError.message}`);
-    }
-  }
-
-  // Update extra costs if provided
-  if (updates.extra_costs && updates.extra_costs.length > 0) {
-    // First delete existing extra costs and their price breaks for this supplier quote
-    const { error: deleteCostsError } = await supabase
-      .from("supplier_quote_extra_costs")
-      .delete()
-      .eq("supplier_quote_id", id);
-
-    if (deleteCostsError) {
-      throw new Error(`Error deleting existing extra costs: ${deleteCostsError.message}`);
-    }
-    
-    const { error: deleteCostsPriceBreaksError } = await supabase
-      .from("supplier_quote_extra_costs_price_breaks")
-      .delete()
-      .eq("supplier_quote_id", id);
-
-    if (deleteCostsPriceBreaksError) {
-      throw new Error(`Error deleting existing extra costs price breaks: ${deleteCostsPriceBreaksError.message}`);
-    }
-
-    // Insert extra costs price breaks for each price break
-    const extraCostsPriceBreaksToInsert: any[] = [];
-    
-    updates.extra_costs.forEach(ec => {
-      if (ec.price_breaks && ec.price_breaks.length > 0) {
-        ec.price_breaks.forEach(pb => {
-          extraCostsPriceBreaksToInsert.push({
-            supplier_quote_id: id,
-            extra_cost_id: ec.extra_cost_id,
-            price_break_id: pb.price_break_id,
-            unit_cost: pb.unit_cost,
-            unit_cost_1: pb.unit_cost_1,
-            unit_cost_2: pb.unit_cost_2,
-            unit_cost_3: pb.unit_cost_3,
-            unit_cost_4: pb.unit_cost_4,
-            unit_cost_5: pb.unit_cost_5,
-            unit_cost_6: pb.unit_cost_6,
-            unit_cost_7: pb.unit_cost_7,
-            unit_cost_8: pb.unit_cost_8,
-            unit_cost_9: pb.unit_cost_9,
-            unit_cost_10: pb.unit_cost_10
-          });
-        });
-      }
-    });
-
-    if (extraCostsPriceBreaksToInsert.length > 0) {
-      const { error: insertError } = await supabase
-        .from("supplier_quote_extra_costs_price_breaks")
-        .insert(extraCostsPriceBreaksToInsert);
-        
-      if (insertError) {
-        throw new Error(`Error inserting extra costs price breaks: ${insertError.message}`);
-      }
     }
   }
 
