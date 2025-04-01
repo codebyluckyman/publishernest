@@ -96,7 +96,7 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
         const formatName = getFormatName(formatId);
         const format = quoteRequest.formats?.find(f => f.id === formatId);
@@ -105,22 +105,22 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
         
         return (
           <Card key={formatId} className="overflow-hidden">
-            <CardHeader className="bg-muted/30">
-              <CardTitle className="text-lg">{formatName}</CardTitle>
-              <CardDescription>
+            <CardHeader className="bg-muted/30 py-2">
+              <CardTitle className="text-base">{formatName}</CardTitle>
+              <CardDescription className="text-xs">
                 {numProducts > 0 
                   ? `${numProducts} Product${numProducts > 1 ? 's' : ''}`
                   : 'No products for this format'}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="p-4">
+              <div className="p-2">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[100px]">Quantity</TableHead>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-[100px] h-8 py-1">Quantity</TableHead>
                       {productHeadings.map((heading, index) => (
-                        <TableHead key={index}>{heading}</TableHead>
+                        <TableHead key={index} className="h-8 py-1">{heading}</TableHead>
                       ))}
                     </TableRow>
                   </TableHeader>
@@ -132,8 +132,8 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
                       )}`;
                       
                       return (
-                        <TableRow key={priceBreak.price_break_id || priceBreakIndex}>
-                          <TableCell className="font-medium">
+                        <TableRow key={priceBreak.price_break_id || priceBreakIndex} className="h-8 hover:bg-gray-50">
+                          <TableCell className="font-medium py-1">
                             {priceBreak.quantity.toLocaleString()}
                           </TableCell>
                           
@@ -142,7 +142,7 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
                             const costFieldName = `${fieldName}.unit_cost_${productIndex + 1}`;
                             
                             return (
-                              <TableCell key={productIndex}>
+                              <TableCell key={productIndex} className="py-1">
                                 <FormField
                                   control={control}
                                   name={costFieldName as any}
@@ -154,7 +154,7 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
                                           type="number"
                                           min="0"
                                           step="0.01"
-                                          className="w-full"
+                                          className="w-full h-7 px-2 py-1 text-sm"
                                           value={field.value || ''}
                                           onChange={(e) => {
                                             const value = e.target.value === '' ? null : parseFloat(e.target.value);

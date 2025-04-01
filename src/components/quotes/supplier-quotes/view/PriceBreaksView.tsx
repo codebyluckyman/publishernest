@@ -50,24 +50,24 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
         const formatName = getFormatName(formatId);
         const numProducts = getNumProductsForFormat(formatId);
         
         return (
           <Card key={formatId} className="overflow-hidden">
-            <CardHeader className="bg-muted/30">
-              <CardTitle className="text-lg">{formatName}</CardTitle>
+            <CardHeader className="bg-muted/30 py-2">
+              <CardTitle className="text-base">{formatName}</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="p-4">
+              <div className="p-2">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[100px]">Quantity</TableHead>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-[100px] h-8 py-1">Quantity</TableHead>
                       {Array.from({ length: numProducts }, (_, index) => (
-                        <TableHead key={index}>
+                        <TableHead key={index} className="h-8 py-1">
                           Product {index + 1}
                         </TableHead>
                       ))}
@@ -75,8 +75,8 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
                   </TableHeader>
                   <TableBody>
                     {priceBreaks.map((priceBreak: any, index: number) => (
-                      <TableRow key={priceBreak.id || index}>
-                        <TableCell className="font-medium">
+                      <TableRow key={priceBreak.id || index} className="h-8 hover:bg-gray-50">
+                        <TableCell className="font-medium py-1">
                           {priceBreak.quantity.toLocaleString()}
                         </TableCell>
                         
@@ -85,7 +85,7 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
                           const unitCost = priceBreak[unitCostKey];
                           
                           return (
-                            <TableCell key={productIndex}>
+                            <TableCell key={productIndex} className="py-1">
                               {unitCost != null 
                                 ? formatCurrency(unitCost, quote.currency || 'USD') 
                                 : '-'}
