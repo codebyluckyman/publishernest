@@ -3,8 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   SupplierQuote, 
   SupplierQuoteAttachment, 
-  SupplierQuoteExtraCost, 
-  SupplierQuoteExtraCostPriceBreak, 
   SupplierQuoteFormat, 
   SupplierQuotePriceBreak, 
   SupplierQuoteSaving, 
@@ -68,39 +66,6 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
   if (priceBreakError) {
     console.error("Error fetching price breaks:", priceBreakError);
     throw priceBreakError;
-  }
-
-  // Fetch extra costs
-  const { data: extraCosts, error: extraCostsError } = await supabase
-    .from("supplier_quote_extra_costs")
-    .select(`
-      *,
-      extra_cost:extra_costs(*)
-    `)
-    .eq("supplier_quote_id", id);
-
-  if (extraCostsError) {
-    console.error("Error fetching extra costs:", extraCostsError);
-    throw extraCostsError;
-  }
-
-  // Fetch extra costs price breaks
-  const { data: extraCostsPriceBreaks, error: extraCostsPriceBreaksError } = await supabase
-    .from("supplier_quote_extra_costs_price_breaks")
-    .select(`
-      *,
-      extra_cost:extra_costs(*),
-      price_break:quote_request_format_price_breaks(
-        id,
-        quote_request_format_id,
-        quantity
-      )
-    `)
-    .eq("supplier_quote_id", id);
-
-  if (extraCostsPriceBreaksError) {
-    console.error("Error fetching extra costs price breaks:", extraCostsPriceBreaksError);
-    throw extraCostsPriceBreaksError;
   }
 
   // Fetch savings
@@ -173,9 +138,7 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote 
     status: quote.status as SupplierQuote["status"],
     production_schedule: quote.production_schedule as Record<string, string | null> | null,
     price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
-    extra_costs: extraCosts as unknown as SupplierQuoteExtraCost[],
     savings: savings as unknown as SupplierQuoteSaving[],
-    extra_costs_price_breaks: extraCostsPriceBreaks as unknown as SupplierQuoteExtraCostPriceBreak[],
     savings_price_breaks: savingsPriceBreaks as unknown as SupplierQuoteSavingPriceBreak[],
     attachments: attachments as SupplierQuoteAttachment[],
     formats: formats ? formats.map(f => ({

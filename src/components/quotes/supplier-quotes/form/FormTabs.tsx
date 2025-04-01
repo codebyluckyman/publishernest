@@ -5,7 +5,6 @@ import { QuoteDetailsSection } from "./QuoteDetailsSection";
 import { NotesSection } from "./NotesSection";
 import { TermsSection } from "./TermsSection";
 import { PriceBreaksSection } from "./PriceBreaksSection";
-import { ExtraCostsSection } from "./ExtraCostsSection";
 import { SavingsSection } from "./SavingsSection";
 import { ScheduleSection } from "./ScheduleSection";
 import { AttachmentsSection } from "./AttachmentsSection";
@@ -13,7 +12,6 @@ import { PackagingDetailsSection } from "./PackagingDetailsSection";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
-import { ExtraCostTableItem } from "@/types/extraCost";
 import { SavingTableItem } from "@/types/saving";
 
 interface FormTabsProps {
@@ -22,7 +20,6 @@ interface FormTabsProps {
   selectedSupplier: Supplier | null;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  filteredExtraCosts: ExtraCostTableItem[];
   filteredSavings: SavingTableItem[];
   currencies: { label: string; value: string }[];
   form: any;
@@ -34,7 +31,6 @@ export function FormTabs({
   selectedSupplier,
   activeTab,
   setActiveTab,
-  filteredExtraCosts,
   filteredSavings,
   currencies,
   form
@@ -44,15 +40,12 @@ export function FormTabs({
   
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-3 md:grid-cols-8 w-full h-auto">
+      <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full h-auto">
         <TabsTrigger value="details" className="py-2 text-xs md:text-sm">
           Details
         </TabsTrigger>
         <TabsTrigger value="pricing" className="py-2 text-xs md:text-sm">
           Pricing
-        </TabsTrigger>
-        <TabsTrigger value="extraCosts" className="py-2 text-xs md:text-sm">
-          Extra Costs
         </TabsTrigger>
         <TabsTrigger value="savings" className="py-2 text-xs md:text-sm">
           Savings
@@ -85,16 +78,6 @@ export function FormTabs({
             quoteRequest={quoteRequest}
             selectedSupplier={selectedSupplier}
             currency={currency}
-          />
-        </TabsContent>
-        
-        <TabsContent value="extraCosts">
-          <ExtraCostsSection 
-            control={control}
-            extraCosts={filteredExtraCosts}
-            currency={currency}
-            formats={quoteRequest.formats}
-            quoteRequest={quoteRequest}
           />
         </TabsContent>
         

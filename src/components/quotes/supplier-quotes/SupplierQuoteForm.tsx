@@ -9,7 +9,6 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Supplier } from "@/types/supplier";
-import { ExtraCostTableItem } from "@/types/extraCost";
 import { SavingTableItem } from "@/types/saving";
 import { FormHeader } from "./form/FormHeader";
 import { FormTabs } from "./form/FormTabs";
@@ -31,13 +30,6 @@ const formSchema = z.object({
       quantity: z.number(),
       product_id: z.string().optional(),
       unit_cost: z.number().nullable(),
-    })
-  ).optional().default([]),
-  extra_costs: z.array(
-    z.object({
-      extra_cost_id: z.string(),
-      unit_cost: z.number().nullable(),
-      notes: z.string().optional(),
     })
   ).optional().default([]),
   savings: z.array(
@@ -100,29 +92,10 @@ export function SupplierQuoteForm({
   const [activeTab, setActiveTab] = useState("details");
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   
-  const [extraCostsForForm, setExtraCostsForForm] = useState<ExtraCostTableItem[]>([]);
   const [savingsForForm, setSavingsForForm] = useState<SavingTableItem[]>([]);
   const [isFormComplete, setIsFormComplete] = useState(false);
 
   useEffect(() => {
-    if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0) {
-      const formattedExtraCosts = quoteRequest.extra_costs.map(cost => ({
-        id: cost.id || "",
-        name: cost.name,
-        description: cost.description || "",
-        unit_of_measure_id: cost.unit_of_measure_id,
-        unit_of_measure_name: cost.unit_of_measure_name,
-        organization_id: currentOrganization?.id || "",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
-      
-      console.log("Extra Costs from Quote Request:", formattedExtraCosts);
-      setExtraCostsForForm(formattedExtraCosts);
-    } else {
-      setExtraCostsForForm([]);
-    }
-
     if (quoteRequest.savings && quoteRequest.savings.length > 0) {
       const formattedSavings = quoteRequest.savings.map(saving => ({
         id: saving.id || "",
@@ -281,7 +254,6 @@ export function SupplierQuoteForm({
           selectedSupplier={selectedSupplier}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          filteredExtraCosts={extraCostsForForm}
           filteredSavings={savingsForForm}
           currencies={currencies}
           form={form}

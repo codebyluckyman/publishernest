@@ -1,4 +1,3 @@
-
 import { QuoteRequest } from "./quoteRequest";
 import { ExtraCostTableItem } from "./extraCost";
 import { SavingTableItem } from "./saving";
@@ -44,13 +43,11 @@ export interface SupplierQuote {
   quote_request?: QuoteRequest;
   supplier?: { supplier_name: string }; 
   price_breaks?: SupplierQuotePriceBreak[];
-  extra_costs?: SupplierQuoteExtraCost[];
   savings?: SupplierQuoteSaving[];
   attachments?: SupplierQuoteAttachment[];
   formats?: SupplierQuoteFormat[];
   
   // New tables for price break specific costs and savings
-  extra_costs_price_breaks?: SupplierQuoteExtraCostPriceBreak[];
   savings_price_breaks?: SupplierQuoteSavingPriceBreak[];
 }
 
@@ -227,24 +224,6 @@ export interface SupplierQuoteFormValues {
     unit_cost_8: number | null;
     unit_cost_9: number | null;
     unit_cost_10: number | null;
-  }[];
-  extra_costs: {
-    extra_cost_id: string;
-    price_breaks: {
-      price_break_id: string;
-      unit_cost: number | null;
-      // Multiple product unit costs (up to 10)
-      unit_cost_1: number | null;
-      unit_cost_2: number | null;
-      unit_cost_3: number | null;
-      unit_cost_4: number | null;
-      unit_cost_5: number | null;
-      unit_cost_6: number | null;
-      unit_cost_7: number | null;
-      unit_cost_8: number | null;
-      unit_cost_9: number | null;
-      unit_cost_10: number | null;
-    }[];
   }[];
   savings: {
     saving_id: string;

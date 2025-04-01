@@ -7,16 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, FileText } from "lucide-react";
-import { QuoteHeader } from "@/components/quotes/supplier-quotes/view/QuoteHeader";
-import { QuoteStatusBar } from "@/components/quotes/supplier-quotes/view/QuoteStatusBar";
-import { NotesView } from "@/components/quotes/supplier-quotes/view/NotesView";
-import { PriceBreaksView } from "@/components/quotes/supplier-quotes/view/PriceBreaksView";
-import { ExtraCostsView } from "@/components/quotes/supplier-quotes/view/ExtraCostsView";
-import { SavingsView } from "@/components/quotes/supplier-quotes/view/SavingsView";
-import { AttachmentsView } from "@/components/quotes/supplier-quotes/view/AttachmentsView";
-import { TermsView } from "@/components/quotes/supplier-quotes/view/TermsView";
-import { PackagingDetailsView } from "@/components/quotes/supplier-quotes/view/PackagingDetailsView";
-import { ScheduleView } from "@/components/quotes/supplier-quotes/view/ScheduleView";
 import { SupplierQuoteDetail } from "@/components/quotes/supplier-quotes/view/SupplierQuoteDetail";
 
 const SupplierQuoteDetailPage = () => {
