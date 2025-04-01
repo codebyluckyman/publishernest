@@ -33,6 +33,16 @@ export const quoteRequestFormSchema = z.object({
   ).optional(),
   products: z.record(z.any()).optional(),
   quantities: z.record(z.any()).optional(),
+  extra_costs: z.array(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    unit_of_measure_id: z.string().optional()
+  })).optional(),
+  savings: z.array(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    unit_of_measure_id: z.string().optional()
+  })).optional(),
   currency: z.string().optional(),
   reference_id: z.string().optional(),
   production_schedule_requested: z.boolean().default(false),
@@ -65,6 +75,16 @@ export interface QuoteRequestFormValues {
   }[];
   products?: Record<string, any>;
   quantities?: Record<string, any>;
+  extra_costs?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
+  savings?: {
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
   currency?: string;
   reference_id?: string;
   production_schedule_requested?: boolean;
