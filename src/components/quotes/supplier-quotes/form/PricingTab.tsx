@@ -92,7 +92,7 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
 
   // Function to get product headings based on the number of products
   const getProductHeadings = (numProducts: number) => {
-    return Array.from({ length: numProducts }, (_, i) => `Product ${i + 1}`);
+    return Array.from({ length: numProducts }, (_, i) => `${i + 1} Title`);
   };
 
   return (
