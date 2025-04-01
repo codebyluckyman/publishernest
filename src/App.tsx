@@ -17,7 +17,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Suppliers from "./pages/Suppliers";
 import Quotes from "./pages/Quotes";
 import QuoteRequests from "./pages/QuoteRequests";
-import React from "react";
 
 // Create a new client for React Query
 const queryClient = new QueryClient({
@@ -32,98 +31,96 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
-            <OrganizationProvider>
-              <Toaster />
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/products" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Products />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stock" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Stock />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/formats" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Formats />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/suppliers" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Suppliers />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/quotes" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Quotes />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/quote-requests" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <QuoteRequests />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/organizations" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Organizations />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/profile" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Profile />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/orders" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/shipments" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </OrganizationProvider>
-          </BrowserRouter>
-        </AuthProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <OrganizationProvider>
+            <Toaster />
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/products" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Products />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/stock" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Stock />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/formats" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Formats />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/suppliers" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Suppliers />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/quotes" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Quotes />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/quote-requests" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <QuoteRequests />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/organizations" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Organizations />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Profile />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/orders" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/shipments" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </OrganizationProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
