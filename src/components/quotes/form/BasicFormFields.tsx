@@ -1,142 +1,87 @@
 
-import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { useState } from "react";
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { MultipleSupplierSelect } from "./format-fields/MultipleSupplierSelect";
-import { CurrencySelect } from "./currency/CurrencySelect";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useFormContext } from "react-hook-form";
 import { QuoteRequestFormValues } from "./schema";
-import { Supplier } from "@/types/supplier";
 
-interface BasicFormFieldsProps {
-  form: UseFormReturn<QuoteRequestFormValues>;
-  suppliers: Supplier[];
-  titleReadOnly?: boolean;
-}
-
-export function BasicFormFields({ form, suppliers, titleReadOnly = false }: BasicFormFieldsProps) {
+export const BasicFormFields = () => {
+  const form = useFormContext<QuoteRequestFormValues>();
+  
   return (
-    <Card>
-      <CardContent className="pt-6 grid gap-4">
+    <div className="space-y-4">
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Quote Name*</FormLabel>
+            <FormControl>
+              <Input {...field} placeholder="Enter a name for this quote request" />
+            </FormControl>
+            <FormDescription>
+              A descriptive name to identify this quote request
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
-          name="title"
+          name="due_date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Due Date</FormLabel>
               <FormControl>
-                <Input 
-                  {...field} 
-                  disabled={titleReadOnly}
-                  className={titleReadOnly ? "bg-muted" : ""}
-                  placeholder={titleReadOnly ? "Will be set based on selected formats" : "Enter quote request title"} 
+                <DatePicker 
+                  date={field.value ? new Date(field.value) : undefined}
+                  setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
                 />
               </FormControl>
-              {titleReadOnly && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Title will be automatically generated based on selected formats
-                </p>
-              )}
+              <FormDescription>
+                When suppliers should respond by
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
-          name="description"
+          name="reference"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Reference</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Enter description" className="resize-none" />
+                <Input {...field} placeholder="Enter internal reference (optional)" />
               </FormControl>
+              <FormDescription>
+                Your internal reference code (if any)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="due_date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-1">
-                <FormLabel>Due Date</FormLabel>
-                <FormControl>
-                  <DatePicker
-                    date={field.value ? new Date(field.value) : undefined}
-                    onSelect={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Replace the incorrect CurrencySelect implementation with the correct one */}
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-1">
-                <FormLabel>Currency</FormLabel>
-                <FormControl>
-                  <select 
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={field.value || "USD"}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  >
-                    <option value="AUD">Australian Dollar (AUD)</option>
-                    <option value="CAD">Canadian Dollar (CAD)</option>
-                    <option value="CNY">Chinese Yuan (CNY)</option>
-                    <option value="EUR">Euro (EUR)</option>
-                    <option value="GBP">British Pound (GBP)</option>
-                    <option value="HKD">Hong Kong Dollar (HKD)</option>
-                    <option value="NZD">New Zealand Dollar (NZD)</option>
-                    <option value="USD">US Dollar (USD)</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="supplier_ids"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Suppliers</FormLabel>
-              <FormControl>
-                <MultipleSupplierSelect
-                  suppliers={suppliers}
-                  value={field.value || []}
-                  onChange={field.onChange}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="Enter notes" className="resize-none" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </CardContent>
-    </Card>
+      </div>
+      
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Description*</FormLabel>
+            <FormControl>
+              <Input {...field} placeholder="Enter a brief description" />
+            </FormControl>
+            <FormDescription>
+              A short summary of what you're requesting a quote for
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
-}
+};

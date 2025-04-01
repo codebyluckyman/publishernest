@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import {
   ColumnDef,
@@ -5,6 +6,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
+  SortingState
 } from "@tanstack/react-table";
 import {
   Table,
@@ -22,6 +24,7 @@ import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
 import { formatDate } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
+import { useOrganization } from "@/context/OrganizationContext";
 
 interface SupplierQuotesTableProps {
   statusFilter?: SupplierQuoteStatus[];
@@ -34,23 +37,21 @@ export function SupplierQuotesTable({
   searchQuery,
   quoteRequestId
 }: SupplierQuotesTableProps) {
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
-  const { useSupplierQuotesByQuoteRequestId, useSupplierQuotesByStatus } = useSupplierQuotes();
+  const { currentOrganization } = useOrganization();
+  const { useSupplierQuotesList } = useSupplierQuotes();
   
-  const { data: quotesByStatus, isLoading: isLoadingByStatus } = useSupplierQuotesByStatus(statusFilter);
-  const { data: quotesByQuoteRequest, isLoading: isLoadingByQuoteRequest } = useSupplierQuotesByQuoteRequestId(quoteRequestId);
+  // Use the existing hook with appropriate filters
+  const { data: quotes = [], isLoading } = useSupplierQuotesList(
+    currentOrganization,
+    statusFilter ? statusFilter.join(',') : undefined,
+    undefined,
+    quoteRequestId || undefined,
+    searchQuery
+  );
   
-  const isLoading = isLoadingByStatus || isLoadingByQuoteRequest;
-  
-  const quotes = useMemo(() => {
-    if (quoteRequestId && quotesByQuoteRequest) {
-      return quotesByQuoteRequest;
-    }
-    return quotesByStatus || [];
-  }, [quotesByStatus, quotesByQuoteRequest, quoteRequestId]);
-
   useEffect(() => {
     if (!showDetails) {
       setSelectedQuote(null);

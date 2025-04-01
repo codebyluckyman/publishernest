@@ -17,6 +17,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Suppliers from "./pages/Suppliers";
 import Quotes from "./pages/Quotes";
 import QuoteRequests from "./pages/QuoteRequests";
+import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
 
 // Create a new client for React Query
 const queryClient = new QueryClient({
@@ -77,6 +78,13 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Quotes />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/quotes/:id" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SupplierQuoteDetail />
                   </Layout>
                 </ProtectedRoute>
               } />

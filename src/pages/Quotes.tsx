@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOrganization } from "@/hooks/useOrganization";
+import { useOrganization } from "@/context/OrganizationContext";
 import { SupplierQuotesTable } from "@/components/quotes/supplier-quotes/SupplierQuotesTable";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { SupplierQuoteStatus } from "@/types/supplierQuote";
 
 const Quotes = () => {
   const { currentOrganization } = useOrganization();
@@ -31,7 +32,7 @@ const Quotes = () => {
   }, [location.search]);
 
   // Map tab values to status filter
-  const getStatusFilter = (tab: string) => {
+  const getStatusFilter = (tab: string): SupplierQuoteStatus[] | undefined => {
     switch (tab) {
       case "active":
         return ["draft", "submitted"];
