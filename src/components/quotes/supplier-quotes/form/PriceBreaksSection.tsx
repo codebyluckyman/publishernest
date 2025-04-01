@@ -132,26 +132,29 @@ export function PriceBreaksSection({
                     </div>
                   )}
 
-                  {format.price_breaks.map((priceBreak, priceBreakIndex) => {
-                    // Calculate the absolute index of this price break across all formats
-                    let absoluteIndex = 0;
-                    for (let i = 0; i < formatIndex; i++) {
-                      absoluteIndex += quoteRequest.formats[i].price_breaks?.length || 0;
-                    }
-                    absoluteIndex += priceBreakIndex;
-                    
-                    return (
-                      <div key={priceBreak.id || `price-break-${priceBreakIndex}`} className="py-1 border-b last:border-0">
-                        <PriceBreakItem
-                          control={control}
-                          index={absoluteIndex}
-                          quantity={priceBreak.quantity}
-                          numProducts={format.num_products || 1}
-                          showLabels={false}
-                          onCopyDown={handleCopyDown}
-                        />
-                      </div>
-                    );
+                  {/* Sort price breaks by quantity in ascending order */}
+                  {[...format.price_breaks]
+                    .sort((a, b) => a.quantity - b.quantity)
+                    .map((priceBreak, priceBreakIndex) => {
+                      // Calculate the absolute index of this price break across all formats
+                      let absoluteIndex = 0;
+                      for (let i = 0; i < formatIndex; i++) {
+                        absoluteIndex += quoteRequest.formats[i].price_breaks?.length || 0;
+                      }
+                      absoluteIndex += priceBreakIndex;
+                      
+                      return (
+                        <div key={priceBreak.id || `price-break-${priceBreakIndex}`} className="py-1 border-b last:border-0">
+                          <PriceBreakItem
+                            control={control}
+                            index={absoluteIndex}
+                            quantity={priceBreak.quantity}
+                            numProducts={format.num_products || 1}
+                            showLabels={false}
+                            onCopyDown={handleCopyDown}
+                          />
+                        </div>
+                      );
                   })}
                 </div>
               ) : (
