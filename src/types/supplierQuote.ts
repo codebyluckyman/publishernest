@@ -1,8 +1,4 @@
 
-import { QuoteRequest } from "./quoteRequest";
-import { ExtraCostTableItem } from "./extraCost";
-import { SavingTableItem } from "./saving";
-
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'accepted' | 'declined';
 
 export interface SupplierQuote {
@@ -44,12 +40,8 @@ export interface SupplierQuote {
   quote_request?: QuoteRequest;
   supplier?: { supplier_name: string }; 
   price_breaks?: SupplierQuotePriceBreak[];
-  savings?: SupplierQuoteSaving[];
   attachments?: SupplierQuoteAttachment[];
   formats?: SupplierQuoteFormat[];
-  
-  // New tables for price break specific costs and savings
-  savings_price_breaks?: SupplierQuoteSavingPriceBreak[];
 }
 
 export interface SupplierQuoteFormat {
@@ -109,102 +101,6 @@ export interface SupplierQuotePriceBreak {
   };
 }
 
-export interface SupplierQuoteExtraCost {
-  id: string;
-  supplier_quote_id: string;
-  extra_cost_id: string;
-  unit_cost: number | null;
-  created_at: string;
-  updated_at: string;
-  
-  // Multiple product unit costs (up to 10)
-  unit_cost_1: number | null;
-  unit_cost_2: number | null;
-  unit_cost_3: number | null;
-  unit_cost_4: number | null;
-  unit_cost_5: number | null;
-  unit_cost_6: number | null;
-  unit_cost_7: number | null;
-  unit_cost_8: number | null;
-  unit_cost_9: number | null;
-  unit_cost_10: number | null;
-  
-  // Joined fields
-  extra_cost?: ExtraCostTableItem;
-}
-
-export interface SupplierQuoteExtraCostPriceBreak {
-  id: string;
-  supplier_quote_id: string;
-  extra_cost_id: string;
-  price_break_id: string;
-  unit_cost: number | null;
-  
-  // Multiple product unit costs (up to 10)
-  unit_cost_1: number | null;
-  unit_cost_2: number | null;
-  unit_cost_3: number | null;
-  unit_cost_4: number | null;
-  unit_cost_5: number | null;
-  unit_cost_6: number | null;
-  unit_cost_7: number | null;
-  unit_cost_8: number | null;
-  unit_cost_9: number | null;
-  unit_cost_10: number | null;
-  
-  created_at: string;
-  updated_at: string;
-}
-
-export interface SupplierQuoteSaving {
-  id: string;
-  supplier_quote_id: string;
-  saving_id: string;
-  unit_cost: number | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-  
-  // Multiple product unit costs (up to 10)
-  unit_cost_1: number | null;
-  unit_cost_2: number | null;
-  unit_cost_3: number | null;
-  unit_cost_4: number | null;
-  unit_cost_5: number | null;
-  unit_cost_6: number | null;
-  unit_cost_7: number | null;
-  unit_cost_8: number | null;
-  unit_cost_9: number | null;
-  unit_cost_10: number | null;
-  
-  // Joined fields
-  saving?: SavingTableItem;
-}
-
-export interface SupplierQuoteSavingPriceBreak {
-  id: string;
-  supplier_quote_id: string;
-  saving_id: string;
-  price_break_id: string;
-  unit_cost: number | null;
-  notes: string | null;
-  
-  // Multiple product unit costs (up to 10)
-  unit_cost_1: number | null;
-  unit_cost_2: number | null;
-  unit_cost_3: number | null;
-  unit_cost_4: number | null;
-  unit_cost_5: number | null;
-  unit_cost_6: number | null;
-  unit_cost_7: number | null;
-  unit_cost_8: number | null;
-  unit_cost_9: number | null;
-  unit_cost_10: number | null;
-  
-  created_at: string;
-  updated_at: string;
-}
-
 export interface SupplierQuoteFormValues {
   quote_request_id: string;
   supplier_id: string;
@@ -225,43 +121,6 @@ export interface SupplierQuoteFormValues {
     unit_cost_8: number | null;
     unit_cost_9: number | null;
     unit_cost_10: number | null;
-  }[];
-  savings: {
-    saving_id: string;
-    price_breaks: {
-      price_break_id: string;
-      unit_cost: number | null;
-      // Multiple product unit costs (up to 10)
-      unit_cost_1: number | null;
-      unit_cost_2: number | null;
-      unit_cost_3: number | null;
-      unit_cost_4: number | null;
-      unit_cost_5: number | null;
-      unit_cost_6: number | null;
-      unit_cost_7: number | null;
-      unit_cost_8: number | null;
-      unit_cost_9: number | null;
-      unit_cost_10: number | null;
-    }[];
-    notes?: string;
-  }[];
-  // Add the property back for compatibility
-  extra_costs?: {
-    extra_cost_id: string;
-    price_breaks: {
-      price_break_id: string;
-      unit_cost: number | null;
-      unit_cost_1: number | null;
-      unit_cost_2: number | null;
-      unit_cost_3: number | null;
-      unit_cost_4: number | null;
-      unit_cost_5: number | null;
-      unit_cost_6: number | null;
-      unit_cost_7: number | null;
-      unit_cost_8: number | null;
-      unit_cost_9: number | null;
-      unit_cost_10: number | null;
-    }[];
   }[];
   notes?: string;
   currency: string;

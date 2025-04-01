@@ -9,7 +9,6 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { Supplier } from "@/types/supplier";
-import { SavingTableItem } from "@/types/saving";
 import { FormHeader } from "./form/FormHeader";
 import { FormTabs } from "./form/FormTabs";
 import { FormActions } from "./form/FormActions";
@@ -30,13 +29,6 @@ const formSchema = z.object({
       quantity: z.number(),
       product_id: z.string().optional(),
       unit_cost: z.number().nullable(),
-    })
-  ).optional().default([]),
-  savings: z.array(
-    z.object({
-      saving_id: z.string(),
-      unit_cost: z.number().nullable(),
-      notes: z.string().optional(),
     })
   ).optional().default([]),
   reference: z.string().optional(),
@@ -91,33 +83,10 @@ export function SupplierQuoteForm({
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
   const [activeTab, setActiveTab] = useState("details");
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
-  
-  const [savingsForForm, setSavingsForForm] = useState<SavingTableItem[]>([]);
   const [isFormComplete, setIsFormComplete] = useState(false);
 
   useEffect(() => {
-    if (quoteRequest.savings && quoteRequest.savings.length > 0) {
-      const formattedSavings = quoteRequest.savings.map(saving => ({
-        id: saving.id || "",
-        name: saving.name,
-        description: saving.description || "",
-        unit_of_measure_id: saving.unit_of_measure_id,
-        unit_of_measure_name: saving.unit_of_measure_name,
-        organization_id: currentOrganization?.id || "",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
-      
-      console.log("Savings from Quote Request:", formattedSavings);
-      setSavingsForForm(formattedSavings);
-    } else {
-      setSavingsForForm([]);
-    }
-  }, [quoteRequest, currentOrganization]);
-
-  useEffect(() => {
-    if (
-      quoteRequest.production_schedule_requested &&
+    if (quoteRequest.production_schedule_requested &&
       quoteRequest.required_step_id &&
       quoteRequest.required_step_date
     ) {
@@ -254,7 +223,6 @@ export function SupplierQuoteForm({
           selectedSupplier={selectedSupplier}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          filteredSavings={savingsForForm}
           currencies={currencies}
           form={form}
         />

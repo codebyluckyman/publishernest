@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -139,68 +140,6 @@ export async function updateSupplierQuote(
 
     if (insertError) {
       throw new Error(`Error inserting updated price breaks: ${insertError.message}`);
-    }
-  }
-
-  // Update savings if provided
-  if (updates.savings && updates.savings.length > 0) {
-    // First delete existing savings and their price breaks for this supplier quote
-    const { error: deleteSavingsError } = await supabase
-      .from("supplier_quote_savings")
-      .delete()
-      .eq("supplier_quote_id", id);
-
-    if (deleteSavingsError) {
-      throw new Error(`Error deleting existing savings: ${deleteSavingsError.message}`);
-    }
-    
-    const { error: deleteSavingsPriceBreaksError } = await supabase
-      .from("supplier_quote_savings_price_breaks")
-      .delete()
-      .eq("supplier_quote_id", id);
-
-    if (deleteSavingsPriceBreaksError) {
-      throw new Error(`Error deleting existing savings price breaks: ${deleteSavingsPriceBreaksError.message}`);
-    }
-
-    // Insert savings price breaks for each price break
-    const savingsPriceBreaksToInsert: any[] = [];
-    
-    updates.savings.forEach(s => {
-      // Keep track of notes for each saving
-      const notes = s.notes || null;
-      
-      if (s.price_breaks && s.price_breaks.length > 0) {
-        s.price_breaks.forEach(pb => {
-          savingsPriceBreaksToInsert.push({
-            supplier_quote_id: id,
-            saving_id: s.saving_id,
-            price_break_id: pb.price_break_id,
-            unit_cost: pb.unit_cost,
-            notes: notes,
-            unit_cost_1: pb.unit_cost_1,
-            unit_cost_2: pb.unit_cost_2,
-            unit_cost_3: pb.unit_cost_3,
-            unit_cost_4: pb.unit_cost_4,
-            unit_cost_5: pb.unit_cost_5,
-            unit_cost_6: pb.unit_cost_6,
-            unit_cost_7: pb.unit_cost_7,
-            unit_cost_8: pb.unit_cost_8,
-            unit_cost_9: pb.unit_cost_9,
-            unit_cost_10: pb.unit_cost_10
-          });
-        });
-      }
-    });
-
-    if (savingsPriceBreaksToInsert.length > 0) {
-      const { error: insertError } = await supabase
-        .from("supplier_quote_savings_price_breaks")
-        .insert(savingsPriceBreaksToInsert);
-        
-      if (insertError) {
-        throw new Error(`Error inserting savings price breaks: ${insertError.message}`);
-      }
     }
   }
 

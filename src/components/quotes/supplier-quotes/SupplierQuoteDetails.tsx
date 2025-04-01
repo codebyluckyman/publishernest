@@ -37,8 +37,6 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
   const declineMutation = useDeclineSupplierQuote();
   
   // Add state for collapsible sections
-  const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(false);
-  const [isSavingsOpen, setIsSavingsOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isRemarksOpen, setIsRemarksOpen] = useState(false);
@@ -79,7 +77,7 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
     setConfirmingAction(null);
   };
 
-  // Calculate total cost from price breaks, extra costs, and savings
+  // Calculate total cost from price breaks
   const calculateTotalCost = () => {
     let total = 0;
     
@@ -88,24 +86,6 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
       supplierQuote.price_breaks.forEach(pb => {
         if (pb.unit_cost) {
           total += pb.unit_cost * pb.quantity;
-        }
-      });
-    }
-    
-    // Add extra costs
-    if (supplierQuote.extra_costs) {
-      supplierQuote.extra_costs.forEach(ec => {
-        if (ec.unit_cost) {
-          total += ec.unit_cost;
-        }
-      });
-    }
-    
-    // Subtract savings
-    if (supplierQuote.savings) {
-      supplierQuote.savings.forEach(s => {
-        if (s.unit_cost) {
-          total -= s.unit_cost;
         }
       });
     }
@@ -191,317 +171,159 @@ export function SupplierQuoteDetails({ supplierQuote, onClose }: SupplierQuoteDe
           </div>
         </div>
       </div>
-
+      
       <Separator />
-
-      {/* Formats */}
-      {supplierQuote.formats && supplierQuote.formats.length > 0 && (
-        <CollapsibleSection 
-          title="Formats" 
-          isEmpty={false}
-          emptyMessage="No formats available"
-        >
-          <div className="space-y-4">
-            {supplierQuote.formats.map((format, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium">Format Name</p>
-                      <p className="text-sm">{format.format_name}</p>
-                    </div>
-                    {format.dimensions && (
-                      <div>
-                        <p className="text-sm font-medium">Dimensions</p>
-                        <p className="text-sm">{format.dimensions}</p>
-                      </div>
-                    )}
-                    {format.extent && (
-                      <div>
-                        <p className="text-sm font-medium">Extent</p>
-                        <p className="text-sm">{format.extent}</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* Pricing */}
-      {supplierQuote.price_breaks && supplierQuote.price_breaks.length > 0 && (
-        <CollapsibleSection 
-          title="Pricing" 
-          isEmpty={false}
-          emptyMessage="No pricing information available"
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Quantity</th>
-                  <th className="text-right py-2">Unit Cost</th>
-                  <th className="text-right py-2">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {supplierQuote.price_breaks.map((priceBreak, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="py-2">{priceBreak.quantity.toLocaleString()}</td>
-                    <td className="text-right py-2">
-                      {priceBreak.unit_cost 
-                        ? `${supplierQuote.currency} ${priceBreak.unit_cost.toLocaleString()}`
-                        : "-"}
-                    </td>
-                    <td className="text-right py-2">
-                      {priceBreak.unit_cost 
-                        ? `${supplierQuote.currency} ${(priceBreak.unit_cost * priceBreak.quantity).toLocaleString()}`
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* Extra Costs */}
-      {supplierQuote.extra_costs && supplierQuote.extra_costs.length > 0 && (
-        <CollapsibleSection 
-          title="Extra Costs"
-          isEmpty={supplierQuote.extra_costs.length === 0}
-          emptyMessage="No extra costs available"
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Name</th>
-                  <th className="text-right py-2">Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {supplierQuote.extra_costs.map((extraCost, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="py-2">
-                      {extraCost.extra_cost?.name || "Unknown"}
-                    </td>
-                    <td className="text-right py-2">
-                      {extraCost.unit_cost 
-                        ? `${supplierQuote.currency} ${extraCost.unit_cost.toLocaleString()}`
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* Savings */}
-      {supplierQuote.savings && supplierQuote.savings.length > 0 && (
-        <CollapsibleSection 
-          title="Savings"
-          isEmpty={supplierQuote.savings.length === 0}
-          emptyMessage="No savings available"
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Name</th>
-                  <th className="text-right py-2">Saving</th>
-                </tr>
-              </thead>
-              <tbody>
-                {supplierQuote.savings.map((saving, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="py-2">
-                      {saving.saving?.name || "Unknown"}
-                      {saving.notes && (
-                        <p className="text-xs text-muted-foreground">{saving.notes}</p>
-                      )}
-                    </td>
-                    <td className="text-right py-2">
-                      {saving.unit_cost 
-                        ? `${supplierQuote.currency} ${saving.unit_cost.toLocaleString()}`
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* Notes */}
-      {supplierQuote.notes && (
-        <CollapsibleSection 
-          title="Notes"
-          isEmpty={!supplierQuote.notes}
-          emptyMessage="No notes available"
-        >
-          <div className="p-4 bg-muted/30 rounded-md">
-            <p className="text-sm whitespace-pre-wrap">{supplierQuote.notes}</p>
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* Terms */}
-      {supplierQuote.terms && (
+      
+      {/* Collapsible sections */}
+      <div className="space-y-4">
         <CollapsibleSection
-          title="Terms"
-          isEmpty={!supplierQuote.terms}
-          emptyMessage="No terms available"
+          title="Notes"
+          isOpen={isNotesOpen}
+          onOpenChange={setIsNotesOpen}
+          isEmpty={!supplierQuote.notes}
         >
-          <div className="p-4 bg-muted/30 rounded-md">
-            <p className="text-sm whitespace-pre-wrap">{supplierQuote.terms}</p>
-          </div>
+          <p className="text-sm whitespace-pre-wrap">{supplierQuote.notes}</p>
         </CollapsibleSection>
-      )}
-
-      {/* Remarks */}
-      {supplierQuote.remarks && (
+        
+        <CollapsibleSection
+          title="Terms & Conditions"
+          isOpen={isTermsOpen}
+          onOpenChange={setIsTermsOpen}
+          isEmpty={!supplierQuote.terms}
+        >
+          <p className="text-sm whitespace-pre-wrap">{supplierQuote.terms}</p>
+        </CollapsibleSection>
+        
         <CollapsibleSection
           title="Remarks"
+          isOpen={isRemarksOpen}
+          onOpenChange={setIsRemarksOpen}
           isEmpty={!supplierQuote.remarks}
-          emptyMessage="No remarks available"
         >
-          <div className="p-4 bg-muted/30 rounded-md">
-            <p className="text-sm whitespace-pre-wrap">{supplierQuote.remarks}</p>
-          </div>
+          <p className="text-sm whitespace-pre-wrap">{supplierQuote.remarks}</p>
         </CollapsibleSection>
-      )}
-
+      </div>
+      
+      <Separator />
+      
       {/* Attachments */}
-      {supplierQuote.attachments && supplierQuote.attachments.length > 0 && (
-        <CollapsibleSection 
-          title="Attachments"
-          isEmpty={!supplierQuote.attachments || supplierQuote.attachments.length === 0}
-          emptyMessage="No attachments available"
-        >
-          <SupplierQuoteAttachments 
-            supplierQuote={{ id: supplierQuote.id }}
-            readOnly
-          />
-        </CollapsibleSection>
-      )}
-
+      <SupplierQuoteAttachments quoteId={supplierQuote.id} />
+      
+      <Separator />
+      
       {/* Audit History */}
-      <div className="flex items-center justify-center">
+      <div>
         <Button 
           variant="outline" 
           onClick={() => setShowAudit(!showAudit)}
+          className="mb-2"
         >
-          {showAudit ? "Hide Audit History" : "View Audit History"}
-        </Button>
-      </div>
-      
-      {showAudit && (
-        <SupplierQuoteAuditHistory 
-          supplierQuoteId={supplierQuote.id}
-          supplierQuote={null} 
-        />
-      )}
-
-      <Separator />
-
-      {/* Action buttons */}
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onClose}>
-          Close
+          {showAudit ? "Hide Audit History" : "Show Audit History"}
         </Button>
         
-        {supplierQuote.status === 'submitted' && (
-          <div className="flex space-x-2">
-            {confirmingAction === 'accept' ? (
-              <div className="bg-white p-4 border rounded-md shadow-md space-y-4">
-                <Alert>
-                  <AlertDescription>
-                    Accepting this quote will mark it as accepted. Are you sure?
-                  </AlertDescription>
-                </Alert>
-                <div className="space-y-2">
-                  <Label htmlFor="acceptedCost">Accepted Cost ({supplierQuote.currency})</Label>
-                  <Input
-                    id="acceptedCost"
-                    type="number"
-                    step="0.01"
-                    value={acceptedCost}
-                    onChange={(e) => setAcceptedCost(e.target.value)}
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={cancelConfirmation}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleAcceptQuote}
-                    disabled={acceptMutation.isPending || !acceptedCost}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    Confirm Accept
-                  </Button>
-                </div>
-              </div>
-            ) : confirmingAction === 'decline' ? (
-              <div className="bg-white p-4 border rounded-md shadow-md space-y-4">
-                <Alert>
-                  <AlertDescription>
-                    Declining this quote will mark it as declined. Are you sure?
-                  </AlertDescription>
-                </Alert>
-                <div className="space-y-2">
-                  <Label htmlFor="declineReason">Reason for declining (optional)</Label>
-                  <Textarea
-                    id="declineReason"
-                    value={declineReason}
-                    onChange={(e) => setDeclineReason(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={cancelConfirmation}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    variant="destructive"
-                    onClick={handleDeclineQuote}
-                    disabled={declineMutation.isPending}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Confirm Decline
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeclineQuote}
-                  disabled={acceptMutation.isPending || declineMutation.isPending}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Decline
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={handleAcceptQuote}
-                  disabled={acceptMutation.isPending || declineMutation.isPending}
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  Accept
-                </Button>
-              </>
-            )}
-          </div>
+        {showAudit && (
+          <SupplierQuoteAuditHistory quoteId={supplierQuote.id} />
         )}
       </div>
+      
+      <Separator />
+      
+      {/* Actions */}
+      {supplierQuote.status === 'submitted' && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Actions</h3>
+          
+          {confirmingAction === 'accept' ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <Alert>
+                    <AlertDescription>
+                      You are about to accept this quote. Please confirm the final accepted cost.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="acceptedCost">Accepted Cost ({supplierQuote.currency})</Label>
+                    <Input 
+                      id="acceptedCost"
+                      type="number"
+                      step="0.01"
+                      value={acceptedCost}
+                      onChange={(e) => setAcceptedCost(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={cancelConfirmation}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleAcceptQuote}
+                      disabled={acceptMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Confirm Accept
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : confirmingAction === 'decline' ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <Alert>
+                    <AlertDescription>
+                      You are about to decline this quote. Please provide a reason.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="declineReason">Reason</Label>
+                    <Textarea 
+                      id="declineReason"
+                      placeholder="Reason for declining this quote"
+                      value={declineReason}
+                      onChange={(e) => setDeclineReason(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={cancelConfirmation}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleDeclineQuote}
+                      disabled={declineMutation.isPending || !declineReason.trim()}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Confirm Decline
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="flex space-x-2">
+              <Button 
+                onClick={handleAcceptQuote}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Accept Quote
+              </Button>
+              <Button 
+                onClick={handleDeclineQuote}
+                variant="destructive"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Decline Quote
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
