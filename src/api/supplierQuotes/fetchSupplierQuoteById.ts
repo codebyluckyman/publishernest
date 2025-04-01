@@ -4,7 +4,8 @@ import {
   SupplierQuote, 
   SupplierQuoteFormat, 
   SupplierQuoteAttachment, 
-  SupplierQuotePriceBreak 
+  SupplierQuotePriceBreak,
+  SupplierQuoteStatus 
 } from "@/types/supplierQuote";
 import { getPublicUrl } from "./getPublicUrls";
 
@@ -126,6 +127,22 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     processedAttachments = await getPublicUrls(attachments, 'supplier-quote-attachments');
   }
 
+  // Process production schedule to ensure it's a record
+  let productionSchedule: Record<string, string | null> | null = null;
+  if (quoteData.production_schedule) {
+    try {
+      // If it's a string, try to parse it, otherwise use it directly
+      const scheduleData = typeof quoteData.production_schedule === 'string' 
+        ? JSON.parse(quoteData.production_schedule) 
+        : quoteData.production_schedule;
+        
+      productionSchedule = scheduleData as Record<string, string | null>;
+    } catch (e) {
+      console.error("Error parsing production schedule:", e);
+      productionSchedule = null;
+    }
+  }
+
   // Combine all data into a single supplier quote object
   const supplierQuote: SupplierQuote = {
     ...quoteData,
@@ -133,7 +150,8 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     price_breaks: priceBreaks || [],
     formats: processedFormats,
     attachments: processedAttachments,
-    status: quoteData.status as SupplierQuoteStatus // Ensure status is cast to the correct type
+    status: quoteData.status as SupplierQuoteStatus,
+    production_schedule: productionSchedule
   };
 
   return supplierQuote;

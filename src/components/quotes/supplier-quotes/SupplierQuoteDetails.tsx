@@ -37,7 +37,7 @@ export function SupplierQuoteDetails({ quote, onClose }: SupplierQuoteDetailsPro
   }, [currentOrganization, quote.production_schedule]);
   
   // Convert schedule to Record<string, string> if it's not already
-  const productionSchedule = quote.production_schedule as Record<string, string> || {};
+  const productionSchedule = quote.production_schedule || {};
   
   return (
     <div className="space-y-6">
@@ -105,7 +105,9 @@ export function SupplierQuoteDetails({ quote, onClose }: SupplierQuoteDetailsPro
         {/* Packaging Details */}
         {(quote.packaging_carton_quantity || 
           quote.packaging_carton_weight || 
-          quote.packaging_carton_dimensions) && (
+          quote.packaging_carton_length ||
+          quote.packaging_carton_width ||
+          quote.packaging_carton_height) && (
           <div>
             <h3 className="text-lg font-semibold mb-2 flex items-center">
               <Package className="h-5 w-5 mr-2" /> Packaging Details

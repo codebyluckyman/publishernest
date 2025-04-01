@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
@@ -132,9 +133,8 @@ export function QuoteRequestForm({
         <ProductionScheduleField />
         <AttachmentsField />
         <BasicFormFields 
-          form={form} 
-          suppliers={suppliers} 
           titleReadOnly={hasFormats || form.getValues('formats')?.length > 0}
+          suppliers={suppliers}
         />
         <FormActions
           form={form}

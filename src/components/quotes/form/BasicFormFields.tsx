@@ -5,20 +5,26 @@ import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useFormContext } from "react-hook-form";
 import { QuoteRequestFormValues } from "./schema";
+import { Supplier } from "@/types/supplier";
 
-export const BasicFormFields = () => {
+interface BasicFormFieldsProps {
+  titleReadOnly?: boolean;
+  suppliers?: Supplier[];
+}
+
+export const BasicFormFields = ({ titleReadOnly, suppliers }: BasicFormFieldsProps) => {
   const form = useFormContext<QuoteRequestFormValues>();
   
   return (
     <div className="space-y-4">
       <FormField
         control={form.control}
-        name="name"
+        name="title"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Quote Name*</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Enter a name for this quote request" />
+              <Input {...field} placeholder="Enter a name for this quote request" readOnly={titleReadOnly} />
             </FormControl>
             <FormDescription>
               A descriptive name to identify this quote request
@@ -38,7 +44,7 @@ export const BasicFormFields = () => {
               <FormControl>
                 <DatePicker 
                   date={field.value ? new Date(field.value) : undefined}
-                  setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                  setDate={(date) => field.onChange(date)}
                 />
               </FormControl>
               <FormDescription>
@@ -50,7 +56,7 @@ export const BasicFormFields = () => {
         />
         <FormField
           control={form.control}
-          name="reference"
+          name="reference_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Reference</FormLabel>
