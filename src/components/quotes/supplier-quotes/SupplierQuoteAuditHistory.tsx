@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarClock, FileEdit, Send, User, CheckCircle, XCircle } from "lucide-react";
+import { CalendarClock, FileEdit, Send, User, CheckCircle, XCircle, ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface SupplierQuoteAuditHistoryProps {
   supplierQuoteId: string;
@@ -17,15 +16,26 @@ export function SupplierQuoteAuditHistory({ supplierQuoteId }: SupplierQuoteAudi
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'created':
+      case 'create':
         return <FileEdit className="h-4 w-4" />;
       case 'submitted':
+      case 'submit':
         return <Send className="h-4 w-4" />;
       case 'updated':
+      case 'update':
         return <FileEdit className="h-4 w-4" />;
       case 'accepted':
+      case 'accept':
         return <CheckCircle className="h-4 w-4" />;
       case 'declined':
+      case 'decline':
         return <XCircle className="h-4 w-4" />;
+      case 'approved':
+      case 'approve':
+        return <ThumbsUp className="h-4 w-4" />;
+      case 'rejected':
+      case 'reject':
+        return <ThumbsDown className="h-4 w-4" />;
       default:
         return <CalendarClock className="h-4 w-4" />;
     }
