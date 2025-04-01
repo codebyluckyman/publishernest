@@ -8,6 +8,9 @@ export async function createSupplierQuote(
   organizationId: string,
   userId: string
 ): Promise<string> {
+  // Log the entire form data for debugging
+  console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
+
   // Start a transaction
   const { data: supplierQuote, error } = await supabase
     .from("supplier_quotes")
@@ -41,13 +44,16 @@ export async function createSupplierQuote(
     .select()
     .single();
 
+  console.log('Inserted Supplier Quote:', supplierQuote);
+  console.log('Supplier Quote Insertion Error:', error);
+
   if (error) {
     throw new Error(`Error creating supplier quote: ${error.message}`);
   }
 
   // Insert price breaks
   if (formData.price_breaks && formData.price_breaks.length > 0) {
-    console.log('Price Breaks to Insert:', formData.price_breaks);
+    console.log('Price Breaks to Insert:', JSON.stringify(formData.price_breaks, null, 2));
 
     const priceBreaksToInsert = formData.price_breaks.map(pb => {
       // Create a base object with the required fields
@@ -85,7 +91,7 @@ export async function createSupplierQuote(
       return priceBreakData;
     });
 
-    console.log('Formatted Price Breaks:', priceBreaksToInsert);
+    console.log('Formatted Price Breaks:', JSON.stringify(priceBreaksToInsert, null, 2));
 
     // Insert price breaks
     const { error: priceBreaksError } = await supabase
