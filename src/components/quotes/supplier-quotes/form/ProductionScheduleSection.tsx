@@ -8,7 +8,9 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CalendarIcon, AlertCircle } from "lucide-react";
 import { Supplier } from "@/types/supplier";
-import { useOrganization } from "@/hooks/useOrganization";
+import { useOrganization } from "@/context/OrganizationContext";
+import { fetchProductionSteps } from "@/api/organizations/productionSteps";
+import { OrganizationProductionStep } from "@/types/organization";
 
 interface ProductionScheduleSectionProps {
   control: Control<SupplierQuoteFormValues>;
@@ -21,8 +23,30 @@ export function ProductionScheduleSection({
   scheduleRequested,
   selectedSupplier
 }: ProductionScheduleSectionProps) {
-  const { useProductionSteps } = useOrganization();
-  const { data: productionSteps, isLoading } = useProductionSteps();
+  const { currentOrganization } = useOrganization();
+  const [productionSteps, setProductionSteps] = useState<OrganizationProductionStep[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch production steps when the component mounts
+  useEffect(() => {
+    const getProductionSteps = async () => {
+      if (!currentOrganization?.id) return;
+      
+      setIsLoading(true);
+      try {
+        const steps = await fetchProductionSteps(currentOrganization.id);
+        setProductionSteps(steps);
+      } catch (error) {
+        console.error("Error fetching production steps:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (scheduleRequested) {
+      getProductionSteps();
+    }
+  }, [currentOrganization, scheduleRequested]);
   
   // If schedule not requested, show a message instead
   if (!scheduleRequested) {
@@ -32,7 +56,7 @@ export function ProductionScheduleSection({
           <CardTitle className="text-lg">Production Schedule</CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert variant="info">
+          <Alert variant="default">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Production schedule wasn't requested for this quote.
@@ -65,7 +89,7 @@ export function ProductionScheduleSection({
           <CardTitle className="text-lg">Production Schedule</CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert variant="warning">
+          <Alert variant="default">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               No production steps have been defined for your organization.
@@ -92,14 +116,16 @@ export function ProductionScheduleSection({
             <FormField
               key={step.id}
               control={control}
-              name={`production_schedule.${step.step_name}`}
+              name={`production_schedule.${step.id}`}
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>{step.step_name}</FormLabel>
-                  <DatePicker
-                    date={field.value ? new Date(field.value) : undefined}
-                    setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
-                  />
+                  <FormControl>
+                    <DatePicker
+                      date={field.value ? new Date(field.value) : undefined}
+                      setDate={(date) => field.onChange(date ? date.toISOString().split('T')[0] : null)}
+                    />
+                  </FormControl>
                   {step.description && (
                     <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
                   )}

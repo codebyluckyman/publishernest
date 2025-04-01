@@ -1,71 +1,180 @@
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { HistoryIcon, ChevronDown, ChevronUp } from 'lucide-react';
-import { useSupplierQuotes } from '@/hooks/useSupplierQuotes';
-import { formatDistanceToNow } from 'date-fns';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { SupplierQuote } from "@/types/supplierQuote";
+import { AlertCircle, Clock } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-interface SupplierQuoteAuditHistoryProps {
-  supplierQuoteId: string;
+interface SupplierQuoteAudit {
+  id: string;
+  supplier_quote_id: string;
+  action: string;
+  user_id: string;
+  changes: any;
+  created_at: string;
+  user_email?: string; // Added for joining user info
+  user_display_name?: string; // Added for joining user info
 }
 
-export function SupplierQuoteAuditHistory({ supplierQuoteId }: SupplierQuoteAuditHistoryProps) {
-  const { useSupplierQuoteAudit } = useSupplierQuotes();
-  const { data: auditTrail, isLoading } = useSupplierQuoteAudit(supplierQuoteId);
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+interface SupplierQuoteAuditHistoryProps {
+  quoteId: string;
+}
 
-  const toggleItem = (id: string) => {
-    setExpandedItems(prev => 
-      prev.includes(id) 
-        ? prev.filter(item => item !== id)
-        : [...prev, id]
-    );
-  };
+export function SupplierQuoteAuditHistory({ quoteId }: SupplierQuoteAuditHistoryProps) {
+  const [auditLogs, setAuditLogs] = useState<SupplierQuoteAudit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const getActionColor = (action: string) => {
+  useEffect(() => {
+    const fetchAuditLogs = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('supplier_quote_audit')
+          .select(`
+            id,
+            supplier_quote_id,
+            action,
+            user_id,
+            changes,
+            created_at,
+            users:user_id (email, display_name)
+          `)
+          .eq('supplier_quote_id', quoteId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Transform the data to flatten user details
+        const transformedData = data.map(log => ({
+          ...log,
+          user_email: log.users?.email,
+          user_display_name: log.users?.display_name
+        }));
+
+        setAuditLogs(transformedData);
+      } catch (err) {
+        console.error('Error fetching audit logs:', err);
+        setError('Failed to load audit history');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (quoteId) {
+      fetchAuditLogs();
+    }
+  }, [quoteId]);
+
+  const getActionBadge = (action: string) => {
     switch (action) {
       case 'created':
-        return 'bg-green-100 text-green-800';
+        return <Badge className="bg-green-500">Created</Badge>;
       case 'updated':
-        return 'bg-blue-100 text-blue-800';
+        return <Badge className="bg-blue-500">Updated</Badge>;
+      case 'status_changed':
+        return <Badge className="bg-purple-500">Status Changed</Badge>;
       case 'submitted':
-        return 'bg-purple-100 text-purple-800';
+        return <Badge className="bg-amber-500">Submitted</Badge>;
       case 'accepted':
-        return 'bg-emerald-100 text-emerald-800';
+        return <Badge className="bg-emerald-500">Accepted</Badge>;
       case 'declined':
-        return 'bg-red-100 text-red-800';
+        return <Badge className="bg-red-500">Declined</Badge>;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return <Badge>{action}</Badge>;
     }
+  };
+
+  const formatChanges = (changes: any) => {
+    if (!changes) return null;
+    
+    return Object.entries(changes).map(([key, value]: [string, any]) => {
+      // Skip some internal fields
+      if (['id', 'created_at', 'updated_at'].includes(key)) {
+        return null;
+      }
+      
+      // Format different types of changes
+      let displayValue;
+      if (value && typeof value === 'object' && ('old' in value || 'new' in value)) {
+        const oldValue = value.old !== undefined ? formatDisplayValue(value.old) : 'N/A';
+        const newValue = value.new !== undefined ? formatDisplayValue(value.new) : 'N/A';
+        displayValue = <>{oldValue} → {newValue}</>;
+      } else {
+        displayValue = formatDisplayValue(value);
+      }
+      
+      return (
+        <div key={key} className="py-1 flex items-start">
+          <div className="w-1/3 font-medium text-sm">{formatFieldName(key)}</div>
+          <div className="w-2/3 text-sm">{displayValue}</div>
+        </div>
+      );
+    }).filter(Boolean);
+  };
+
+  const formatFieldName = (key: string) => {
+    return key
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const formatDisplayValue = (value: any) => {
+    if (value === null || value === undefined) return 'N/A';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (value instanceof Date || (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/))) {
+      try {
+        return formatDate(value);
+      } catch (e) {
+        return value;
+      }
+    }
+    return String(value);
   };
 
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <HistoryIcon className="w-5 h-5 mr-2" />
-            Audit History
-          </CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Audit History</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-sm">Loading audit history...</p>
+          <p className="text-sm text-muted-foreground">Loading audit history...</p>
         </CardContent>
       </Card>
     );
   }
 
-  if (!auditTrail || auditTrail.length === 0) {
+  if (error) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <HistoryIcon className="w-5 h-5 mr-2" />
-            Audit History
-          </CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Audit History</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-sm italic">No audit history available</p>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (auditLogs.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Audit History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>No audit history available for this quote</AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -73,68 +182,33 @@ export function SupplierQuoteAuditHistory({ supplierQuoteId }: SupplierQuoteAudi
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center">
-          <HistoryIcon className="w-5 h-5 mr-2" />
-          Audit History
-        </CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Audit History</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="space-y-4">
-          {auditTrail.map((entry) => (
-            <div key={entry.id} className="border rounded-lg overflow-hidden">
-              <div
-                className="flex justify-between items-center p-3 cursor-pointer bg-muted/30"
-                onClick={() => toggleItem(entry.id)}
-              >
-                <div className="flex items-center space-x-3">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${getActionColor(entry.action)}`}>
-                    {entry.action.charAt(0).toUpperCase() + entry.action.slice(1)}
-                  </span>
-                  <span className="text-sm">
-                    {entry.user_name || 'Unknown user'} - {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
+          {auditLogs.map((log) => (
+            <div key={log.id} className="border-l-2 pl-4 py-2 border-l-muted-foreground/30">
+              <div className="flex justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  {getActionBadge(log.action)}
+                  <span className="text-sm text-muted-foreground">
+                    by {log.user_display_name || log.user_email || 'Unknown user'}
                   </span>
                 </div>
-                {expandedItems.includes(entry.id) ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {formatDate(log.created_at)}
+                </div>
               </div>
-
-              {expandedItems.includes(entry.id) && entry.changes && (
-                <div className="p-3 border-t">
-                  <div className="grid grid-cols-3 gap-2 text-sm mb-2 font-medium">
-                    <div>Field</div>
-                    <div>Old Value</div>
-                    <div>New Value</div>
-                  </div>
-                  {Object.entries(entry.changes).map(([field, values]) => (
-                    <div key={field} className="grid grid-cols-3 gap-2 text-sm py-1 border-t first:border-t-0">
-                      <div className="text-muted-foreground break-all">{field}</div>
-                      <div className="break-all">{renderValue(values.old)}</div>
-                      <div className="break-all">{renderValue(values.new)}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              
+              <div className="bg-muted/30 rounded-md p-3 mt-2">
+                {formatChanges(log.changes)}
+              </div>
             </div>
           ))}
         </div>
       </CardContent>
     </Card>
   );
-}
-
-// Helper function to render different types of values
-function renderValue(value: any): string {
-  if (value === null || value === undefined) {
-    return '-';
-  }
-  
-  if (typeof value === 'object') {
-    return JSON.stringify(value);
-  }
-  
-  return String(value);
 }

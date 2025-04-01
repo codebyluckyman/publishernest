@@ -1,87 +1,118 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { FileIcon, Download, Paperclip, Eye } from "lucide-react";
-import { getPublicUrl } from "@/api/supplierQuotes";
-import { useToast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SupplierQuote } from "@/types/supplierQuote";
+import { SupplierQuoteAttachment } from "@/types/supplierQuote";
+import { FileIcon, Download, ExternalLink, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SupplierQuoteAttachmentsProps {
-  quote: SupplierQuote;
+  attachments: SupplierQuoteAttachment[];
+  isLoading?: boolean;
 }
 
-export function SupplierQuoteAttachments({ quote }: SupplierQuoteAttachmentsProps) {
-  const [previewFile, setPreviewFile] = useState<any | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { toast } = useToast();
+export function SupplierQuoteAttachments({
+  attachments,
+  isLoading = false,
+}: SupplierQuoteAttachmentsProps) {
+  const [fileUrls, setFileUrls] = useState<Record<string, string>>({});
+  const [isLoadingUrls, setIsLoadingUrls] = useState(false);
 
-  const handlePreview = async (file: any) => {
-    try {
-      setPreviewFile(file);
-      // Get signed URL for the file if it doesn't already have one
-      if (!file.url) {
-        const signedUrl = await getPublicUrl('supplier-quote-attachments', file.file_key);
-        file.url = signedUrl;
+  useEffect(() => {
+    const fetchFileUrls = async () => {
+      if (!attachments || attachments.length === 0) return;
+      
+      setIsLoadingUrls(true);
+      
+      try {
+        const urls: Record<string, string> = {};
+        
+        for (const attachment of attachments) {
+          const { data, error } = await supabase
+            .storage
+            .from('supplier-quote-attachments')
+            .createSignedUrl(attachment.file_key, 60 * 60); // 1 hour expiry
+            
+          if (error) {
+            console.error("Error getting URL for", attachment.file_name, error);
+            continue;
+          }
+          
+          if (data) {
+            urls[attachment.id] = data.signedUrl;
+          }
+        }
+        
+        setFileUrls(urls);
+      } catch (error) {
+        console.error("Error fetching file URLs:", error);
+      } finally {
+        setIsLoadingUrls(false);
       }
-      setPreviewUrl(file.url);
-    } catch (error) {
-      console.error("Error getting preview URL:", error);
-      toast({
-        title: "Error",
-        description: "Failed to preview file",
-        variant: "destructive",
-      });
+    };
+    
+    fetchFileUrls();
+  }, [attachments]);
+
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    
+    switch (extension) {
+      case 'pdf':
+        return <FileIcon className="h-8 w-8 text-red-500" />;
+      case 'doc':
+      case 'docx':
+        return <FileIcon className="h-8 w-8 text-blue-500" />;
+      case 'xls':
+      case 'xlsx':
+        return <FileIcon className="h-8 w-8 text-green-500" />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return <FileIcon className="h-8 w-8 text-purple-500" />;
+      default:
+        return <FileIcon className="h-8 w-8 text-gray-500" />;
     }
   };
 
-  const closePreview = () => {
-    setPreviewFile(null);
-    setPreviewUrl(null);
-  };
-
-  const renderPreviewContent = () => {
-    if (!previewFile || !previewUrl) return null;
-
-    const fileType = previewFile.file_type || '';
-
-    if (fileType.startsWith('image/')) {
-      return <img src={previewUrl} alt={previewFile.file_name} className="max-w-full max-h-[70vh]" />;
-    } else if (fileType === 'application/pdf') {
-      return (
-        <iframe 
-          src={`${previewUrl}#toolbar=0`} 
-          className="w-full h-[70vh]" 
-          title={previewFile.file_name}
-        />
-      );
-    } else {
-      return (
-        <div className="text-center p-10">
-          <FileIcon className="h-16 w-16 mx-auto mb-4 text-primary" />
-          <p>Preview not available for this file type.</p>
-          <Button onClick={() => window.open(previewUrl, '_blank')} className="mt-4">
-            <Download className="h-4 w-4 mr-2" />
-            Download to view
-          </Button>
-        </div>
-      );
+  const formatFileSize = (bytes: number | null) => {
+    if (bytes === null) return 'Unknown size';
+    
+    const kb = bytes / 1024;
+    if (kb < 1024) {
+      return `${kb.toFixed(2)} KB`;
     }
+    
+    const mb = kb / 1024;
+    return `${mb.toFixed(2)} MB`;
   };
 
-  // If no attachments
-  if (!quote.attachments || quote.attachments.length === 0) {
+  if (isLoading || isLoadingUrls) {
     return (
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center">
-            <Paperclip className="w-5 h-5 mr-2" />
-            Attachments
-          </CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Attachments</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-sm italic">No attachments</p>
+          <p className="text-sm text-muted-foreground">Loading attachments...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!attachments || attachments.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Attachments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>No attachments for this quote</AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -89,73 +120,41 @@ export function SupplierQuoteAttachments({ quote }: SupplierQuoteAttachmentsProp
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center">
-          <Paperclip className="w-5 h-5 mr-2" />
-          Attachments
-        </CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Attachments</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {quote.attachments.map((file) => (
-            <div 
-              key={file.id} 
-              className="flex items-center justify-between rounded-md border p-3"
-            >
-              <div className="flex items-center space-x-3">
-                <FileIcon className="h-6 w-6 text-blue-500" />
-                <div>
-                  <p className="text-sm font-medium">{file.file_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {file.file_size ? `${(file.file_size / 1024).toFixed(2)} KB` : 'Unknown size'}
-                  </p>
-                </div>
+      <CardContent className="space-y-4">
+        <div className="space-y-4">
+          {attachments.map((attachment) => (
+            <div key={attachment.id} className="flex items-start bg-muted/30 p-3 rounded-md border">
+              <div className="mr-4">{getFileIcon(attachment.file_name)}</div>
+              <div className="flex-1">
+                <h4 className="font-medium text-sm">{attachment.file_name}</h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formatFileSize(attachment.file_size)}
+                  {attachment.uploaded_by && ` • Uploaded by ${attachment.uploaded_by}`}
+                </p>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handlePreview(file)}
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Preview
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => file.url ? window.open(file.url, '_blank') : handlePreview(file)}
-                >
-                  <Download className="h-4 w-4 mr-1" />
-                  Download
-                </Button>
+              <div className="flex space-x-2">
+                {fileUrls[attachment.id] && (
+                  <>
+                    <Button variant="outline" size="icon" asChild>
+                      <a href={fileUrls[attachment.id]} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    <Button variant="outline" size="icon" asChild>
+                      <a href={fileUrls[attachment.id]} download={attachment.file_name}>
+                        <Download className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ))}
         </div>
       </CardContent>
-
-      {/* Preview Dialog */}
-      <Dialog open={!!previewFile} onOpenChange={(open) => !open && closePreview()}>
-        <DialogContent className="max-w-4xl w-full">
-          <DialogHeader>
-            <DialogTitle>{previewFile?.file_name}</DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 flex justify-center overflow-auto">
-            {renderPreviewContent()}
-          </div>
-          <div className="flex justify-end mt-4">
-            <Button variant="outline" onClick={closePreview} className="mr-2">
-              Close
-            </Button>
-            {previewFile && (
-              <Button onClick={() => previewUrl && window.open(previewUrl, '_blank')}>
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }

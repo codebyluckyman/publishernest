@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { FormField, FormItem, FormControl, FormLabel, FormDescription, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,10 +20,8 @@ export function ProductionScheduleField() {
   const [productionSteps, setProductionSteps] = useState<OrganizationProductionStep[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Watch the production_schedule_requested field to conditionally display step selection
   const scheduleRequested = form.watch("production_schedule_requested");
 
-  // Fetch production steps when the component mounts
   useEffect(() => {
     const getProductionSteps = async () => {
       if (!currentOrganization?.id) return;
@@ -82,7 +79,6 @@ export function ProductionScheduleField() {
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                {/* Step Selection */}
                 <FormField
                   control={form.control}
                   name="required_step_id"
@@ -118,7 +114,6 @@ export function ProductionScheduleField() {
                   )}
                 />
 
-                {/* Date Selection */}
                 <FormField
                   control={form.control}
                   name="required_step_date"
@@ -128,7 +123,7 @@ export function ProductionScheduleField() {
                       <FormControl>
                         <DatePicker
                           date={field.value || undefined}
-                          onSelect={field.onChange}
+                          setDate={field.onChange}
                           disabled={!form.watch("required_step_id")}
                         />
                       </FormControl>
