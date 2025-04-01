@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function createSupplierQuote(
@@ -49,6 +49,36 @@ export async function createSupplierQuote(
 
   if (error) {
     throw new Error(`Error creating supplier quote: ${error.message}`);
+  }
+
+  // Insert price breaks if any
+  if (formData.price_breaks && formData.price_breaks.length > 0) {
+    const priceBreaksToInsert = formData.price_breaks.map(pb => ({
+      supplier_quote_id: supplierQuote.id,
+      quote_request_format_id: pb.quote_request_format_id,
+      price_break_id: pb.price_break_id,
+      quantity: pb.quantity,
+      unit_cost: pb.unit_cost,
+      unit_cost_1: pb.unit_cost_1,
+      unit_cost_2: pb.unit_cost_2,
+      unit_cost_3: pb.unit_cost_3,
+      unit_cost_4: pb.unit_cost_4,
+      unit_cost_5: pb.unit_cost_5,
+      unit_cost_6: pb.unit_cost_6,
+      unit_cost_7: pb.unit_cost_7,
+      unit_cost_8: pb.unit_cost_8,
+      unit_cost_9: pb.unit_cost_9,
+      unit_cost_10: pb.unit_cost_10
+    }));
+
+    const { error: priceBreaksError } = await supabase
+      .from("supplier_quote_price_breaks")
+      .insert(priceBreaksToInsert);
+
+    if (priceBreaksError) {
+      console.error("Error inserting price breaks:", priceBreaksError);
+      // Continue execution - we don't want to fail the entire operation if price breaks fail
+    }
   }
 
   // Record audit entry

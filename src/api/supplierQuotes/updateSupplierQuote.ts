@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function updateSupplierQuote(
@@ -100,6 +100,84 @@ export async function updateSupplierQuote(
 
     if (error) {
       throw new Error(`Error updating supplier quote: ${error.message}`);
+    }
+  }
+
+  // Update price breaks if provided
+  if (updates.price_breaks) {
+    // First, get existing price breaks
+    const { data: existingPriceBreaks, error: fetchError } = await supabase
+      .from("supplier_quote_price_breaks")
+      .select("*")
+      .eq("supplier_quote_id", id);
+
+    if (fetchError) {
+      console.error("Error fetching existing price breaks:", fetchError);
+    } else {
+      // Create a map of existing price breaks for quick lookup
+      const existingPriceBreaksMap = new Map<string, any>();
+      
+      if (existingPriceBreaks) {
+        existingPriceBreaks.forEach(pb => {
+          const key = `${pb.quote_request_format_id}_${pb.price_break_id}`;
+          existingPriceBreaksMap.set(key, pb);
+        });
+      }
+
+      // Process each price break from the update
+      for (const priceBreak of updates.price_breaks) {
+        const key = `${priceBreak.quote_request_format_id}_${priceBreak.price_break_id}`;
+        const existingPriceBreak = existingPriceBreaksMap.get(key);
+
+        if (existingPriceBreak) {
+          // Update existing price break
+          const { error: updateError } = await supabase
+            .from("supplier_quote_price_breaks")
+            .update({
+              unit_cost: priceBreak.unit_cost,
+              unit_cost_1: priceBreak.unit_cost_1,
+              unit_cost_2: priceBreak.unit_cost_2,
+              unit_cost_3: priceBreak.unit_cost_3,
+              unit_cost_4: priceBreak.unit_cost_4,
+              unit_cost_5: priceBreak.unit_cost_5,
+              unit_cost_6: priceBreak.unit_cost_6,
+              unit_cost_7: priceBreak.unit_cost_7,
+              unit_cost_8: priceBreak.unit_cost_8,
+              unit_cost_9: priceBreak.unit_cost_9,
+              unit_cost_10: priceBreak.unit_cost_10
+            })
+            .eq("id", existingPriceBreak.id);
+
+          if (updateError) {
+            console.error(`Error updating price break ${existingPriceBreak.id}:`, updateError);
+          }
+        } else {
+          // Insert new price break
+          const { error: insertError } = await supabase
+            .from("supplier_quote_price_breaks")
+            .insert({
+              supplier_quote_id: id,
+              quote_request_format_id: priceBreak.quote_request_format_id,
+              price_break_id: priceBreak.price_break_id,
+              quantity: priceBreak.quantity,
+              unit_cost: priceBreak.unit_cost,
+              unit_cost_1: priceBreak.unit_cost_1,
+              unit_cost_2: priceBreak.unit_cost_2,
+              unit_cost_3: priceBreak.unit_cost_3,
+              unit_cost_4: priceBreak.unit_cost_4,
+              unit_cost_5: priceBreak.unit_cost_5,
+              unit_cost_6: priceBreak.unit_cost_6,
+              unit_cost_7: priceBreak.unit_cost_7,
+              unit_cost_8: priceBreak.unit_cost_8,
+              unit_cost_9: priceBreak.unit_cost_9,
+              unit_cost_10: priceBreak.unit_cost_10
+            });
+
+          if (insertError) {
+            console.error("Error inserting price break:", insertError);
+          }
+        }
+      }
     }
   }
 

@@ -1,6 +1,26 @@
 
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
+export interface SupplierQuotePriceBreak {
+  id: string;
+  supplier_quote_id: string;
+  quote_request_format_id: string;
+  price_break_id: string;
+  product_id?: string | null;
+  quantity: number;
+  unit_cost?: number | null;
+  unit_cost_1?: number | null;
+  unit_cost_2?: number | null;
+  unit_cost_3?: number | null;
+  unit_cost_4?: number | null;
+  unit_cost_5?: number | null;
+  unit_cost_6?: number | null;
+  unit_cost_7?: number | null;
+  unit_cost_8?: number | null;
+  unit_cost_9?: number | null;
+  unit_cost_10?: number | null;
+}
+
 export interface SupplierQuote {
   id: string;
   organization_id: string;
@@ -48,6 +68,7 @@ export interface SupplierQuote {
   supplier?: { supplier_name: string }; 
   attachments?: SupplierQuoteAttachment[];
   formats?: SupplierQuoteFormat[];
+  price_breaks?: SupplierQuotePriceBreak[];
 }
 
 export interface SupplierQuoteFormat {
@@ -86,6 +107,9 @@ export interface SupplierQuoteFormValues {
   terms?: string;
   remarks?: string;
   production_schedule?: Record<string, string | null>;
+  
+  // Price breaks
+  price_breaks?: SupplierQuotePriceBreak[];
   
   // Packaging details
   packaging_carton_quantity?: number | null;

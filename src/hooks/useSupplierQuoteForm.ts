@@ -5,7 +5,28 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
+
+// Schema for price breaks
+const priceBreakSchema = z.object({
+  id: z.string().optional(),
+  supplier_quote_id: z.string().optional(),
+  quote_request_format_id: z.string(),
+  price_break_id: z.string(),
+  product_id: z.string().nullable().optional(),
+  quantity: z.number(),
+  unit_cost: z.number().nullable().optional(),
+  unit_cost_1: z.number().nullable().optional(),
+  unit_cost_2: z.number().nullable().optional(),
+  unit_cost_3: z.number().nullable().optional(),
+  unit_cost_4: z.number().nullable().optional(),
+  unit_cost_5: z.number().nullable().optional(),
+  unit_cost_6: z.number().nullable().optional(),
+  unit_cost_7: z.number().nullable().optional(),
+  unit_cost_8: z.number().nullable().optional(),
+  unit_cost_9: z.number().nullable().optional(),
+  unit_cost_10: z.number().nullable().optional(),
+});
 
 const formSchema = z.object({
   // Required foreign keys that can't be null
@@ -21,6 +42,9 @@ const formSchema = z.object({
   terms: z.string().optional(),
   remarks: z.string().optional(),
   production_schedule: z.record(z.string(), z.string().nullable()).optional(),
+  
+  // Price breaks
+  price_breaks: z.array(priceBreakSchema).optional(),
   
   // Packaging details - all optional
   packaging_carton_quantity: z.number().nullable().optional(),
@@ -59,6 +83,7 @@ export function useSupplierQuoteForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...initialValues,
+      price_breaks: initialValues.price_breaks || [],
       packaging_carton_quantity: initialValues.packaging_carton_quantity || null,
       packaging_carton_weight: initialValues.packaging_carton_weight || null,
       packaging_carton_length: initialValues.packaging_carton_length || null,

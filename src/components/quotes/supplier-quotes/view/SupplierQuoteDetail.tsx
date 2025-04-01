@@ -9,6 +9,7 @@ import { ScheduleView } from "./ScheduleView";
 import { PackagingDetailsView } from "./PackagingDetailsView";
 import { AttachmentsView } from "./AttachmentsView";
 import { QuoteStatusActions } from "./QuoteStatusActions";
+import { PriceBreaksView } from "./PriceBreaksView";
 
 interface SupplierQuoteDetailProps {
   quote: SupplierQuote;
@@ -40,9 +41,12 @@ export function SupplierQuoteDetail({
       />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 w-full h-auto">
+        <TabsList className="grid grid-cols-5 w-full h-auto">
           <TabsTrigger value="terms" className="py-2 text-xs md:text-sm">
             Terms
+          </TabsTrigger>
+          <TabsTrigger value="pricing" className="py-2 text-xs md:text-sm">
+            Pricing
           </TabsTrigger>
           <TabsTrigger value="notes" className="py-2 text-xs md:text-sm">
             Notes
@@ -58,6 +62,10 @@ export function SupplierQuoteDetail({
         <div className="mt-4">
           <TabsContent value="terms">
             <TermsView quote={quote} />
+          </TabsContent>
+          
+          <TabsContent value="pricing">
+            <PriceBreaksView quote={quote} />
           </TabsContent>
           
           <TabsContent value="notes">
