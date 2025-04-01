@@ -29,7 +29,7 @@ export function QuoteDetailsSection({ quoteRequest, selectedSupplier }: QuoteDet
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Created</p>
             <p className="font-medium">
-              {quoteRequest.created_at ? new Date(quoteRequest.created_at).toLocaleDateString() : 'N/A'}
+              {quoteRequest.requested_at ? new Date(quoteRequest.requested_at).toLocaleDateString() : 'N/A'}
             </p>
           </div>
           
