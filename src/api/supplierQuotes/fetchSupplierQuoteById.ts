@@ -4,7 +4,6 @@ import {
   SupplierQuote, 
   SupplierQuoteFormat, 
   SupplierQuoteAttachment, 
-  SupplierQuotePriceBreak,
   SupplierQuoteStatus 
 } from "@/types/supplierQuote";
 import { getPublicUrl } from "./getPublicUrls";
@@ -77,16 +76,6 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     console.error("Error fetching quote request:", quoteRequestError.message);
   }
 
-  // Fetch the price breaks for this quote
-  const { data: priceBreaks, error: priceBreaksError } = await supabase
-    .from("supplier_quote_price_breaks")
-    .select("*")
-    .eq("supplier_quote_id", id);
-
-  if (priceBreaksError) {
-    console.error("Error fetching price breaks:", priceBreaksError.message);
-  }
-
   // Fetch the formats for this quote
   const { data: formats, error: formatsError } = await supabase
     .from("supplier_quote_formats")
@@ -147,7 +136,6 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
   const supplierQuote: SupplierQuote = {
     ...quoteData,
     quote_request: quoteRequest || null,
-    price_breaks: priceBreaks || [],
     formats: processedFormats,
     attachments: processedAttachments,
     status: quoteData.status as SupplierQuoteStatus,
