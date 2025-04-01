@@ -56,10 +56,12 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
         id,
         format_id,
         notes,
+        num_products,
         formats:formats(format_name),
         price_breaks:quote_request_format_price_breaks(
           id,
-          quantity
+          quantity,
+          num_products
         ),
         products:quote_request_format_products(
           id,

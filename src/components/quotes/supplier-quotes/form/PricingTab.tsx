@@ -17,7 +17,6 @@ interface PricingTabProps {
 export function PricingTab({ control, quoteRequest }: PricingTabProps) {
   const { setValue, getValues } = useFormContext<SupplierQuoteFormValues>();
   const [initializing, setInitializing] = useState(true);
-  const [formatProducts, setFormatProducts] = useState<Record<string, any[]>>({});
   
   // Use field array to manage price breaks
   const { fields, append, remove } = useFieldArray({
@@ -29,16 +28,14 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
   useEffect(() => {
     if (!quoteRequest || !quoteRequest.formats || initializing === false) return;
     
-    const newFormatProducts: Record<string, any[]> = {};
     const newPriceBreaks: SupplierQuotePriceBreak[] = [];
     
     // Process each format in the quote request
     quoteRequest.formats.forEach(format => {
       if (!format.price_breaks || format.price_breaks.length === 0) return;
       
-      // Get products for this format
-      const products = format.products || [];
-      newFormatProducts[format.id] = products;
+      // Get number of products for this format
+      const numProducts = format.num_products || 1;
       
       // For each price break, create a supplier quote price break entry
       format.price_breaks.forEach(priceBreak => {
@@ -64,26 +61,9 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
     });
     
     // Set state
-    setFormatProducts(newFormatProducts);
     setValue("price_breaks", newPriceBreaks);
     setInitializing(false);
   }, [quoteRequest, setValue, initializing]);
-
-  const getProductTitle = (productId: string): string => {
-    if (!quoteRequest || !quoteRequest.formats) return "Unknown Product";
-    
-    // Look through all format products to find the matching product
-    for (const format of quoteRequest.formats) {
-      if (!format.products) continue;
-      
-      const product = format.products.find(p => p.product_id === productId);
-      if (product) {
-        return product.product_name || "Unnamed Product";
-      }
-    }
-    
-    return "Unknown Product";
-  };
 
   const getFormatName = (formatId: string): string => {
     if (!quoteRequest || !quoteRequest.formats) return "Unknown Format";
@@ -102,20 +82,26 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
     priceBreaksByFormat[priceBreak.quote_request_format_id].push(priceBreak);
   });
 
+  // Function to get product headings based on the number of products
+  const getProductHeadings = (numProducts: number) => {
+    return Array.from({ length: numProducts }, (_, i) => `Product ${i + 1}`);
+  };
+
   return (
     <div className="space-y-6">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
         const formatName = getFormatName(formatId);
-        const products = formatProducts[formatId] || [];
-        const numProducts = products.length;
+        const format = quoteRequest.formats?.find(f => f.id === formatId);
+        const numProducts = format?.num_products || 1;
+        const productHeadings = getProductHeadings(numProducts);
         
         return (
           <Card key={formatId} className="overflow-hidden">
             <CardHeader className="bg-muted/30">
               <CardTitle className="text-lg">{formatName}</CardTitle>
               <CardDescription>
-                {products.length > 0 
-                  ? `${products.length} Product${products.length > 1 ? 's' : ''}`
+                {numProducts > 0 
+                  ? `${numProducts} Product${numProducts > 1 ? 's' : ''}`
                   : 'No products for this format'}
               </CardDescription>
             </CardHeader>
@@ -125,10 +111,8 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[100px]">Quantity</TableHead>
-                      {products.map((product, index) => (
-                        <TableHead key={product.product_id || index}>
-                          {getProductTitle(product.product_id)}
-                        </TableHead>
+                      {productHeadings.map((heading, index) => (
+                        <TableHead key={index}>{heading}</TableHead>
                       ))}
                     </TableRow>
                   </TableHeader>
@@ -145,12 +129,12 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
                             {priceBreak.quantity.toLocaleString()}
                           </TableCell>
                           
-                          {products.map((product, productIndex) => {
+                          {Array.from({ length: numProducts }, (_, productIndex) => {
                             // Use the correct unit cost field based on product index
                             const costFieldName = `${fieldName}.unit_cost_${productIndex + 1}`;
                             
                             return (
-                              <TableCell key={product.product_id || productIndex}>
+                              <TableCell key={productIndex}>
                                 <FormField
                                   control={control}
                                   name={costFieldName as any}

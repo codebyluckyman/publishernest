@@ -37,33 +37,18 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
     return format ? format.format_name || "Unnamed Format" : "Unknown Format";
   };
 
-  const getProductsForFormat = (formatId: string): any[] => {
-    if (!quote.quote_request || !quote.quote_request.formats) return [];
+  const getNumProductsForFormat = (formatId: string): number => {
+    if (!quote.quote_request || !quote.quote_request.formats) return 1;
     
     const format = quote.quote_request.formats.find((f: any) => f.id === formatId);
-    return format && format.products ? format.products : [];
-  };
-
-  const getProductTitle = (productId: string): string => {
-    if (!quote.quote_request || !quote.quote_request.formats) return "Unknown Product";
-    
-    for (const format of quote.quote_request.formats) {
-      if (!format.products) continue;
-      
-      const product = format.products.find((p: any) => p.product_id === productId);
-      if (product) {
-        return product.product_name || "Unnamed Product";
-      }
-    }
-    
-    return "Unknown Product";
+    return format ? format.num_products || 1 : 1;
   };
 
   return (
     <div className="space-y-6">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
         const formatName = getFormatName(formatId);
-        const products = getProductsForFormat(formatId);
+        const numProducts = getNumProductsForFormat(formatId);
         
         return (
           <Card key={formatId} className="overflow-hidden">
@@ -76,9 +61,9 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[100px]">Quantity</TableHead>
-                      {products.map((product: any, index: number) => (
-                        <TableHead key={product.product_id || index}>
-                          {getProductTitle(product.product_id)}
+                      {Array.from({ length: numProducts }, (_, index) => (
+                        <TableHead key={index}>
+                          Product {index + 1}
                         </TableHead>
                       ))}
                     </TableRow>
@@ -90,12 +75,12 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
                           {priceBreak.quantity.toLocaleString()}
                         </TableCell>
                         
-                        {products.map((product: any, productIndex: number) => {
+                        {Array.from({ length: numProducts }, (_, productIndex) => {
                           const unitCostKey = `unit_cost_${productIndex + 1}`;
                           const unitCost = priceBreak[unitCostKey];
                           
                           return (
-                            <TableCell key={product.product_id || productIndex}>
+                            <TableCell key={productIndex}>
                               {unitCost != null 
                                 ? formatCurrency(unitCost, quote.currency || 'USD') 
                                 : '-'}
