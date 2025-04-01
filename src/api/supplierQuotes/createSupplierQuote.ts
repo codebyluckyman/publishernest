@@ -65,7 +65,7 @@ export async function createSupplierQuote(
         product_id: pb.product_id || null,
       };
       
-      // Check if we have unit_cost_1 through unit_cost_10 fields
+      // Check for unit_cost_1 through unit_cost_10 fields specifically
       for (let i = 1; i <= 10; i++) {
         const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
         if (pb[unitCostKey] !== undefined) {
@@ -73,8 +73,8 @@ export async function createSupplierQuote(
         }
       }
       
-      // If no unit_cost_N fields but we have unit_cost, map it to unit_cost_1
-      if (pb.unit_cost !== undefined && !priceBreakData.unit_cost_1) {
+      // If there's a legacy unit_cost field but no unit_cost_1, map it to unit_cost_1
+      if (pb.unit_cost !== undefined && priceBreakData.unit_cost_1 === undefined) {
         priceBreakData.unit_cost_1 = pb.unit_cost;
       }
       

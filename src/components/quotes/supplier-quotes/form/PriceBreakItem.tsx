@@ -41,7 +41,7 @@ export function PriceBreakItem({
           name={`price_breaks.${index}.unit_cost_1` as const}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs">Unit Cost</FormLabel>
+              {showLabels && <FormLabel className="text-xs">Unit Cost</FormLabel>}
               <FormControl>
                 <ContextMenu>
                   <ContextMenuTrigger>
@@ -77,14 +77,14 @@ export function PriceBreakItem({
     // Multiple products case - create a horizontal grid for product costs
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
-        {Array.from({ length: Math.min(numProducts, 10) }, (_, i) => i + 1).map((i) => (
+        {Array.from({ length: Math.min(numProducts, 10) }, (_, i) => i + 1).map((productNumber) => (
           <FormField
-            key={`unit_cost_${i}`}
+            key={`unit_cost_${productNumber}`}
             control={control}
-            name={`price_breaks.${index}.unit_cost_${i}` as any}
+            name={`price_breaks.${index}.unit_cost_${productNumber}` as any}
             render={({ field }) => (
               <FormItem className="space-y-0.5">
-                {showLabels && <FormLabel className="text-xs text-muted-foreground">{i}</FormLabel>}
+                {showLabels && <FormLabel className="text-xs text-muted-foreground">{productNumber}</FormLabel>}
                 <FormControl>
                   <ContextMenu>
                     <ContextMenuTrigger>
@@ -103,7 +103,7 @@ export function PriceBreakItem({
                       />
                     </ContextMenuTrigger>
                     <ContextMenuContent>
-                      <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index * numProducts + (i - 1), 'price_break_product')}>
+                      <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index * numProducts + (productNumber - 1), 'price_break_product')}>
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copy to rows below</span>
                       </ContextMenuItem>

@@ -52,19 +52,39 @@ export function PriceBreaksSection({
         }
       }
     } else if (fieldType === 'price_break_product') {
-      // For multiple products case
-      // Extract the product number from the index
-      // The format is: index = baseIndex * numProducts + (productNumber - 1)
-      // So we need to find the base index and product number
-      const formatIndex = Math.floor(index / 10); // Assuming max 10 products
-      const productNumber = (index % 10) + 1;
+      // For multiple products case, we need to identify which product number
       
+      // Find the format index and product number from the overall index
+      let foundFormatIndex = 0;
+      let accumulatedPriceBreaks = 0;
+      let formatFound = false;
+      
+      // First determine which format we're in
+      for (let i = 0; i < quoteRequest.formats.length; i++) {
+        const numPriceBreaks = quoteRequest.formats[i].price_breaks?.length || 0;
+        if (index < accumulatedPriceBreaks + numPriceBreaks) {
+          foundFormatIndex = i;
+          formatFound = true;
+          break;
+        }
+        accumulatedPriceBreaks += numPriceBreaks;
+      }
+      
+      if (!formatFound) return;
+      
+      // Now determine which product within that format
+      const format = quoteRequest.formats[foundFormatIndex];
+      const numProducts = format.num_products || 1;
+      const productNumber = (index % numProducts) + 1;
+      
+      // Get the field name and value to copy
       const fieldName = `unit_cost_${productNumber}` as keyof typeof currentPriceBreak;
-      const multiValueToCopy = currentPriceBreak[fieldName];
+      const valueToCopy = currentPriceBreak[fieldName];
       
-      for (let i = formatIndex + 1; i < priceBreaks.length; i++) {
+      // Find all price breaks below the current one that belong to the same format
+      for (let i = index + 1; i < priceBreaks.length; i++) {
         if (priceBreaks[i].quote_request_format_id === targetFormatId) {
-          setValue(`price_breaks.${i}.${fieldName}`, multiValueToCopy);
+          setValue(`price_breaks.${i}.${fieldName}`, valueToCopy);
         }
       }
     }
@@ -113,14 +133,18 @@ export function PriceBreaksSection({
                   )}
 
                   {format.price_breaks.map((priceBreak, priceBreakIndex) => {
-                    const priceBreakFormIndex = format.price_breaks ? 
-                      formatIndex * format.price_breaks.length + priceBreakIndex : 0;
+                    // Calculate the absolute index of this price break across all formats
+                    let absoluteIndex = 0;
+                    for (let i = 0; i < formatIndex; i++) {
+                      absoluteIndex += quoteRequest.formats[i].price_breaks?.length || 0;
+                    }
+                    absoluteIndex += priceBreakIndex;
                     
                     return (
                       <div key={priceBreak.id || `price-break-${priceBreakIndex}`} className="py-1 border-b last:border-0">
                         <PriceBreakItem
                           control={control}
-                          index={priceBreakFormIndex}
+                          index={absoluteIndex}
                           quantity={priceBreak.quantity}
                           numProducts={format.num_products || 1}
                           showLabels={false}
