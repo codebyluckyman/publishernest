@@ -4,6 +4,13 @@ import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { 
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger 
+} from "@/components/ui/context-menu";
+import { Copy } from "lucide-react";
 
 interface PriceBreakItemProps {
   control: Control<SupplierQuoteFormValues>;
@@ -12,6 +19,7 @@ interface PriceBreakItemProps {
   productName?: string;
   numProducts: number;
   showLabels?: boolean;
+  onCopyDown?: (index: number) => void;
 }
 
 export function PriceBreakItem({ 
@@ -20,7 +28,8 @@ export function PriceBreakItem({
   quantity, 
   productName, 
   numProducts,
-  showLabels = false
+  showLabels = false,
+  onCopyDown
 }: PriceBreakItemProps) {
   // Generate unit cost fields based on the number of products
   const renderUnitCostFields = () => {
@@ -34,19 +43,29 @@ export function PriceBreakItem({
             <FormItem>
               <FormLabel className="text-xs">Unit Cost</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="0.001"
-                  min="0"
-                  placeholder="0.000"
-                  className="h-8 text-sm"
-                  {...field}
-                  onChange={(e) => {
-                    const value = e.target.value === "" ? null : parseFloat(e.target.value);
-                    field.onChange(value);
-                  }}
-                  value={field.value === null ? "" : field.value}
-                />
+                <ContextMenu>
+                  <ContextMenuTrigger>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      placeholder="0.000"
+                      className="h-8 text-sm"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                        field.onChange(value);
+                      }}
+                      value={field.value === null ? "" : field.value}
+                    />
+                  </ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index)}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      <span>Copy to rows below</span>
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -67,19 +86,29 @@ export function PriceBreakItem({
               <FormItem className="space-y-0.5">
                 {showLabels && <FormLabel className="text-xs text-muted-foreground">{i}</FormLabel>}
                 <FormControl>
-                  <Input
-                    type="number"
-                    step="0.001"
-                    min="0"
-                    placeholder="0.000"
-                    className="h-7 text-xs px-1.5"
-                    {...field}
-                    onChange={(e) => {
-                      const value = e.target.value === "" ? null : parseFloat(e.target.value);
-                      field.onChange(value);
-                    }}
-                    value={field.value === null ? "" : field.value}
-                  />
+                  <ContextMenu>
+                    <ContextMenuTrigger>
+                      <Input
+                        type="number"
+                        step="0.001"
+                        min="0"
+                        placeholder="0.000"
+                        className="h-7 text-xs px-1.5"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                          field.onChange(value);
+                        }}
+                        value={field.value === null ? "" : field.value}
+                      />
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index * numProducts + (i - 1))}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        <span>Copy to rows below</span>
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 </FormControl>
                 <FormMessage className="text-xs" />
               </FormItem>

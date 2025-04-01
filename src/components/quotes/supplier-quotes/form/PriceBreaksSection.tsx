@@ -1,5 +1,5 @@
 
-import { Control } from "react-hook-form";
+import { Control, useFormContext } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
@@ -7,6 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
+import { PriceBreakItem } from "./PriceBreakItem";
+import { toast } from "sonner";
 
 export function PriceBreaksSection({
   control,
@@ -19,6 +21,8 @@ export function PriceBreaksSection({
   selectedSupplier: Supplier | null;
   currency: string;
 }) {
+  const { getValues, setValue } = useFormContext<SupplierQuoteFormValues>();
+
   if (!quoteRequest.formats || quoteRequest.formats.length === 0) {
     return (
       <div className="text-center p-4">
@@ -28,6 +32,41 @@ export function PriceBreaksSection({
   }
 
   const currencySymbol = getSymbolForCurrency(currency);
+
+  // Function to copy unit costs down to all price breaks below the current one
+  const handleCopyDown = (index: number) => {
+    const priceBreaks = getValues("price_breaks");
+    if (!priceBreaks || index >= priceBreaks.length) return;
+
+    const currentPriceBreak = priceBreaks[index];
+    const targetFormatId = currentPriceBreak.quote_request_format_id;
+    
+    // Check if we're dealing with a single unit cost or multiple
+    const hasSingleUnitCost = currentPriceBreak.unit_cost !== undefined;
+    
+    // Get the value to copy
+    let valueToCopy = hasSingleUnitCost ? currentPriceBreak.unit_cost : null;
+    
+    // Find all price breaks below the current one that belong to the same format
+    for (let i = index + 1; i < priceBreaks.length; i++) {
+      if (priceBreaks[i].quote_request_format_id === targetFormatId) {
+        if (hasSingleUnitCost) {
+          // For single product case
+          setValue(`price_breaks.${i}.unit_cost`, valueToCopy);
+        } else {
+          // For multiple products case
+          // Extract the product number from the index
+          const productNumber = index % 10 + 1;
+          const fieldName = `unit_cost_${productNumber}` as keyof typeof currentPriceBreak;
+          const multiValueToCopy = currentPriceBreak[fieldName];
+          
+          setValue(`price_breaks.${i}.${fieldName}`, multiValueToCopy);
+        }
+      }
+    }
+    
+    toast.success("Prices copied to rows below");
+  };
 
   return (
     <div className="space-y-6">
@@ -75,43 +114,14 @@ export function PriceBreaksSection({
                     
                     return (
                       <div key={priceBreak.id || `price-break-${priceBreakIndex}`} className="py-1 border-b last:border-0">
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-                          <div className="md:col-span-1">
-                            <div className="text-sm font-medium">{priceBreak.quantity.toLocaleString()}</div>
-                          </div>
-                          
-                          <div className="md:col-span-11">
-                            {format.num_products && format.num_products > 1 ? (
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-10 gap-1">
-                                {Array.from({ length: Math.min(format.num_products, 10) }, (_, i) => i + 1).map((i) => (
-                                  <div key={i} className="space-y-0.5">
-                                    <input
-                                      type="number"
-                                      step="0.001"
-                                      min="0"
-                                      placeholder="0.000"
-                                      className="h-7 text-xs px-1.5 w-full rounded-md border border-input bg-background"
-                                      {...control.register(`price_breaks.${priceBreakFormIndex}.unit_cost_${i}` as any, {
-                                        setValueAs: (v) => v === "" ? null : parseFloat(v)
-                                      })}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <input
-                                type="number"
-                                step="0.001"
-                                min="0"
-                                placeholder="0.000"
-                                className="h-8 text-sm w-full rounded-md border border-input bg-background"
-                                {...control.register(`price_breaks.${priceBreakFormIndex}.unit_cost`, {
-                                  setValueAs: (v) => v === "" ? null : parseFloat(v)
-                                })}
-                              />
-                            )}
-                          </div>
-                        </div>
+                        <PriceBreakItem
+                          control={control}
+                          index={priceBreakFormIndex}
+                          quantity={priceBreak.quantity}
+                          numProducts={format.num_products || 1}
+                          showLabels={false}
+                          onCopyDown={handleCopyDown}
+                        />
                       </div>
                     );
                   })}
