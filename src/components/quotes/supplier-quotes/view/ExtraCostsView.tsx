@@ -26,24 +26,25 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
   }
 
   // Group extra costs by unit of measure
-  const groupedCosts = quote.quote_request.extra_costs.reduce((acc, extraCost) => {
-    const unitOfMeasure = unitOfMeasures.find(
-      (unit) => unit.id === extraCost.unit_of_measure_id
-    );
-    
-    // Skip inventory units, they are handled separately
-    if (unitOfMeasure?.is_inventory_unit) {
+  const groupedCosts: Record<string, typeof quote.quote_request.extra_costs> = 
+    quote.quote_request.extra_costs.reduce((acc, extraCost) => {
+      const unitOfMeasure = unitOfMeasures.find(
+        (unit) => unit.id === extraCost.unit_of_measure_id
+      );
+      
+      // Skip inventory units, they are handled separately
+      if (unitOfMeasure?.is_inventory_unit) {
+        return acc;
+      }
+      
+      const unitName = unitOfMeasure?.name || 'Other';
+      if (!acc[unitName]) {
+        acc[unitName] = [];
+      }
+      
+      acc[unitName].push(extraCost);
       return acc;
-    }
-    
-    const unitName = unitOfMeasure?.name || 'Other';
-    if (!acc[unitName]) {
-      acc[unitName] = [];
-    }
-    
-    acc[unitName].push(extraCost);
-    return acc;
-  }, {} as Record<string, typeof quote.quote_request.extra_costs>);
+    }, {} as Record<string, typeof quote.quote_request.extra_costs>);
 
   // First identify inventory unit costs
   const inventoryUnitCosts = quote.quote_request.extra_costs.filter(extraCost => {
