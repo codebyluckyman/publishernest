@@ -47,25 +47,32 @@ export async function createSupplierQuote(
 
   // Insert price breaks
   if (formData.price_breaks && formData.price_breaks.length > 0) {
-    const priceBreaksToInsert = formData.price_breaks.map(pb => ({
-      supplier_quote_id: supplierQuote.id,
-      quote_request_format_id: pb.quote_request_format_id,
-      price_break_id: pb.price_break_id,
-      quantity: pb.quantity,
-      product_id: pb.product_id || null,
-      unit_cost: pb.unit_cost,
-      // All unit cost fields for multiple products (up to 10)
-      unit_cost_1: pb.unit_cost_1,
-      unit_cost_2: pb.unit_cost_2,
-      unit_cost_3: pb.unit_cost_3,
-      unit_cost_4: pb.unit_cost_4,
-      unit_cost_5: pb.unit_cost_5,
-      unit_cost_6: pb.unit_cost_6,
-      unit_cost_7: pb.unit_cost_7,
-      unit_cost_8: pb.unit_cost_8,
-      unit_cost_9: pb.unit_cost_9,
-      unit_cost_10: pb.unit_cost_10
-    }));
+    const priceBreaksToInsert = formData.price_breaks.map(pb => {
+      // Create a base object with the required fields
+      const priceBreakData: Record<string, any> = {
+        supplier_quote_id: supplierQuote.id,
+        quote_request_format_id: pb.quote_request_format_id,
+        price_break_id: pb.price_break_id,
+        quantity: pb.quantity,
+        product_id: pb.product_id || null,
+      };
+      
+      // Add unit costs based on what's provided in the form
+      // Regular unit_cost field (for single product case)
+      if (pb.unit_cost !== undefined) {
+        priceBreakData.unit_cost = pb.unit_cost;
+      }
+      
+      // Add individual unit cost fields for multiple products if they exist
+      for (let i = 1; i <= 10; i++) {
+        const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
+        if (pb[unitCostKey] !== undefined) {
+          priceBreakData[unitCostKey] = pb[unitCostKey];
+        }
+      }
+      
+      return priceBreakData;
+    });
 
     const { error: priceBreaksError } = await supabase
       .from("supplier_quote_price_breaks")
