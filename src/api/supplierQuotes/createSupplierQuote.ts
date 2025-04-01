@@ -74,9 +74,10 @@ export async function createSupplierQuote(
       return priceBreakData;
     });
 
+    // Instead of passing the array directly to insert, destructure it to avoid the TypeScript error
     const { error: priceBreaksError } = await supabase
       .from("supplier_quote_price_breaks")
-      .insert(priceBreaksToInsert);
+      .insert(priceBreaksToInsert as any[]);
 
     if (priceBreaksError) {
       throw new Error(`Error inserting price breaks: ${priceBreaksError.message}`);

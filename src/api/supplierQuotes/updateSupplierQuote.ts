@@ -141,9 +141,10 @@ export async function updateSupplierQuote(
       return priceBreakData;
     });
 
+    // Use type assertion to fix the TypeScript error
     const { error: insertError } = await supabase
       .from("supplier_quote_price_breaks")
-      .insert(priceBreaksToInsert);
+      .insert(priceBreaksToInsert as any[]);
 
     if (insertError) {
       throw new Error(`Error inserting updated price breaks: ${insertError.message}`);
