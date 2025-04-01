@@ -1,7 +1,4 @@
 
-import { ExtraCost, DefaultExtraCost } from "./extraCost";
-import { Saving, DefaultSaving } from "./saving";
-
 export interface QuoteRequest {
   id: string;
   organization_id: string;
@@ -22,8 +19,6 @@ export interface QuoteRequest {
   supplier_name?: string; // Joined field
   supplier_names?: string[]; // Array of supplier names mapped from supplier_ids
   formats?: QuoteRequestFormat[]; // Added field for associated formats
-  extra_costs?: ExtraCost[]; // Added field for extra costs
-  savings?: Saving[]; // Added field for savings
   production_schedule_requested: boolean; // Field is now required since we added it to the database
   required_step_id?: string | null; // Added optional step ID
   required_step_date?: string | null; // Added optional step date
@@ -108,8 +103,6 @@ export interface QuoteRequestFormValues {
   }[];
   products?: Record<string, any>;
   quantities?: Record<string, any>;
-  extra_costs?: DefaultExtraCost[]; 
-  savings?: DefaultSaving[]; // New field for savings
   currency?: string;
   reference_id?: string; // Added reference ID field
   production_schedule_requested?: boolean; // New field for production schedule request

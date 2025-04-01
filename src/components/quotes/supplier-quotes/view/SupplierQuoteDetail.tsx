@@ -4,8 +4,6 @@ import { SupplierQuote } from "@/types/supplierQuote";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuoteHeader } from "./QuoteHeader";
 import { PriceBreaksView } from "./PriceBreaksView";
-import { ExtraCostsView } from "./ExtraCostsView";
-import { SavingsView } from "./SavingsView";
 import { TermsView } from "./TermsView";
 import { NotesView } from "./NotesView";
 import { ScheduleView } from "./ScheduleView";
@@ -43,15 +41,9 @@ export function SupplierQuoteDetail({
       />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full h-auto">
+        <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full h-auto">
           <TabsTrigger value="pricing" className="py-2 text-xs md:text-sm">
             Pricing
-          </TabsTrigger>
-          <TabsTrigger value="extraCosts" className="py-2 text-xs md:text-sm">
-            Extra Costs
-          </TabsTrigger>
-          <TabsTrigger value="savings" className="py-2 text-xs md:text-sm">
-            Savings
           </TabsTrigger>
           <TabsTrigger value="terms" className="py-2 text-xs md:text-sm">
             Terms
@@ -73,14 +65,6 @@ export function SupplierQuoteDetail({
               <PriceBreaksView quote={quote} />
               <AttachmentsView quote={quote} />
             </div>
-          </TabsContent>
-          
-          <TabsContent value="extraCosts">
-            <ExtraCostsView quote={quote} />
-          </TabsContent>
-          
-          <TabsContent value="savings">
-            <SavingsView quote={quote} />
           </TabsContent>
           
           <TabsContent value="terms">

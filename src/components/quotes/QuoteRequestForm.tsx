@@ -1,11 +1,10 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
 import { BasicFormFields } from "./form/BasicFormFields";
 import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
-import { ExtraCostsField } from "./form/extra-costs/ExtraCostsField";
-import { SavingsField } from "./form/savings/SavingsField";
 import { ProductionScheduleField } from "./form/ProductionScheduleField";
 import { AttachmentsField } from "./form/AttachmentsField";
 import { Supplier } from "@/types/supplier";
@@ -36,7 +35,6 @@ export function QuoteRequestForm({
   const [formatNames, setFormatNames] = useState<Record<string, string>>({});
 
   console.log("Quote Request Form initialValues:", initialValues);
-  console.log("Savings from initialValues:", initialValues?.savings);
 
   const form = useForm<QuoteRequestFormValues>({
     resolver: zodResolver(quoteRequestFormSchema),
@@ -51,8 +49,6 @@ export function QuoteRequestForm({
         ...format,
         products: format.products || []
       })) || [],
-      extra_costs: initialValues?.extra_costs || [],
-      savings: initialValues?.savings || [],
       currency: initialValues?.currency || "USD",
       products: initialValues?.products || {},
       quantities: initialValues?.quantities || {},
@@ -66,7 +62,6 @@ export function QuoteRequestForm({
 
   useEffect(() => {
     console.log("Form values after initialization:", form.getValues());
-    console.log("Savings in form:", form.getValues("savings"));
   }, [form]);
 
   useEffect(() => {
@@ -127,8 +122,6 @@ export function QuoteRequestForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormatFieldArray form={form} />
-        <ExtraCostsField />
-        <SavingsField />
         <ProductionScheduleField />
         <AttachmentsField />
         <BasicFormFields 
