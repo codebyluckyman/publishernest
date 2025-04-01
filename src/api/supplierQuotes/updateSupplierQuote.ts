@@ -103,6 +103,8 @@ export async function updateSupplierQuote(
 
   // Update price breaks if provided
   if (updates.price_breaks && updates.price_breaks.length > 0) {
+    console.log('Price Breaks to Update:', updates.price_breaks);
+    
     // First delete existing price breaks for this supplier quote
     const { error: deleteError } = await supabase
       .from("supplier_quote_price_breaks")
@@ -124,27 +126,40 @@ export async function updateSupplierQuote(
         product_id: pb.product_id || null,
       };
       
-      // Add unit costs based on what's provided in the form
-      // Regular unit_cost field (for single product case)
-      if (pb.unit_cost !== undefined) {
-        priceBreakData.unit_cost = pb.unit_cost;
-      }
-      
-      // Add individual unit cost fields for multiple products if they exist
-      for (let i = 1; i <= 10; i++) {
-        const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
-        if (pb[unitCostKey] !== undefined) {
-          priceBreakData[unitCostKey] = pb[unitCostKey];
+      // Check if we have multiple products or a single product
+      if (pb.unit_cost_1 !== undefined || 
+          pb.unit_cost_2 !== undefined || 
+          pb.unit_cost_3 !== undefined || 
+          pb.unit_cost_4 !== undefined || 
+          pb.unit_cost_5 !== undefined || 
+          pb.unit_cost_6 !== undefined || 
+          pb.unit_cost_7 !== undefined || 
+          pb.unit_cost_8 !== undefined || 
+          pb.unit_cost_9 !== undefined || 
+          pb.unit_cost_10 !== undefined) {
+        // Multiple products case - add individual unit cost fields
+        for (let i = 1; i <= 10; i++) {
+          const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
+          if (pb[unitCostKey] !== undefined) {
+            priceBreakData[unitCostKey] = pb[unitCostKey];
+          }
         }
+      } else if (pb.unit_cost !== undefined) {
+        // Single product case - map the unit_cost to unit_cost_1
+        priceBreakData.unit_cost_1 = pb.unit_cost;
       }
       
       return priceBreakData;
     });
 
+    console.log('Formatted Price Breaks for Update:', priceBreaksToInsert);
+
     // Use type assertion to fix the TypeScript error
     const { error: insertError } = await supabase
       .from("supplier_quote_price_breaks")
       .insert(priceBreaksToInsert as any[]);
+
+    console.log('Price Breaks Update Error:', insertError);
 
     if (insertError) {
       throw new Error(`Error inserting updated price breaks: ${insertError.message}`);

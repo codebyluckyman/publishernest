@@ -59,18 +59,27 @@ export async function createSupplierQuote(
         product_id: pb.product_id || null,
       };
       
-      // Add unit costs based on what's provided in the form
-      // Regular unit_cost field (for single product case)
-      if (pb.unit_cost !== undefined) {
-        priceBreakData.unit_cost = pb.unit_cost;
-      }
-      
-      // Add individual unit cost fields for multiple products if they exist
-      for (let i = 1; i <= 10; i++) {
-        const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
-        if (pb[unitCostKey] !== undefined) {
-          priceBreakData[unitCostKey] = pb[unitCostKey];
+      // Check if we have multiple products or a single product
+      if (pb.unit_cost_1 !== undefined || 
+          pb.unit_cost_2 !== undefined || 
+          pb.unit_cost_3 !== undefined || 
+          pb.unit_cost_4 !== undefined || 
+          pb.unit_cost_5 !== undefined || 
+          pb.unit_cost_6 !== undefined || 
+          pb.unit_cost_7 !== undefined || 
+          pb.unit_cost_8 !== undefined || 
+          pb.unit_cost_9 !== undefined || 
+          pb.unit_cost_10 !== undefined) {
+        // Multiple products case - add individual unit cost fields
+        for (let i = 1; i <= 10; i++) {
+          const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
+          if (pb[unitCostKey] !== undefined) {
+            priceBreakData[unitCostKey] = pb[unitCostKey];
+          }
         }
+      } else if (pb.unit_cost !== undefined) {
+        // Single product case - map the unit_cost to unit_cost_1
+        priceBreakData.unit_cost_1 = pb.unit_cost;
       }
       
       return priceBreakData;
