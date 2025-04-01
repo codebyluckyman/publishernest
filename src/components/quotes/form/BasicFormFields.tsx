@@ -7,6 +7,8 @@ import { useFormContext } from "react-hook-form";
 import { QuoteRequestFormValues } from "./schema";
 import { Supplier } from "@/types/supplier";
 import { MultipleSupplierSelect } from "./format-fields/MultipleSupplierSelect";
+import { Textarea } from "@/components/ui/textarea";
+import { ListOrdered, Pilcrow } from "lucide-react";
 
 interface BasicFormFieldsProps {
   titleReadOnly?: boolean;
@@ -96,15 +98,22 @@ export const BasicFormFields = ({ titleReadOnly, suppliers = [] }: BasicFormFiel
       
       <FormField
         control={form.control}
-        name="description"
+        name="notes"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description*</FormLabel>
+            <FormLabel className="flex items-center gap-2">
+              Notes <span className="text-sm text-muted-foreground flex items-center gap-1"><ListOrdered className="h-4 w-4" /> <Pilcrow className="h-4 w-4" /></span>
+            </FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Enter a brief description" />
+              <Textarea 
+                {...field} 
+                placeholder="Enter detailed notes about this quote request. You can use bullet points, numbering, and paragraphs for formatting."
+                className="min-h-32"
+                value={field.value || ''}
+              />
             </FormControl>
             <FormDescription>
-              A short summary of what you're requesting a quote for
+              Add detailed information, requirements, or special instructions for this quote request
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -113,4 +122,3 @@ export const BasicFormFields = ({ titleReadOnly, suppliers = [] }: BasicFormFiel
     </div>
   );
 };
-
