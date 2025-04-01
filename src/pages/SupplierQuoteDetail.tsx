@@ -27,6 +27,9 @@ const SupplierQuoteDetailPage = () => {
   
   const { data: quote, isLoading, error } = useSupplierQuoteById(id || null);
   
+  // Check if the current organization is a publisher
+  const isPublisher = currentOrganization?.organization_type === 'publisher';
+  
   // If quote not found, redirect to quotes page
   useEffect(() => {
     if (error) {
@@ -87,7 +90,7 @@ const SupplierQuoteDetailPage = () => {
         </Button>
       </div>
       
-      <SupplierQuoteDetail quote={quote} />
+      <SupplierQuoteDetail quote={quote} isPublisher={isPublisher} />
     </div>
   );
 };
