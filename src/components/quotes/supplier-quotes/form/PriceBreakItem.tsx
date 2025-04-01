@@ -55,6 +55,7 @@ export function PriceBreakItem({
                       onChange={(e) => {
                         const value = e.target.value === "" ? null : parseFloat(e.target.value);
                         field.onChange(value);
+                        console.log(`value is: ${field.value}`);
                       }}
                       value={field.value === null ? "" : field.value}
                     />
