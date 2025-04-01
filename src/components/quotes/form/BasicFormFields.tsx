@@ -6,13 +6,14 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { useFormContext } from "react-hook-form";
 import { QuoteRequestFormValues } from "./schema";
 import { Supplier } from "@/types/supplier";
+import { MultipleSupplierSelect } from "./format-fields/MultipleSupplierSelect";
 
 interface BasicFormFieldsProps {
   titleReadOnly?: boolean;
   suppliers?: Supplier[];
 }
 
-export const BasicFormFields = ({ titleReadOnly, suppliers }: BasicFormFieldsProps) => {
+export const BasicFormFields = ({ titleReadOnly, suppliers = [] }: BasicFormFieldsProps) => {
   const form = useFormContext<QuoteRequestFormValues>();
   
   return (
@@ -28,6 +29,27 @@ export const BasicFormFields = ({ titleReadOnly, suppliers }: BasicFormFieldsPro
             </FormControl>
             <FormDescription>
               A descriptive name to identify this quote request
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <FormField
+        control={form.control}
+        name="supplier_ids"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Suppliers*</FormLabel>
+            <FormControl>
+              <MultipleSupplierSelect
+                suppliers={suppliers}
+                value={field.value || []}
+                onChange={field.onChange}
+              />
+            </FormControl>
+            <FormDescription>
+              Select one or more suppliers to request quotes from
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -91,3 +113,4 @@ export const BasicFormFields = ({ titleReadOnly, suppliers }: BasicFormFieldsPro
     </div>
   );
 };
+
