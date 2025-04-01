@@ -1,13 +1,9 @@
 
 import { useEffect, useState } from "react";
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
 
 interface PricingTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -75,7 +71,7 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
     return format ? format.format_name || "Unnamed Format" : "Unknown Format";
   };
 
-  // Group price breaks by format and sort them
+  // Group price breaks by format
   const priceBreaksByFormat: Record<string, SupplierQuotePriceBreak[]> = {};
   fields.forEach(field => {
     const priceBreak = field as unknown as SupplierQuotePriceBreak;
@@ -85,98 +81,40 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
     priceBreaksByFormat[priceBreak.quote_request_format_id].push(priceBreak);
   });
 
-  // Sort price breaks within each format by quantity
-  Object.keys(priceBreaksByFormat).forEach(formatId => {
-    priceBreaksByFormat[formatId].sort((a, b) => a.quantity - b.quantity);
-  });
-
   // Function to get product headings based on the number of products
   const getProductHeadings = (numProducts: number) => {
     return Array.from({ length: numProducts }, (_, i) => `${i + 1} Title${i + 1 > 1 ? 's' : ''}`);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
         const formatName = getFormatName(formatId);
         const format = quoteRequest.formats?.find(f => f.id === formatId);
         const numProducts = format?.num_products || 1;
         const productHeadings = getProductHeadings(numProducts);
         
+        // Convert to the format expected by the PriceBreakTable component
+        const products = productHeadings.map((heading, index) => ({
+          index,
+          heading
+        }));
+        
+        const formatDescription = numProducts > 0 
+          ? `Please supply unit cost for each quantity break and ${numProducts} Title${numProducts > 1 ? 's' : ''}`
+          : 'No products for this format';
+        
         return (
-          <Card key={formatId} className="overflow-hidden">
-            <CardHeader className="bg-muted/30 py-2">
-              <CardTitle className="text-base">{formatName}</CardTitle>
-              <CardDescription className="text-xs">
-                {numProducts > 0 
-                // In book publishing "Titles" and "Products" are used interchangably. In this screen, we will use "Titles" when we refer to products.
-                  ? `Please supply unit cost for each quantity break and ${numProducts} Title${numProducts > 1 ? 's' : ''}`
-                  : 'No products for this format'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="p-2">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-[100px] h-8 py-1">Quantity</TableHead>
-                      {productHeadings.map((heading, index) => (
-                        <TableHead key={index} className="h-8 py-1">{heading}</TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {priceBreaks.map((priceBreak, priceBreakIndex) => {
-                      const fieldName = `price_breaks.${fields.findIndex(f => 
-                        (f as unknown as SupplierQuotePriceBreak).price_break_id === priceBreak.price_break_id &&
-                        (f as unknown as SupplierQuotePriceBreak).quote_request_format_id === formatId
-                      )}`;
-                      
-                      return (
-                        <TableRow key={priceBreak.price_break_id || priceBreakIndex} className="h-8 hover:bg-gray-50">
-                          <TableCell className="font-medium py-1">
-                            {priceBreak.quantity.toLocaleString()}
-                          </TableCell>
-                          
-                          {Array.from({ length: numProducts }, (_, productIndex) => {
-                            // Use the correct unit cost field based on product index
-                            const costFieldName = `${fieldName}.unit_cost_${productIndex + 1}`;
-                            
-                            return (
-                              <TableCell key={productIndex} className="py-1">
-                                <FormField
-                                  control={control}
-                                  name={costFieldName as any}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormControl>
-                                        <Input
-                                          {...field}
-                                          type="number"
-                                          min="0"
-                                          step="0.01"
-                                          className="w-full h-7 px-2 py-1 text-sm"
-                                          value={field.value || ''}
-                                          onChange={(e) => {
-                                            const value = e.target.value === '' ? null : parseFloat(e.target.value);
-                                            field.onChange(value);
-                                          }}
-                                        />
-                                      </FormControl>
-                                    </FormItem>
-                                  )}
-                                />
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <PriceBreakTable
+            key={formatId}
+            formatName={formatName}
+            formatDescription={formatDescription}
+            priceBreaks={priceBreaks}
+            products={products}
+            control={control}
+            fieldArrayName="price_breaks"
+            className="mb-2"
+          />
         );
       })}
       

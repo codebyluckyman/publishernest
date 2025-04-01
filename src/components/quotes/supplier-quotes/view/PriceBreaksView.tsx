@@ -1,8 +1,6 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SupplierQuote } from "@/types/supplierQuote";
-import { formatCurrency } from "@/utils/formatters";
+import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
 
 interface PriceBreaksViewProps {
   quote: SupplierQuote;
@@ -21,18 +19,13 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
     );
   }
 
-  // Group price breaks by format and sort within each group
+  // Group price breaks by format
   const priceBreaksByFormat: Record<string, any[]> = {};
   quote.price_breaks.forEach(priceBreak => {
     if (!priceBreaksByFormat[priceBreak.quote_request_format_id]) {
       priceBreaksByFormat[priceBreak.quote_request_format_id] = [];
     }
     priceBreaksByFormat[priceBreak.quote_request_format_id].push(priceBreak);
-  });
-
-  // Sort price breaks within each format by quantity
-  Object.keys(priceBreaksByFormat).forEach(formatId => {
-    priceBreaksByFormat[formatId].sort((a, b) => a.quantity - b.quantity);
   });
 
   const getFormatName = (formatId: string): string => {
@@ -50,55 +43,27 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
         const formatName = getFormatName(formatId);
         const numProducts = getNumProductsForFormat(formatId);
         
+        // Create products array for the table
+        const products = Array.from({ length: numProducts }, (_, index) => ({
+          index,
+          heading: `Product ${index + 1}`
+        }));
+        
         return (
-          <Card key={formatId} className="overflow-hidden">
-            <CardHeader className="bg-muted/30 py-2">
-              <CardTitle className="text-base">{formatName}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="p-2">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="w-[100px] h-8 py-1">Quantity</TableHead>
-                      {Array.from({ length: numProducts }, (_, index) => (
-                        <TableHead key={index} className="h-8 py-1">
-                          Product {index + 1}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {priceBreaks.map((priceBreak: any, index: number) => (
-                      <TableRow key={priceBreak.id || index} className="h-8 hover:bg-gray-50">
-                        <TableCell className="font-medium py-1">
-                          {priceBreak.quantity.toLocaleString()}
-                        </TableCell>
-                        
-                        {Array.from({ length: numProducts }, (_, productIndex) => {
-                          const unitCostKey = `unit_cost_${productIndex + 1}`;
-                          const unitCost = priceBreak[unitCostKey];
-                          
-                          return (
-                            <TableCell key={productIndex} className="py-1">
-                              {unitCost != null 
-                                ? formatCurrency(unitCost, quote.currency || 'USD') 
-                                : '-'}
-                            </TableCell>
-                          );
-                        })}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <PriceBreakTable
+            key={formatId}
+            formatName={formatName}
+            priceBreaks={priceBreaks}
+            products={products}
+            isReadOnly={true}
+            currency={quote.currency}
+            className="mb-2"
+          />
         );
       })}
     </div>
