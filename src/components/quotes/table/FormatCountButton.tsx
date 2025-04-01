@@ -81,6 +81,9 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
   const renderPriceBreaks = (format: QuoteRequestFormat) => {
     if (!format.price_breaks || format.price_breaks.length === 0) return null;
 
+    // Sort the price breaks by quantity in ascending order
+    const sortedPriceBreaks = [...format.price_breaks].sort((a, b) => a.quantity - b.quantity);
+
     return (
       <div className="mt-3">
         <h5 className="text-xs font-medium mb-1">
@@ -96,7 +99,7 @@ export function FormatCountButton({ formats, onClick, request }: FormatCountButt
             </TableRow>
           </TableHeader>
           <TableBody>
-            {format.price_breaks.map((priceBreak, idx) => (
+            {sortedPriceBreaks.map((priceBreak, idx) => (
               <TableRow key={priceBreak.id || idx}>
                 <TableCell className="p-1">
                   {priceBreak.quantity}

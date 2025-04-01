@@ -51,6 +51,9 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
             const format = quote.formats?.find(f => f.format_id === formatId);
             const formatName = format?.format_name || 'Unknown Format';
             
+            // Sort price breaks by quantity
+            const sortedPriceBreaks = [...(priceBreaks || [])].sort((a, b) => a.quantity - b.quantity);
+            
             return (
               <div key={formatId} className="space-y-2">
                 <h3 className="text-md font-medium">{formatName}</h3>
@@ -63,7 +66,7 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {priceBreaks?.map((priceBreak) => {
+                    {sortedPriceBreaks?.map((priceBreak) => {
                       // Calculate total
                       const unitCost = priceBreak.unit_cost || 0;
                       const total = unitCost * priceBreak.quantity;

@@ -76,6 +76,9 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
   const renderPriceBreaks = (format: QuoteRequestFormat) => {
     if (!format.price_breaks || format.price_breaks.length === 0) return null;
 
+    // Sort the price breaks by quantity in ascending order
+    const sortedPriceBreaks = [...format.price_breaks].sort((a, b) => a.quantity - b.quantity);
+
     return (
       <div className="mt-4">
         <h4 className="text-sm font-medium mb-2">
@@ -91,7 +94,7 @@ export function FormatAccordion({ formats }: FormatAccordionProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {format.price_breaks.map((priceBreak, idx) => (
+            {sortedPriceBreaks.map((priceBreak, idx) => (
               <TableRow key={priceBreak.id || idx}>
                 <TableCell>
                   {formatNumber(priceBreak.quantity)}
