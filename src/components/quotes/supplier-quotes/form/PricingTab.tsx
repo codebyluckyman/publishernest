@@ -110,7 +110,7 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
               <CardDescription className="text-xs">
                 {numProducts > 0 
                 // In book publishing "Titles" and "Products" are used interchangably. In this screen, we will use "Titles" when we refer to products.
-                  ? `Request for Print and Bind (P&B) cost for ${numProducts} Title${numProducts > 1 ? 's' : ''}`
+                  ? `Please supply unit cost for each quantity break and ${numProducts} Title${numProducts > 1 ? 's' : ''}`
                   : 'No products for this format'}
               </CardDescription>
             </CardHeader>
