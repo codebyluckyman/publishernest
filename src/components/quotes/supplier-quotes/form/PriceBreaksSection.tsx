@@ -37,54 +37,35 @@ export function PriceBreaksSection({
   const handleCopyDown = (index: number, fieldType: string = 'price_break') => {
     const priceBreaks = getValues("price_breaks");
     if (!priceBreaks || index >= priceBreaks.length) return;
-
+    
     const currentPriceBreak = priceBreaks[index];
     const targetFormatId = currentPriceBreak.quote_request_format_id;
     
     if (fieldType === 'price_break') {
-      // For single product case (unit_cost_1 field)
-      const valueToCopy = currentPriceBreak.unit_cost_1;
-      
-      // Find all price breaks below the current one that belong to the same format
+      // Copy all unit costs from this price break to others in the same format
       for (let i = index + 1; i < priceBreaks.length; i++) {
         if (priceBreaks[i].quote_request_format_id === targetFormatId) {
-          setValue(`price_breaks.${i}.unit_cost_1`, valueToCopy);
+          // Copy all unit cost fields
+          for (let j = 1; j <= 10; j++) {
+            const costField = `unit_cost_${j}` as keyof typeof currentPriceBreak;
+            if (currentPriceBreak[costField] !== undefined) {
+              setValue(`price_breaks.${i}.${costField}`, currentPriceBreak[costField]);
+            }
+          }
         }
       }
-    } else if (fieldType === 'price_break_product') {
-      // For multiple products case, we need to identify which product number
+    } else if (fieldType.startsWith('product_')) {
+      // Extract the product number
+      const productNumber = parseInt(fieldType.split('_')[1], 10);
+      if (isNaN(productNumber)) return;
       
-      // Find the format index and product number from the overall index
-      let foundFormatIndex = 0;
-      let accumulatedPriceBreaks = 0;
-      let formatFound = false;
+      const costFieldName = `unit_cost_${productNumber}` as keyof typeof currentPriceBreak;
+      const valueToCopy = currentPriceBreak[costFieldName];
       
-      // First determine which format we're in
-      for (let i = 0; i < quoteRequest.formats.length; i++) {
-        const numPriceBreaks = quoteRequest.formats[i].price_breaks?.length || 0;
-        if (index < accumulatedPriceBreaks + numPriceBreaks) {
-          foundFormatIndex = i;
-          formatFound = true;
-          break;
-        }
-        accumulatedPriceBreaks += numPriceBreaks;
-      }
-      
-      if (!formatFound) return;
-      
-      // Now determine which product within that format
-      const format = quoteRequest.formats[foundFormatIndex];
-      const numProducts = format.num_products || 1;
-      const productNumber = (index % numProducts) + 1;
-      
-      // Get the field name and value to copy
-      const fieldName = `unit_cost_${productNumber}` as keyof typeof currentPriceBreak;
-      const valueToCopy = currentPriceBreak[fieldName];
-      
-      // Find all price breaks below the current one that belong to the same format
+      // Copy just this one product's unit cost
       for (let i = index + 1; i < priceBreaks.length; i++) {
         if (priceBreaks[i].quote_request_format_id === targetFormatId) {
-          setValue(`price_breaks.${i}.${fieldName}`, valueToCopy);
+          setValue(`price_breaks.${i}.${costFieldName}`, valueToCopy);
         }
       }
     }

@@ -103,7 +103,7 @@ export function PriceBreakItem({
                       />
                     </ContextMenuTrigger>
                     <ContextMenuContent>
-                      <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index * numProducts + (productNumber - 1), 'price_break_product')}>
+                      <ContextMenuItem onClick={() => onCopyDown && onCopyDown(index, `product_${productNumber}`)}>
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copy to rows below</span>
                       </ContextMenuItem>

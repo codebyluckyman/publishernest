@@ -128,17 +128,12 @@ export async function updateSupplierQuote(
         product_id: pb.product_id || null,
       };
       
-      // Check for unit_cost_1 through unit_cost_10 fields specifically
+      // Check for unit_cost_1 through unit_cost_10 fields specifically and filter out nulls and undefineds
       for (let i = 1; i <= 10; i++) {
         const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
-        if (pb[unitCostKey] !== undefined) {
+        if (pb[unitCostKey] !== undefined && pb[unitCostKey] !== null) {
           priceBreakData[unitCostKey] = pb[unitCostKey];
         }
-      }
-      
-      // If there's a legacy unit_cost field but no unit_cost_1, map it to unit_cost_1
-      if (pb.unit_cost !== undefined && priceBreakData.unit_cost_1 === undefined) {
-        priceBreakData.unit_cost_1 = pb.unit_cost;
       }
       
       return priceBreakData;
