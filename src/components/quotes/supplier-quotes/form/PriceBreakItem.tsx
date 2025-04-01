@@ -56,7 +56,7 @@ export function PriceBreakItem({
                         const value = e.target.value === "" ? null : parseFloat(e.target.value);
                         field.onChange(value);
                       }}
-                      value={field.value === null ? "" : field.value}
+                      value={field.value === null || field.value === undefined ? "" : field.value}
                     />
                   </ContextMenuTrigger>
                   <ContextMenuContent>
@@ -99,7 +99,7 @@ export function PriceBreakItem({
                           const value = e.target.value === "" ? null : parseFloat(e.target.value);
                           field.onChange(value);
                         }}
-                        value={field.value === null ? "" : field.value}
+                        value={field.value === null || field.value === undefined ? "" : field.value}
                       />
                     </ContextMenuTrigger>
                     <ContextMenuContent>
