@@ -19,11 +19,14 @@ import {
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 
+// Define interfaces for price breaks and formats
 interface PriceBreak {
   id: string;
   quantity: number;
   format_id?: string;
   format_name?: string;
+  quote_request_format_id?: string;
+  num_products?: number;
   [key: string]: any;
 }
 
@@ -58,7 +61,7 @@ export function SavingItem({
 
   useEffect(() => {
     // Group price breaks by format and sort by quantity
-    const grouped = priceBreaks.reduce((acc, pb) => {
+    const grouped: Record<string, GroupedFormat> = priceBreaks.reduce((acc, pb) => {
       const formatKey = pb.format_id || "unknown";
       if (!acc[formatKey]) {
         acc[formatKey] = {
@@ -66,7 +69,7 @@ export function SavingItem({
           breaks: [],
         };
       }
-      (acc[formatKey] as GroupedFormat).breaks.push(pb);
+      acc[formatKey].breaks.push(pb);
       return acc;
     }, {} as Record<string, GroupedFormat>);
 
@@ -115,10 +118,9 @@ export function SavingItem({
     for (let i = priceBreakIndex + 1; i < savings[index].price_breaks.length; i++) {
       if (productIndex !== undefined) {
         const fieldName = `unit_cost_${productIndex + 1}`;
-        // Use the correct type for setValue path
-        setValue(`savings.${index}.price_breaks.${i}.${fieldName}` as any, valueToCopy);
+        setValue(`savings.${index}.price_breaks.${i}.${fieldName}`, valueToCopy);
       } else {
-        setValue(`savings.${index}.price_breaks.${i}.unit_cost` as any, valueToCopy);
+        setValue(`savings.${index}.price_breaks.${i}.unit_cost`, valueToCopy);
       }
     }
 

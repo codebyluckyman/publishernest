@@ -9,6 +9,16 @@ import { QuoteRequest, PriceBreak } from "@/types/quoteRequest";
 import { CollapsibleSection } from "../CollapsibleSection";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
+// Define a local interface to ensure compatibility
+interface ExtendedPriceBreak {
+  id: string;
+  quantity: number;
+  format_name?: string;
+  format_id?: string;
+  quote_request_format_id?: string;
+  num_products?: number;
+}
+
 interface SavingsSectionProps {
   control: Control<SupplierQuoteFormValues>;
   savings: SavingTableItem[];
@@ -113,12 +123,12 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
   
   // Sort price breaks by quantity in ascending order
   // Ensure each object has required 'id' property for PriceBreak compatibility
-  const sortedPriceBreaks = allPriceBreaks
+  const sortedPriceBreaks: ExtendedPriceBreak[] = allPriceBreaks
     .map(pb => ({
       ...pb,
       id: pb.id || `temp-id-${Math.random().toString(36).substring(2, 11)}` // Ensure id exists
     }))
-    .sort((a, b) => a.quantity - b.quantity) as PriceBreak[];
+    .sort((a, b) => a.quantity - b.quantity);
   
   // Group savings by unit of measure
   const groupedSavings: Record<string, SavingTableItem[]> = {};

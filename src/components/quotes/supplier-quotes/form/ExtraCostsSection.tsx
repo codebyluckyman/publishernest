@@ -9,6 +9,16 @@ import { QuoteRequest, PriceBreak } from "@/types/quoteRequest";
 import { CollapsibleSection } from "../CollapsibleSection";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
+// Define a local interface to ensure compatibility
+interface ExtendedPriceBreak {
+  id: string;
+  quantity: number;
+  format_name?: string;
+  format_id?: string;
+  quote_request_format_id?: string;
+  num_products?: number;
+}
+
 interface ExtraCostsSectionProps {
   control: Control<SupplierQuoteFormValues>;
   extraCosts: ExtraCostTableItem[];
@@ -112,12 +122,12 @@ export function ExtraCostsSection({ control, extraCosts, currency, formats, quot
   
   // Sort price breaks by quantity in ascending order
   // Ensure each object has required 'id' property for PriceBreak compatibility
-  const sortedPriceBreaks = allPriceBreaks
+  const sortedPriceBreaks: ExtendedPriceBreak[] = allPriceBreaks
     .map(pb => ({
       ...pb,
       id: pb.id || `temp-id-${Math.random().toString(36).substring(2, 11)}` // Ensure id exists
     }))
-    .sort((a, b) => a.quantity - b.quantity) as PriceBreak[];
+    .sort((a, b) => a.quantity - b.quantity);
   
   // Group extra costs by unit of measure
   const groupedExtraCosts: Record<string, ExtraCostTableItem[]> = {};
