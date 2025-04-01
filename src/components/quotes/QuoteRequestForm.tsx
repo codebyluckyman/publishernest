@@ -63,6 +63,7 @@ export function QuoteRequestForm({
       required_step_date: initialValues?.required_step_date || null,
       attachments: [],
     },
+    mode: "onChange" // This will make validation happen on change rather than just on submit
   });
 
   useEffect(() => {
@@ -103,7 +104,10 @@ export function QuoteRequestForm({
   }, [form, formatNames]);
 
   const handleFormSubmit = async (data: QuoteRequestFormValues) => {
-    if (!data.title || data.formats?.length) {
+    console.log("Attempting to submit form with data:", data);
+    
+    // Make sure title is set
+    if (!data.title && data.formats?.length) {
       const formatsList = data.formats || [];
       if (formatsList.length > 0) {
         const selectedFormatNames = formatsList
@@ -118,6 +122,16 @@ export function QuoteRequestForm({
       } else {
         data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
       }
+    }
+    
+    // Check if supplier_ids is populated
+    if (!data.supplier_ids || data.supplier_ids.length === 0) {
+      console.error("No suppliers selected");
+      form.setError("supplier_ids", { 
+        type: "manual", 
+        message: "At least one supplier must be selected" 
+      });
+      return;
     }
     
     console.log("Form submission data:", data);

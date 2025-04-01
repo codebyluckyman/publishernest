@@ -16,6 +16,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { useDefaultPriceBreaks } from "@/hooks/useDefaultPriceBreaks";
+import { toast } from "sonner";
 
 interface QuoteRequestDialogProps {
   suppliers: Supplier[];
@@ -42,20 +43,34 @@ export function QuoteRequestDialog({ suppliers, onSuccess }: QuoteRequestDialogP
   }, [open, currentOrganization, refetchFormats]);
 
   const handleSubmit = (formData: QuoteRequestFormValues) => {
-    if (currentOrganization) {
-      createMutation.mutate(
-        {
-          formData,
-          organizationId: currentOrganization.id,
-        },
-        {
-          onSuccess: () => {
-            setOpen(false);
-            if (onSuccess) onSuccess();
-          },
-        }
-      );
+    console.log("Dialog received form submission:", formData);
+    
+    if (!currentOrganization) {
+      toast.error("No organization selected");
+      return;
     }
+    
+    if (!formData.supplier_ids || formData.supplier_ids.length === 0) {
+      toast.error("Please select at least one supplier");
+      return;
+    }
+    
+    createMutation.mutate(
+      {
+        formData,
+        organizationId: currentOrganization.id,
+      },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          if (onSuccess) onSuccess();
+        },
+        onError: (error) => {
+          console.error("Error creating quote request:", error);
+          toast.error(`Error creating quote request: ${error.message}`);
+        }
+      }
+    );
   };
 
   return (

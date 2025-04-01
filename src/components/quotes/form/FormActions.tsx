@@ -11,6 +11,13 @@ interface FormActionsProps {
 
 export function FormActions({ form, isSubmitting, onCancel }: FormActionsProps) {
   const isEditMode = form.getValues().id !== undefined;
+  const formState = form.formState;
+  
+  // For debugging purposes
+  console.log("Form is valid:", formState.isValid);
+  console.log("Form errors:", formState.errors);
+  console.log("Form values:", form.getValues());
+  console.log("Is submitting:", isSubmitting);
 
   return (
     <div className="flex justify-end space-x-2">
