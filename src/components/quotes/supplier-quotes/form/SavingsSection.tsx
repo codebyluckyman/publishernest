@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { SavingItem } from "./SavingItem";
 import { SavingTableItem } from "@/types/saving";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { QuoteRequest, PriceBreak } from "@/types/quoteRequest";
 import { CollapsibleSection } from "../CollapsibleSection";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
@@ -112,7 +112,13 @@ export function SavingsSection({ control, savings, currency, formats, quoteReque
   ) || [];
   
   // Sort price breaks by quantity in ascending order
-  const sortedPriceBreaks = allPriceBreaks.sort((a, b) => a.quantity - b.quantity);
+  // Ensure each object has required 'id' property for PriceBreak compatibility
+  const sortedPriceBreaks = allPriceBreaks
+    .map(pb => ({
+      ...pb,
+      id: pb.id || `temp-id-${Math.random().toString(36).substring(2, 11)}` // Ensure id exists
+    }))
+    .sort((a, b) => a.quantity - b.quantity) as PriceBreak[];
   
   // Group savings by unit of measure
   const groupedSavings: Record<string, SavingTableItem[]> = {};
