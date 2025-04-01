@@ -1,11 +1,11 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DetailsTab } from "./DetailsTab";
 import { Control, UseFormReturn } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { PriceBreaksSection } from "./PriceBreaksSection";
+import { DetailsTab } from "./DetailsTab";
 import { ProductionScheduleSection } from "./ProductionScheduleSection";
 import { PackagingTab } from "./PackagingTab";
 
@@ -15,7 +15,6 @@ interface FormTabsProps {
   selectedSupplier: Supplier | null;
   activeTab: string;
   setActiveTab: (value: string) => void;
-  filteredSavings?: any[];
   currencies: { label: string; value: string }[];
   form: UseFormReturn<SupplierQuoteFormValues>;
 }
@@ -51,6 +50,7 @@ export function FormTabs({
         <PriceBreaksSection 
           control={control}
           quoteRequest={quoteRequest}
+          selectedSupplier={selectedSupplier}
           currency={form.watch("currency")}
         />
       </TabsContent>

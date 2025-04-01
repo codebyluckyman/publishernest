@@ -37,7 +37,7 @@ export interface SupplierQuote {
   packaging_copies_per_40ft_unpalletized?: number | null;
   
   // Joined fields
-  quote_request?: QuoteRequest;
+  quote_request?: any;
   supplier?: { supplier_name: string }; 
   price_breaks?: SupplierQuotePriceBreak[];
   attachments?: SupplierQuoteAttachment[];

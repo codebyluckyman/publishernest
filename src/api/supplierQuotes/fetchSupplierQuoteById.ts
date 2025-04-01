@@ -2,153 +2,119 @@
 import { supabase } from "@/integrations/supabase/client";
 import { 
   SupplierQuote, 
-  SupplierQuoteAttachment, 
   SupplierQuoteFormat, 
-  SupplierQuotePriceBreak, 
-  SupplierQuoteSaving, 
-  SupplierQuoteSavingPriceBreak 
+  SupplierQuoteAttachment, 
+  SupplierQuotePriceBreak 
 } from "@/types/supplierQuote";
+import { getPublicUrls } from "./getPublicUrls";
 
-export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote | null> {
-  // Fetch the quote
-  const { data: quote, error } = await supabase
+export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote> {
+  // Fetch the supplier quote
+  const { data: quoteData, error } = await supabase
     .from("supplier_quotes")
     .select(`
       *,
-      quote_request:quote_requests(
-        id,
-        title,
-        description,
-        currency,
-        due_date,
-        required_step_id,
-        required_step_name,
-        formats:quote_request_formats(
-          id,
-          format_id,
-          format_name,
-          notes,
-          num_products,
-          price_breaks:quote_request_format_price_breaks(*)
-        )
-      ),
-      supplier:suppliers(id, supplier_name, contact_name, contact_email)
+      supplier:suppliers(supplier_name)
     `)
     .eq("id", id)
     .single();
 
   if (error) {
-    console.error("Error fetching supplier quote:", error);
-    throw error;
+    throw new Error(`Error fetching supplier quote: ${error.message}`);
   }
 
-  if (!quote) return null;
+  if (!quoteData) {
+    throw new Error("Supplier quote not found");
+  }
 
-  // Fetch price breaks
-  const { data: priceBreaks, error: priceBreakError } = await supabase
-    .from("supplier_quote_price_breaks")
+  // Fetch the associated quote request to get format information
+  const { data: quoteRequest, error: quoteRequestError } = await supabase
+    .from("quote_requests")
     .select(`
       *,
-      format:quote_request_formats(
+      formats:quote_request_formats(
         id,
         format_id,
-        quote_request_id,
-        notes
-      ),
-      product:quote_request_format_products(
-        product_id,
-        quantity,
-        notes
+        notes,
+        formats:formats(format_name),
+        price_breaks:quote_request_format_price_breaks(
+          id,
+          quantity
+        ),
+        products:quote_request_format_products(
+          id,
+          product_id,
+          quantity,
+          notes,
+          products:products(title)
+        )
       )
     `)
-    .eq("supplier_quote_id", id);
+    .eq("id", quoteData.quote_request_id)
+    .single();
 
-  if (priceBreakError) {
-    console.error("Error fetching price breaks:", priceBreakError);
-    throw priceBreakError;
+  if (quoteRequestError) {
+    console.error("Error fetching quote request:", quoteRequestError.message);
   }
 
-  // Fetch savings
-  const { data: savings, error: savingsError } = await supabase
-    .from("supplier_quote_savings")
-    .select(`
-      *,
-      saving:savings(*)
-    `)
+  // Fetch the price breaks for this quote
+  const { data: priceBreaks, error: priceBreaksError } = await supabase
+    .from("supplier_quote_price_breaks")
+    .select("*")
     .eq("supplier_quote_id", id);
 
-  if (savingsError) {
-    console.error("Error fetching savings:", savingsError);
-    throw savingsError;
+  if (priceBreaksError) {
+    console.error("Error fetching price breaks:", priceBreaksError.message);
   }
 
-  // Fetch savings price breaks
-  const { data: savingsPriceBreaks, error: savingsPriceBreaksError } = await supabase
-    .from("supplier_quote_savings_price_breaks")
-    .select(`
-      *,
-      saving:savings(*),
-      price_break:quote_request_format_price_breaks(
-        id,
-        quote_request_format_id,
-        quantity
-      )
-    `)
-    .eq("supplier_quote_id", id);
-
-  if (savingsPriceBreaksError) {
-    console.error("Error fetching savings price breaks:", savingsPriceBreaksError);
-    throw savingsPriceBreaksError;
-  }
-
-  // Fetch formats
+  // Fetch the formats for this quote
   const { data: formats, error: formatsError } = await supabase
     .from("supplier_quote_formats")
     .select(`
       *,
-      format:formats(
-        id,
-        format_name,
-        tps_height_mm,
-        tps_width_mm,
-        tps_depth_mm,
-        extent
-      )
+      format:formats(*)
     `)
     .eq("supplier_quote_id", id);
 
   if (formatsError) {
-    console.error("Error fetching formats:", formatsError);
-    throw formatsError;
+    console.error("Error fetching formats:", formatsError.message);
   }
 
-  // Fetch attachments
+  // Process formats to include format names
+  const processedFormats: SupplierQuoteFormat[] = formats?.map(f => ({
+    id: f.id,
+    supplier_quote_id: f.supplier_quote_id,
+    format_id: f.format_id,
+    quote_request_format_id: f.quote_request_format_id,
+    format_name: f.format?.format_name || "Unknown Format",
+    dimensions: f.format ? `${f.format.tps_height_mm ?? ''}x${f.format.tps_width_mm ?? ''}x${f.format.tps_depth_mm ?? ''}` : null,
+    extent: f.format?.extent || null
+  })) || [];
+
+  // Fetch the attachments for this quote
   const { data: attachments, error: attachmentsError } = await supabase
-    .rpc('get_quote_attachments', { quote_id: id });
+    .from("supplier_quote_attachments")
+    .select("*")
+    .eq("supplier_quote_id", id);
 
   if (attachmentsError) {
-    console.error("Error fetching attachments:", attachmentsError);
-    throw attachmentsError;
+    console.error("Error fetching attachments:", attachmentsError.message);
   }
 
-  // Return structured data with proper type assertions
-  return {
-    ...quote,
-    quote_request: quote.quote_request as any, // Type assertion for the complex nested structure
-    status: quote.status as SupplierQuote["status"],
-    production_schedule: quote.production_schedule as Record<string, string | null> | null,
-    price_breaks: priceBreaks as unknown as SupplierQuotePriceBreak[],
-    savings: savings as unknown as SupplierQuoteSaving[],
-    savings_price_breaks: savingsPriceBreaks as unknown as SupplierQuoteSavingPriceBreak[],
-    attachments: attachments as SupplierQuoteAttachment[],
-    formats: formats ? formats.map(f => ({
-      id: f.id,
-      format_id: f.format_id,
-      quote_request_format_id: f.quote_request_format_id,
-      format_name: f.format?.format_name || "Unknown Format",
-      dimensions: f.format ? `${f.format.tps_width_mm || '-'}mm × ${f.format.tps_height_mm || '-'}mm` : null,
-      extent: f.format?.extent || null
-    })) : [],
-    reference: quote.reference || null
+  // Get public URLs for attachments
+  let processedAttachments: SupplierQuoteAttachment[] = [];
+  if (attachments && attachments.length > 0) {
+    processedAttachments = await getPublicUrls(attachments, 'supplier-quote-attachments');
+  }
+
+  // Combine all data into a single supplier quote object
+  const supplierQuote: SupplierQuote = {
+    ...quoteData,
+    quote_request: quoteRequest || null,
+    price_breaks: priceBreaks || [],
+    formats: processedFormats,
+    attachments: processedAttachments
   };
+
+  return supplierQuote;
 }
