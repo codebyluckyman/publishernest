@@ -75,8 +75,6 @@ export async function createSupplierQuote(
       
       // If no unit_cost_N fields but we have unit_cost, map it to unit_cost_1
       if (pb.unit_cost !== undefined && !priceBreakData.unit_cost_1) {
-        console.log(`pb.unit_cost = ${pb.unit_cost}`);
-        console.log(`price break data: ${priceBreakData}`)
         priceBreakData.unit_cost_1 = pb.unit_cost;
       }
       
