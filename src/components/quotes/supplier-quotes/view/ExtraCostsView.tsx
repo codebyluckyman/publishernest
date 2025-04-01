@@ -4,6 +4,7 @@ import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ExtraCostsViewProps {
   quote: SupplierQuote;
@@ -24,69 +25,111 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
     );
   }
 
+  // Group extra costs by unit of measure
+  const groupedCosts = quote.quote_request.extra_costs.reduce((acc, extraCost) => {
+    const unitOfMeasure = unitOfMeasures.find(
+      (unit) => unit.id === extraCost.unit_of_measure_id
+    );
+    
+    // Skip inventory units, they are handled separately
+    if (unitOfMeasure?.is_inventory_unit) {
+      return acc;
+    }
+    
+    const unitName = unitOfMeasure?.name || 'Other';
+    if (!acc[unitName]) {
+      acc[unitName] = [];
+    }
+    
+    acc[unitName].push(extraCost);
+    return acc;
+  }, {} as Record<string, typeof quote.quote_request.extra_costs>);
+
+  // First identify inventory unit costs
+  const inventoryUnitCosts = quote.quote_request.extra_costs.filter(extraCost => {
+    const unitOfMeasure = unitOfMeasures.find(
+      (unit) => unit.id === extraCost.unit_of_measure_id
+    );
+    return unitOfMeasure?.is_inventory_unit;
+  });
+
   return (
-    <div className="space-y-4">
-      {quote.quote_request.extra_costs.map((extraCost) => {
-        // Find the unit of measure
+    <div className="space-y-6">
+      {/* First render inventory unit costs as price break tables */}
+      {inventoryUnitCosts.map((extraCost) => {
         const unitOfMeasure = unitOfMeasures.find(
           (unit) => unit.id === extraCost.unit_of_measure_id
         );
+        
+        // Prepare price breaks if they exist
+        const priceBreaks = quote.quote_request?.formats?.[0]?.price_breaks || [];
+        const products = [{ index: 0, heading: extraCost.name }];
 
-        // Find the matching supplier quote extra cost
-        const supplierExtraCost = quote.extra_costs?.find(
-          (ec) => ec.extra_cost_id === extraCost.id
-        );
-
-        // Check if it's an inventory unit that needs price breaks
-        if (unitOfMeasure?.is_inventory_unit) {
-          // Prepare price breaks if they exist
-          const priceBreaks = quote.quote_request?.formats?.[0]?.price_breaks || [];
-          const products = [{ index: 0, heading: extraCost.name }];
-
-          return (
-            <PriceBreakTable
-              key={extraCost.id}
-              formatName={extraCost.name}
-              formatDescription={`${extraCost.description || ''} (${unitOfMeasure.name})`}
-              priceBreaks={priceBreaks}
-              products={products}
-              isReadOnly={true}
-              currency={quote.currency}
-              className="mb-2"
-            />
-          );
-        }
-
-        // For non-inventory units, show a simple card with the unit cost
         return (
-          <Card key={extraCost.id} className="mb-2">
-            <CardHeader>
-              <CardTitle className="text-base">{extraCost.name}</CardTitle>
-              {extraCost.description && (
-                <CardDescription>{extraCost.description}</CardDescription>
-              )}
+          <PriceBreakTable
+            key={extraCost.id}
+            formatName={extraCost.name}
+            formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
+            priceBreaks={priceBreaks}
+            products={products}
+            isReadOnly={true}
+            currency={quote.currency}
+            className="mb-2"
+          />
+        );
+      })}
+      
+      {/* Then render grouped non-inventory unit costs as tables */}
+      {Object.entries(groupedCosts).map(([unitName, costs]) => {
+        if (costs.length === 0) return null;
+        
+        return (
+          <Card key={unitName} className="mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{unitName} Costs</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col space-y-2">
-                <div className="flex justify-between">
-                  <span>Unit of Measure:</span>
-                  <span>{unitOfMeasure?.name || 'Not specified'}</span>
-                </div>
-                
-                {supplierExtraCost?.unit_cost !== null && supplierExtraCost?.unit_cost !== undefined && (
-                  <div className="flex justify-between font-medium">
-                    <span>Unit Cost:</span>
-                    <span>{formatCurrency(supplierExtraCost.unit_cost, quote.currency)}</span>
-                  </div>
-                )}
-                
-                {(!supplierExtraCost || supplierExtraCost.unit_cost === null || supplierExtraCost.unit_cost === undefined) && (
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Unit Cost:</span>
-                    <span>Not specified</span>
-                  </div>
-                )}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead>Cost</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {costs.map((extraCost) => {
+                    const supplierExtraCost = quote.extra_costs?.find(
+                      (ec) => ec.extra_cost_id === extraCost.id
+                    );
+                    
+                    const unitOfMeasure = unitOfMeasures.find(
+                      (unit) => unit.id === extraCost.unit_of_measure_id
+                    );
+                    
+                    return (
+                      <TableRow key={extraCost.id}>
+                        <TableCell>{extraCost.name}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {extraCost.description || 'No description'}
+                        </TableCell>
+                        <TableCell>{unitOfMeasure?.name || 'N/A'}</TableCell>
+                        <TableCell>
+                          {supplierExtraCost?.unit_cost !== null && 
+                           supplierExtraCost?.unit_cost !== undefined ? (
+                            <span className="font-medium">
+                              {formatCurrency(supplierExtraCost.unit_cost, quote.currency)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Not specified</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         );

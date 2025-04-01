@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { useState, useEffect } from "react";
 import { formatCurrency } from "@/utils/formatters";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ExtraCostsTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -53,79 +54,127 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     );
   }
 
+  // Group extra costs by unit of measure
+  const groupedCosts = quoteRequest.extra_costs.reduce((acc, extraCost) => {
+    const unitOfMeasure = unitOfMeasures.find(
+      (unit) => unit.id === extraCost.unit_of_measure_id
+    );
+    
+    // Skip inventory units, they are handled separately
+    if (unitOfMeasure?.is_inventory_unit) {
+      return acc;
+    }
+    
+    const unitName = unitOfMeasure?.name || 'Other';
+    if (!acc[unitName]) {
+      acc[unitName] = [];
+    }
+    
+    acc[unitName].push(extraCost);
+    return acc;
+  }, {} as Record<string, typeof quoteRequest.extra_costs>);
+
+  // First render all price break tables (inventory units)
+  const inventoryUnitCosts = quoteRequest.extra_costs.filter(extraCost => {
+    const unitOfMeasure = unitOfMeasures.find(
+      (unit) => unit.id === extraCost.unit_of_measure_id
+    );
+    return unitOfMeasure?.is_inventory_unit;
+  });
+
   return (
     <div className="space-y-6">
-      {quoteRequest.extra_costs.map((extraCost, index) => {
-        // Find the unit of measure
+      {/* First render inventory unit costs as price break tables */}
+      {inventoryUnitCosts.map((extraCost) => {
         const unitOfMeasure = unitOfMeasures.find(
           (unit) => unit.id === extraCost.unit_of_measure_id
         );
+        
+        // Prepare price breaks if they exist
+        const priceBreaks = quoteRequest.formats?.[0]?.price_breaks || [];
+        const products = [{ index: 0, heading: extraCost.name }];
 
-        // Check if it's an inventory unit that needs price breaks
-        if (unitOfMeasure?.is_inventory_unit) {
-          // Prepare price breaks if they exist
-          const priceBreaks = quoteRequest.formats?.[0]?.price_breaks || [];
-          const products = [{ index: 0, heading: extraCost.name }];
-
-          return (
-            <PriceBreakTable
-              key={extraCost.id}
-              formatName={extraCost.name}
-              formatDescription={`${extraCost.description || ''} (${unitOfMeasure.name})`}
-              priceBreaks={priceBreaks}
-              products={products}
-              control={control}
-              fieldArrayName="extra_costs_price_breaks"
-              className="mb-2"
-            />
-          );
-        }
-
-        // For non-inventory units, show a card with unit cost input
         return (
-          <Card key={extraCost.id} className="mb-2">
-            <CardHeader>
-              <CardTitle className="text-base">{extraCost.name}</CardTitle>
-              {extraCost.description && (
-                <CardDescription>{extraCost.description}</CardDescription>
-              )}
+          <PriceBreakTable
+            key={extraCost.id}
+            formatName={extraCost.name}
+            formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
+            priceBreaks={priceBreaks}
+            products={products}
+            control={control}
+            fieldArrayName="extra_costs_price_breaks"
+            className="mb-2"
+          />
+        );
+      })}
+      
+      {/* Then render grouped non-inventory unit costs as tables */}
+      {Object.entries(groupedCosts).map(([unitName, costs]) => {
+        if (costs.length === 0) return null;
+        
+        return (
+          <Card key={unitName} className="mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{unitName} Costs</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col space-y-4">
-                <div className="flex justify-between">
-                  <span>Unit of Measure:</span>
-                  <span>{unitOfMeasure?.name || 'Not specified'}</span>
-                </div>
-                
-                <FormField
-                  control={control}
-                  name={`extra_costs.${index}.unit_cost`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit Cost</FormLabel>
-                      <div className="flex items-center">
-                        <div className="relative flex-1">
-                          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <span className="text-gray-500">{form.watch('currency')}</span>
-                          </div>
-                          <FormControl>
-                            <Input
-                              placeholder="0.00"
-                              className="pl-10"
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              {...field}
-                              value={field.value || ''}
-                              onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                            />
-                          </FormControl>
-                        </div>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead>Cost</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {costs.map((extraCost, costIndex) => {
+                    // Find the index in the form fields
+                    const fieldIndex = fields.findIndex(
+                      (field) => field.extra_cost_id === extraCost.id
+                    );
+                    
+                    if (fieldIndex === -1) return null;
+                    
+                    const unitOfMeasure = unitOfMeasures.find(
+                      (unit) => unit.id === extraCost.unit_of_measure_id
+                    );
+                    
+                    return (
+                      <TableRow key={extraCost.id}>
+                        <TableCell>{extraCost.name}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {extraCost.description || 'No description'}
+                        </TableCell>
+                        <TableCell>{unitOfMeasure?.name || 'N/A'}</TableCell>
+                        <TableCell className="w-[150px]">
+                          <FormField
+                            control={control}
+                            name={`extra_costs.${fieldIndex}.unit_cost`}
+                            render={({ field }) => (
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                  <span className="text-gray-500">{form.watch('currency')}</span>
+                                </div>
+                                <Input
+                                  placeholder="0.00"
+                                  className="pl-10"
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  {...field}
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                                />
+                              </div>
+                            )}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         );
