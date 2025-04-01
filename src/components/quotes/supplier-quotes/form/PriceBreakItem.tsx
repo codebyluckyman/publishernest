@@ -34,11 +34,11 @@ export function PriceBreakItem({
   // Generate unit cost fields based on the number of products
   const renderUnitCostFields = () => {
     if (numProducts <= 1) {
-      // Single product case - use the standard unit_cost field
+      // Single product case - use unit_cost_1 field
       return (
         <FormField
           control={control}
-          name={`price_breaks.${index}.unit_cost` as const}
+          name={`price_breaks.${index}.unit_cost_1` as const}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-xs">Unit Cost</FormLabel>

@@ -42,13 +42,13 @@ export function PriceBreaksSection({
     const targetFormatId = currentPriceBreak.quote_request_format_id;
     
     if (fieldType === 'price_break') {
-      // For single product case (standard unit_cost field)
-      const valueToCopy = currentPriceBreak.unit_cost;
+      // For single product case (unit_cost_1 field)
+      const valueToCopy = currentPriceBreak.unit_cost_1;
       
       // Find all price breaks below the current one that belong to the same format
       for (let i = index + 1; i < priceBreaks.length; i++) {
         if (priceBreaks[i].quote_request_format_id === targetFormatId) {
-          setValue(`price_breaks.${i}.unit_cost`, valueToCopy);
+          setValue(`price_breaks.${i}.unit_cost_1`, valueToCopy);
         }
       }
     } else if (fieldType === 'price_break_product') {

@@ -116,18 +116,19 @@ export interface SupplierQuoteFormValues {
     price_break_id: string;
     quantity: number;
     product_id?: string;
-    unit_cost: number | null;
+    // For single product case
+    unit_cost?: number | null;
     // Expanded fields for multiple product unit costs (up to 10)
-    unit_cost_1: number | null;
-    unit_cost_2: number | null;
-    unit_cost_3: number | null;
-    unit_cost_4: number | null;
-    unit_cost_5: number | null;
-    unit_cost_6: number | null;
-    unit_cost_7: number | null;
-    unit_cost_8: number | null;
-    unit_cost_9: number | null;
-    unit_cost_10: number | null;
+    unit_cost_1?: number | null;
+    unit_cost_2?: number | null;
+    unit_cost_3?: number | null;
+    unit_cost_4?: number | null;
+    unit_cost_5?: number | null;
+    unit_cost_6?: number | null;
+    unit_cost_7?: number | null;
+    unit_cost_8?: number | null;
+    unit_cost_9?: number | null;
+    unit_cost_10?: number | null;
   }[];
   notes?: string;
   currency: string;
