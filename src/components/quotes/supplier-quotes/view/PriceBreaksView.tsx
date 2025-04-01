@@ -21,13 +21,18 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
     );
   }
 
-  // Group price breaks by format
+  // Group price breaks by format and sort within each group
   const priceBreaksByFormat: Record<string, any[]> = {};
   quote.price_breaks.forEach(priceBreak => {
     if (!priceBreaksByFormat[priceBreak.quote_request_format_id]) {
       priceBreaksByFormat[priceBreak.quote_request_format_id] = [];
     }
     priceBreaksByFormat[priceBreak.quote_request_format_id].push(priceBreak);
+  });
+
+  // Sort price breaks within each format by quantity
+  Object.keys(priceBreaksByFormat).forEach(formatId => {
+    priceBreaksByFormat[formatId].sort((a, b) => a.quantity - b.quantity);
   });
 
   const getFormatName = (formatId: string): string => {

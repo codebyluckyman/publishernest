@@ -37,8 +37,11 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
       // Get number of products for this format
       const numProducts = format.num_products || 1;
       
+      // Sort price breaks by quantity
+      const sortedPriceBreaks = [...format.price_breaks].sort((a, b) => a.quantity - b.quantity);
+      
       // For each price break, create a supplier quote price break entry
-      format.price_breaks.forEach(priceBreak => {
+      sortedPriceBreaks.forEach(priceBreak => {
         newPriceBreaks.push({
           id: "", // Will be generated on save
           supplier_quote_id: "", // Will be assigned on save
@@ -72,7 +75,7 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
     return format ? format.format_name || "Unnamed Format" : "Unknown Format";
   };
 
-  // Group price breaks by format
+  // Group price breaks by format and sort them
   const priceBreaksByFormat: Record<string, SupplierQuotePriceBreak[]> = {};
   fields.forEach(field => {
     const priceBreak = field as unknown as SupplierQuotePriceBreak;
@@ -80,6 +83,11 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
       priceBreaksByFormat[priceBreak.quote_request_format_id] = [];
     }
     priceBreaksByFormat[priceBreak.quote_request_format_id].push(priceBreak);
+  });
+
+  // Sort price breaks within each format by quantity
+  Object.keys(priceBreaksByFormat).forEach(formatId => {
+    priceBreaksByFormat[formatId].sort((a, b) => a.quantity - b.quantity);
   });
 
   // Function to get product headings based on the number of products
