@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost } from "@/types/supplierQuote";
+import { useUnitOfMeasures } from "./useUnitOfMeasures";
 
 // Schema for price breaks
 const priceBreakSchema = z.object({
@@ -96,6 +97,7 @@ export function useSupplierQuoteForm({
   setCurrentFormData?: (data: SupplierQuoteFormValues) => void;
   createdQuoteId: string | null;
 }) {
+  const { unitOfMeasures } = useUnitOfMeasures();
   const [activeTab, setActiveTab] = useState("details");
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [isFormComplete, setIsFormComplete] = useState(false);
@@ -108,9 +110,10 @@ export function useSupplierQuoteForm({
   
   if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0 && extraCosts.length === 0) {
     quoteRequest.extra_costs.forEach(extraCost => {
-      // For inventory units, make sure we initialize all unit_cost fields
-      const unitOfMeasure = quoteRequest.extra_costs
-        .find(ec => ec.id === extraCost.id)?.unit_of_measures;
+      // Find the unit of measure for this extra cost
+      const unitOfMeasure = unitOfMeasures.find(
+        unit => unit.id === extraCost.unit_of_measure_id
+      );
       
       const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
       
