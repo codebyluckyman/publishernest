@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -98,7 +97,8 @@ export async function createSupplierQuote(
         unit_cost_7: ec.unit_cost_7,
         unit_cost_8: ec.unit_cost_8,
         unit_cost_9: ec.unit_cost_9,
-        unit_cost_10: ec.unit_cost_10
+        unit_cost_10: ec.unit_cost_10,
+        unit_of_measure_id: ec.unit_of_measure_id
       }));
 
     if (extraCostsToInsert.length > 0) {

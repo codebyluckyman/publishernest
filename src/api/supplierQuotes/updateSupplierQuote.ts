@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -175,6 +174,84 @@ export async function updateSupplierQuote(
 
           if (insertError) {
             console.error("Error inserting price break:", insertError);
+          }
+        }
+      }
+    }
+  }
+
+  // Update extra costs if provided
+  if (updates.extra_costs && updates.extra_costs.length > 0) {
+    // First, get existing extra costs
+    const { data: existingExtraCosts, error: fetchExtraCostsError } = await supabase
+      .from("supplier_quote_extra_costs")
+      .select("*")
+      .eq("supplier_quote_id", id);
+
+    if (fetchExtraCostsError) {
+      console.error("Error fetching existing extra costs:", fetchExtraCostsError);
+    } else {
+      // Create a map of existing extra costs for quick lookup
+      const existingExtraCostsMap = new Map<string, any>();
+      
+      if (existingExtraCosts) {
+        existingExtraCosts.forEach(ec => {
+          existingExtraCostsMap.set(ec.extra_cost_id, ec);
+        });
+      }
+
+      // Process each extra cost from the update
+      for (const extraCost of updates.extra_costs) {
+        if (extraCost.unit_cost === null) continue; // Skip costs with no value
+
+        const existingExtraCost = existingExtraCostsMap.get(extraCost.extra_cost_id);
+
+        if (existingExtraCost) {
+          // Update existing extra cost
+          const { error: updateError } = await supabase
+            .from("supplier_quote_extra_costs")
+            .update({
+              unit_cost: extraCost.unit_cost,
+              unit_cost_1: extraCost.unit_cost_1,
+              unit_cost_2: extraCost.unit_cost_2,
+              unit_cost_3: extraCost.unit_cost_3,
+              unit_cost_4: extraCost.unit_cost_4,
+              unit_cost_5: extraCost.unit_cost_5,
+              unit_cost_6: extraCost.unit_cost_6,
+              unit_cost_7: extraCost.unit_cost_7,
+              unit_cost_8: extraCost.unit_cost_8,
+              unit_cost_9: extraCost.unit_cost_9,
+              unit_cost_10: extraCost.unit_cost_10,
+              unit_of_measure_id: extraCost.unit_of_measure_id
+            })
+            .eq("id", existingExtraCost.id);
+
+          if (updateError) {
+            console.error(`Error updating extra cost ${existingExtraCost.id}:`, updateError);
+          }
+        } else {
+          // Insert new extra cost
+          const { error: insertError } = await supabase
+            .from("supplier_quote_extra_costs")
+            .insert({
+              supplier_quote_id: id,
+              extra_cost_id: extraCost.extra_cost_id,
+              unit_cost: extraCost.unit_cost,
+              unit_cost_1: extraCost.unit_cost_1,
+              unit_cost_2: extraCost.unit_cost_2,
+              unit_cost_3: extraCost.unit_cost_3,
+              unit_cost_4: extraCost.unit_cost_4,
+              unit_cost_5: extraCost.unit_cost_5,
+              unit_cost_6: extraCost.unit_cost_6,
+              unit_cost_7: extraCost.unit_cost_7,
+              unit_cost_8: extraCost.unit_cost_8,
+              unit_cost_9: extraCost.unit_cost_9,
+              unit_cost_10: extraCost.unit_cost_10,
+              unit_of_measure_id: extraCost.unit_of_measure_id
+            });
+
+          if (insertError) {
+            console.error("Error inserting extra cost:", insertError);
           }
         }
       }

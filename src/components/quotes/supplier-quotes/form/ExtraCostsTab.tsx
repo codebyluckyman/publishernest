@@ -37,7 +37,8 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     quoteRequest.extra_costs.forEach(extraCost => {
       append({
         extra_cost_id: extraCost.id,
-        unit_cost: null
+        unit_cost: null,
+        unit_of_measure_id: extraCost.unit_of_measure_id
       });
     });
   }, [quoteRequest.extra_costs, append, fields.length]);
@@ -140,6 +141,11 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       (unit) => unit.id === extraCost.unit_of_measure_id
                     );
                     
+                    // Set the unit_of_measure_id in the form if it's not already set
+                    if (extraCost.unit_of_measure_id && !form.getValues(`extra_costs.${fieldIndex}.unit_of_measure_id`)) {
+                      form.setValue(`extra_costs.${fieldIndex}.unit_of_measure_id`, extraCost.unit_of_measure_id);
+                    }
+                    
                     return (
                       <TableRow key={extraCost.id}>
                         <TableCell>{extraCost.name}</TableCell>
@@ -167,6 +173,13 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                                   onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                                 />
                               </div>
+                            )}
+                          />
+                          <FormField
+                            control={control}
+                            name={`extra_costs.${fieldIndex}.unit_of_measure_id`}
+                            render={({ field }) => (
+                              <input type="hidden" {...field} />
                             )}
                           />
                         </TableCell>

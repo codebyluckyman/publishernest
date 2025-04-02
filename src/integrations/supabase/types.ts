@@ -1251,6 +1251,7 @@ export type Database = {
           unit_cost_7: number | null
           unit_cost_8: number | null
           unit_cost_9: number | null
+          unit_of_measure_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1269,6 +1270,7 @@ export type Database = {
           unit_cost_7?: number | null
           unit_cost_8?: number | null
           unit_cost_9?: number | null
+          unit_of_measure_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1287,6 +1289,7 @@ export type Database = {
           unit_cost_7?: number | null
           unit_cost_8?: number | null
           unit_cost_9?: number | null
+          unit_of_measure_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1302,6 +1305,13 @@ export type Database = {
             columns: ["supplier_quote_id"]
             isOneToOne: false
             referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_extra_costs_unit_of_measure_id_fkey"
+            columns: ["unit_of_measure_id"]
+            isOneToOne: false
+            referencedRelation: "unit_of_measures"
             referencedColumns: ["id"]
           },
         ]

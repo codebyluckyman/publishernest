@@ -105,8 +105,10 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                       (ec) => ec.extra_cost_id === extraCost.id
                     );
                     
+                    // Find the unit of measure - check both from the quote request and from the supplier quote
+                    const unitOfMeasureId = supplierExtraCost?.unit_of_measure_id || extraCost.unit_of_measure_id;
                     const unitOfMeasure = unitOfMeasures.find(
-                      (unit) => unit.id === extraCost.unit_of_measure_id
+                      (unit) => unit.id === unitOfMeasureId
                     );
                     
                     return (

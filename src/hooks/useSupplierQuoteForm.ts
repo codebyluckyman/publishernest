@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -44,6 +43,7 @@ const extraCostSchema = z.object({
   unit_cost_8: z.number().nullable().optional(),
   unit_cost_9: z.number().nullable().optional(),
   unit_cost_10: z.number().nullable().optional(),
+  unit_of_measure_id: z.string().nullable().optional(),
 });
 
 const formSchema = z.object({
@@ -106,7 +106,8 @@ export function useSupplierQuoteForm({
     quoteRequest.extra_costs.forEach(extraCost => {
       extraCosts.push({
         extra_cost_id: extraCost.id,
-        unit_cost: null
+        unit_cost: null,
+        unit_of_measure_id: extraCost.unit_of_measure_id || null
       });
     });
   }

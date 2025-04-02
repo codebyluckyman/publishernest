@@ -35,6 +35,7 @@ export interface SupplierQuoteExtraCost {
   unit_cost_8?: number | null;
   unit_cost_9?: number | null;
   unit_cost_10?: number | null;
+  unit_of_measure_id?: string | null;
 }
 
 export interface SupplierQuote {
