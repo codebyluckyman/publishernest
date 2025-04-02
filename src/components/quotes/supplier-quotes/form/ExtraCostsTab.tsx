@@ -92,6 +92,9 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
           return unitOfMeasure?.is_inventory_unit;
         });
         
+        // For debugging - log the unit name and if it has inventory units
+        console.log(`Unit group: ${unitName}, Has inventory units: ${hasInventoryUnits}`);
+        
         // If group has inventory units, render price break tables
         if (hasInventoryUnits) {
           return (
@@ -112,6 +115,9 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                   const fieldIndex = fields.findIndex(field => field.extra_cost_id === extraCost.id);
                   if (fieldIndex === -1) return null;
 
+                  // Log the field data for debugging
+                  console.log(`Extra cost field at index ${fieldIndex}:`, fields[fieldIndex]);
+
                   // Prepare price breaks using the first format's price breaks
                   const formatId = quoteRequest.formats?.[0]?.id;
                   const priceBreaks = quoteRequest.formats?.[0]?.price_breaks || [];
@@ -122,6 +128,8 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                     index,
                     heading: `Product ${index + 1}`
                   }));
+
+                  console.log(`Creating price break table for ${extraCost.name} with ${priceBreaks.length} price breaks and ${numProducts} products`);
 
                   return (
                     <div key={extraCost.id} className="pb-4">

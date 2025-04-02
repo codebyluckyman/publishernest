@@ -102,13 +102,42 @@ export function useSupplierQuoteForm({
 
   // Initialize extra costs if needed
   const extraCosts = initialValues.extra_costs || [];
+  
+  // Log current state of extra costs from initialValues (for debugging)
+  console.log('Initial extra costs:', extraCosts);
+  
   if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0 && extraCosts.length === 0) {
     quoteRequest.extra_costs.forEach(extraCost => {
-      extraCosts.push({
-        extra_cost_id: extraCost.id,
-        unit_cost: null,
-        unit_of_measure_id: extraCost.unit_of_measure_id || null
-      });
+      // For inventory units, make sure we initialize all unit_cost fields
+      const unitOfMeasure = quoteRequest.extra_costs
+        .find(ec => ec.id === extraCost.id)?.unit_of_measures;
+      
+      const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
+      
+      if (isInventoryUnit) {
+        console.log(`Adding inventory unit extra cost: ${extraCost.name}`);
+        extraCosts.push({
+          extra_cost_id: extraCost.id,
+          unit_cost: null,
+          unit_cost_1: null,
+          unit_cost_2: null,
+          unit_cost_3: null,
+          unit_cost_4: null,
+          unit_cost_5: null,
+          unit_cost_6: null,
+          unit_cost_7: null,
+          unit_cost_8: null,
+          unit_cost_9: null,
+          unit_cost_10: null,
+          unit_of_measure_id: extraCost.unit_of_measure_id || null
+        });
+      } else {
+        extraCosts.push({
+          extra_cost_id: extraCost.id,
+          unit_cost: null,
+          unit_of_measure_id: extraCost.unit_of_measure_id || null
+        });
+      }
     });
   }
 
@@ -131,6 +160,9 @@ export function useSupplierQuoteForm({
       packaging_copies_per_40ft_unpalletized: initialValues.packaging_copies_per_40ft_unpalletized || null,
     },
   });
+
+  // Log the form values for extra costs after initialization
+  console.log('Extra costs after form initialization:', form.getValues('extra_costs'));
 
   // Set required production schedule steps if any
   useEffect(() => {

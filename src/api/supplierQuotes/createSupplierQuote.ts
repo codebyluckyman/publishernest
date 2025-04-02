@@ -83,10 +83,13 @@ export async function createSupplierQuote(
 
   // Insert extra costs if any
   if (formData.extra_costs && formData.extra_costs.length > 0) {
+    // Log all extra costs for debugging
+    console.log('Extra costs before filtering:', formData.extra_costs);
+    
     const extraCostsToInsert = formData.extra_costs
       .filter(ec => {
         // Only insert costs that have any values - either unit_cost or any of unit_cost_1 through unit_cost_10
-        return ec.unit_cost !== null || 
+        const hasValue = ec.unit_cost !== null && ec.unit_cost !== undefined || 
                ec.unit_cost_1 !== null || 
                ec.unit_cost_2 !== null ||
                ec.unit_cost_3 !== null ||
@@ -97,6 +100,11 @@ export async function createSupplierQuote(
                ec.unit_cost_8 !== null ||
                ec.unit_cost_9 !== null ||
                ec.unit_cost_10 !== null;
+               
+        // For debugging purposes, log the extra cost and whether it has values
+        console.log(`Extra cost ${ec.extra_cost_id} has values: ${hasValue}`, ec);
+        
+        return hasValue;
       })
       .map(ec => ({
         supplier_quote_id: supplierQuote.id,
