@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -83,7 +84,20 @@ export async function createSupplierQuote(
   // Insert extra costs if any
   if (formData.extra_costs && formData.extra_costs.length > 0) {
     const extraCostsToInsert = formData.extra_costs
-      .filter(ec => ec.unit_cost !== null) // Only insert costs that have values
+      .filter(ec => {
+        // Only insert costs that have any values - either unit_cost or any of unit_cost_1 through unit_cost_10
+        return ec.unit_cost !== null || 
+               ec.unit_cost_1 !== null || 
+               ec.unit_cost_2 !== null ||
+               ec.unit_cost_3 !== null ||
+               ec.unit_cost_4 !== null ||
+               ec.unit_cost_5 !== null ||
+               ec.unit_cost_6 !== null ||
+               ec.unit_cost_7 !== null ||
+               ec.unit_cost_8 !== null ||
+               ec.unit_cost_9 !== null ||
+               ec.unit_cost_10 !== null;
+      })
       .map(ec => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,

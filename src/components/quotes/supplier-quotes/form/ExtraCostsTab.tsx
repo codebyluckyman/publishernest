@@ -83,29 +83,61 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     return unitOfMeasure?.is_inventory_unit;
   });
 
+  // Get number of products for price breaks
+  const getNumProductsForFormat = (formatId: string): number => {
+    if (!quoteRequest.formats) return 1;
+    
+    const format = quoteRequest.formats.find(f => f.id === formatId);
+    return format?.num_products || 1;
+  };
+
   return (
     <div className="space-y-6">
       {/* First render inventory unit costs as price break tables */}
-      {inventoryUnitCosts.map((extraCost) => {
+      {inventoryUnitCosts.map((extraCost, costIndex) => {
         const unitOfMeasure = unitOfMeasures.find(
           (unit) => unit.id === extraCost.unit_of_measure_id
         );
         
-        // Prepare price breaks if they exist
+        // Find matching field index
+        const fieldIndex = fields.findIndex(field => field.extra_cost_id === extraCost.id);
+        if (fieldIndex === -1) return null;
+        
+        // Prepare price breaks using the first format's price breaks
+        const formatId = quoteRequest.formats?.[0]?.id;
         const priceBreaks = quoteRequest.formats?.[0]?.price_breaks || [];
-        const products = [{ index: 0, heading: extraCost.name }];
+        const numProducts = getNumProductsForFormat(formatId || '');
+        
+        // Create products array for the table based on numProducts
+        const products = Array.from({ length: numProducts }, (_, index) => ({
+          index,
+          heading: `Product ${index + 1}`
+        }));
 
         return (
-          <PriceBreakTable
-            key={extraCost.id}
-            formatName={extraCost.name}
-            formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
-            priceBreaks={priceBreaks}
-            products={products}
-            control={control}
-            fieldArrayName="extra_costs_price_breaks"
-            className="mb-2"
-          />
+          <Card key={extraCost.id} className="mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{extraCost.name}</CardTitle>
+              <CardDescription className="text-xs">
+                {extraCost.description || ''} ({unitOfMeasure?.name || 'Unknown unit'})
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <PriceBreakTable
+                formatName={extraCost.name}
+                formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
+                priceBreaks={priceBreaks.map(pb => ({
+                  ...pb,
+                  id: pb.id || pb.price_break_id,
+                  price_break_id: pb.id || pb.price_break_id
+                }))}
+                products={products}
+                control={control}
+                fieldArrayName={`extra_costs.${fieldIndex}`}
+                className="mb-2"
+              />
+            </CardContent>
+          </Card>
         );
       })}
       

@@ -54,6 +54,14 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
     return unitOfMeasure?.is_inventory_unit;
   });
 
+  // Helper function to get number of products for a format
+  const getNumProductsForFormat = (formatId: string): number => {
+    if (!quote.quote_request || !quote.quote_request.formats) return 1;
+    
+    const format = quote.quote_request.formats.find((f: any) => f.id === formatId);
+    return format ? format.num_products || 1 : 1;
+  };
+
   return (
     <div className="space-y-6">
       {/* First render inventory unit costs as price break tables */}
@@ -63,20 +71,58 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
         );
         
         // Prepare price breaks if they exist
+        const formatId = quote.quote_request?.formats?.[0]?.id;
         const priceBreaks = quote.quote_request?.formats?.[0]?.price_breaks || [];
-        const products = [{ index: 0, heading: extraCost.name }];
+        const numProducts = getNumProductsForFormat(formatId || '');
+        
+        // Create products array based on numProducts
+        const products = Array.from({ length: numProducts }, (_, index) => ({
+          index,
+          heading: `Product ${index + 1}`
+        }));
+
+        // Find the corresponding supplier extra cost
+        const supplierExtraCost = quote.extra_costs?.find(
+          (ec) => ec.extra_cost_id === extraCost.id
+        );
+
+        if (!supplierExtraCost) return null;
 
         return (
-          <PriceBreakTable
-            key={extraCost.id}
-            formatName={extraCost.name}
-            formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
-            priceBreaks={priceBreaks}
-            products={products}
-            isReadOnly={true}
-            currency={quote.currency}
-            className="mb-2"
-          />
+          <Card key={extraCost.id} className="mb-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{extraCost.name}</CardTitle>
+              <CardDescription className="text-xs">
+                {extraCost.description || ''} ({unitOfMeasure?.name || 'Unknown unit'})
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <PriceBreakTable
+                key={extraCost.id}
+                formatName={extraCost.name}
+                formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
+                priceBreaks={priceBreaks.map(pb => ({
+                  ...pb,
+                  id: pb.id || pb.price_break_id,
+                  price_break_id: pb.id || pb.price_break_id,
+                  unit_cost_1: supplierExtraCost.unit_cost_1,
+                  unit_cost_2: supplierExtraCost.unit_cost_2,
+                  unit_cost_3: supplierExtraCost.unit_cost_3,
+                  unit_cost_4: supplierExtraCost.unit_cost_4,
+                  unit_cost_5: supplierExtraCost.unit_cost_5,
+                  unit_cost_6: supplierExtraCost.unit_cost_6,
+                  unit_cost_7: supplierExtraCost.unit_cost_7,
+                  unit_cost_8: supplierExtraCost.unit_cost_8,
+                  unit_cost_9: supplierExtraCost.unit_cost_9,
+                  unit_cost_10: supplierExtraCost.unit_cost_10
+                }))}
+                products={products}
+                isReadOnly={true}
+                currency={quote.currency}
+                className="mb-2"
+              />
+            </CardContent>
+          </Card>
         );
       })}
       
