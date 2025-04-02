@@ -2,8 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { FormField, FormItem, FormControl } from "@/components/ui/form";
-import { Control } from "react-hook-form";
+import { FormField, FormItem, FormControl, useFormField } from "@/components/ui/form";
+import { Control, useFormContext } from "react-hook-form";
 import { formatCurrency } from "@/utils/formatters";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,6 +45,9 @@ export function PriceBreakTable({
   fieldArrayName,
   className
 }: PriceBreakTableProps) {
+  // Get form context to access setValue method
+  const formContext = useFormContext();
+  
   // Sort price breaks by quantity
   const sortedPriceBreaks = [...priceBreaks].sort((a, b) => a.quantity - b.quantity);
   
@@ -55,7 +58,7 @@ export function PriceBreakTable({
   
   // Apply global unit cost to all price breaks and products
   const applyGlobalUnitCost = () => {
-    if (!control || !fieldArrayName) return;
+    if (!control || !fieldArrayName || !formContext) return;
     
     const costValue = globalUnitCost === '' ? null : parseFloat(globalUnitCost);
     
@@ -69,7 +72,7 @@ export function PriceBreakTable({
         products.forEach((product) => {
           const unitCostKey = `unit_cost_${product.index + 1}`;
           const costFieldName = `${fieldArrayName}.${fieldIndex}.${unitCostKey}`;
-          control.setValue(costFieldName, costValue);
+          formContext.setValue(costFieldName, costValue);
         });
       }
     });
@@ -178,7 +181,7 @@ export function PriceBreakTable({
                             : '-'}
                         </TableCell>
                       );
-                    } else if (control && fieldArrayName) {
+                    } else if (control && fieldArrayName && formContext) {
                       // Find the index in the form field array
                       const fieldIndex = priceBreaks.findIndex(p => 
                         (p.price_break_id === priceBreak.price_break_id || p.id === priceBreak.id)
@@ -212,7 +215,7 @@ export function PriceBreakTable({
                                           products.forEach((prod) => {
                                             if (prod.index > 0) {
                                               const otherFieldName = `${fieldArrayName}.${fieldIndex}.unit_cost_${prod.index + 1}`;
-                                              control.setValue(otherFieldName, value);
+                                              formContext.setValue(otherFieldName, value);
                                             }
                                           });
                                         }
