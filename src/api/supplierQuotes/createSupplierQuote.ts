@@ -81,6 +81,39 @@ export async function createSupplierQuote(
     }
   }
 
+  // Insert extra costs if any
+  if (formData.extra_costs && formData.extra_costs.length > 0) {
+    const extraCostsToInsert = formData.extra_costs
+      .filter(ec => ec.unit_cost !== null) // Only insert costs that have values
+      .map(ec => ({
+        supplier_quote_id: supplierQuote.id,
+        extra_cost_id: ec.extra_cost_id,
+        unit_cost: ec.unit_cost,
+        unit_cost_1: ec.unit_cost_1,
+        unit_cost_2: ec.unit_cost_2,
+        unit_cost_3: ec.unit_cost_3,
+        unit_cost_4: ec.unit_cost_4,
+        unit_cost_5: ec.unit_cost_5,
+        unit_cost_6: ec.unit_cost_6,
+        unit_cost_7: ec.unit_cost_7,
+        unit_cost_8: ec.unit_cost_8,
+        unit_cost_9: ec.unit_cost_9,
+        unit_cost_10: ec.unit_cost_10
+      }));
+
+    if (extraCostsToInsert.length > 0) {
+      console.log('Inserting extra costs:', extraCostsToInsert);
+      const { error: extraCostsError } = await supabase
+        .from("supplier_quote_extra_costs")
+        .insert(extraCostsToInsert);
+
+      if (extraCostsError) {
+        console.error("Error inserting extra costs:", extraCostsError);
+        // Continue execution - we don't want to fail the entire operation if extra costs fail
+      }
+    }
+  }
+
   // Record audit entry
   await recordSupplierQuoteAudit(
     supplierQuote.id,
