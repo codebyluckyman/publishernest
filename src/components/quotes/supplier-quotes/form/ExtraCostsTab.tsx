@@ -128,8 +128,8 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                 formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
                 priceBreaks={priceBreaks.map(pb => ({
                   ...pb,
-                  id: pb.id || pb.price_break_id,
-                  price_break_id: pb.id || pb.price_break_id
+                  id: pb.id || '', // Fix: use id instead of price_break_id
+                  price_break_id: pb.id || '' // Fix: ensure price_break_id exists using the id field
                 }))}
                 products={products}
                 control={control}
