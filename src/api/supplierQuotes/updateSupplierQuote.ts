@@ -133,17 +133,17 @@ export async function updateSupplierQuote(
           const { error: updateError } = await supabase
             .from("supplier_quote_price_breaks")
             .update({
-              unit_cost: priceBreak.unit_cost,
-              unit_cost_1: priceBreak.unit_cost_1,
-              unit_cost_2: priceBreak.unit_cost_2,
-              unit_cost_3: priceBreak.unit_cost_3,
-              unit_cost_4: priceBreak.unit_cost_4,
-              unit_cost_5: priceBreak.unit_cost_5,
-              unit_cost_6: priceBreak.unit_cost_6,
-              unit_cost_7: priceBreak.unit_cost_7,
-              unit_cost_8: priceBreak.unit_cost_8,
-              unit_cost_9: priceBreak.unit_cost_9,
-              unit_cost_10: priceBreak.unit_cost_10
+              unit_cost: priceBreak.unit_cost === undefined ? null : priceBreak.unit_cost,
+              unit_cost_1: priceBreak.unit_cost_1 === undefined ? null : priceBreak.unit_cost_1,
+              unit_cost_2: priceBreak.unit_cost_2 === undefined ? null : priceBreak.unit_cost_2,
+              unit_cost_3: priceBreak.unit_cost_3 === undefined ? null : priceBreak.unit_cost_3,
+              unit_cost_4: priceBreak.unit_cost_4 === undefined ? null : priceBreak.unit_cost_4,
+              unit_cost_5: priceBreak.unit_cost_5 === undefined ? null : priceBreak.unit_cost_5,
+              unit_cost_6: priceBreak.unit_cost_6 === undefined ? null : priceBreak.unit_cost_6,
+              unit_cost_7: priceBreak.unit_cost_7 === undefined ? null : priceBreak.unit_cost_7,
+              unit_cost_8: priceBreak.unit_cost_8 === undefined ? null : priceBreak.unit_cost_8,
+              unit_cost_9: priceBreak.unit_cost_9 === undefined ? null : priceBreak.unit_cost_9,
+              unit_cost_10: priceBreak.unit_cost_10 === undefined ? null : priceBreak.unit_cost_10
             })
             .eq("id", existingPriceBreak.id);
 
@@ -159,17 +159,17 @@ export async function updateSupplierQuote(
               quote_request_format_id: priceBreak.quote_request_format_id,
               price_break_id: priceBreak.price_break_id,
               quantity: priceBreak.quantity,
-              unit_cost: priceBreak.unit_cost,
-              unit_cost_1: priceBreak.unit_cost_1,
-              unit_cost_2: priceBreak.unit_cost_2,
-              unit_cost_3: priceBreak.unit_cost_3,
-              unit_cost_4: priceBreak.unit_cost_4,
-              unit_cost_5: priceBreak.unit_cost_5,
-              unit_cost_6: priceBreak.unit_cost_6,
-              unit_cost_7: priceBreak.unit_cost_7,
-              unit_cost_8: priceBreak.unit_cost_8,
-              unit_cost_9: priceBreak.unit_cost_9,
-              unit_cost_10: priceBreak.unit_cost_10
+              unit_cost: priceBreak.unit_cost === undefined ? null : priceBreak.unit_cost,
+              unit_cost_1: priceBreak.unit_cost_1 === undefined ? null : priceBreak.unit_cost_1,
+              unit_cost_2: priceBreak.unit_cost_2 === undefined ? null : priceBreak.unit_cost_2,
+              unit_cost_3: priceBreak.unit_cost_3 === undefined ? null : priceBreak.unit_cost_3,
+              unit_cost_4: priceBreak.unit_cost_4 === undefined ? null : priceBreak.unit_cost_4,
+              unit_cost_5: priceBreak.unit_cost_5 === undefined ? null : priceBreak.unit_cost_5,
+              unit_cost_6: priceBreak.unit_cost_6 === undefined ? null : priceBreak.unit_cost_6,
+              unit_cost_7: priceBreak.unit_cost_7 === undefined ? null : priceBreak.unit_cost_7,
+              unit_cost_8: priceBreak.unit_cost_8 === undefined ? null : priceBreak.unit_cost_8,
+              unit_cost_9: priceBreak.unit_cost_9 === undefined ? null : priceBreak.unit_cost_9,
+              unit_cost_10: priceBreak.unit_cost_10 === undefined ? null : priceBreak.unit_cost_10
             });
 
           if (insertError) {
@@ -202,7 +202,21 @@ export async function updateSupplierQuote(
 
       // Process each extra cost from the update
       for (const extraCost of updates.extra_costs) {
-        if (extraCost.unit_cost === null) continue; // Skip costs with no value
+        // Skip costs with no values
+        const hasValue = 
+               (extraCost.unit_cost !== null && extraCost.unit_cost !== undefined) || 
+               (extraCost.unit_cost_1 !== null && extraCost.unit_cost_1 !== undefined) || 
+               (extraCost.unit_cost_2 !== null && extraCost.unit_cost_2 !== undefined) ||
+               (extraCost.unit_cost_3 !== null && extraCost.unit_cost_3 !== undefined) ||
+               (extraCost.unit_cost_4 !== null && extraCost.unit_cost_4 !== undefined) ||
+               (extraCost.unit_cost_5 !== null && extraCost.unit_cost_5 !== undefined) ||
+               (extraCost.unit_cost_6 !== null && extraCost.unit_cost_6 !== undefined) ||
+               (extraCost.unit_cost_7 !== null && extraCost.unit_cost_7 !== undefined) ||
+               (extraCost.unit_cost_8 !== null && extraCost.unit_cost_8 !== undefined) ||
+               (extraCost.unit_cost_9 !== null && extraCost.unit_cost_9 !== undefined) ||
+               (extraCost.unit_cost_10 !== null && extraCost.unit_cost_10 !== undefined);
+               
+        if (!hasValue) continue;
 
         const existingExtraCost = existingExtraCostsMap.get(extraCost.extra_cost_id);
 
@@ -211,17 +225,17 @@ export async function updateSupplierQuote(
           const { error: updateError } = await supabase
             .from("supplier_quote_extra_costs")
             .update({
-              unit_cost: extraCost.unit_cost,
-              unit_cost_1: extraCost.unit_cost_1,
-              unit_cost_2: extraCost.unit_cost_2,
-              unit_cost_3: extraCost.unit_cost_3,
-              unit_cost_4: extraCost.unit_cost_4,
-              unit_cost_5: extraCost.unit_cost_5,
-              unit_cost_6: extraCost.unit_cost_6,
-              unit_cost_7: extraCost.unit_cost_7,
-              unit_cost_8: extraCost.unit_cost_8,
-              unit_cost_9: extraCost.unit_cost_9,
-              unit_cost_10: extraCost.unit_cost_10,
+              unit_cost: extraCost.unit_cost === undefined ? null : extraCost.unit_cost,
+              unit_cost_1: extraCost.unit_cost_1 === undefined ? null : extraCost.unit_cost_1,
+              unit_cost_2: extraCost.unit_cost_2 === undefined ? null : extraCost.unit_cost_2,
+              unit_cost_3: extraCost.unit_cost_3 === undefined ? null : extraCost.unit_cost_3,
+              unit_cost_4: extraCost.unit_cost_4 === undefined ? null : extraCost.unit_cost_4,
+              unit_cost_5: extraCost.unit_cost_5 === undefined ? null : extraCost.unit_cost_5,
+              unit_cost_6: extraCost.unit_cost_6 === undefined ? null : extraCost.unit_cost_6,
+              unit_cost_7: extraCost.unit_cost_7 === undefined ? null : extraCost.unit_cost_7,
+              unit_cost_8: extraCost.unit_cost_8 === undefined ? null : extraCost.unit_cost_8,
+              unit_cost_9: extraCost.unit_cost_9 === undefined ? null : extraCost.unit_cost_9,
+              unit_cost_10: extraCost.unit_cost_10 === undefined ? null : extraCost.unit_cost_10,
               unit_of_measure_id: extraCost.unit_of_measure_id
             })
             .eq("id", existingExtraCost.id);
@@ -236,17 +250,17 @@ export async function updateSupplierQuote(
             .insert({
               supplier_quote_id: id,
               extra_cost_id: extraCost.extra_cost_id,
-              unit_cost: extraCost.unit_cost,
-              unit_cost_1: extraCost.unit_cost_1,
-              unit_cost_2: extraCost.unit_cost_2,
-              unit_cost_3: extraCost.unit_cost_3,
-              unit_cost_4: extraCost.unit_cost_4,
-              unit_cost_5: extraCost.unit_cost_5,
-              unit_cost_6: extraCost.unit_cost_6,
-              unit_cost_7: extraCost.unit_cost_7,
-              unit_cost_8: extraCost.unit_cost_8,
-              unit_cost_9: extraCost.unit_cost_9,
-              unit_cost_10: extraCost.unit_cost_10,
+              unit_cost: extraCost.unit_cost === undefined ? null : extraCost.unit_cost,
+              unit_cost_1: extraCost.unit_cost_1 === undefined ? null : extraCost.unit_cost_1,
+              unit_cost_2: extraCost.unit_cost_2 === undefined ? null : extraCost.unit_cost_2,
+              unit_cost_3: extraCost.unit_cost_3 === undefined ? null : extraCost.unit_cost_3,
+              unit_cost_4: extraCost.unit_cost_4 === undefined ? null : extraCost.unit_cost_4,
+              unit_cost_5: extraCost.unit_cost_5 === undefined ? null : extraCost.unit_cost_5,
+              unit_cost_6: extraCost.unit_cost_6 === undefined ? null : extraCost.unit_cost_6,
+              unit_cost_7: extraCost.unit_cost_7 === undefined ? null : extraCost.unit_cost_7,
+              unit_cost_8: extraCost.unit_cost_8 === undefined ? null : extraCost.unit_cost_8,
+              unit_cost_9: extraCost.unit_cost_9 === undefined ? null : extraCost.unit_cost_9,
+              unit_cost_10: extraCost.unit_cost_10 === undefined ? null : extraCost.unit_cost_10,
               unit_of_measure_id: extraCost.unit_of_measure_id
             });
 

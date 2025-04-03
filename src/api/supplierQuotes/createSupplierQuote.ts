@@ -89,17 +89,18 @@ export async function createSupplierQuote(
     const extraCostsToInsert = formData.extra_costs
       .filter(ec => {
         // Only insert costs that have any values - either unit_cost or any of unit_cost_1 through unit_cost_10
-        const hasValue = ec.unit_cost !== null && ec.unit_cost !== undefined || 
-               ec.unit_cost_1 !== null || 
-               ec.unit_cost_2 !== null ||
-               ec.unit_cost_3 !== null ||
-               ec.unit_cost_4 !== null ||
-               ec.unit_cost_5 !== null ||
-               ec.unit_cost_6 !== null ||
-               ec.unit_cost_7 !== null ||
-               ec.unit_cost_8 !== null ||
-               ec.unit_cost_9 !== null ||
-               ec.unit_cost_10 !== null;
+        const hasValue = 
+               (ec.unit_cost !== null && ec.unit_cost !== undefined) || 
+               (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) || 
+               (ec.unit_cost_2 !== null && ec.unit_cost_2 !== undefined) ||
+               (ec.unit_cost_3 !== null && ec.unit_cost_3 !== undefined) ||
+               (ec.unit_cost_4 !== null && ec.unit_cost_4 !== undefined) ||
+               (ec.unit_cost_5 !== null && ec.unit_cost_5 !== undefined) ||
+               (ec.unit_cost_6 !== null && ec.unit_cost_6 !== undefined) ||
+               (ec.unit_cost_7 !== null && ec.unit_cost_7 !== undefined) ||
+               (ec.unit_cost_8 !== null && ec.unit_cost_8 !== undefined) ||
+               (ec.unit_cost_9 !== null && ec.unit_cost_9 !== undefined) ||
+               (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
                
         // For debugging purposes, log the extra cost and whether it has values
         console.log(`Extra cost ${ec.extra_cost_id} has values: ${hasValue}`, ec);
@@ -109,17 +110,17 @@ export async function createSupplierQuote(
       .map(ec => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
-        unit_cost: ec.unit_cost,
-        unit_cost_1: ec.unit_cost_1,
-        unit_cost_2: ec.unit_cost_2,
-        unit_cost_3: ec.unit_cost_3,
-        unit_cost_4: ec.unit_cost_4,
-        unit_cost_5: ec.unit_cost_5,
-        unit_cost_6: ec.unit_cost_6,
-        unit_cost_7: ec.unit_cost_7,
-        unit_cost_8: ec.unit_cost_8,
-        unit_cost_9: ec.unit_cost_9,
-        unit_cost_10: ec.unit_cost_10,
+        unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
+        unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
+        unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,
+        unit_cost_3: ec.unit_cost_3 === undefined ? null : ec.unit_cost_3,
+        unit_cost_4: ec.unit_cost_4 === undefined ? null : ec.unit_cost_4,
+        unit_cost_5: ec.unit_cost_5 === undefined ? null : ec.unit_cost_5,
+        unit_cost_6: ec.unit_cost_6 === undefined ? null : ec.unit_cost_6,
+        unit_cost_7: ec.unit_cost_7 === undefined ? null : ec.unit_cost_7,
+        unit_cost_8: ec.unit_cost_8 === undefined ? null : ec.unit_cost_8,
+        unit_cost_9: ec.unit_cost_9 === undefined ? null : ec.unit_cost_9,
+        unit_cost_10: ec.unit_cost_10 === undefined ? null : ec.unit_cost_10,
         unit_of_measure_id: ec.unit_of_measure_id
       }));
 

@@ -35,13 +35,37 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     
     // Initialize extra costs for the form
     quoteRequest.extra_costs.forEach(extraCost => {
-      append({
-        extra_cost_id: extraCost.id,
-        unit_cost: null,
-        unit_of_measure_id: extraCost.unit_of_measure_id
-      });
+      const unitOfMeasure = unitOfMeasures.find(
+        unit => unit.id === extraCost.unit_of_measure_id
+      );
+      
+      const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
+      
+      if (isInventoryUnit) {
+        append({
+          extra_cost_id: extraCost.id,
+          unit_cost: null,
+          unit_cost_1: null,
+          unit_cost_2: null,
+          unit_cost_3: null,
+          unit_cost_4: null,
+          unit_cost_5: null,
+          unit_cost_6: null,
+          unit_cost_7: null,
+          unit_cost_8: null,
+          unit_cost_9: null,
+          unit_cost_10: null,
+          unit_of_measure_id: extraCost.unit_of_measure_id
+        });
+      } else {
+        append({
+          extra_cost_id: extraCost.id,
+          unit_cost: null,
+          unit_of_measure_id: extraCost.unit_of_measure_id
+        });
+      }
     });
-  }, [quoteRequest.extra_costs, append, fields.length]);
+  }, [quoteRequest.extra_costs, append, fields.length, unitOfMeasures]);
 
   // If no extra costs, show empty state
   if (!quoteRequest.extra_costs || quoteRequest.extra_costs.length === 0) {
