@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
-import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost, SupplierQuoteSaving } from "@/types/supplierQuote";
 import { useUnitOfMeasures } from "./useUnitOfMeasures";
 
 // Schema for price breaks
@@ -34,7 +33,27 @@ const extraCostSchema = z.object({
   id: z.string().optional(),
   supplier_quote_id: z.string().optional(),
   extra_cost_id: z.string(),
-  price_break_id: z.string().optional(), // Add price_break_id to the schema
+  price_break_id: z.string().optional(),
+  unit_cost: z.number().nullable().optional(),
+  unit_cost_1: z.number().nullable().optional(),
+  unit_cost_2: z.number().nullable().optional(),
+  unit_cost_3: z.number().nullable().optional(),
+  unit_cost_4: z.number().nullable().optional(),
+  unit_cost_5: z.number().nullable().optional(),
+  unit_cost_6: z.number().nullable().optional(),
+  unit_cost_7: z.number().nullable().optional(),
+  unit_cost_8: z.number().nullable().optional(),
+  unit_cost_9: z.number().nullable().optional(),
+  unit_cost_10: z.number().nullable().optional(),
+  unit_of_measure_id: z.string().nullable().optional(),
+});
+
+// Schema for savings
+const savingSchema = z.object({
+  id: z.string().optional(),
+  supplier_quote_id: z.string().optional(),
+  saving_id: z.string(),
+  price_break_id: z.string().optional(),
   unit_cost: z.number().nullable().optional(),
   unit_cost_1: z.number().nullable().optional(),
   unit_cost_2: z.number().nullable().optional(),
@@ -67,8 +86,11 @@ const formSchema = z.object({
   // Price breaks
   price_breaks: z.array(priceBreakSchema).optional(),
   
-  // Extra costs - added this
+  // Extra costs
   extra_costs: z.array(extraCostSchema).optional(),
+  
+  // Savings
+  savings: z.array(savingSchema).optional(),
   
   // Packaging details - all optional
   packaging_carton_quantity: z.number().nullable().optional(),
@@ -109,6 +131,12 @@ export function useSupplierQuoteForm({
   
   // Log current state of extra costs from initialValues (for debugging)
   console.log('Initial extra costs:', extraCosts);
+  
+  // Initialize savings if needed
+  let savings = initialValues.savings || [];
+  
+  // Log current state of savings from initialValues (for debugging)
+  console.log('Initial savings:', savings);
   
   // If there are no extra costs in the initial values but the quote request has them
   if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0 && extraCosts.length === 0) {
@@ -172,12 +200,75 @@ export function useSupplierQuoteForm({
     });
   }
 
+  // If there are no savings in the initial values but the quote request has them
+  if (quoteRequest.savings && quoteRequest.savings.length > 0 && savings.length === 0) {
+    savings = [];
+    
+    // Get all format price breaks for reference
+    const formatPriceBreaks: Record<string, any[]> = {};
+    if (quoteRequest.formats) {
+      quoteRequest.formats.forEach(format => {
+        if (format.price_breaks && format.price_breaks.length > 0) {
+          formatPriceBreaks[format.id] = format.price_breaks;
+        }
+      });
+    }
+    
+    // Flatten all price breaks into a single array
+    const allPriceBreaks: any[] = [];
+    Object.values(formatPriceBreaks).forEach(breaks => {
+      breaks.forEach(priceBreak => {
+        allPriceBreaks.push(priceBreak);
+      });
+    });
+    
+    // Process each saving
+    quoteRequest.savings.forEach(saving => {
+      // Find the unit of measure for this saving
+      const unitOfMeasure = unitOfMeasures.find(
+        unit => unit.id === saving.unit_of_measure_id
+      );
+      
+      const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
+      
+      if (isInventoryUnit && allPriceBreaks.length > 0) {
+        // For inventory units, create one entry per price break
+        allPriceBreaks.forEach(priceBreak => {
+          savings.push({
+            saving_id: saving.id,
+            price_break_id: priceBreak.id, // Associate with specific price break
+            unit_cost: null,
+            unit_cost_1: null,
+            unit_cost_2: null,
+            unit_cost_3: null,
+            unit_cost_4: null,
+            unit_cost_5: null,
+            unit_cost_6: null,
+            unit_cost_7: null,
+            unit_cost_8: null,
+            unit_cost_9: null,
+            unit_cost_10: null,
+            unit_of_measure_id: saving.unit_of_measure_id || null
+          });
+        });
+      } else {
+        // For non-inventory units, just one entry
+        savings.push({
+          saving_id: saving.id,
+          unit_cost: null,
+          unit_of_measure_id: saving.unit_of_measure_id || null
+        });
+      }
+    });
+  }
+
   const form = useForm<SupplierQuoteFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       ...initialValues,
       price_breaks: initialValues.price_breaks || [],
       extra_costs: extraCosts,
+      savings: savings,
       packaging_carton_quantity: initialValues.packaging_carton_quantity || null,
       packaging_carton_weight: initialValues.packaging_carton_weight || null,
       packaging_carton_length: initialValues.packaging_carton_length || null,
@@ -192,8 +283,9 @@ export function useSupplierQuoteForm({
     },
   });
 
-  // Log the form values for extra costs after initialization
+  // Log the form values for extra costs and savings after initialization
   console.log('Extra costs after form initialization:', form.getValues('extra_costs'));
+  console.log('Savings after form initialization:', form.getValues('savings'));
 
   // Set required production schedule steps if any
   useEffect(() => {

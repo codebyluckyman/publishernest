@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost, SupplierQuoteSaving } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function updateSupplierQuote(
@@ -272,6 +272,105 @@ export async function updateSupplierQuote(
 
           if (insertError) {
             console.error("Error inserting extra cost:", insertError);
+          }
+        }
+      }
+    }
+  }
+
+  // Update savings if provided
+  if (updates.savings && updates.savings.length > 0) {
+    // First, get existing savings
+    const { data: existingSavings, error: fetchSavingsError } = await supabase
+      .from("supplier_quote_savings")
+      .select("*")
+      .eq("supplier_quote_id", id);
+
+    if (fetchSavingsError) {
+      console.error("Error fetching existing savings:", fetchSavingsError);
+    } else {
+      // Create a map of existing savings for quick lookup
+      const existingSavingsMap = new Map<string, SupplierQuoteSaving>();
+      
+      if (existingSavings) {
+        existingSavings.forEach(saving => {
+          // Cast to SupplierQuoteSaving to ensure consistency
+          const supplierSaving = saving as unknown as SupplierQuoteSaving;
+          // Create a key using the saving_id
+          const key = supplierSaving.saving_id;
+          existingSavingsMap.set(key, supplierSaving);
+        });
+      }
+
+      // Process each saving from the update
+      for (const saving of updates.savings) {
+        // Skip savings with no values
+        const hasValue = 
+               (saving.unit_cost !== null && saving.unit_cost !== undefined) || 
+               (saving.unit_cost_1 !== null && saving.unit_cost_1 !== undefined) || 
+               (saving.unit_cost_2 !== null && saving.unit_cost_2 !== undefined) ||
+               (saving.unit_cost_3 !== null && saving.unit_cost_3 !== undefined) ||
+               (saving.unit_cost_4 !== null && saving.unit_cost_4 !== undefined) ||
+               (saving.unit_cost_5 !== null && saving.unit_cost_5 !== undefined) ||
+               (saving.unit_cost_6 !== null && saving.unit_cost_6 !== undefined) ||
+               (saving.unit_cost_7 !== null && saving.unit_cost_7 !== undefined) ||
+               (saving.unit_cost_8 !== null && saving.unit_cost_8 !== undefined) ||
+               (saving.unit_cost_9 !== null && saving.unit_cost_9 !== undefined) ||
+               (saving.unit_cost_10 !== null && saving.unit_cost_10 !== undefined);
+               
+        if (!hasValue) continue;
+
+        // Create a key using the saving_id
+        const key = saving.saving_id;
+        const existingSaving = existingSavingsMap.get(key);
+
+        if (existingSaving) {
+          // Update existing saving
+          const { error: updateError } = await supabase
+            .from("supplier_quote_savings")
+            .update({
+              unit_cost: saving.unit_cost === undefined ? null : saving.unit_cost,
+              unit_cost_1: saving.unit_cost_1 === undefined ? null : saving.unit_cost_1,
+              unit_cost_2: saving.unit_cost_2 === undefined ? null : saving.unit_cost_2,
+              unit_cost_3: saving.unit_cost_3 === undefined ? null : saving.unit_cost_3,
+              unit_cost_4: saving.unit_cost_4 === undefined ? null : saving.unit_cost_4,
+              unit_cost_5: saving.unit_cost_5 === undefined ? null : saving.unit_cost_5,
+              unit_cost_6: saving.unit_cost_6 === undefined ? null : saving.unit_cost_6,
+              unit_cost_7: saving.unit_cost_7 === undefined ? null : saving.unit_cost_7,
+              unit_cost_8: saving.unit_cost_8 === undefined ? null : saving.unit_cost_8,
+              unit_cost_9: saving.unit_cost_9 === undefined ? null : saving.unit_cost_9,
+              unit_cost_10: saving.unit_cost_10 === undefined ? null : saving.unit_cost_10,
+              unit_of_measure_id: saving.unit_of_measure_id
+            })
+            .eq("id", existingSaving.id);
+
+          if (updateError) {
+            console.error(`Error updating saving ${existingSaving.id}:`, updateError);
+          }
+        } else {
+          // Insert new saving
+          const { error: insertError } = await supabase
+            .from("supplier_quote_savings")
+            .insert({
+              supplier_quote_id: id,
+              saving_id: saving.saving_id,
+              price_break_id: saving.price_break_id || null,
+              unit_cost: saving.unit_cost === undefined ? null : saving.unit_cost,
+              unit_cost_1: saving.unit_cost_1 === undefined ? null : saving.unit_cost_1,
+              unit_cost_2: saving.unit_cost_2 === undefined ? null : saving.unit_cost_2,
+              unit_cost_3: saving.unit_cost_3 === undefined ? null : saving.unit_cost_3,
+              unit_cost_4: saving.unit_cost_4 === undefined ? null : saving.unit_cost_4,
+              unit_cost_5: saving.unit_cost_5 === undefined ? null : saving.unit_cost_5,
+              unit_cost_6: saving.unit_cost_6 === undefined ? null : saving.unit_cost_6,
+              unit_cost_7: saving.unit_cost_7 === undefined ? null : saving.unit_cost_7,
+              unit_cost_8: saving.unit_cost_8 === undefined ? null : saving.unit_cost_8,
+              unit_cost_9: saving.unit_cost_9 === undefined ? null : saving.unit_cost_9,
+              unit_cost_10: saving.unit_cost_10 === undefined ? null : saving.unit_cost_10,
+              unit_of_measure_id: saving.unit_of_measure_id
+            });
+
+          if (insertError) {
+            console.error("Error inserting saving:", insertError);
           }
         }
       }
