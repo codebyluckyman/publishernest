@@ -1,4 +1,3 @@
-
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface SupplierQuotePriceBreak {
@@ -25,7 +24,6 @@ export interface SupplierQuoteExtraCost {
   id?: string;
   supplier_quote_id?: string;
   extra_cost_id: string;
-  price_break_id?: string | null;
   unit_cost?: number | null;
   unit_cost_1?: number | null;
   unit_cost_2?: number | null;
@@ -55,18 +53,21 @@ export interface SupplierQuote {
   reference_id: string | null;
   reference: string | null;
   
+  // New fields
   valid_from: string | null;
   valid_to: string | null;
   terms: string | null;
   remarks: string | null;
   production_schedule?: Record<string, string | null> | null;
   
+  // Approval/Rejection fields
   approved_at?: string | null;
   approved_by?: string | null;
   rejected_at?: string | null;
   rejected_by?: string | null;
   rejection_reason?: string | null;
   
+  // Packaging details
   packaging_carton_quantity?: number | null;
   packaging_carton_weight?: number | null;
   packaging_carton_length?: number | null;
@@ -79,6 +80,7 @@ export interface SupplierQuote {
   packaging_copies_per_20ft_unpalletized?: number | null;
   packaging_copies_per_40ft_unpalletized?: number | null;
   
+  // Joined fields
   quote_request?: any;
   supplier?: { supplier_name: string }; 
   attachments?: SupplierQuoteAttachment[];
@@ -117,14 +119,17 @@ export interface SupplierQuoteFormValues {
   currency: string;
   reference?: string;
   
+  // New fields
   valid_from?: string;
   valid_to?: string;
   terms?: string;
   remarks?: string;
   production_schedule?: Record<string, string | null>;
   
+  // Price breaks
   price_breaks?: SupplierQuotePriceBreak[];
   
+  // Packaging details
   packaging_carton_quantity?: number | null;
   packaging_carton_weight?: number | null;
   packaging_carton_length?: number | null;
@@ -137,5 +142,6 @@ export interface SupplierQuoteFormValues {
   packaging_copies_per_20ft_unpalletized?: number | null;
   packaging_copies_per_40ft_unpalletized?: number | null;
   
+  // Extra costs
   extra_costs?: SupplierQuoteExtraCost[];
 }

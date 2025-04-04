@@ -84,14 +84,14 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                   // Only render price break tables for inventory units
                   if (!unitOfMeasure?.is_inventory_unit) return null;
                   
-                  // Find corresponding supplier extra costs (might be multiple if linked to different price breaks)
-                  const supplierExtraCosts = quote.extra_costs?.filter(
+                  // Find corresponding supplier extra cost
+                  const supplierExtraCost = quote.extra_costs?.find(
                     (ec) => ec.extra_cost_id === extraCost.id
-                  ) || [];
+                  );
                   
-                  if (supplierExtraCosts.length === 0) return null;
+                  if (!supplierExtraCost) return null;
                   
-                  // Prepare price breaks - get from the first format
+                  // Prepare price breaks
                   const formatId = quote.quote_request?.formats?.[0]?.id;
                   const priceBreaks = quote.quote_request?.formats?.[0]?.price_breaks || [];
                   const numProducts = getNumProductsForFormat(formatId || '');
@@ -102,34 +102,26 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                     heading: `Product ${index + 1}`
                   }));
                   
-                  // Find the main extra cost entry (without price break id) or use the first one
-                  const mainExtraCost = supplierExtraCosts.find(ec => !ec.price_break_id) || supplierExtraCosts[0];
-                  
                   return (
                     <div key={extraCost.id} className="pb-4">
                       <PriceBreakTable
                         formatName={extraCost.name}
                         formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
-                        priceBreaks={priceBreaks.map(pb => {
-                          // Look for a specific price break entry or use the main one
-                          const specificCost = supplierExtraCosts.find(ec => ec.price_break_id === pb.id) || mainExtraCost;
-                          
-                          return {
-                            ...pb,
-                            id: pb.id || pb.price_break_id,
-                            price_break_id: pb.id || pb.price_break_id,
-                            unit_cost_1: specificCost.unit_cost_1,
-                            unit_cost_2: specificCost.unit_cost_2,
-                            unit_cost_3: specificCost.unit_cost_3,
-                            unit_cost_4: specificCost.unit_cost_4,
-                            unit_cost_5: specificCost.unit_cost_5,
-                            unit_cost_6: specificCost.unit_cost_6,
-                            unit_cost_7: specificCost.unit_cost_7,
-                            unit_cost_8: specificCost.unit_cost_8,
-                            unit_cost_9: specificCost.unit_cost_9,
-                            unit_cost_10: specificCost.unit_cost_10
-                          };
-                        })}
+                        priceBreaks={priceBreaks.map(pb => ({
+                          ...pb,
+                          id: pb.id || pb.price_break_id,
+                          price_break_id: pb.id || pb.price_break_id,
+                          unit_cost_1: supplierExtraCost.unit_cost_1,
+                          unit_cost_2: supplierExtraCost.unit_cost_2,
+                          unit_cost_3: supplierExtraCost.unit_cost_3,
+                          unit_cost_4: supplierExtraCost.unit_cost_4,
+                          unit_cost_5: supplierExtraCost.unit_cost_5,
+                          unit_cost_6: supplierExtraCost.unit_cost_6,
+                          unit_cost_7: supplierExtraCost.unit_cost_7,
+                          unit_cost_8: supplierExtraCost.unit_cost_8,
+                          unit_cost_9: supplierExtraCost.unit_cost_9,
+                          unit_cost_10: supplierExtraCost.unit_cost_10
+                        }))}
                         products={products}
                         isReadOnly={true}
                         currency={quote.currency}
@@ -165,7 +157,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                     return !unit?.is_inventory_unit;
                   }).map((extraCost) => {
                     const supplierExtraCost = quote.extra_costs?.find(
-                      (ec) => ec.extra_cost_id === extraCost.id && !ec.price_break_id
+                      (ec) => ec.extra_cost_id === extraCost.id
                     );
                     
                     return (

@@ -110,7 +110,6 @@ export async function createSupplierQuote(
       .map(ec => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
-        price_break_id: ec.price_break_id || null,
         unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
         unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
         unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,

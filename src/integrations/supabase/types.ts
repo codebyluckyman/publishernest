@@ -1239,7 +1239,6 @@ export type Database = {
           created_at: string
           extra_cost_id: string
           id: string
-          price_break_id: string | null
           supplier_quote_id: string
           unit_cost: number | null
           unit_cost_1: number | null
@@ -1259,7 +1258,6 @@ export type Database = {
           created_at?: string
           extra_cost_id: string
           id?: string
-          price_break_id?: string | null
           supplier_quote_id: string
           unit_cost?: number | null
           unit_cost_1?: number | null
@@ -1279,7 +1277,6 @@ export type Database = {
           created_at?: string
           extra_cost_id?: string
           id?: string
-          price_break_id?: string | null
           supplier_quote_id?: string
           unit_cost?: number | null
           unit_cost_1?: number | null
@@ -1301,13 +1298,6 @@ export type Database = {
             columns: ["extra_cost_id"]
             isOneToOne: false
             referencedRelation: "quote_request_extra_costs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "supplier_quote_extra_costs_price_break_id_fkey"
-            columns: ["price_break_id"]
-            isOneToOne: false
-            referencedRelation: "quote_request_format_price_breaks"
             referencedColumns: ["id"]
           },
           {
