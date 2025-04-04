@@ -159,15 +159,14 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                         {Array.from({ length: numProducts }, (_, index) => {
-                          // Create the proper field name that conforms to type expectations
-                          const fieldName = `extra_costs.${fieldIndex}.unit_cost_${index + 1}` as const;
+                          const fieldName = `extra_costs.${fieldIndex}.unit_cost_${index + 1}`;
                           
                           return (
                             <div key={index} className="space-y-2">
                               <label className="text-xs font-medium">Product {index + 1}</label>
                               <FormField
                                 control={control}
-                                name={fieldName}
+                                name={fieldName as any}
                                 render={({ field }) => (
                                   <div className="relative">
                                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -230,9 +229,8 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       form.setValue(`extra_costs.${fieldIndex}.unit_of_measure_id`, extraCost.unit_of_measure_id);
                     }
                     
-                    // Create the proper field name that conforms to type expectations
-                    const fieldName = `extra_costs.${fieldIndex}.unit_cost` as const;
-                    const unitFieldName = `extra_costs.${fieldIndex}.unit_of_measure_id` as const;
+                    const fieldName = `extra_costs.${fieldIndex}.unit_cost`;
+                    const unitFieldName = `extra_costs.${fieldIndex}.unit_of_measure_id`;
                     
                     return (
                       <TableRow key={extraCost.id}>
@@ -243,7 +241,7 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                         <TableCell className="w-[150px]">
                           <FormField
                             control={control}
-                            name={fieldName}
+                            name={fieldName as any}
                             render={({ field }) => (
                               <div className="relative">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -267,7 +265,7 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                           />
                           <FormField
                             control={control}
-                            name={unitFieldName}
+                            name={unitFieldName as any}
                             render={({ field }) => (
                               <input type="hidden" {...field} />
                             )}
