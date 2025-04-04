@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -10,14 +11,54 @@ export async function createSupplierQuote(
   // Log the entire form data for debugging
   console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
 
-  // Log extra costs with price break ID
+  // Log extra costs with improved structure to show price_break_id at the unit cost level
   if (formData.extra_costs && formData.extra_costs.length > 0) {
-    console.log('Extra costs after form initialization:', 
-      formData.extra_costs.map(ec => ({
-        ...ec,
-        price_break_id: ec.price_break_id || 'No price break assigned'
-      }))
-    );
+    console.log('Extra costs after form initialization:');
+    
+    formData.extra_costs.forEach((ec, index) => {
+      // Log the main extra cost object
+      console.log(`Extra cost #${index + 1} (${ec.extra_cost_id}):`);
+      console.log('  Base properties:', {
+        extra_cost_id: ec.extra_cost_id,
+        price_break_id: ec.price_break_id || 'No price break assigned',
+        unit_cost: ec.unit_cost,
+        unit_of_measure_id: ec.unit_of_measure_id
+      });
+      
+      // Log unit costs with their associated price break IDs if they exist
+      // Check if there are any numeric properties that might be unit costs
+      const unitCostEntries = Object.entries(ec).filter(([key, value]) => 
+        key.startsWith('unit_cost_') && 
+        !isNaN(parseInt(key.replace('unit_cost_', ''))) &&
+        value !== undefined && 
+        value !== null
+      );
+      
+      if (unitCostEntries.length > 0) {
+        console.log('  Unit costs:');
+        unitCostEntries.forEach(([key, value]) => {
+          // For each unit cost, show its associated price break ID
+          console.log(`    ${key}: ${value} (price_break_id: ${ec.price_break_id || 'No price break assigned'})`);
+        });
+      }
+      
+      // Check if there are any numeric indices that might contain unit costs
+      const numericIndices = Object.keys(ec).filter(key => !isNaN(parseInt(key)));
+      if (numericIndices.length > 0) {
+        console.log('  Indexed unit costs:');
+        numericIndices.forEach(idx => {
+          const unitCostObj = ec[idx as keyof typeof ec];
+          if (typeof unitCostObj === 'object' && unitCostObj !== null) {
+            console.log(`    Index ${idx}:`, {
+              ...unitCostObj,
+              price_break_id: ec.price_break_id || 'No price break assigned'
+            });
+          }
+        });
+      }
+      
+      console.log('---------------------');
+    });
   }
 
   // Insert the supplier quote record
