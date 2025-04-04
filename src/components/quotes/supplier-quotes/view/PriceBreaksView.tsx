@@ -1,6 +1,5 @@
-
 import { SupplierQuote } from "@/types/supplierQuote";
-import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
+import { PriceBreakTable } from "@/components/quotes/shared/price-break";
 
 interface PriceBreaksViewProps {
   quote: SupplierQuote;

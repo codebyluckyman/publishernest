@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
-import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
+import { PriceBreakTable } from "@/components/quotes/shared/price-break";
 import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 

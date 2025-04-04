@@ -1,6 +1,6 @@
 
 import { SupplierQuote } from "@/types/supplierQuote";
-import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
+import { PriceBreakTable } from "@/components/quotes/shared/price-break";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";

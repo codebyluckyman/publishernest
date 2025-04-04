@@ -2,7 +2,7 @@
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuoteExtraCost } from "@/types/supplierQuote";
-import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
+import { PriceBreakTable } from "@/components/quotes/shared/price-break";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 import { Input } from "@/components/ui/input";
