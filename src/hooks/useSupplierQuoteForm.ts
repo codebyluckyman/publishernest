@@ -34,7 +34,6 @@ const extraCostSchema = z.object({
   id: z.string().optional(),
   supplier_quote_id: z.string().optional(),
   extra_cost_id: z.string(),
-  price_break_id: z.string().optional(),
   unit_cost: z.number().nullable().optional(),
   unit_cost_1: z.number().nullable().optional(),
   unit_cost_2: z.number().nullable().optional(),
@@ -105,34 +104,12 @@ export function useSupplierQuoteForm({
   const [isFormComplete, setIsFormComplete] = useState(false);
 
   // Initialize extra costs if needed
-  let extraCosts = initialValues.extra_costs || [];
+  const extraCosts = initialValues.extra_costs || [];
   
   // Log current state of extra costs from initialValues (for debugging)
   console.log('Initial extra costs:', extraCosts);
   
-  // If there are no extra costs in the initial values but the quote request has them
   if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0 && extraCosts.length === 0) {
-    extraCosts = [];
-    
-    // Get all format price breaks for reference
-    const formatPriceBreaks: Record<string, any[]> = {};
-    if (quoteRequest.formats) {
-      quoteRequest.formats.forEach(format => {
-        if (format.price_breaks && format.price_breaks.length > 0) {
-          formatPriceBreaks[format.id] = format.price_breaks;
-        }
-      });
-    }
-    
-    // Flatten all price breaks into a single array
-    const allPriceBreaks: any[] = [];
-    Object.values(formatPriceBreaks).forEach(breaks => {
-      breaks.forEach(priceBreak => {
-        allPriceBreaks.push(priceBreak);
-      });
-    });
-    
-    // Process each extra cost
     quoteRequest.extra_costs.forEach(extraCost => {
       // Find the unit of measure for this extra cost
       const unitOfMeasure = unitOfMeasures.find(
@@ -141,31 +118,26 @@ export function useSupplierQuoteForm({
       
       const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
       
-      if (isInventoryUnit && allPriceBreaks.length > 0) {
-        // For inventory units, create one entry per price break
-        allPriceBreaks.forEach(priceBreak => {
-          extraCosts.push({
-            extra_cost_id: extraCost.id,
-            price_break_id: priceBreak.id, // Explicitly set price_break_id for each price break
-            unit_cost: null,
-            unit_cost_1: null,
-            unit_cost_2: null,
-            unit_cost_3: null,
-            unit_cost_4: null,
-            unit_cost_5: null,
-            unit_cost_6: null,
-            unit_cost_7: null,
-            unit_cost_8: null,
-            unit_cost_9: null,
-            unit_cost_10: null,
-            unit_of_measure_id: extraCost.unit_of_measure_id || null
-          });
-        });
-      } else {
-        // For non-inventory units, just one entry
+      if (isInventoryUnit) {
+        console.log(`Adding inventory unit extra cost: ${extraCost.name}`);
         extraCosts.push({
           extra_cost_id: extraCost.id,
-          price_break_id: null, // Ensure this is explicitly null
+          unit_cost: null,
+          unit_cost_1: null,
+          unit_cost_2: null,
+          unit_cost_3: null,
+          unit_cost_4: null,
+          unit_cost_5: null,
+          unit_cost_6: null,
+          unit_cost_7: null,
+          unit_cost_8: null,
+          unit_cost_9: null,
+          unit_cost_10: null,
+          unit_of_measure_id: extraCost.unit_of_measure_id || null
+        });
+      } else {
+        extraCosts.push({
+          extra_cost_id: extraCost.id,
           unit_cost: null,
           unit_of_measure_id: extraCost.unit_of_measure_id || null
         });
