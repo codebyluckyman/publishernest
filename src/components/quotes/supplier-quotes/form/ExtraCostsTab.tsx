@@ -104,6 +104,18 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     return format?.num_products || 1;
   };
 
+  // Create a component to wrap the FormatSpecifications hook to avoid Hook rules violation
+  const FormatSpecWrapper = ({ formatId }: { formatId: string | null }) => {
+    const { data: formatDetails, isLoading } = useFormatDetails(formatId);
+    
+    return (
+      <FormatSpecifications 
+        format={formatDetails || null} 
+        isLoading={isLoading}
+      />
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Render all unit of measure groups */}
@@ -156,19 +168,13 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                     heading: `Product ${index + 1}`
                   }));
 
-                  // Get format details for specifications
-                  const { data: formatDetails, isLoading } = useFormatDetails(format?.format_id || null);
-
                   console.log(`Creating price break table for ${extraCost.name} with ${priceBreaks.length} price breaks and ${numProducts} products`);
 
                   return (
                     <div key={extraCost.id} className="pb-4">
                       {/* Add Format Specifications before the price break table */}
                       <div className="px-4 py-2">
-                        <FormatSpecifications 
-                          format={formatDetails || null} 
-                          isLoading={isLoading}
-                        />
+                        <FormatSpecWrapper formatId={format?.format_id || null} />
                       </div>
                       
                       <PriceBreakTable

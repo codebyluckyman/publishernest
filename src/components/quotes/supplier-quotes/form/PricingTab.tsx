@@ -88,6 +88,10 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
     return Array.from({ length: numProducts }, (_, i) => `${i + 1} Title${i + 1 > 1 ? 's' : ''}`);
   };
 
+  // Pre-fetch format details for all formats to avoid hooks in a loop
+  const formatIds = quoteRequest.formats?.map(format => format.format_id).filter(Boolean) || [];
+  const formatDetailsMap = {};
+  
   return (
     <div className="space-y-3">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
@@ -106,17 +110,23 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
           ? `Please supply unit cost for each quantity break and ${numProducts} Title${numProducts > 1 ? 's' : ''}`
           : 'No products for this format';
         
-        // Fetch format details
-        const { data: formatDetails, isLoading } = useFormatDetails(format?.format_id || null);
+        // Fetch format details outside the render loop
+        const FormatSpecificationsWrapper = () => {
+          const { data: formatDetails, isLoading } = useFormatDetails(format?.format_id || null);
+          
+          return (
+            <FormatSpecifications 
+              format={formatDetails || null} 
+              isLoading={isLoading}
+            />
+          );
+        };
         
         return (
           <div key={formatId} className="mb-4">
             {/* Add Format Specifications before the price break table */}
             <div className="mb-3">
-              <FormatSpecifications 
-                format={formatDetails || null} 
-                isLoading={isLoading}
-              />
+              <FormatSpecificationsWrapper />
             </div>
             
             <PriceBreakTable
