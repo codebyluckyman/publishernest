@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -197,11 +196,13 @@ export async function updateSupplierQuote(
       
       if (existingExtraCosts) {
         existingExtraCosts.forEach(ec => {
+          // Cast to SupplierQuoteExtraCost to ensure price_break_id is recognized
+          const extraCost = ec as unknown as SupplierQuoteExtraCost;
           // Create a composite key using extra_cost_id and price_break_id (if present)
-          const key = ec.price_break_id 
-            ? `${ec.extra_cost_id}_${ec.price_break_id}` 
-            : ec.extra_cost_id;
-          existingExtraCostsMap.set(key, ec as SupplierQuoteExtraCost);
+          const key = extraCost.price_break_id 
+            ? `${extraCost.extra_cost_id}_${extraCost.price_break_id}` 
+            : extraCost.extra_cost_id;
+          existingExtraCostsMap.set(key, extraCost);
         });
       }
 
