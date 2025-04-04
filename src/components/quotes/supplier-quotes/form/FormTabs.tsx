@@ -8,8 +8,7 @@ import { DetailsTab } from "./DetailsTab";
 import { ProductionScheduleSection } from "./ProductionScheduleSection";
 import { PackagingTab } from "./PackagingTab";
 import { PricingTab } from "./PricingTab";
-import { ExtraCostsTab } from "./extra-costs/ExtraCostsTab";
-import { SavingsTab } from "./savings/SavingsTab";
+import { ExtraCostsTab } from "./ExtraCostsTab"; // New import
 
 interface FormTabsProps {
   control: Control<SupplierQuoteFormValues>;
@@ -32,11 +31,10 @@ export function FormTabs({
 }: FormTabsProps) {  
   return (
     <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-6">
+      <TabsList className="grid grid-cols-5">
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="pricing">Pricing</TabsTrigger>
         <TabsTrigger value="extra-costs">Extra Costs</TabsTrigger>
-        <TabsTrigger value="savings">Savings</TabsTrigger>
         <TabsTrigger value="production">Production</TabsTrigger>
         <TabsTrigger value="packaging">Packaging</TabsTrigger>
       </TabsList>
@@ -59,13 +57,6 @@ export function FormTabs({
       
       <TabsContent value="extra-costs" className="space-y-4 pt-4">
         <ExtraCostsTab 
-          control={control}
-          quoteRequest={quoteRequest}
-        />
-      </TabsContent>
-      
-      <TabsContent value="savings" className="space-y-4 pt-4">
-        <SavingsTab 
           control={control}
           quoteRequest={quoteRequest}
         />

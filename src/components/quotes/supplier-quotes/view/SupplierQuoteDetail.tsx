@@ -10,8 +10,7 @@ import { PackagingDetailsView } from "./PackagingDetailsView";
 import { AttachmentsView } from "./AttachmentsView";
 import { QuoteStatusActions } from "./QuoteStatusActions";
 import { PriceBreaksView } from "./PriceBreaksView";
-import { ExtraCostsView } from "./ExtraCostsView";
-import { SavingsView } from "./SavingsView";
+import { ExtraCostsView } from "./ExtraCostsView"; // New import
 
 interface SupplierQuoteDetailProps {
   quote: SupplierQuote;
@@ -43,7 +42,7 @@ export function SupplierQuoteDetail({
       />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-7 w-full h-auto">
+        <TabsList className="grid grid-cols-6 w-full h-auto">
           <TabsTrigger value="terms" className="py-2 text-xs md:text-sm">
             Terms
           </TabsTrigger>
@@ -52,9 +51,6 @@ export function SupplierQuoteDetail({
           </TabsTrigger>
           <TabsTrigger value="extra-costs" className="py-2 text-xs md:text-sm">
             Extra Costs
-          </TabsTrigger>
-          <TabsTrigger value="savings" className="py-2 text-xs md:text-sm">
-            Savings
           </TabsTrigger>
           <TabsTrigger value="notes" className="py-2 text-xs md:text-sm">
             Notes
@@ -78,10 +74,6 @@ export function SupplierQuoteDetail({
           
           <TabsContent value="extra-costs">
             <ExtraCostsView quote={quote} />
-          </TabsContent>
-          
-          <TabsContent value="savings">
-            <SavingsView quote={quote} />
           </TabsContent>
           
           <TabsContent value="notes">
