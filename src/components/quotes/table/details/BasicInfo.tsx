@@ -31,7 +31,7 @@ export function BasicInfo({ request }: BasicInfoProps) {
           <p className="text-sm">
             {format(new Date(request.due_date), "MMMM d, yyyy")}
             {new Date(request.due_date) < new Date() && (
-              <Badge variant="destructive" className="ml-2 text-[10px]">Overdue</Badge>
+              <Badge variant="destructive" className="ml-2 text-[10px] mb-[5mm]">Overdue</Badge>
             )}
           </p>
         </div>
