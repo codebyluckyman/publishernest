@@ -1,5 +1,8 @@
+
 import { SupplierQuote } from "@/types/supplierQuote";
 import { PriceBreakTable } from "@/components/quotes/shared/price-break";
+import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 
 interface PriceBreaksViewProps {
   quote: SupplierQuote;
@@ -41,11 +44,33 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
     return format ? format.num_products || 1 : 1;
   };
 
+  const getFormatId = (formatId: string): string | null => {
+    if (!quote.quote_request || !quote.quote_request.formats) return null;
+    
+    const format = quote.quote_request.formats.find((f: any) => f.id === formatId);
+    return format ? format.format_id : null;
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {Object.entries(priceBreaksByFormat).map(([formatId, priceBreaks]) => {
         const formatName = getFormatName(formatId);
         const numProducts = getNumProductsForFormat(formatId);
+        const actualFormatId = getFormatId(formatId);
+        
+        // Create a component to handle format details fetching to avoid React hooks error
+        const FormatSpecificationsWrapper = () => {
+          const { data: formatDetails, isLoading } = useFormatDetails(actualFormatId);
+          
+          return (
+            <div className="mb-4">
+              <FormatSpecifications 
+                format={formatDetails} 
+                isLoading={isLoading} 
+              />
+            </div>
+          );
+        };
         
         // Create products array for the table
         const products = Array.from({ length: numProducts }, (_, index) => ({
@@ -54,15 +79,21 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
         }));
         
         return (
-          <PriceBreakTable
-            key={formatId}
-            formatName={formatName}
-            priceBreaks={priceBreaks}
-            products={products}
-            isReadOnly={true}
-            currency={quote.currency}
-            className="mb-2"
-          />
+          <div key={formatId} className="mb-6">
+            <h3 className="text-md font-medium mb-3">{formatName}</h3>
+            
+            {/* Format specifications placed under the format heading */}
+            <FormatSpecificationsWrapper />
+            
+            <PriceBreakTable
+              formatName={formatName}
+              priceBreaks={priceBreaks}
+              products={products}
+              isReadOnly={true}
+              currency={quote.currency}
+              className="mt-2"
+            />
+          </div>
         );
       })}
     </div>
