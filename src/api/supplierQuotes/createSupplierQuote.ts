@@ -45,6 +45,7 @@ export async function createSupplierQuote(
     .single();
 
   console.log('Inserted Supplier Quote:', supplierQuote);
+  console.log('Supplier Quote ID:', supplierQuote?.id);
   console.log('Supplier Quote Insertion Error:', error);
 
   if (error) {

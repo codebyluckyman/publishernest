@@ -64,6 +64,7 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
         organizationId: currentOrganization.id
       }, {
         onSuccess: (id) => {
+          console.log('Successfully created supplier quote with ID:', id);
           setCreatedQuoteId(id);
           setHasUnsavedChanges(false);
         }
@@ -74,6 +75,7 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
         totalCost: 0 // This should be calculated or passed from the form
       }, {
         onSuccess: () => {
+          console.log('Successfully submitted supplier quote with ID:', createdQuoteId);
           setHasUnsavedChanges(false);
         }
       });
