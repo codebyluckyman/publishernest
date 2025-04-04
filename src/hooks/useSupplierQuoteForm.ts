@@ -34,7 +34,7 @@ const extraCostSchema = z.object({
   id: z.string().optional(),
   supplier_quote_id: z.string().optional(),
   extra_cost_id: z.string(),
-  price_break_id: z.string().optional(),
+  price_break_id: z.string().optional(), // Add price_break_id to the schema
   unit_cost: z.number().nullable().optional(),
   unit_cost_1: z.number().nullable().optional(),
   unit_cost_2: z.number().nullable().optional(),
@@ -146,7 +146,7 @@ export function useSupplierQuoteForm({
         allPriceBreaks.forEach(priceBreak => {
           extraCosts.push({
             extra_cost_id: extraCost.id,
-            price_break_id: priceBreak.id, // Explicitly set price_break_id for each price break
+            price_break_id: priceBreak.id, // Associate with specific price break
             unit_cost: null,
             unit_cost_1: null,
             unit_cost_2: null,
@@ -165,7 +165,6 @@ export function useSupplierQuoteForm({
         // For non-inventory units, just one entry
         extraCosts.push({
           extra_cost_id: extraCost.id,
-          price_break_id: null, // Ensure this is explicitly null
           unit_cost: null,
           unit_of_measure_id: extraCost.unit_of_measure_id || null
         });

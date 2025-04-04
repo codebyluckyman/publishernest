@@ -11,7 +11,7 @@ export async function createSupplierQuote(
   // Log the entire form data for debugging
   console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
 
-  // Log extra costs with improved structure to show price breaks
+  // Log extra costs with improved structure to show we're removing price breaks
   if (formData.extra_costs && formData.extra_costs.length > 0) {
     console.log('Extra costs before insertion:');
     
@@ -19,7 +19,7 @@ export async function createSupplierQuote(
       console.log(`Extra cost #${index + 1} (${ec.extra_cost_id}):`);
       console.log('  Base properties:', {
         extra_cost_id: ec.extra_cost_id,
-        price_break_id: ec.price_break_id || 'null',
+        price_break_id: ec.price_break_id || 'null', // Log price_break_id
         unit_cost: ec.unit_cost,
         unit_of_measure_id: ec.unit_of_measure_id
       });
@@ -136,14 +136,14 @@ export async function createSupplierQuote(
                (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
                
         // For debugging purposes, log the extra cost and whether it has values
-        console.log(`Extra cost ${ec.extra_cost_id} with price_break_id ${ec.price_break_id || 'null'} has values: ${hasValue}`, ec);
+        console.log(`Extra cost ${ec.extra_cost_id} has values: ${hasValue}`, ec);
         
         return hasValue;
       })
       .map(ec => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
-        price_break_id: ec.price_break_id || null,  // Ensure price_break_id is included
+        price_break_id: ec.price_break_id || null, // Include price_break_id in the insert
         unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
         unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
         unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,
