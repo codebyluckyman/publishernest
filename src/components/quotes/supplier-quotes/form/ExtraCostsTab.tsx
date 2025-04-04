@@ -1,3 +1,4 @@
+
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuoteExtraCost } from "@/types/supplierQuote";
@@ -40,8 +41,11 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
       const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
       
       if (isInventoryUnit) {
+        // For inventory units, we may need price break-specific entries
+        // First, create a general entry without a price break
         append({
           extra_cost_id: extraCost.id,
+          price_break_id: null,
           unit_cost: null,
           unit_cost_1: null,
           unit_cost_2: null,
@@ -55,9 +59,12 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
           unit_cost_10: null,
           unit_of_measure_id: extraCost.unit_of_measure_id
         });
+        
+        // Optionally, we could add price break-specific entries here if needed
       } else {
         append({
           extra_cost_id: extraCost.id,
+          price_break_id: null,
           unit_cost: null,
           unit_of_measure_id: extraCost.unit_of_measure_id
         });
@@ -137,7 +144,10 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                   
                   if (!unitOfMeasure?.is_inventory_unit) return null;
 
-                  const fieldIndex = fields.findIndex(field => field.extra_cost_id === extraCost.id);
+                  const fieldIndex = fields.findIndex(field => 
+                    field.extra_cost_id === extraCost.id && field.price_break_id === null
+                  );
+                  
                   if (fieldIndex === -1) return null;
 
                   console.log(`Extra cost field at index ${fieldIndex}:`, fields[fieldIndex]);
@@ -151,6 +161,11 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                     index,
                     heading: `Product ${index + 1}`
                   }));
+
+                  // Set the price_break_id in the extra_costs field
+                  if (!form.getValues(`extra_costs.${fieldIndex}.price_break_id`)) {
+                    form.setValue(`extra_costs.${fieldIndex}.price_break_id`, null);
+                  }
 
                   console.log(`Creating price break table for ${extraCost.name} with ${priceBreaks.length} price breaks and ${numProducts} products`);
 
@@ -201,13 +216,18 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                     return !unit?.is_inventory_unit;
                   }).map((extraCost) => {
                     const fieldIndex = fields.findIndex(
-                      (field) => field.extra_cost_id === extraCost.id
+                      (field) => field.extra_cost_id === extraCost.id && field.price_break_id === null
                     );
                     
                     if (fieldIndex === -1) return null;
                     
                     if (extraCost.unit_of_measure_id && !form.getValues(`extra_costs.${fieldIndex}.unit_of_measure_id`)) {
                       form.setValue(`extra_costs.${fieldIndex}.unit_of_measure_id`, extraCost.unit_of_measure_id);
+                    }
+                    
+                    // Set the price_break_id in the extra_costs field
+                    if (!form.getValues(`extra_costs.${fieldIndex}.price_break_id`)) {
+                      form.setValue(`extra_costs.${fieldIndex}.price_break_id`, null);
                     }
                     
                     return (
@@ -241,6 +261,13 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                           <FormField
                             control={control}
                             name={`extra_costs.${fieldIndex}.unit_of_measure_id`}
+                            render={({ field }) => (
+                              <input type="hidden" {...field} />
+                            )}
+                          />
+                          <FormField
+                            control={control}
+                            name={`extra_costs.${fieldIndex}.price_break_id`}
                             render={({ field }) => (
                               <input type="hidden" {...field} />
                             )}

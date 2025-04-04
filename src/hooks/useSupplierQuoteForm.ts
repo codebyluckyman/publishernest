@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -33,6 +34,7 @@ const extraCostSchema = z.object({
   id: z.string().optional(),
   supplier_quote_id: z.string().optional(),
   extra_cost_id: z.string(),
+  price_break_id: z.string().nullable().optional(),
   unit_cost: z.number().nullable().optional(),
   unit_cost_1: z.number().nullable().optional(),
   unit_cost_2: z.number().nullable().optional(),
@@ -121,6 +123,7 @@ export function useSupplierQuoteForm({
         console.log(`Adding inventory unit extra cost: ${extraCost.name}`);
         extraCosts.push({
           extra_cost_id: extraCost.id,
+          price_break_id: null,
           unit_cost: null,
           unit_cost_1: null,
           unit_cost_2: null,
@@ -137,6 +140,7 @@ export function useSupplierQuoteForm({
       } else {
         extraCosts.push({
           extra_cost_id: extraCost.id,
+          price_break_id: null,
           unit_cost: null,
           unit_of_measure_id: extraCost.unit_of_measure_id || null
         });

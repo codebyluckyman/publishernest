@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -196,7 +197,10 @@ export async function updateSupplierQuote(
       
       if (existingExtraCosts) {
         existingExtraCosts.forEach(ec => {
-          existingExtraCostsMap.set(ec.extra_cost_id, ec);
+          // Use combination of extra_cost_id and price_break_id (if any) as key
+          const priceBreakPart = ec.price_break_id ? `_${ec.price_break_id}` : '';
+          const key = `${ec.extra_cost_id}${priceBreakPart}`;
+          existingExtraCostsMap.set(key, ec);
         });
       }
 
@@ -218,7 +222,10 @@ export async function updateSupplierQuote(
                
         if (!hasValue) continue;
 
-        const existingExtraCost = existingExtraCostsMap.get(extraCost.extra_cost_id);
+        // Create a key that includes price_break_id if present
+        const priceBreakPart = extraCost.price_break_id ? `_${extraCost.price_break_id}` : '';
+        const key = `${extraCost.extra_cost_id}${priceBreakPart}`;
+        const existingExtraCost = existingExtraCostsMap.get(key);
 
         if (existingExtraCost) {
           // Update existing extra cost
@@ -250,6 +257,7 @@ export async function updateSupplierQuote(
             .insert({
               supplier_quote_id: id,
               extra_cost_id: extraCost.extra_cost_id,
+              price_break_id: extraCost.price_break_id || null,
               unit_cost: extraCost.unit_cost === undefined ? null : extraCost.unit_cost,
               unit_cost_1: extraCost.unit_cost_1 === undefined ? null : extraCost.unit_cost_1,
               unit_cost_2: extraCost.unit_cost_2 === undefined ? null : extraCost.unit_cost_2,
