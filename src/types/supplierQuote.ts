@@ -1,3 +1,4 @@
+
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface SupplierQuotePriceBreak {

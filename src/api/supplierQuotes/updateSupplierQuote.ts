@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function updateSupplierQuote(
@@ -193,14 +193,14 @@ export async function updateSupplierQuote(
       console.error("Error fetching existing extra costs:", fetchExtraCostsError);
     } else {
       // Create a map of existing extra costs for quick lookup
-      const existingExtraCostsMap = new Map<string, any>();
+      const existingExtraCostsMap = new Map<string, SupplierQuoteExtraCost>();
       
       if (existingExtraCosts) {
         existingExtraCosts.forEach(ec => {
           // Use combination of extra_cost_id and price_break_id (if any) as key
           const priceBreakPart = ec.price_break_id ? `_${ec.price_break_id}` : '';
           const key = `${ec.extra_cost_id}${priceBreakPart}`;
-          existingExtraCostsMap.set(key, ec);
+          existingExtraCostsMap.set(key, ec as SupplierQuoteExtraCost);
         });
       }
 
