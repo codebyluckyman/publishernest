@@ -145,8 +145,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                   const formatId = quoteRequest.formats?.[0]?.id;
                   const format = quoteRequest.formats?.[0];
                   const numProducts = getNumProductsForFormat(formatId || '');
-                  
-                  // We'll add UI for directly entering values here in the next step
 
                   return (
                     <div key={extraCost.id} className="px-4 py-4 border-b">
@@ -160,32 +158,40 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       </p>
                       
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                        {Array.from({ length: numProducts }, (_, index) => (
-                          <div key={index} className="space-y-2">
-                            <label className="text-xs font-medium">Product {index + 1}</label>
-                            <FormField
-                              control={control}
-                              name={`extra_costs.${fieldIndex}.unit_cost_${index + 1}`}
-                              render={({ field }) => (
-                                <div className="relative">
-                                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <span className="text-gray-500">{form.watch('currency')}</span>
+                        {Array.from({ length: numProducts }, (_, index) => {
+                          // Create the proper field name that conforms to type expectations
+                          const fieldName = `extra_costs.${fieldIndex}.unit_cost_${index + 1}` as const;
+                          
+                          return (
+                            <div key={index} className="space-y-2">
+                              <label className="text-xs font-medium">Product {index + 1}</label>
+                              <FormField
+                                control={control}
+                                name={fieldName}
+                                render={({ field }) => (
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                      <span className="text-gray-500">{form.watch('currency')}</span>
+                                    </div>
+                                    <Input
+                                      placeholder="0.00"
+                                      className="pl-10"
+                                      type="number"
+                                      step="0.01"
+                                      min="0"
+                                      {...field}
+                                      value={field.value === null ? '' : field.value}
+                                      onChange={(e) => {
+                                        const value = e.target.value ? parseFloat(e.target.value) : null;
+                                        field.onChange(value);
+                                      }}
+                                    />
                                   </div>
-                                  <Input
-                                    placeholder="0.00"
-                                    className="pl-10"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    {...field}
-                                    value={field.value || ''}
-                                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                                  />
-                                </div>
-                              )}
-                            />
-                          </div>
-                        ))}
+                                )}
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -224,6 +230,10 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       form.setValue(`extra_costs.${fieldIndex}.unit_of_measure_id`, extraCost.unit_of_measure_id);
                     }
                     
+                    // Create the proper field name that conforms to type expectations
+                    const fieldName = `extra_costs.${fieldIndex}.unit_cost` as const;
+                    const unitFieldName = `extra_costs.${fieldIndex}.unit_of_measure_id` as const;
+                    
                     return (
                       <TableRow key={extraCost.id}>
                         <TableCell>{extraCost.name}</TableCell>
@@ -233,7 +243,7 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                         <TableCell className="w-[150px]">
                           <FormField
                             control={control}
-                            name={`extra_costs.${fieldIndex}.unit_cost`}
+                            name={fieldName}
                             render={({ field }) => (
                               <div className="relative">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -246,15 +256,18 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                                   step="0.01"
                                   min="0"
                                   {...field}
-                                  value={field.value || ''}
-                                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                                  value={field.value === null ? '' : field.value}
+                                  onChange={(e) => {
+                                    const value = e.target.value ? parseFloat(e.target.value) : null;
+                                    field.onChange(value);
+                                  }}
                                 />
                               </div>
                             )}
                           />
                           <FormField
                             control={control}
-                            name={`extra_costs.${fieldIndex}.unit_of_measure_id`}
+                            name={unitFieldName}
                             render={({ field }) => (
                               <input type="hidden" {...field} />
                             )}
