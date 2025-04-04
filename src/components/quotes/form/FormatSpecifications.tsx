@@ -6,9 +6,12 @@ import { formatNumber } from "@/utils/productUtils";
 export interface FormatSpecificationsProps {
   format: Format | null;
   isLoading: boolean;
+  hide?: boolean;
 }
 
-export function FormatSpecifications({ format, isLoading }: FormatSpecificationsProps) {
+export function FormatSpecifications({ format, isLoading, hide = false }: FormatSpecificationsProps) {
+  if (hide) return null;
+  
   if (isLoading) {
     return (
       <Card className="bg-slate-50 w-full">

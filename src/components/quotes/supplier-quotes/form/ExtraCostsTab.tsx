@@ -1,4 +1,3 @@
-
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuoteExtraCost } from "@/types/supplierQuote";
@@ -23,19 +22,16 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
   const form = useFormContext<SupplierQuoteFormValues>();
   const [extraCosts, setExtraCosts] = useState<SupplierQuoteExtraCost[]>([]);
   
-  // Initialize extra costs field array if it doesn't exist
   const { fields, append } = useFieldArray({
     control,
     name: "extra_costs"
   });
   
-  // Prepare extra costs on mount
   useEffect(() => {
     if (!quoteRequest.extra_costs || quoteRequest.extra_costs.length === 0 || fields.length > 0) {
       return;
     }
     
-    // Initialize extra costs for the form
     quoteRequest.extra_costs.forEach(extraCost => {
       const unitOfMeasure = unitOfMeasures.find(
         unit => unit.id === extraCost.unit_of_measure_id
@@ -69,7 +65,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     });
   }, [quoteRequest.extra_costs, append, fields.length, unitOfMeasures]);
 
-  // If no extra costs, show empty state
   if (!quoteRequest.extra_costs || quoteRequest.extra_costs.length === 0) {
     return (
       <div className="text-center p-8 bg-muted rounded-lg">
@@ -81,7 +76,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     );
   }
 
-  // Group all extra costs by unit of measure
   const groupedCosts = quoteRequest.extra_costs.reduce((acc, extraCost) => {
     const unitOfMeasure = unitOfMeasures.find(
       (unit) => unit.id === extraCost.unit_of_measure_id
@@ -96,7 +90,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     return acc;
   }, {} as Record<string, typeof quoteRequest.extra_costs>);
 
-  // Get number of products for price breaks
   const getNumProductsForFormat = (formatId: string): number => {
     if (!quoteRequest.formats) return 1;
     
@@ -104,7 +97,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     return format?.num_products || 1;
   };
 
-  // Create a component to wrap the FormatSpecifications hook to avoid Hook rules violation
   const FormatSpecWrapper = ({ formatId }: { formatId: string | null }) => {
     const { data: formatDetails, isLoading } = useFormatDetails(formatId);
     
@@ -112,17 +104,16 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
       <FormatSpecifications 
         format={formatDetails || null} 
         isLoading={isLoading}
+        hide={true}
       />
     );
   };
 
   return (
     <div className="space-y-6">
-      {/* Render all unit of measure groups */}
       {Object.entries(groupedCosts).map(([unitName, costs]) => {
         if (costs.length === 0) return null;
         
-        // Check if this group contains inventory units
         const hasInventoryUnits = costs.some(cost => {
           const unitOfMeasure = unitOfMeasures.find(
             (unit) => unit.id === cost.unit_of_measure_id
@@ -130,10 +121,8 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
           return unitOfMeasure?.is_inventory_unit;
         });
         
-        // For debugging - log the unit name and if it has inventory units
         console.log(`Unit group: ${unitName}, Has inventory units: ${hasInventoryUnits}`);
         
-        // If group has inventory units, render price break tables
         if (hasInventoryUnits) {
           return (
             <Card key={unitName} className="mb-4">
@@ -146,23 +135,18 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                     (unit) => unit.id === extraCost.unit_of_measure_id
                   );
                   
-                  // Only render price break tables for inventory units
                   if (!unitOfMeasure?.is_inventory_unit) return null;
 
-                  // Find matching field index
                   const fieldIndex = fields.findIndex(field => field.extra_cost_id === extraCost.id);
                   if (fieldIndex === -1) return null;
 
-                  // Log the field data for debugging
                   console.log(`Extra cost field at index ${fieldIndex}:`, fields[fieldIndex]);
 
-                  // Prepare price breaks using the first format's price breaks
                   const formatId = quoteRequest.formats?.[0]?.id;
                   const format = quoteRequest.formats?.[0];
                   const priceBreaks = quoteRequest.formats?.[0]?.price_breaks || [];
                   const numProducts = getNumProductsForFormat(formatId || '');
                   
-                  // Create products array for the table based on numProducts
                   const products = Array.from({ length: numProducts }, (_, index) => ({
                     index,
                     heading: `Product ${index + 1}`
@@ -172,7 +156,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
 
                   return (
                     <div key={extraCost.id} className="pb-4">
-                      {/* Add Format Specifications before the price break table */}
                       <div className="px-4 py-2">
                         <FormatSpecWrapper formatId={format?.format_id || null} />
                       </div>
@@ -198,7 +181,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
           );
         }
         
-        // For non-inventory units, render regular table
         return (
           <Card key={unitName} className="mb-4">
             <CardHeader className="pb-3">
@@ -215,18 +197,15 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                 </TableHeader>
                 <TableBody>
                   {costs.filter(cost => {
-                    // Only show non-inventory units in this table
                     const unit = unitOfMeasures.find(u => u.id === cost.unit_of_measure_id);
                     return !unit?.is_inventory_unit;
                   }).map((extraCost) => {
-                    // Find the index in the form fields
                     const fieldIndex = fields.findIndex(
                       (field) => field.extra_cost_id === extraCost.id
                     );
                     
                     if (fieldIndex === -1) return null;
                     
-                    // Set the unit_of_measure_id in the form if it's not already set
                     if (extraCost.unit_of_measure_id && !form.getValues(`extra_costs.${fieldIndex}.unit_of_measure_id`)) {
                       form.setValue(`extra_costs.${fieldIndex}.unit_of_measure_id`, extraCost.unit_of_measure_id);
                     }

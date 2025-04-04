@@ -66,7 +66,8 @@ export function PriceBreaksView({ quote }: PriceBreaksViewProps) {
             <div className="mb-4">
               <FormatSpecifications 
                 format={formatDetails} 
-                isLoading={isLoading} 
+                isLoading={isLoading}
+                hide={false} // Always show format specs in pricing tab
               />
             </div>
           );
