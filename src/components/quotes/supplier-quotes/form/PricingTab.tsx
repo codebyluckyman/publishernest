@@ -4,6 +4,8 @@ import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { PriceBreakTable } from "@/components/quotes/shared/PriceBreakTable";
+import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 
 interface PricingTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -104,17 +106,29 @@ export function PricingTab({ control, quoteRequest }: PricingTabProps) {
           ? `Please supply unit cost for each quantity break and ${numProducts} Title${numProducts > 1 ? 's' : ''}`
           : 'No products for this format';
         
+        // Fetch format details
+        const { data: formatDetails, isLoading } = useFormatDetails(format?.format_id || null);
+        
         return (
-          <PriceBreakTable
-            key={formatId}
-            formatName={formatName}
-            formatDescription={formatDescription}
-            priceBreaks={priceBreaks}
-            products={products}
-            control={control}
-            fieldArrayName="price_breaks"
-            className="mb-2"
-          />
+          <div key={formatId} className="mb-4">
+            {/* Add Format Specifications before the price break table */}
+            <div className="mb-3">
+              <FormatSpecifications 
+                format={formatDetails || null} 
+                isLoading={isLoading}
+              />
+            </div>
+            
+            <PriceBreakTable
+              formatName={formatName}
+              formatDescription={formatDescription}
+              priceBreaks={priceBreaks}
+              products={products}
+              control={control}
+              fieldArrayName="price_breaks"
+              className="mb-2"
+            />
+          </div>
         );
       })}
       

@@ -10,6 +10,8 @@ import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/for
 import { useState, useEffect } from "react";
 import { formatCurrency } from "@/utils/formatters";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
+import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 
 interface ExtraCostsTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -144,6 +146,7 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
 
                   // Prepare price breaks using the first format's price breaks
                   const formatId = quoteRequest.formats?.[0]?.id;
+                  const format = quoteRequest.formats?.[0];
                   const priceBreaks = quoteRequest.formats?.[0]?.price_breaks || [];
                   const numProducts = getNumProductsForFormat(formatId || '');
                   
@@ -153,10 +156,21 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                     heading: `Product ${index + 1}`
                   }));
 
+                  // Get format details for specifications
+                  const { data: formatDetails, isLoading } = useFormatDetails(format?.format_id || null);
+
                   console.log(`Creating price break table for ${extraCost.name} with ${priceBreaks.length} price breaks and ${numProducts} products`);
 
                   return (
                     <div key={extraCost.id} className="pb-4">
+                      {/* Add Format Specifications before the price break table */}
+                      <div className="px-4 py-2">
+                        <FormatSpecifications 
+                          format={formatDetails || null} 
+                          isLoading={isLoading}
+                        />
+                      </div>
+                      
                       <PriceBreakTable
                         formatName={extraCost.name}
                         formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
