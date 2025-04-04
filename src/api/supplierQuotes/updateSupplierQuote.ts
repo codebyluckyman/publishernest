@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function updateSupplierQuote(
@@ -192,11 +193,15 @@ export async function updateSupplierQuote(
       console.error("Error fetching existing extra costs:", fetchExtraCostsError);
     } else {
       // Create a map of existing extra costs for quick lookup
-      const existingExtraCostsMap = new Map<string, any>();
+      const existingExtraCostsMap = new Map<string, SupplierQuoteExtraCost>();
       
       if (existingExtraCosts) {
         existingExtraCosts.forEach(ec => {
-          existingExtraCostsMap.set(ec.extra_cost_id, ec);
+          // Create a composite key using extra_cost_id and price_break_id (if present)
+          const key = ec.price_break_id 
+            ? `${ec.extra_cost_id}_${ec.price_break_id}` 
+            : ec.extra_cost_id;
+          existingExtraCostsMap.set(key, ec as SupplierQuoteExtraCost);
         });
       }
 
@@ -218,7 +223,12 @@ export async function updateSupplierQuote(
                
         if (!hasValue) continue;
 
-        const existingExtraCost = existingExtraCostsMap.get(extraCost.extra_cost_id);
+        // Create a composite key using extra_cost_id and price_break_id (if present)
+        const key = extraCost.price_break_id 
+          ? `${extraCost.extra_cost_id}_${extraCost.price_break_id}` 
+          : extraCost.extra_cost_id;
+        
+        const existingExtraCost = existingExtraCostsMap.get(key);
 
         if (existingExtraCost) {
           // Update existing extra cost
@@ -236,7 +246,8 @@ export async function updateSupplierQuote(
               unit_cost_8: extraCost.unit_cost_8 === undefined ? null : extraCost.unit_cost_8,
               unit_cost_9: extraCost.unit_cost_9 === undefined ? null : extraCost.unit_cost_9,
               unit_cost_10: extraCost.unit_cost_10 === undefined ? null : extraCost.unit_cost_10,
-              unit_of_measure_id: extraCost.unit_of_measure_id
+              unit_of_measure_id: extraCost.unit_of_measure_id,
+              price_break_id: extraCost.price_break_id || null
             })
             .eq("id", existingExtraCost.id);
 
@@ -250,6 +261,7 @@ export async function updateSupplierQuote(
             .insert({
               supplier_quote_id: id,
               extra_cost_id: extraCost.extra_cost_id,
+              price_break_id: extraCost.price_break_id || null,
               unit_cost: extraCost.unit_cost === undefined ? null : extraCost.unit_cost,
               unit_cost_1: extraCost.unit_cost_1 === undefined ? null : extraCost.unit_cost_1,
               unit_cost_2: extraCost.unit_cost_2 === undefined ? null : extraCost.unit_cost_2,
