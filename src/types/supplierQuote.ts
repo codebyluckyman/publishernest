@@ -1,3 +1,4 @@
+
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface SupplierQuotePriceBreak {
@@ -24,6 +25,7 @@ export interface SupplierQuoteExtraCost {
   id?: string;
   supplier_quote_id?: string;
   extra_cost_id: string;
+  price_break_id?: string | null; // Add price_break_id field
   unit_cost?: number | null;
   unit_cost_1?: number | null;
   unit_cost_2?: number | null;

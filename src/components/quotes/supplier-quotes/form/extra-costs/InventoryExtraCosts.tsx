@@ -81,11 +81,14 @@ export function InventoryExtraCosts({
                 if (fieldIndex === -1) return null;
                 
                 // Create a custom set of price breaks for this extra cost
-                const extraCostPriceBreaks = priceBreaks.map(priceBreak => {
+                const extraCostPriceBreaks = priceBreaks.map((priceBreak, index) => {
+                  // Use the actual field values from the form, linking each to a specific price break
                   const fieldValues = form.getValues(`extra_costs.${fieldIndex}`);
+                  
                   return {
                     ...priceBreak,
                     ...fieldValues,
+                    price_break_id: priceBreak.id, // Make sure we set the price_break_id for each row
                     extra_cost_id: extraCost.id
                   };
                 });

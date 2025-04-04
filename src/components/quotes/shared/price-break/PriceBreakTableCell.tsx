@@ -63,15 +63,19 @@ export function PriceBreakTableCell({
                     const value = e.target.value === '' ? null : parseFloat(e.target.value);
                     field.onChange(value);
                     
-                    // If using single product cost, copy to all products
+                    // If using single product cost, copy to all products in THIS row only
                     if (useSingleProductCost && formContext) {
-                      formContext.getValues(`${fieldArrayName}.${fieldIndex}.price_break_id`)
-                        .products?.forEach((prod: any, idx: number) => {
-                          if (idx > 0) {
-                            const otherFieldName = `${fieldArrayName}.${fieldIndex}.unit_cost_${idx + 1}`;
-                            formContext.setValue(otherFieldName, value);
-                          }
-                        });
+                      // Get the current form values and the price break ID of the current row
+                      const priceBreakId = formContext.getValues(`${fieldArrayName}.${fieldIndex}.price_break_id`);
+                      const products = Array.from({ length: 10 }, (_, i) => i + 1);
+                      
+                      // Only update other products in THIS row
+                      products.forEach(idx => {
+                        if (idx > 1) { // Skip Product 1 which we're already setting
+                          const otherFieldName = `${fieldArrayName}.${fieldIndex}.unit_cost_${idx}`;
+                          formContext.setValue(otherFieldName, value);
+                        }
+                      });
                     }
                   }}
                   disabled={useSingleCostForAll}

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -12,13 +13,13 @@ export async function createSupplierQuote(
 
   // Log extra costs with improved structure to show we're removing price breaks
   if (formData.extra_costs && formData.extra_costs.length > 0) {
-    console.log('Extra costs after form initialization:');
+    console.log('Extra costs before insertion:');
     
     formData.extra_costs.forEach((ec, index) => {
-      // Log the main extra cost object
       console.log(`Extra cost #${index + 1} (${ec.extra_cost_id}):`);
       console.log('  Base properties:', {
         extra_cost_id: ec.extra_cost_id,
+        price_break_id: ec.price_break_id || 'null', // Log price_break_id
         unit_cost: ec.unit_cost,
         unit_of_measure_id: ec.unit_of_measure_id
       });
@@ -35,18 +36,6 @@ export async function createSupplierQuote(
         console.log('  Unit costs:');
         unitCostEntries.forEach(([key, value]) => {
           console.log(`    ${key}: ${value}`);
-        });
-      }
-      
-      // Check if there are any numeric indices that might contain unit costs
-      const numericIndices = Object.keys(ec).filter(key => !isNaN(parseInt(key)));
-      if (numericIndices.length > 0) {
-        console.log('  Indexed unit costs:');
-        numericIndices.forEach(idx => {
-          const unitCostObj = ec[idx as keyof typeof ec];
-          if (typeof unitCostObj === 'object' && unitCostObj !== null) {
-            console.log(`    Index ${idx}:`, unitCostObj);
-          }
         });
       }
       
@@ -154,6 +143,7 @@ export async function createSupplierQuote(
       .map(ec => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
+        price_break_id: ec.price_break_id || null, // Include price_break_id in the insert
         unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
         unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
         unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,
