@@ -56,10 +56,12 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
         id,
         format_id,
         notes,
+        num_products,
         formats:formats(format_name),
         price_breaks:quote_request_format_price_breaks(
           id,
-          quantity
+          quantity,
+          num_products
         ),
         products:quote_request_format_products(
           id,
@@ -77,7 +79,7 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     console.error("Error fetching quote request:", quoteRequestError.message);
   }
 
-  // Fetch the price breaks for this quote
+  // Fetch price breaks for this quote
   const { data: priceBreaks, error: priceBreaksError } = await supabase
     .from("supplier_quote_price_breaks")
     .select("*")
@@ -147,9 +149,9 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
   const supplierQuote: SupplierQuote = {
     ...quoteData,
     quote_request: quoteRequest || null,
-    price_breaks: priceBreaks || [],
     formats: processedFormats,
     attachments: processedAttachments,
+    price_breaks: priceBreaks as SupplierQuotePriceBreak[] || [],
     status: quoteData.status as SupplierQuoteStatus,
     production_schedule: productionSchedule
   };

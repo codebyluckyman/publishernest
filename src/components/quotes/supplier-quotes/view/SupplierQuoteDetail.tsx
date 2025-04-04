@@ -3,13 +3,14 @@ import { useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuoteHeader } from "./QuoteHeader";
-import { PriceBreaksView } from "./PriceBreaksView";
 import { TermsView } from "./TermsView";
 import { NotesView } from "./NotesView";
 import { ScheduleView } from "./ScheduleView";
 import { PackagingDetailsView } from "./PackagingDetailsView";
 import { AttachmentsView } from "./AttachmentsView";
 import { QuoteStatusActions } from "./QuoteStatusActions";
+import { PriceBreaksView } from "./PriceBreaksView";
+import { ExtraCostsView } from "./ExtraCostsView"; // New import
 
 interface SupplierQuoteDetailProps {
   quote: SupplierQuote;
@@ -30,7 +31,7 @@ export function SupplierQuoteDetail({
   onShowHistory,
   isPublisher
 }: SupplierQuoteDetailProps) {
-  const [activeTab, setActiveTab] = useState("pricing");
+  const [activeTab, setActiveTab] = useState("terms");
   
   return (
     <div className="space-y-6">
@@ -41,12 +42,15 @@ export function SupplierQuoteDetail({
       />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 w-full h-auto">
+        <TabsList className="grid grid-cols-6 w-full h-auto">
+          <TabsTrigger value="terms" className="py-2 text-xs md:text-sm">
+            Terms
+          </TabsTrigger>
           <TabsTrigger value="pricing" className="py-2 text-xs md:text-sm">
             Pricing
           </TabsTrigger>
-          <TabsTrigger value="terms" className="py-2 text-xs md:text-sm">
-            Terms
+          <TabsTrigger value="extra-costs" className="py-2 text-xs md:text-sm">
+            Extra Costs
           </TabsTrigger>
           <TabsTrigger value="notes" className="py-2 text-xs md:text-sm">
             Notes
@@ -60,15 +64,16 @@ export function SupplierQuoteDetail({
         </TabsList>
         
         <div className="mt-4">
-          <TabsContent value="pricing">
-            <div className="space-y-4">
-              <PriceBreaksView quote={quote} />
-              <AttachmentsView quote={quote} />
-            </div>
-          </TabsContent>
-          
           <TabsContent value="terms">
             <TermsView quote={quote} />
+          </TabsContent>
+          
+          <TabsContent value="pricing">
+            <PriceBreaksView quote={quote} />
+          </TabsContent>
+          
+          <TabsContent value="extra-costs">
+            <ExtraCostsView quote={quote} />
           </TabsContent>
           
           <TabsContent value="notes">
@@ -84,6 +89,8 @@ export function SupplierQuoteDetail({
           </TabsContent>
         </div>
       </Tabs>
+      
+      <AttachmentsView quote={quote} />
       
       <QuoteStatusActions
         quote={quote}

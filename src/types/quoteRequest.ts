@@ -79,6 +79,7 @@ export interface QuoteRequestFormatProduct {
 
 export interface PriceBreak {
   id?: string;
+  price_break_id?: string; // Added this field to match the code usage
   quote_request_format_id?: string;
   quantity: number;
   num_products?: number; // This will be maintained for compatibility but set at format level

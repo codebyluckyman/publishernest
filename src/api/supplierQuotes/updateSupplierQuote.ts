@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak, SupplierQuoteExtraCost } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function updateSupplierQuote(
@@ -104,52 +103,178 @@ export async function updateSupplierQuote(
   }
 
   // Update price breaks if provided
-  if (updates.price_breaks && updates.price_breaks.length > 0) {
-    console.log('Price Breaks to Update:', JSON.stringify(updates.price_breaks, null, 2));
-    
-    // First delete existing price breaks for this supplier quote
-    const { error: deleteError } = await supabase
+  if (updates.price_breaks) {
+    // First, get existing price breaks
+    const { data: existingPriceBreaks, error: fetchError } = await supabase
       .from("supplier_quote_price_breaks")
-      .delete()
+      .select("*")
       .eq("supplier_quote_id", id);
 
-    if (deleteError) {
-      throw new Error(`Error deleting existing price breaks: ${deleteError.message}`);
-    }
-
-    // Insert updated price breaks
-    const priceBreaksToInsert = updates.price_breaks.map(pb => {
-      // Create a base object with the required fields
-      const priceBreakData: Record<string, any> = {
-        supplier_quote_id: id,
-        quote_request_format_id: pb.quote_request_format_id,
-        price_break_id: pb.price_break_id,
-        quantity: pb.quantity,
-        product_id: pb.product_id || null,
-      };
+    if (fetchError) {
+      console.error("Error fetching existing price breaks:", fetchError);
+    } else {
+      // Create a map of existing price breaks for quick lookup
+      const existingPriceBreaksMap = new Map<string, any>();
       
-      // Check for unit_cost_1 through unit_cost_10 fields specifically and filter out nulls and undefineds
-      for (let i = 1; i <= 10; i++) {
-        const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
-        if (pb[unitCostKey] !== undefined && pb[unitCostKey] !== null) {
-          priceBreakData[unitCostKey] = pb[unitCostKey];
+      if (existingPriceBreaks) {
+        existingPriceBreaks.forEach(pb => {
+          const key = `${pb.quote_request_format_id}_${pb.price_break_id}`;
+          existingPriceBreaksMap.set(key, pb);
+        });
+      }
+
+      // Process each price break from the update
+      for (const priceBreak of updates.price_breaks) {
+        const key = `${priceBreak.quote_request_format_id}_${priceBreak.price_break_id}`;
+        const existingPriceBreak = existingPriceBreaksMap.get(key);
+
+        if (existingPriceBreak) {
+          // Update existing price break
+          const { error: updateError } = await supabase
+            .from("supplier_quote_price_breaks")
+            .update({
+              unit_cost: priceBreak.unit_cost === undefined ? null : priceBreak.unit_cost,
+              unit_cost_1: priceBreak.unit_cost_1 === undefined ? null : priceBreak.unit_cost_1,
+              unit_cost_2: priceBreak.unit_cost_2 === undefined ? null : priceBreak.unit_cost_2,
+              unit_cost_3: priceBreak.unit_cost_3 === undefined ? null : priceBreak.unit_cost_3,
+              unit_cost_4: priceBreak.unit_cost_4 === undefined ? null : priceBreak.unit_cost_4,
+              unit_cost_5: priceBreak.unit_cost_5 === undefined ? null : priceBreak.unit_cost_5,
+              unit_cost_6: priceBreak.unit_cost_6 === undefined ? null : priceBreak.unit_cost_6,
+              unit_cost_7: priceBreak.unit_cost_7 === undefined ? null : priceBreak.unit_cost_7,
+              unit_cost_8: priceBreak.unit_cost_8 === undefined ? null : priceBreak.unit_cost_8,
+              unit_cost_9: priceBreak.unit_cost_9 === undefined ? null : priceBreak.unit_cost_9,
+              unit_cost_10: priceBreak.unit_cost_10 === undefined ? null : priceBreak.unit_cost_10
+            })
+            .eq("id", existingPriceBreak.id);
+
+          if (updateError) {
+            console.error(`Error updating price break ${existingPriceBreak.id}:`, updateError);
+          }
+        } else {
+          // Insert new price break
+          const { error: insertError } = await supabase
+            .from("supplier_quote_price_breaks")
+            .insert({
+              supplier_quote_id: id,
+              quote_request_format_id: priceBreak.quote_request_format_id,
+              price_break_id: priceBreak.price_break_id,
+              quantity: priceBreak.quantity,
+              unit_cost: priceBreak.unit_cost === undefined ? null : priceBreak.unit_cost,
+              unit_cost_1: priceBreak.unit_cost_1 === undefined ? null : priceBreak.unit_cost_1,
+              unit_cost_2: priceBreak.unit_cost_2 === undefined ? null : priceBreak.unit_cost_2,
+              unit_cost_3: priceBreak.unit_cost_3 === undefined ? null : priceBreak.unit_cost_3,
+              unit_cost_4: priceBreak.unit_cost_4 === undefined ? null : priceBreak.unit_cost_4,
+              unit_cost_5: priceBreak.unit_cost_5 === undefined ? null : priceBreak.unit_cost_5,
+              unit_cost_6: priceBreak.unit_cost_6 === undefined ? null : priceBreak.unit_cost_6,
+              unit_cost_7: priceBreak.unit_cost_7 === undefined ? null : priceBreak.unit_cost_7,
+              unit_cost_8: priceBreak.unit_cost_8 === undefined ? null : priceBreak.unit_cost_8,
+              unit_cost_9: priceBreak.unit_cost_9 === undefined ? null : priceBreak.unit_cost_9,
+              unit_cost_10: priceBreak.unit_cost_10 === undefined ? null : priceBreak.unit_cost_10
+            });
+
+          if (insertError) {
+            console.error("Error inserting price break:", insertError);
+          }
         }
       }
+    }
+  }
+
+  // Update extra costs if provided
+  if (updates.extra_costs && updates.extra_costs.length > 0) {
+    // First, get existing extra costs
+    const { data: existingExtraCosts, error: fetchExtraCostsError } = await supabase
+      .from("supplier_quote_extra_costs")
+      .select("*")
+      .eq("supplier_quote_id", id);
+
+    if (fetchExtraCostsError) {
+      console.error("Error fetching existing extra costs:", fetchExtraCostsError);
+    } else {
+      // Create a map of existing extra costs for quick lookup
+      const existingExtraCostsMap = new Map<string, SupplierQuoteExtraCost>();
       
-      return priceBreakData;
-    });
+      if (existingExtraCosts) {
+        existingExtraCosts.forEach(ec => {
+          // Cast to SupplierQuoteExtraCost to ensure consistency
+          const extraCost = ec as unknown as SupplierQuoteExtraCost;
+          // Create a key using just the extra_cost_id
+          const key = extraCost.extra_cost_id;
+          existingExtraCostsMap.set(key, extraCost);
+        });
+      }
 
-    console.log('Formatted Price Breaks for Update:', JSON.stringify(priceBreaksToInsert, null, 2));
+      // Process each extra cost from the update
+      for (const extraCost of updates.extra_costs) {
+        // Skip costs with no values
+        const hasValue = 
+               (extraCost.unit_cost !== null && extraCost.unit_cost !== undefined) || 
+               (extraCost.unit_cost_1 !== null && extraCost.unit_cost_1 !== undefined) || 
+               (extraCost.unit_cost_2 !== null && extraCost.unit_cost_2 !== undefined) ||
+               (extraCost.unit_cost_3 !== null && extraCost.unit_cost_3 !== undefined) ||
+               (extraCost.unit_cost_4 !== null && extraCost.unit_cost_4 !== undefined) ||
+               (extraCost.unit_cost_5 !== null && extraCost.unit_cost_5 !== undefined) ||
+               (extraCost.unit_cost_6 !== null && extraCost.unit_cost_6 !== undefined) ||
+               (extraCost.unit_cost_7 !== null && extraCost.unit_cost_7 !== undefined) ||
+               (extraCost.unit_cost_8 !== null && extraCost.unit_cost_8 !== undefined) ||
+               (extraCost.unit_cost_9 !== null && extraCost.unit_cost_9 !== undefined) ||
+               (extraCost.unit_cost_10 !== null && extraCost.unit_cost_10 !== undefined);
+               
+        if (!hasValue) continue;
 
-    // Use type assertion to fix the TypeScript error
-    const { error: insertError } = await supabase
-      .from("supplier_quote_price_breaks")
-      .insert(priceBreaksToInsert as any[]);
+        // Create a key using just the extra_cost_id
+        const key = extraCost.extra_cost_id;
+        const existingExtraCost = existingExtraCostsMap.get(key);
 
-    console.log('Price Breaks Update Error:', insertError);
+        if (existingExtraCost) {
+          // Update existing extra cost
+          const { error: updateError } = await supabase
+            .from("supplier_quote_extra_costs")
+            .update({
+              unit_cost: extraCost.unit_cost === undefined ? null : extraCost.unit_cost,
+              unit_cost_1: extraCost.unit_cost_1 === undefined ? null : extraCost.unit_cost_1,
+              unit_cost_2: extraCost.unit_cost_2 === undefined ? null : extraCost.unit_cost_2,
+              unit_cost_3: extraCost.unit_cost_3 === undefined ? null : extraCost.unit_cost_3,
+              unit_cost_4: extraCost.unit_cost_4 === undefined ? null : extraCost.unit_cost_4,
+              unit_cost_5: extraCost.unit_cost_5 === undefined ? null : extraCost.unit_cost_5,
+              unit_cost_6: extraCost.unit_cost_6 === undefined ? null : extraCost.unit_cost_6,
+              unit_cost_7: extraCost.unit_cost_7 === undefined ? null : extraCost.unit_cost_7,
+              unit_cost_8: extraCost.unit_cost_8 === undefined ? null : extraCost.unit_cost_8,
+              unit_cost_9: extraCost.unit_cost_9 === undefined ? null : extraCost.unit_cost_9,
+              unit_cost_10: extraCost.unit_cost_10 === undefined ? null : extraCost.unit_cost_10,
+              unit_of_measure_id: extraCost.unit_of_measure_id
+            })
+            .eq("id", existingExtraCost.id);
 
-    if (insertError) {
-      throw new Error(`Error inserting updated price breaks: ${insertError.message}`);
+          if (updateError) {
+            console.error(`Error updating extra cost ${existingExtraCost.id}:`, updateError);
+          }
+        } else {
+          // Insert new extra cost
+          const { error: insertError } = await supabase
+            .from("supplier_quote_extra_costs")
+            .insert({
+              supplier_quote_id: id,
+              extra_cost_id: extraCost.extra_cost_id,
+              unit_cost: extraCost.unit_cost === undefined ? null : extraCost.unit_cost,
+              unit_cost_1: extraCost.unit_cost_1 === undefined ? null : extraCost.unit_cost_1,
+              unit_cost_2: extraCost.unit_cost_2 === undefined ? null : extraCost.unit_cost_2,
+              unit_cost_3: extraCost.unit_cost_3 === undefined ? null : extraCost.unit_cost_3,
+              unit_cost_4: extraCost.unit_cost_4 === undefined ? null : extraCost.unit_cost_4,
+              unit_cost_5: extraCost.unit_cost_5 === undefined ? null : extraCost.unit_cost_5,
+              unit_cost_6: extraCost.unit_cost_6 === undefined ? null : extraCost.unit_cost_6,
+              unit_cost_7: extraCost.unit_cost_7 === undefined ? null : extraCost.unit_cost_7,
+              unit_cost_8: extraCost.unit_cost_8 === undefined ? null : extraCost.unit_cost_8,
+              unit_cost_9: extraCost.unit_cost_9 === undefined ? null : extraCost.unit_cost_9,
+              unit_cost_10: extraCost.unit_cost_10 === undefined ? null : extraCost.unit_cost_10,
+              unit_of_measure_id: extraCost.unit_of_measure_id
+            });
+
+          if (insertError) {
+            console.error("Error inserting extra cost:", insertError);
+          }
+        }
+      }
     }
   }
 

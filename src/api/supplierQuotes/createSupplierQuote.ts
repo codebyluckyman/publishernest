@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
 export async function createSupplierQuote(
@@ -11,7 +10,51 @@ export async function createSupplierQuote(
   // Log the entire form data for debugging
   console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
 
-  // Start a transaction
+  // Log extra costs with improved structure to show we're removing price breaks
+  if (formData.extra_costs && formData.extra_costs.length > 0) {
+    console.log('Extra costs after form initialization:');
+    
+    formData.extra_costs.forEach((ec, index) => {
+      // Log the main extra cost object
+      console.log(`Extra cost #${index + 1} (${ec.extra_cost_id}):`);
+      console.log('  Base properties:', {
+        extra_cost_id: ec.extra_cost_id,
+        unit_cost: ec.unit_cost,
+        unit_of_measure_id: ec.unit_of_measure_id
+      });
+      
+      // Log unit costs
+      const unitCostEntries = Object.entries(ec).filter(([key, value]) => 
+        key.startsWith('unit_cost_') && 
+        !isNaN(parseInt(key.replace('unit_cost_', ''))) &&
+        value !== undefined && 
+        value !== null
+      );
+      
+      if (unitCostEntries.length > 0) {
+        console.log('  Unit costs:');
+        unitCostEntries.forEach(([key, value]) => {
+          console.log(`    ${key}: ${value}`);
+        });
+      }
+      
+      // Check if there are any numeric indices that might contain unit costs
+      const numericIndices = Object.keys(ec).filter(key => !isNaN(parseInt(key)));
+      if (numericIndices.length > 0) {
+        console.log('  Indexed unit costs:');
+        numericIndices.forEach(idx => {
+          const unitCostObj = ec[idx as keyof typeof ec];
+          if (typeof unitCostObj === 'object' && unitCostObj !== null) {
+            console.log(`    Index ${idx}:`, unitCostObj);
+          }
+        });
+      }
+      
+      console.log('---------------------');
+    });
+  }
+
+  // Insert the supplier quote record
   const { data: supplierQuote, error } = await supabase
     .from("supplier_quotes")
     .insert({
@@ -45,79 +88,95 @@ export async function createSupplierQuote(
     .single();
 
   console.log('Inserted Supplier Quote:', supplierQuote);
+  console.log('Supplier Quote ID:', supplierQuote?.id);
   console.log('Supplier Quote Insertion Error:', error);
 
   if (error) {
     throw new Error(`Error creating supplier quote: ${error.message}`);
   }
 
-  // Insert price breaks
+  // Insert price breaks if any
   if (formData.price_breaks && formData.price_breaks.length > 0) {
-    console.log('Price Breaks to Insert:', JSON.stringify(formData.price_breaks, null, 2));
+    const priceBreaksToInsert = formData.price_breaks.map(pb => ({
+      supplier_quote_id: supplierQuote.id,
+      quote_request_format_id: pb.quote_request_format_id,
+      price_break_id: pb.price_break_id,
+      quantity: pb.quantity,
+      unit_cost: pb.unit_cost,
+      unit_cost_1: pb.unit_cost_1,
+      unit_cost_2: pb.unit_cost_2,
+      unit_cost_3: pb.unit_cost_3,
+      unit_cost_4: pb.unit_cost_4,
+      unit_cost_5: pb.unit_cost_5,
+      unit_cost_6: pb.unit_cost_6,
+      unit_cost_7: pb.unit_cost_7,
+      unit_cost_8: pb.unit_cost_8,
+      unit_cost_9: pb.unit_cost_9,
+      unit_cost_10: pb.unit_cost_10
+    }));
 
-    const priceBreaksToInsert = formData.price_breaks.map(pb => {
-      // Create a base object with the required fields
-      const priceBreakData: Record<string, any> = {
-        supplier_quote_id: supplierQuote.id,
-        quote_request_format_id: pb.quote_request_format_id,
-        price_break_id: pb.price_break_id,
-        quantity: pb.quantity,
-        product_id: pb.product_id || null,
-      };
-      
-      // Check for unit_cost_1 through unit_cost_10 fields specifically and filter out nulls and undefineds
-      for (let i = 1; i <= 10; i++) {
-        const unitCostKey = `unit_cost_${i}` as keyof typeof pb;
-        if (pb[unitCostKey] !== undefined && pb[unitCostKey] !== null) {
-          priceBreakData[unitCostKey] = pb[unitCostKey];
-        }
-      }
-      
-      return priceBreakData;
-    });
-
-    console.log('Formatted Price Breaks:', JSON.stringify(priceBreaksToInsert, null, 2));
-
-    // Insert price breaks
     const { error: priceBreaksError } = await supabase
       .from("supplier_quote_price_breaks")
-      .insert(priceBreaksToInsert as any[]);
-
-    console.log('Price Breaks Insertion Error:', priceBreaksError);
+      .insert(priceBreaksToInsert);
 
     if (priceBreaksError) {
-      throw new Error(`Error inserting price breaks: ${priceBreaksError.message}`);
+      console.error("Error inserting price breaks:", priceBreaksError);
+      // Continue execution - we don't want to fail the entire operation if price breaks fail
     }
   }
 
-  // Insert formats
-  if (formData.price_breaks && formData.price_breaks.length > 0) {
-    // Get unique quote_request_format_ids from price breaks
-    const uniqueFormatIds = [...new Set(formData.price_breaks.map(pb => pb.quote_request_format_id))];
+  // Insert extra costs if any
+  if (formData.extra_costs && formData.extra_costs.length > 0) {
+    // Log all extra costs for debugging
+    console.log('Extra costs before filtering:', formData.extra_costs);
     
-    // Get format information for each quote request format
-    const { data: quoteRequestFormats, error: formatError } = await supabase
-      .from("quote_request_formats")
-      .select("id, format_id")
-      .in("id", uniqueFormatIds);
-    
-    if (formatError) {
-      throw new Error(`Error fetching format information: ${formatError.message}`);
-    }
-    
-    if (quoteRequestFormats && quoteRequestFormats.length > 0) {
-      const formatsToInsert = quoteRequestFormats.map(qrf => ({
-        supplier_quote_id: supplierQuote.id,
-        format_id: qrf.format_id,
-        quote_request_format_id: qrf.id
-      }));
-      
-      const { error: insertFormatsError } = await supabase
-        .from("supplier_quote_formats")
-        .insert(formatsToInsert);
+    const extraCostsToInsert = formData.extra_costs
+      .filter(ec => {
+        // Only insert costs that have any values - either unit_cost or any of unit_cost_1 through unit_cost_10
+        const hasValue = 
+               (ec.unit_cost !== null && ec.unit_cost !== undefined) || 
+               (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) || 
+               (ec.unit_cost_2 !== null && ec.unit_cost_2 !== undefined) ||
+               (ec.unit_cost_3 !== null && ec.unit_cost_3 !== undefined) ||
+               (ec.unit_cost_4 !== null && ec.unit_cost_4 !== undefined) ||
+               (ec.unit_cost_5 !== null && ec.unit_cost_5 !== undefined) ||
+               (ec.unit_cost_6 !== null && ec.unit_cost_6 !== undefined) ||
+               (ec.unit_cost_7 !== null && ec.unit_cost_7 !== undefined) ||
+               (ec.unit_cost_8 !== null && ec.unit_cost_8 !== undefined) ||
+               (ec.unit_cost_9 !== null && ec.unit_cost_9 !== undefined) ||
+               (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
+               
+        // For debugging purposes, log the extra cost and whether it has values
+        console.log(`Extra cost ${ec.extra_cost_id} has values: ${hasValue}`, ec);
         
-      if (insertFormatsError) {
-        throw new Error(`Error inserting formats: ${insertFormatsError.message}`);
+        return hasValue;
+      })
+      .map(ec => ({
+        supplier_quote_id: supplierQuote.id,
+        extra_cost_id: ec.extra_cost_id,
+        unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
+        unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
+        unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,
+        unit_cost_3: ec.unit_cost_3 === undefined ? null : ec.unit_cost_3,
+        unit_cost_4: ec.unit_cost_4 === undefined ? null : ec.unit_cost_4,
+        unit_cost_5: ec.unit_cost_5 === undefined ? null : ec.unit_cost_5,
+        unit_cost_6: ec.unit_cost_6 === undefined ? null : ec.unit_cost_6,
+        unit_cost_7: ec.unit_cost_7 === undefined ? null : ec.unit_cost_7,
+        unit_cost_8: ec.unit_cost_8 === undefined ? null : ec.unit_cost_8,
+        unit_cost_9: ec.unit_cost_9 === undefined ? null : ec.unit_cost_9,
+        unit_cost_10: ec.unit_cost_10 === undefined ? null : ec.unit_cost_10,
+        unit_of_measure_id: ec.unit_of_measure_id
+      }));
+
+    if (extraCostsToInsert.length > 0) {
+      console.log('Inserting extra costs:', extraCostsToInsert);
+      const { error: extraCostsError } = await supabase
+        .from("supplier_quote_extra_costs")
+        .insert(extraCostsToInsert);
+
+      if (extraCostsError) {
+        console.error("Error inserting extra costs:", extraCostsError);
+        // Continue execution - we don't want to fail the entire operation if extra costs fail
       }
     }
   }
