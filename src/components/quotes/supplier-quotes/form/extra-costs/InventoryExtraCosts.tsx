@@ -12,7 +12,7 @@ interface InventoryExtraCostsProps {
   inventoryCosts: QuoteRequest['extra_costs'];
   quoteRequest: QuoteRequest;
   control: Control<SupplierQuoteFormValues>;
-  findFieldIndex: (extraCostId: string) => number;
+  findFieldIndex: (extraCostId: string, priceBreakId?: string) => number;
   form: UseFormReturn<SupplierQuoteFormValues>;
 }
 
@@ -77,22 +77,6 @@ export function InventoryExtraCosts({
               </div>
               
               {inventoryCosts.map(extraCost => {
-                const fieldIndex = findFieldIndex(extraCost.id);
-                if (fieldIndex === -1) return null;
-                
-                // Create a custom set of price breaks for this extra cost
-                const extraCostPriceBreaks = priceBreaks.map((priceBreak, index) => {
-                  // Use the actual field values from the form, linking each to a specific price break
-                  const fieldValues = form.getValues(`extra_costs.${fieldIndex}`);
-                  
-                  return {
-                    ...priceBreak,
-                    ...fieldValues,
-                    price_break_id: priceBreak.id, // Make sure we set the price_break_id for each row
-                    extra_cost_id: extraCost.id
-                  };
-                });
-                
                 return (
                   <div key={extraCost.id} className="mb-4">
                     <h4 className="text-sm font-medium mb-2">{extraCost.name}</h4>
@@ -103,7 +87,24 @@ export function InventoryExtraCosts({
                     <PriceBreakTable
                       formatName={`${extraCost.name} Pricing`}
                       formatDescription={`Please supply costs for each quantity break`}
-                      priceBreaks={extraCostPriceBreaks}
+                      priceBreaks={priceBreaks.map(priceBreak => {
+                        // For each price break, find the corresponding extra cost field
+                        const fieldIndex = findFieldIndex(extraCost.id, priceBreak.id);
+                        
+                        // Get the form values for this extra cost
+                        let fieldValues = {};
+                        if (fieldIndex !== -1) {
+                          fieldValues = form.getValues(`extra_costs.${fieldIndex}`);
+                        }
+                        
+                        // Return a combined object for price break table
+                        return {
+                          ...priceBreak,
+                          ...fieldValues,
+                          price_break_id: priceBreak.id,
+                          extra_cost_id: extraCost.id,
+                        };
+                      })}
                       products={products}
                       control={control}
                       fieldArrayName="extra_costs"
