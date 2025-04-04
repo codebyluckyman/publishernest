@@ -106,6 +106,4 @@ export function PriceBreakEditControls({
       )}
     </div>
   );
-  
-  return { useSingleProductCost, useSingleCostForAll };
 }
