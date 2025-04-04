@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -10,6 +9,16 @@ export async function createSupplierQuote(
 ): Promise<string> {
   // Log the entire form data for debugging
   console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
+
+  // Log extra costs with price break ID
+  if (formData.extra_costs && formData.extra_costs.length > 0) {
+    console.log('Extra costs after form initialization:', 
+      formData.extra_costs.map(ec => ({
+        ...ec,
+        price_break_id: ec.price_break_id || 'No price break assigned'
+      }))
+    );
+  }
 
   // Insert the supplier quote record
   const { data: supplierQuote, error } = await supabase
