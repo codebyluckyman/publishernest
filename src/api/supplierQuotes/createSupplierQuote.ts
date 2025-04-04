@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -11,7 +10,7 @@ export async function createSupplierQuote(
   // Log the entire form data for debugging
   console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
 
-  // Log extra costs with improved structure to show price_break_id at the unit cost level
+  // Log extra costs with improved structure to show we're removing price breaks
   if (formData.extra_costs && formData.extra_costs.length > 0) {
     console.log('Extra costs after form initialization:');
     
@@ -20,13 +19,11 @@ export async function createSupplierQuote(
       console.log(`Extra cost #${index + 1} (${ec.extra_cost_id}):`);
       console.log('  Base properties:', {
         extra_cost_id: ec.extra_cost_id,
-        price_break_id: ec.price_break_id || 'No price break assigned',
         unit_cost: ec.unit_cost,
         unit_of_measure_id: ec.unit_of_measure_id
       });
       
-      // Log unit costs with their associated price break IDs if they exist
-      // Check if there are any numeric properties that might be unit costs
+      // Log unit costs
       const unitCostEntries = Object.entries(ec).filter(([key, value]) => 
         key.startsWith('unit_cost_') && 
         !isNaN(parseInt(key.replace('unit_cost_', ''))) &&
@@ -37,8 +34,7 @@ export async function createSupplierQuote(
       if (unitCostEntries.length > 0) {
         console.log('  Unit costs:');
         unitCostEntries.forEach(([key, value]) => {
-          // For each unit cost, show its associated price break ID
-          console.log(`    ${key}: ${value} (price_break_id: ${ec.price_break_id || 'No price break assigned'})`);
+          console.log(`    ${key}: ${value}`);
         });
       }
       
@@ -49,10 +45,7 @@ export async function createSupplierQuote(
         numericIndices.forEach(idx => {
           const unitCostObj = ec[idx as keyof typeof ec];
           if (typeof unitCostObj === 'object' && unitCostObj !== null) {
-            console.log(`    Index ${idx}:`, {
-              ...unitCostObj,
-              price_break_id: ec.price_break_id || 'No price break assigned'
-            });
+            console.log(`    Index ${idx}:`, unitCostObj);
           }
         });
       }
@@ -161,7 +154,6 @@ export async function createSupplierQuote(
       .map(ec => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
-        price_break_id: ec.price_break_id || null,
         unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
         unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
         unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,

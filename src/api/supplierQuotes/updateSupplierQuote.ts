@@ -196,12 +196,10 @@ export async function updateSupplierQuote(
       
       if (existingExtraCosts) {
         existingExtraCosts.forEach(ec => {
-          // Cast to SupplierQuoteExtraCost to ensure price_break_id is recognized
+          // Cast to SupplierQuoteExtraCost to ensure consistency
           const extraCost = ec as unknown as SupplierQuoteExtraCost;
-          // Create a composite key using extra_cost_id and price_break_id (if present)
-          const key = extraCost.price_break_id 
-            ? `${extraCost.extra_cost_id}_${extraCost.price_break_id}` 
-            : extraCost.extra_cost_id;
+          // Create a key using just the extra_cost_id
+          const key = extraCost.extra_cost_id;
           existingExtraCostsMap.set(key, extraCost);
         });
       }
@@ -224,11 +222,8 @@ export async function updateSupplierQuote(
                
         if (!hasValue) continue;
 
-        // Create a composite key using extra_cost_id and price_break_id (if present)
-        const key = extraCost.price_break_id 
-          ? `${extraCost.extra_cost_id}_${extraCost.price_break_id}` 
-          : extraCost.extra_cost_id;
-        
+        // Create a key using just the extra_cost_id
+        const key = extraCost.extra_cost_id;
         const existingExtraCost = existingExtraCostsMap.get(key);
 
         if (existingExtraCost) {
@@ -247,8 +242,7 @@ export async function updateSupplierQuote(
               unit_cost_8: extraCost.unit_cost_8 === undefined ? null : extraCost.unit_cost_8,
               unit_cost_9: extraCost.unit_cost_9 === undefined ? null : extraCost.unit_cost_9,
               unit_cost_10: extraCost.unit_cost_10 === undefined ? null : extraCost.unit_cost_10,
-              unit_of_measure_id: extraCost.unit_of_measure_id,
-              price_break_id: extraCost.price_break_id || null
+              unit_of_measure_id: extraCost.unit_of_measure_id
             })
             .eq("id", existingExtraCost.id);
 
@@ -262,7 +256,6 @@ export async function updateSupplierQuote(
             .insert({
               supplier_quote_id: id,
               extra_cost_id: extraCost.extra_cost_id,
-              price_break_id: extraCost.price_break_id || null,
               unit_cost: extraCost.unit_cost === undefined ? null : extraCost.unit_cost,
               unit_cost_1: extraCost.unit_cost_1 === undefined ? null : extraCost.unit_cost_1,
               unit_cost_2: extraCost.unit_cost_2 === undefined ? null : extraCost.unit_cost_2,

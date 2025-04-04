@@ -1,7 +1,7 @@
+
 import { Control, useFieldArray, useFormContext } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuoteExtraCost } from "@/types/supplierQuote";
-import { PriceBreakTable } from "@/components/quotes/shared/price-break";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 import { Input } from "@/components/ui/input";
@@ -144,35 +144,49 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
 
                   const formatId = quoteRequest.formats?.[0]?.id;
                   const format = quoteRequest.formats?.[0];
-                  const priceBreaks = quoteRequest.formats?.[0]?.price_breaks || [];
                   const numProducts = getNumProductsForFormat(formatId || '');
                   
-                  const products = Array.from({ length: numProducts }, (_, index) => ({
-                    index,
-                    heading: `Product ${index + 1}`
-                  }));
-
-                  console.log(`Creating price break table for ${extraCost.name} with ${priceBreaks.length} price breaks and ${numProducts} products`);
+                  // We'll add UI for directly entering values here in the next step
 
                   return (
-                    <div key={extraCost.id} className="pb-4">
-                      <div className="px-4 py-2">
+                    <div key={extraCost.id} className="px-4 py-4 border-b">
+                      <div className="mb-4">
                         <FormatSpecWrapper formatId={format?.format_id || null} />
                       </div>
                       
-                      <PriceBreakTable
-                        formatName={extraCost.name}
-                        formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
-                        priceBreaks={priceBreaks.map(pb => ({
-                          ...pb,
-                          id: pb.id || '', 
-                          price_break_id: pb.id || ''
-                        }))}
-                        products={products}
-                        control={control}
-                        fieldArrayName={`extra_costs.${fieldIndex}`}
-                        className="mb-2"
-                      />
+                      <h3 className="text-base font-medium mb-2">{extraCost.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {extraCost.description || 'No description'} ({unitOfMeasure?.name || 'Unknown unit'})
+                      </p>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                        {Array.from({ length: numProducts }, (_, index) => (
+                          <div key={index} className="space-y-2">
+                            <label className="text-xs font-medium">Product {index + 1}</label>
+                            <FormField
+                              control={control}
+                              name={`extra_costs.${fieldIndex}.unit_cost_${index + 1}`}
+                              render={({ field }) => (
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <span className="text-gray-500">{form.watch('currency')}</span>
+                                  </div>
+                                  <Input
+                                    placeholder="0.00"
+                                    className="pl-10"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    {...field}
+                                    value={field.value || ''}
+                                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                                  />
+                                </div>
+                              )}
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   );
                 })}

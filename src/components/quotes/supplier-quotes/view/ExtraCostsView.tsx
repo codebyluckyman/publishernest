@@ -1,6 +1,5 @@
 
 import { SupplierQuote } from "@/types/supplierQuote";
-import { PriceBreakTable } from "@/components/quotes/shared/price-break";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
 import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
@@ -68,7 +67,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
           return unitOfMeasure?.is_inventory_unit;
         });
         
-        // If the group has inventory units, render price break tables
+        // If the group has inventory units, render product-specific costs
         if (hasInventoryUnits) {
           return (
             <Card key={unitName} className="mb-4">
@@ -81,66 +80,44 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                     (unit) => unit.id === extraCost.unit_of_measure_id
                   );
                   
-                  // Only render price break tables for inventory units
+                  // Only render inventory unit costs
                   if (!unitOfMeasure?.is_inventory_unit) return null;
                   
-                  // Get all supplier extra costs for this extra cost ID - might have multiple due to price breaks
-                  const supplierExtraCosts = quote.extra_costs?.filter(
+                  // Get all supplier extra costs for this extra cost ID
+                  const supplierExtraCost = quote.extra_costs?.find(
                     (ec) => ec.extra_cost_id === extraCost.id
-                  ) || [];
+                  );
                   
-                  if (supplierExtraCosts.length === 0) return null;
+                  if (!supplierExtraCost) return null;
                   
-                  // Prepare price breaks - get all price breaks from the first format
+                  // Get number of products from the first format
                   const formatId = quote.quote_request?.formats?.[0]?.id;
-                  const priceBreaks = quote.quote_request?.formats?.[0]?.price_breaks || [];
                   const numProducts = getNumProductsForFormat(formatId || '');
                   
-                  // Create products array
-                  const products = Array.from({ length: numProducts }, (_, index) => ({
-                    index,
-                    heading: `Product ${index + 1}`
-                  }));
-
-                  // For each price break, find the corresponding extra cost entry
-                  const priceBreaksWithCosts = priceBreaks.map(pb => {
-                    // Find supplier extra cost for this price break
-                    const specificCost = supplierExtraCosts.find(ec => ec.price_break_id === pb.id);
-                    
-                    // If no specific cost exists, use the general one (without price_break_id)
-                    const fallbackCost = supplierExtraCosts.find(ec => !ec.price_break_id);
-                    
-                    // Use specific cost if found, otherwise fallback to general one
-                    const costToUse = specificCost || fallbackCost;
-                    
-                    return {
-                      ...pb,
-                      id: pb.id || pb.price_break_id,
-                      price_break_id: pb.id || pb.price_break_id,
-                      unit_cost_1: costToUse?.unit_cost_1,
-                      unit_cost_2: costToUse?.unit_cost_2,
-                      unit_cost_3: costToUse?.unit_cost_3,
-                      unit_cost_4: costToUse?.unit_cost_4,
-                      unit_cost_5: costToUse?.unit_cost_5,
-                      unit_cost_6: costToUse?.unit_cost_6,
-                      unit_cost_7: costToUse?.unit_cost_7,
-                      unit_cost_8: costToUse?.unit_cost_8,
-                      unit_cost_9: costToUse?.unit_cost_9,
-                      unit_cost_10: costToUse?.unit_cost_10
-                    };
-                  });
-                  
                   return (
-                    <div key={extraCost.id} className="pb-4">
-                      <PriceBreakTable
-                        formatName={extraCost.name}
-                        formatDescription={`${extraCost.description || ''} (${unitOfMeasure?.name || 'Unknown unit'})`}
-                        priceBreaks={priceBreaksWithCosts}
-                        products={products}
-                        isReadOnly={true}
-                        currency={quote.currency}
-                        className="mb-2"
-                      />
+                    <div key={extraCost.id} className="p-4 border-b">
+                      <h3 className="font-medium">{extraCost.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {extraCost.description || 'No description'} ({unitOfMeasure?.name || 'Unknown unit'})
+                      </p>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                        {Array.from({ length: numProducts }, (_, index) => {
+                          const costKey = `unit_cost_${index + 1}` as keyof typeof supplierExtraCost;
+                          const cost = supplierExtraCost[costKey];
+                          
+                          return (
+                            <div key={index} className="bg-muted p-3 rounded">
+                              <div className="text-xs text-muted-foreground mb-1">Product {index + 1}</div>
+                              <div className="font-medium">
+                                {cost !== null && cost !== undefined
+                                  ? formatCurrency(Number(cost), quote.currency)
+                                  : '-'}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
