@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FormatSpecifications } from "@/components/quotes/form/FormatSpecifications";
 import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 import { PriceBreakTable } from "@/components/quotes/shared/price-break";
+import { useExtraCostsManagement } from "@/hooks/useExtraCostsManagement";
 
 interface InventoryExtraCostsProps {
   inventoryCosts: QuoteRequest['extra_costs'];
@@ -22,23 +23,17 @@ export function InventoryExtraCosts({
   findFieldIndex,
   form
 }: InventoryExtraCostsProps) {
-  // Helper function to get the number of products for a format
-  const getNumProductsForFormat = (formatId: string): number => {
-    if (!quoteRequest.formats) return 1;
-    
-    const format = quoteRequest.formats.find(f => f.id === formatId);
-    return format?.num_products || 1;
-  };
+  const { 
+    getNumProductsForFormat,
+    getFormatPriceBreaks
+  } = useExtraCostsManagement({
+    control,
+    quoteRequest,
+    form
+  });
 
   // Group formats with their price breaks
-  const formatPriceBreaks: Record<string, any[]> = {};
-  if (quoteRequest.formats) {
-    quoteRequest.formats.forEach(format => {
-      if (format.price_breaks && format.price_breaks.length > 0) {
-        formatPriceBreaks[format.id] = format.price_breaks;
-      }
-    });
-  }
+  const formatPriceBreaks = getFormatPriceBreaks();
 
   // Component for format specifications
   const FormatSpecWrapper = ({ formatId }: { formatId: string | null }) => {
