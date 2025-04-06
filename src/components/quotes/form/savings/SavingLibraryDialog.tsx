@@ -26,7 +26,7 @@ interface SavingLibraryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddFromLibrary: (saving: SavingTableItem) => void;
-  onOpen: () => void;
+  onOpen?: () => void; // Make this prop optional
   organizationId?: string;
 }
 
@@ -34,7 +34,7 @@ export function SavingLibraryDialog({
   open, 
   onOpenChange, 
   onAddFromLibrary, 
-  onOpen,
+  onOpen = () => {}, // Provide a default empty function
   organizationId 
 }: SavingLibraryDialogProps) {
   const [savingLibrary, setSavingLibrary] = useState<SavingTableItem[]>([]);

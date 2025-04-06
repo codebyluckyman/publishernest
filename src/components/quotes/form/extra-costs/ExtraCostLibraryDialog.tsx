@@ -26,7 +26,7 @@ interface ExtraCostLibraryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddFromLibrary: (cost: ExtraCostTableItem) => void;
-  onOpen: () => void;
+  onOpen?: () => void; // Make this prop optional
   organizationId?: string;
 }
 
@@ -34,7 +34,7 @@ export function ExtraCostLibraryDialog({
   open, 
   onOpenChange, 
   onAddFromLibrary, 
-  onOpen,
+  onOpen = () => {}, // Provide a default empty function
   organizationId 
 }: ExtraCostLibraryDialogProps) {
   const [extraCostLibrary, setExtraCostLibrary] = useState<ExtraCostTableItem[]>([]);
