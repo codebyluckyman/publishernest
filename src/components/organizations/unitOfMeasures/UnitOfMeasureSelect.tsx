@@ -11,6 +11,7 @@ interface UnitOfMeasureSelectProps {
   className?: string;
   useCombobox?: boolean;
   disabled?: boolean;
+  organizationId?: string; // Add organizationId prop
 }
 
 export function UnitOfMeasureSelect({ 
@@ -19,9 +20,10 @@ export function UnitOfMeasureSelect({
   placeholder = "Select unit...", 
   className,
   useCombobox = false,
-  disabled = false
+  disabled = false,
+  organizationId // Add organizationId to component props
 }: UnitOfMeasureSelectProps) {
-  const { unitOptions, isLoading } = useUnitOfMeasures();
+  const { unitOptions, isLoading } = useUnitOfMeasures(organizationId); // Pass organizationId to the hook
 
   if (useCombobox) {
     return (
