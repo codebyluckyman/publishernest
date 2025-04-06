@@ -9,10 +9,9 @@ import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/U
 interface ExtraCostsListProps {
   control: Control<QuoteRequestFormValues>;
   extraCosts?: DefaultExtraCost[]; // Add this prop to trigger re-renders
-  readOnly?: boolean;
 }
 
-export function ExtraCostsList({ control, extraCosts, readOnly = false }: ExtraCostsListProps) {
+export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
   const { setValue, watch } = useFormContext<QuoteRequestFormValues>();
   const { fields } = useFieldArray({
     control,
@@ -28,7 +27,7 @@ export function ExtraCostsList({ control, extraCosts, readOnly = false }: ExtraC
     return (
       <div className="text-center p-4 border border-dashed rounded-md">
         <p className="text-muted-foreground text-sm">
-          No extra costs added.
+          No extra costs added. Add from the library below.
         </p>
       </div>
     );
@@ -45,7 +44,6 @@ export function ExtraCostsList({ control, extraCosts, readOnly = false }: ExtraC
                 placeholder="Cost name" 
                 {...control.register(`extra_costs.${index}.name` as const)} 
                 className="w-full"
-                disabled={readOnly}
               />
             </div>
             <div className="col-span-5">
@@ -53,7 +51,6 @@ export function ExtraCostsList({ control, extraCosts, readOnly = false }: ExtraC
                 placeholder="Description (optional)" 
                 {...control.register(`extra_costs.${index}.description` as const)} 
                 className="w-full h-10 min-h-10 resize-none"
-                disabled={readOnly}
               />
             </div>
             <div className="col-span-3">
@@ -65,7 +62,6 @@ export function ExtraCostsList({ control, extraCosts, readOnly = false }: ExtraC
                 }}
                 placeholder="Unit"
                 className="w-full"
-                disabled={readOnly}
               />
             </div>
           </div>

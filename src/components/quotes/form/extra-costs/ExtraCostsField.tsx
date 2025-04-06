@@ -7,16 +7,20 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ExtraCostsList } from "./ExtraCostsList";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Library } from "lucide-react";
+import { ExtraCostLibraryDialog } from "./ExtraCostLibraryDialog";
+import { ExtraCostTableItem } from "@/types/extraCost";
+import { toast } from "sonner";
 
 export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
   const [isOpen, setIsOpen] = useState(false); // Start collapsed
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   
   // Set up the field array for extra_costs
-  const { fields } = useFieldArray({
+  const { fields, append } = useFieldArray({
     control,
     name: "extra_costs"
   });
@@ -39,6 +43,30 @@ export function ExtraCostsField() {
       }
     }
   }, [currentOrganization, setValue, defaultCostsAdded, fields]);
+
+  // Handle adding an extra cost from the library
+  const handleAddFromLibrary = (cost: ExtraCostTableItem) => {
+    const currentCosts = getValues("extra_costs") || [];
+    
+    // Check if cost already exists in the form
+    const alreadyExists = currentCosts.some(
+      existingCost => existingCost.name === cost.name
+    );
+    
+    if (alreadyExists) {
+      toast.warning(`"${cost.name}" is already added to this quote request`);
+      return;
+    }
+    
+    // Add the new cost
+    append({
+      name: cost.name,
+      description: cost.description || "",
+      unit_of_measure_id: cost.unit_of_measure_id || ""
+    });
+    
+    toast.success(`"${cost.name}" added to extra costs`);
+  };
 
   // Debug mount
   useEffect(() => {
@@ -64,7 +92,26 @@ export function ExtraCostsField() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-3">
               {/* Pass the extraCosts array to trigger re-render when it changes */}
-              <ExtraCostsList control={control} extraCosts={extraCosts} readOnly={true} />
+              <ExtraCostsList control={control} extraCosts={extraCosts} />
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsLibraryOpen(true)}
+                className="w-full"
+                type="button"
+              >
+                <Library className="h-4 w-4 mr-2" />
+                Add from Library
+              </Button>
+              
+              <ExtraCostLibraryDialog
+                open={isLibraryOpen}
+                onOpenChange={setIsLibraryOpen}
+                onAddFromLibrary={handleAddFromLibrary}
+                onOpen={() => {}}
+                organizationId={currentOrganization?.id}
+              />
             </CardContent>
           </CollapsibleContent>
         </Collapsible>
