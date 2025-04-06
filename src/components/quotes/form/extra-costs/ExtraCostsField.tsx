@@ -68,12 +68,6 @@ export function ExtraCostsField() {
     toast.success(`"${cost.name}" added to extra costs`);
   };
 
-  // Debug mount
-  useEffect(() => {
-    console.log("ExtraCostsField mounted");
-    return () => console.log("ExtraCostsField unmounted");
-  }, []);
-
   return (
     <Card className="mt-6">
       <CardHeader className="pb-5">
@@ -87,11 +81,10 @@ export function ExtraCostsField() {
             </CollapsibleTrigger>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Extra costs included on the supplier quote
+            Extra costs included on the quote request
           </p>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-3">
-              {/* Pass the extraCosts array to trigger re-render when it changes */}
               <ExtraCostsList control={control} extraCosts={extraCosts} />
               
               <Button 
@@ -109,7 +102,6 @@ export function ExtraCostsField() {
                 open={isLibraryOpen}
                 onOpenChange={setIsLibraryOpen}
                 onAddFromLibrary={handleAddFromLibrary}
-                onOpen={() => {}}
                 organizationId={currentOrganization?.id}
               />
             </CardContent>
