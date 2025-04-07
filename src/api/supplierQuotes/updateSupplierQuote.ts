@@ -296,8 +296,8 @@ export async function updateSupplierQuote(
       if (existingSavings) {
         existingSavings.forEach(s => {
           // Create a key using just the saving_id
-          const key = s.saving_id;
-          existingSavingsMap.set(key, s);
+          const savingId = s.saving_id;
+          existingSavingsMap.set(savingId, s);
         });
       }
 

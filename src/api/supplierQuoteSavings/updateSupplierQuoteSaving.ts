@@ -32,8 +32,23 @@ export async function updateSupplierQuoteSaving(id: string, updates: Partial<Sup
     throw new Error("Failed to update supplier quote saving");
   }
   
+  // Convert the response to the expected type
   return {
-    ...data,
+    id: data.id,
+    supplier_quote_id: data.supplier_quote_id,
+    saving_id: data.saving_id,
+    unit_cost: data.unit_cost,
+    unit_cost_1: data.unit_cost_1,
+    unit_cost_2: data.unit_cost_2,
+    unit_cost_3: data.unit_cost_3,
+    unit_cost_4: data.unit_cost_4,
+    unit_cost_5: data.unit_cost_5,
+    unit_cost_6: data.unit_cost_6,
+    unit_cost_7: data.unit_cost_7,
+    unit_cost_8: data.unit_cost_8,
+    unit_cost_9: data.unit_cost_9,
+    unit_cost_10: data.unit_cost_10,
+    unit_of_measure_id: data.unit_of_measure_id,
     ...updates // Include any additional properties from the input
   } as SupplierQuoteSaving;
 }
