@@ -112,6 +112,7 @@ export function useSupplierQuoteForm({
   onFormChange,
   setCurrentFormData,
   createdQuoteId,
+  mode = 'create'
 }: {
   quoteRequest: QuoteRequest;
   initialValues: SupplierQuoteFormValues;
@@ -119,6 +120,7 @@ export function useSupplierQuoteForm({
   onFormChange?: (hasChanges: boolean) => void;
   setCurrentFormData?: (data: SupplierQuoteFormValues) => void;
   createdQuoteId: string | null;
+  mode?: 'create' | 'edit';
 }) {
   const { unitOfMeasures } = useUnitOfMeasures();
   const [activeTab, setActiveTab] = useState("details");
@@ -238,7 +240,8 @@ export function useSupplierQuoteForm({
   useEffect(() => {
     if (quoteRequest.production_schedule_requested &&
       quoteRequest.required_step_id &&
-      quoteRequest.required_step_date
+      quoteRequest.required_step_date &&
+      mode === 'create'
     ) {
       console.log("Setting schedule with required step:", quoteRequest.required_step_id, 
         "step name:", quoteRequest.required_step_name,
@@ -250,7 +253,7 @@ export function useSupplierQuoteForm({
       
       form.setValue("production_schedule", initialSchedule);
     }
-  }, [quoteRequest.required_step_id, quoteRequest.required_step_date, quoteRequest.production_schedule_requested, form]);
+  }, [quoteRequest.required_step_id, quoteRequest.required_step_date, quoteRequest.production_schedule_requested, form, mode]);
   
   // Handle supplier changes
   useEffect(() => {

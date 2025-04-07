@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -11,7 +12,8 @@ import {
   submitSupplierQuote,
   fetchSupplierQuoteAudit,
   acceptSupplierQuote,
-  declineSupplierQuote
+  declineSupplierQuote,
+  deleteSupplierQuote
 } from "@/api/supplierQuotes";
 import { approveSupplierQuote } from "@/api/supplierQuotes/approveSupplierQuote";
 import { rejectSupplierQuote } from "@/api/supplierQuotes/rejectSupplierQuote";
@@ -107,6 +109,27 @@ export function useSupplierQuotes() {
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to update supplier quote");
+      }
+    });
+  };
+
+  /**
+   * Hook to delete a supplier quote
+   */
+  const useDeleteSupplierQuote = () => {
+    return useMutation({
+      mutationFn: (id: string) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return deleteSupplierQuote(id, user.id);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
+        toast.success("Supplier quote deleted successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to delete supplier quote");
       }
     });
   };
@@ -240,6 +263,7 @@ export function useSupplierQuotes() {
     useSupplierQuoteById,
     useCreateSupplierQuote,
     useUpdateSupplierQuote,
+    useDeleteSupplierQuote,
     useSubmitSupplierQuote,
     useAcceptSupplierQuote,
     useDeclineSupplierQuote,
