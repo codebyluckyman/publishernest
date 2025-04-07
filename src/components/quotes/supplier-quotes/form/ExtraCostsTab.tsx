@@ -1,10 +1,12 @@
 
-import { Control } from "react-hook-form";
+import { Control, useFormContext, useFieldArray } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
-import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuoteExtraCost } from "@/types/supplierQuote";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { FormField, FormItem, FormControl, FormLabel } from "@/components/ui/form";
 
 interface ExtraCostsTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -13,9 +15,20 @@ interface ExtraCostsTabProps {
 
 export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
   const [activeTab, setActiveTab] = useState("extra-costs");
+  const { getValues, watch } = useFormContext<SupplierQuoteFormValues>();
+  
+  // Set up field arrays for extra costs and savings
+  const extraCostsFieldArray = useFieldArray({
+    control,
+    name: "extra_costs",
+  });
+  
+  // We'll implement savings field array later when we have the data structure
   
   const hasExtraCosts = quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0;
   const hasSavings = quoteRequest.savings && quoteRequest.savings.length > 0;
+  
+  const extraCosts = watch("extra_costs") || [];
   
   // If there are no extra costs or savings, show a message
   if (!hasExtraCosts && !hasSavings) {
@@ -50,24 +63,47 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
                       <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
                       <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
+                      <th className="py-2 px-4 text-right text-sm font-medium">Unit Cost</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {quoteRequest.extra_costs.map((cost, index) => (
-                      <tr key={cost.id || index} className="border-b">
-                        <td className="py-2 px-4 text-sm">{cost.name}</td>
-                        <td className="py-2 px-4 text-sm text-muted-foreground">{cost.description || '-'}</td>
-                        <td className="py-2 px-4 text-sm text-right">{cost.unit_of_measure_name || '-'}</td>
-                      </tr>
-                    ))}
+                    {extraCosts.map((cost, index) => {
+                      // Find the corresponding extra cost from the quote request to get name and description
+                      const extraCostDetails = quoteRequest.extra_costs?.find(
+                        ec => ec.id === cost.extra_cost_id
+                      ) || { name: 'Unknown', description: '', unit_of_measure_name: '' };
+                      
+                      return (
+                        <tr key={cost.extra_cost_id || index} className="border-b">
+                          <td className="py-2 px-4 text-sm">{extraCostDetails.name}</td>
+                          <td className="py-2 px-4 text-sm text-muted-foreground">{extraCostDetails.description || '-'}</td>
+                          <td className="py-2 px-4 text-sm text-right">{extraCostDetails.unit_of_measure_name || '-'}</td>
+                          <td className="py-2 px-4 text-sm text-right">
+                            <FormField
+                              control={control}
+                              name={`extra_costs.${index}.unit_cost`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      step="0.01"
+                                      value={field.value || ''}
+                                      onChange={(e) => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
+                                      className="w-24 text-right"
+                                      placeholder="0.00"
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
-                
-                <div className="border rounded-md p-4 mt-4">
-                  <p className="text-sm">
-                    Extra costs pricing component would be implemented here based on specific requirements
-                  </p>
-                </div>
               </div>
             ) : (
               <p className="text-muted-foreground py-2">No extra costs defined for this quote request</p>
@@ -87,24 +123,33 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
                       <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
                       <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
+                      <th className="py-2 px-4 text-right text-sm font-medium">Unit Cost</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {quoteRequest.savings.map((saving, index) => (
+                    {quoteRequest.savings?.map((saving, index) => (
                       <tr key={saving.id || index} className="border-b">
                         <td className="py-2 px-4 text-sm">{saving.name}</td>
                         <td className="py-2 px-4 text-sm text-muted-foreground">{saving.description || '-'}</td>
                         <td className="py-2 px-4 text-sm text-right">{saving.unit_of_measure_name || '-'}</td>
+                        <td className="py-2 px-4 text-sm text-right">
+                          {/* We'll add form fields for savings later when we implement the savings data structure */}
+                          <Input
+                            type="number"
+                            step="0.01"
+                            className="w-24 text-right"
+                            placeholder="0.00"
+                            disabled
+                          />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
                 
-                <div className="border rounded-md p-4 mt-4">
-                  <p className="text-sm">
-                    Savings pricing component would be implemented here based on specific requirements
-                  </p>
-                </div>
+                <p className="text-sm text-amber-500">
+                  Note: Savings capture will be implemented in a future update
+                </p>
               </div>
             ) : (
               <p className="text-muted-foreground py-2">No savings defined for this quote request</p>

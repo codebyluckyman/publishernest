@@ -15,6 +15,9 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
   const extraCosts = quote.quote_request?.extra_costs || [];
   const savings = quote.quote_request?.savings || [];
   
+  // Get submitted extra costs from the supplier quote
+  const submittedExtraCosts = quote.extra_costs || [];
+  
   const hasExtraCosts = extraCosts.length > 0;
   const hasSavings = savings.length > 0;
   
@@ -44,21 +47,34 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                   <tr className="border-b text-left">
                     <th className="py-2 px-4 font-medium text-sm">Item</th>
                     <th className="py-2 px-4 font-medium text-sm">Description</th>
-                    <th className="py-2 px-4 font-medium text-sm text-right">Unit of Measure</th>
+                    <th className="py-2 px-4 font-medium text-sm">Unit of Measure</th>
+                    <th className="py-2 px-4 font-medium text-sm text-right">Cost</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {extraCosts.map((item, index) => (
-                    <tr key={item.id || index} className="border-b">
-                      <td className="py-2 px-4 text-sm">{item.name}</td>
-                      <td className="py-2 px-4 text-sm text-muted-foreground">
-                        {item.description || '-'}
-                      </td>
-                      <td className="py-2 px-4 text-sm text-right">
-                        {item.unit_of_measure_name || '-'}
-                      </td>
-                    </tr>
-                  ))}
+                  {extraCosts.map((item, index) => {
+                    // Find if there's a corresponding cost submission
+                    const submittedCost = submittedExtraCosts.find(
+                      c => c.extra_cost_id === item.id
+                    );
+                    
+                    return (
+                      <tr key={item.id || index} className="border-b">
+                        <td className="py-2 px-4 text-sm">{item.name}</td>
+                        <td className="py-2 px-4 text-sm text-muted-foreground">
+                          {item.description || '-'}
+                        </td>
+                        <td className="py-2 px-4 text-sm">
+                          {item.unit_of_measure_name || '-'}
+                        </td>
+                        <td className="py-2 px-4 text-sm text-right">
+                          {submittedCost && submittedCost.unit_cost !== null 
+                            ? `${quote.currency} ${submittedCost.unit_cost.toFixed(2)}` 
+                            : '-'}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (
@@ -73,7 +89,8 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                   <tr className="border-b text-left">
                     <th className="py-2 px-4 font-medium text-sm">Item</th>
                     <th className="py-2 px-4 font-medium text-sm">Description</th>
-                    <th className="py-2 px-4 font-medium text-sm text-right">Unit of Measure</th>
+                    <th className="py-2 px-4 font-medium text-sm">Unit of Measure</th>
+                    <th className="py-2 px-4 font-medium text-sm text-right">Value</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -83,8 +100,11 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                       <td className="py-2 px-4 text-sm text-muted-foreground">
                         {item.description || '-'}
                       </td>
-                      <td className="py-2 px-4 text-sm text-right">
+                      <td className="py-2 px-4 text-sm">
                         {item.unit_of_measure_name || '-'}
+                      </td>
+                      <td className="py-2 px-4 text-sm text-right">
+                        -
                       </td>
                     </tr>
                   ))}
