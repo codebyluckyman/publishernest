@@ -87,7 +87,7 @@ export function ExtraCostsField() {
             <CardContent className="space-y-4 pt-3">
               <ExtraCostsList control={control} extraCosts={extraCosts} />
               
-              <Button 
+              {/* <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => setIsLibraryOpen(true)}
@@ -96,7 +96,7 @@ export function ExtraCostsField() {
               >
                 <Library className="h-4 w-4 mr-2" />
                 Add from Library
-              </Button>
+              </Button> */}
               
               <ExtraCostLibraryDialog
                 open={isLibraryOpen}
