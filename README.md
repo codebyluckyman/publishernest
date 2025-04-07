@@ -59,6 +59,7 @@ This project is built with .
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase as backend as a service
 
 ## How can I deploy this project?
 
