@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -13,15 +12,16 @@ interface PriceBreakComparisonTableProps {
 }
 
 export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakComparisonTableProps) {
-  // Get number of products from the quote request format
+  // Get number of products from the quote request format - default to 4 to handle all possible products
   const numProducts = useMemo(() => {
-    if (!quotes.length) return 1;
+    if (!quotes.length) return 4;
     
     const quoteRequestFormat = quotes[0].quote_request?.formats?.find(f => 
       formatId ? f.id === formatId : true
     );
     
-    return quoteRequestFormat?.num_products || 1;
+    // Always return at least 4 to check for all unit_cost_X fields
+    return Math.max(quoteRequestFormat?.num_products || 1, 4);
   }, [quotes, formatId]);
 
   // Extract all unique price break quantities across all quotes for this format
@@ -118,7 +118,15 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                         {[...Array(numProducts)].map((_, productIndex) => {
                           // Get the unit cost for this specific product index
                           const unitCostKey = `unit_cost_${productIndex + 1}`;
-                          const unitCost = priceBreak ? priceBreak[unitCostKey] : null;
+                          // Look for cost in the price break
+                          const unitCost = priceBreak && unitCostKey in priceBreak 
+                            ? priceBreak[unitCostKey] 
+                            : null;
+                          
+                          // Only show products that have data or are within the valid range
+                          if (unitCost === null && unitCost === undefined) {
+                            return null;
+                          }
                           
                           // Determine if this is the best price for this product and quantity
                           const bestPrice = getBestPrice(quantity, productIndex);
@@ -127,18 +135,18 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                                         unitCost !== null;
                           
                           return (
-                            <div key={productIndex} className="flex items-center">
-                              <div className={`${isBest ? "font-medium" : ""}`}>
-                                <span className="text-sm text-gray-600">Product {productIndex + 1}: </span>
+                            <div key={productIndex} className="flex items-center space-x-1">
+                              <span className="text-sm text-gray-600">Product {productIndex + 1}:</span>
+                              <div className={`flex items-center ${isBest ? "font-medium" : ""}`}>
                                 {unitCost !== null ? (
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <div className="flex items-center">
+                                        <div className="flex items-center space-x-2">
                                           <span>{formatCurrency(unitCost, quote.currency || "USD")}</span>
                                           {isBest && (
-                                            <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">
-                                              Best
+                                            <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                                              BEST
                                             </Badge>
                                           )}
                                         </div>
@@ -166,7 +174,7 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
       </div>
       
       <div className="mt-4 text-sm text-gray-600 flex items-center">
-        <Badge className="bg-green-100 text-green-800 mr-2">Best</Badge>
+        <Badge className="bg-green-100 text-green-800 mr-2">BEST</Badge>
         <span>= Best price available for that quantity and product</span>
       </div>
     </div>
