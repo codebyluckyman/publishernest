@@ -1552,6 +1552,88 @@ export type Database = {
           },
         ]
       }
+      supplier_quote_savings: {
+        Row: {
+          created_at: string
+          id: string
+          saving_id: string
+          supplier_quote_id: string
+          unit_cost: number | null
+          unit_cost_1: number | null
+          unit_cost_10: number | null
+          unit_cost_2: number | null
+          unit_cost_3: number | null
+          unit_cost_4: number | null
+          unit_cost_5: number | null
+          unit_cost_6: number | null
+          unit_cost_7: number | null
+          unit_cost_8: number | null
+          unit_cost_9: number | null
+          unit_of_measure_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          saving_id: string
+          supplier_quote_id: string
+          unit_cost?: number | null
+          unit_cost_1?: number | null
+          unit_cost_10?: number | null
+          unit_cost_2?: number | null
+          unit_cost_3?: number | null
+          unit_cost_4?: number | null
+          unit_cost_5?: number | null
+          unit_cost_6?: number | null
+          unit_cost_7?: number | null
+          unit_cost_8?: number | null
+          unit_cost_9?: number | null
+          unit_of_measure_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          saving_id?: string
+          supplier_quote_id?: string
+          unit_cost?: number | null
+          unit_cost_1?: number | null
+          unit_cost_10?: number | null
+          unit_cost_2?: number | null
+          unit_cost_3?: number | null
+          unit_cost_4?: number | null
+          unit_cost_5?: number | null
+          unit_cost_6?: number | null
+          unit_cost_7?: number | null
+          unit_cost_8?: number | null
+          unit_cost_9?: number | null
+          unit_of_measure_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_savings_saving_id_fkey"
+            columns: ["saving_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_savings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_savings_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_savings_unit_of_measure_id_fkey"
+            columns: ["unit_of_measure_id"]
+            isOneToOne: false
+            referencedRelation: "unit_of_measures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_quotes: {
         Row: {
           created_at: string

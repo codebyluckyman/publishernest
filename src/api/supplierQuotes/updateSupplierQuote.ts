@@ -283,23 +283,21 @@ export async function updateSupplierQuote(
   if (updates.savings && updates.savings.length > 0) {
     // First, get existing savings
     const { data: existingSavings, error: fetchSavingsError } = await supabase
-      .from("supplier_quote_savings")
-      .select("*")
-      .eq("supplier_quote_id", id);
+      .from('supplier_quote_savings')
+      .select('*')
+      .eq('supplier_quote_id', id);
 
     if (fetchSavingsError) {
       console.error("Error fetching existing savings:", fetchSavingsError);
     } else {
       // Create a map of existing savings for quick lookup
-      const existingSavingsMap = new Map<string, SupplierQuoteSaving>();
+      const existingSavingsMap = new Map<string, any>();
       
       if (existingSavings) {
         existingSavings.forEach(s => {
-          // Cast to SupplierQuoteSaving to ensure consistency
-          const saving = s as unknown as SupplierQuoteSaving;
           // Create a key using just the saving_id
-          const key = saving.saving_id;
-          existingSavingsMap.set(key, saving);
+          const key = s.saving_id;
+          existingSavingsMap.set(key, s);
         });
       }
 
@@ -328,7 +326,7 @@ export async function updateSupplierQuote(
         if (existingSaving) {
           // Update existing saving
           const { error: updateError } = await supabase
-            .from("supplier_quote_savings")
+            .from('supplier_quote_savings')
             .update({
               unit_cost: saving.unit_cost === undefined ? null : saving.unit_cost,
               unit_cost_1: saving.unit_cost_1 === undefined ? null : saving.unit_cost_1,
@@ -343,7 +341,7 @@ export async function updateSupplierQuote(
               unit_cost_10: saving.unit_cost_10 === undefined ? null : saving.unit_cost_10,
               unit_of_measure_id: saving.unit_of_measure_id
             })
-            .eq("id", existingSaving.id);
+            .eq('id', existingSaving.id);
 
           if (updateError) {
             console.error(`Error updating saving ${existingSaving.id}:`, updateError);
@@ -351,7 +349,7 @@ export async function updateSupplierQuote(
         } else {
           // Insert new saving
           const { error: insertError } = await supabase
-            .from("supplier_quote_savings")
+            .from('supplier_quote_savings')
             .insert({
               supplier_quote_id: id,
               saving_id: saving.saving_id,
