@@ -22,6 +22,7 @@ interface SupplierQuoteFormProps {
   onDone?: () => void;
   onFormChange?: (hasChanges: boolean) => void;
   setCurrentFormData?: (data: SupplierQuoteFormValues) => void;
+  mode?: 'create' | 'edit';
 }
 
 export function SupplierQuoteForm({
@@ -35,7 +36,8 @@ export function SupplierQuoteForm({
   createdQuoteId,
   onDone,
   onFormChange,
-  setCurrentFormData
+  setCurrentFormData,
+  mode = 'create'
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
   const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
@@ -54,7 +56,8 @@ export function SupplierQuoteForm({
     onSupplierChange,
     onFormChange,
     setCurrentFormData,
-    createdQuoteId
+    createdQuoteId,
+    mode
   });
 
   // Update selected supplier when suppliers are loaded
@@ -91,6 +94,7 @@ export function SupplierQuoteForm({
           suppliers={suppliers}
           loadingSuppliers={loadingSuppliers}
           form={form}
+          mode={mode}
         />
         
         <FormTabs 
@@ -107,6 +111,7 @@ export function SupplierQuoteForm({
           isSubmitting={isSubmitting}
           onCancel={onCancel}
           isValid={form.formState.isValid}
+          mode={mode}
         />
       </form>
     </Form>

@@ -181,6 +181,63 @@ export async function createSupplierQuote(
     }
   }
 
+  // Insert savings if any
+  if (formData.savings && formData.savings.length > 0) {
+    // Log all savings for debugging
+    console.log('Savings before filtering:', formData.savings);
+    
+    const savingsToInsert = formData.savings
+      .filter(s => {
+        // Only insert savings that have any values - either unit_cost or any of unit_cost_1 through unit_cost_10
+        const hasValue = 
+               (s.unit_cost !== null && s.unit_cost !== undefined) || 
+               (s.unit_cost_1 !== null && s.unit_cost_1 !== undefined) || 
+               (s.unit_cost_2 !== null && s.unit_cost_2 !== undefined) ||
+               (s.unit_cost_3 !== null && s.unit_cost_3 !== undefined) ||
+               (s.unit_cost_4 !== null && s.unit_cost_4 !== undefined) ||
+               (s.unit_cost_5 !== null && s.unit_cost_5 !== undefined) ||
+               (s.unit_cost_6 !== null && s.unit_cost_6 !== undefined) ||
+               (s.unit_cost_7 !== null && s.unit_cost_7 !== undefined) ||
+               (s.unit_cost_8 !== null && s.unit_cost_8 !== undefined) ||
+               (s.unit_cost_9 !== null && s.unit_cost_9 !== undefined) ||
+               (s.unit_cost_10 !== null && s.unit_cost_10 !== undefined);
+               
+        // For debugging purposes, log the saving and whether it has values
+        console.log(`Saving ${s.saving_id} has values: ${hasValue}`, s);
+        
+        return hasValue;
+      })
+      .map(s => ({
+        supplier_quote_id: supplierQuote.id,
+        saving_id: s.saving_id,
+        price_break_id: s.price_break_id || null,
+        unit_cost: s.unit_cost === undefined ? null : s.unit_cost,
+        unit_cost_1: s.unit_cost_1 === undefined ? null : s.unit_cost_1,
+        unit_cost_2: s.unit_cost_2 === undefined ? null : s.unit_cost_2,
+        unit_cost_3: s.unit_cost_3 === undefined ? null : s.unit_cost_3,
+        unit_cost_4: s.unit_cost_4 === undefined ? null : s.unit_cost_4,
+        unit_cost_5: s.unit_cost_5 === undefined ? null : s.unit_cost_5,
+        unit_cost_6: s.unit_cost_6 === undefined ? null : s.unit_cost_6,
+        unit_cost_7: s.unit_cost_7 === undefined ? null : s.unit_cost_7,
+        unit_cost_8: s.unit_cost_8 === undefined ? null : s.unit_cost_8,
+        unit_cost_9: s.unit_cost_9 === undefined ? null : s.unit_cost_9,
+        unit_cost_10: s.unit_cost_10 === undefined ? null : s.unit_cost_10,
+        unit_of_measure_id: s.unit_of_measure_id
+      }));
+
+    if (savingsToInsert.length > 0) {
+      console.log('Inserting savings:', savingsToInsert);
+      const { error: savingsError } = await supabase
+        .from("supplier_quote_savings")
+        .insert(savingsToInsert);
+
+      if (savingsError) {
+        console.error("Error inserting savings:", savingsError);
+        // Continue execution - we don't want to fail the entire operation if savings fail
+      }
+    }
+  }
+
   // Record audit entry
   await recordSupplierQuoteAudit(
     supplierQuote.id,

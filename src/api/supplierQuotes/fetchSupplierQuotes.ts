@@ -22,7 +22,23 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     .from("supplier_quotes")
     .select(`
       *,
-      quote_request:quote_requests(id, title, description, due_date),
+      quote_request:quote_requests(
+        id, 
+        title, 
+        description, 
+        due_date,
+        formats:quote_request_formats(
+          id,
+          format_id,
+          format:formats(id, format_name),
+          products:quote_request_format_products(
+            id,
+            product_id,
+            quantity,
+            notes
+          )
+        )
+      ),
       supplier:suppliers(id, supplier_name)
     `)
     .eq("organization_id", currentOrganization.id);
@@ -65,9 +81,10 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     throw error;
   }
 
-  // Fetch formats for each quote
-  const quotesWithFormats = await Promise.all(
+  // Fetch formats and price breaks for each quote
+  const quotesWithDetails = await Promise.all(
     (data || []).map(async (quote) => {
+      // Fetch supplier quote formats
       const { data: formats, error: formatsError } = await supabase
         .from("supplier_quote_formats")
         .select(`
@@ -78,8 +95,16 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
 
       if (formatsError) {
         console.error("Error fetching formats for quote:", formatsError);
-        // Don't throw, just return quote without formats
-        return quote;
+      }
+
+      // Fetch price breaks for the quote
+      const { data: priceBreaks, error: priceBreaksError } = await supabase
+        .from("supplier_quote_price_breaks")
+        .select("*")
+        .eq("supplier_quote_id", quote.id);
+
+      if (priceBreaksError) {
+        console.error("Error fetching price breaks for quote:", priceBreaksError);
       }
 
       // Create a properly typed SupplierQuote object
@@ -100,22 +125,24 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
           updated_at: '',
           due_date: quote.quote_request.due_date,
           currency: quote.currency,
-          products: null,  // Add the missing required properties
-          quantities: null,  // Add the missing required properties
-          notes: null,  // Add the missing required properties
+          formats: quote.quote_request.formats,
+          products: null,
+          quantities: null,
+          notes: null,
           production_schedule_requested: false
         } : undefined,
         formats: formats ? formats.map(f => ({
           id: f.id,
           format_id: f.format_id,
+          quote_request_format_id: f.quote_request_format_id,
           format_name: f.format?.format_name || "Unknown Format"
-        })) : []
+        })) : [],
+        price_breaks: priceBreaks || []
       };
 
       return typedQuote;
     })
   );
 
-  // Explicitly cast the array to SupplierQuote[] to resolve type issues
-  return quotesWithFormats as SupplierQuote[];
+  return quotesWithDetails as SupplierQuote[];
 }

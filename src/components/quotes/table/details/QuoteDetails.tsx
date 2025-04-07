@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { DetailHeader } from "./DetailHeader";
@@ -7,7 +8,6 @@ import { StatusActions } from "./StatusActions";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "@/components/ui/use-toast";
 import { useOrganization } from "@/context/OrganizationContext";
-import { CollapsibleSection } from "./CollapsibleSection";
 import { generateQuotePDF } from "./PdfGenerator";
 import { Button } from "@/components/ui/button";
 import { QuoteResponseButton } from "../QuoteResponseButton";
@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { AttachmentsSection } from "./AttachmentsSection";
+import { CostsAndSavingsTabs } from "./CostsAndSavingsTabs";
 
 interface QuoteDetailsProps {
   selectedRequest: QuoteRequest;
@@ -30,8 +31,6 @@ export function QuoteDetails({
   onStatusChange, 
   onShowHistory 
 }: QuoteDetailsProps) {
-  const [isExtraCostsOpen, setIsExtraCostsOpen] = useState(false);
-  const [isSavingsOpen, setIsSavingsOpen] = useState(false);
   const [isAttachmentsOpen, setIsAttachmentsOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const { currentOrganization } = useOrganization();
@@ -138,18 +137,9 @@ export function QuoteDetails({
         </div>
       )}
 
-      <CollapsibleSection
-        title="Extra Costs"
-        isOpen={isExtraCostsOpen}
-        onOpenChange={setIsExtraCostsOpen}
-        items={selectedRequest.extra_costs || []}
-      />
-      
-      <CollapsibleSection
-        title="Savings"
-        isOpen={isSavingsOpen}
-        onOpenChange={setIsSavingsOpen}
-        items={selectedRequest.savings || []}
+      <CostsAndSavingsTabs 
+        extraCosts={selectedRequest.extra_costs || []} 
+        savings={selectedRequest.savings || []} 
       />
 
       <div className="border rounded-md overflow-hidden">

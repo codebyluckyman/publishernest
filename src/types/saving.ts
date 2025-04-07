@@ -6,6 +6,7 @@ export interface Saving {
   description?: string;
   unit_of_measure_id?: string;
   unit_of_measure_name?: string;
+  is_inventory_unit?: boolean;
 }
 
 export interface DefaultSaving {
@@ -23,4 +24,5 @@ export interface SavingTableItem {
   organization_id: string;
   created_at: string;
   updated_at: string;
+  is_inventory_unit?: boolean;
 }

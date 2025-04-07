@@ -2,11 +2,9 @@
 import { useFieldArray, Control, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
-import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 import { DefaultExtraCost } from "@/types/extraCost";
+import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 
 interface ExtraCostsListProps {
   control: Control<QuoteRequestFormValues>;
@@ -15,10 +13,7 @@ interface ExtraCostsListProps {
 
 export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
   const { setValue, watch } = useFormContext<QuoteRequestFormValues>();
-  const {
-    fields,
-    remove
-  } = useFieldArray({
+  const { fields } = useFieldArray({
     control,
     name: "extra_costs"
   });
@@ -32,7 +27,7 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
     return (
       <div className="text-center p-4 border border-dashed rounded-md">
         <p className="text-muted-foreground text-sm">
-          No extra costs added yet. 
+          No extra costs added. Add from the library below.
         </p>
       </div>
     );
@@ -48,27 +43,17 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
               <Input 
                 placeholder="Cost name" 
                 {...control.register(`extra_costs.${index}.name` as const)} 
-                className="w-full" 
-                onChange={(e) => {
-                  // Update the field value and log the change
-                  setValue(`extra_costs.${index}.name` as const, e.target.value);
-                  console.log(`Updated name for extra cost at index ${index}:`, e.target.value);
-                }}
+                className="w-full"
               />
             </div>
             <div className="col-span-5">
               <Textarea 
                 placeholder="Description (optional)" 
                 {...control.register(`extra_costs.${index}.description` as const)} 
-                className="w-full h-10 min-h-10 resize-none" 
-                onChange={(e) => {
-                  // Update the field value and log the change
-                  setValue(`extra_costs.${index}.description` as const, e.target.value);
-                  console.log(`Updated description for extra cost at index ${index}:`, e.target.value);
-                }}
+                className="w-full h-10 min-h-10 resize-none"
               />
             </div>
-            <div className="col-span-2">
+            <div className="col-span-3">
               <UnitOfMeasureSelect
                 value={watch(`extra_costs.${index}.unit_of_measure_id`) || ''}
                 onChange={(value) => {
@@ -78,22 +63,6 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
                 placeholder="Unit"
                 className="w-full"
               />
-            </div>
-            <div className="col-span-1 flex justify-center">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => {
-                  console.log(`Removing extra cost at index ${index}`);
-                  remove(index);
-                  console.log("Fields after removal:", fields.filter((_, i) => i !== index));
-                }} 
-                type="button" 
-                className="text-destructive"
-                data-testid={`remove-extra-cost-${index}`}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         );

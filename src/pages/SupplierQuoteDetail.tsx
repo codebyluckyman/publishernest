@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
@@ -26,10 +25,8 @@ const SupplierQuoteDetailPage = () => {
   const approveMutation = useApproveSupplierQuote();
   const rejectMutation = useRejectSupplierQuote();
   
-  // Check if the current organization is a publisher
   const isPublisher = currentOrganization?.organization_type === 'publisher';
   
-  // If quote not found, redirect to quotes page
   useEffect(() => {
     if (error) {
       navigate("/quotes");

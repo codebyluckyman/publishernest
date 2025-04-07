@@ -1,6 +1,5 @@
 
 import { createContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
 import { useOrganizationApi } from "@/hooks/useOrganizationApi";
@@ -10,7 +9,6 @@ export const OrganizationContext = createContext<OrganizationContextType | undef
 
 export const OrganizationProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);

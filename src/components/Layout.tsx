@@ -7,12 +7,9 @@ import NavigationHeader from "./navigation/NavigationHeader";
 import BreadcrumbNavigation from "./navigation/BreadcrumbNavigation";
 import Footer from "./navigation/Footer";
 import { getNavigationMenuItems } from "./navigation/NavigationMenuItems";
+import { Outlet } from "react-router-dom";
 
-const Layout = ({
-  children
-}: {
-  children: React.ReactNode;
-}) => {
+const Layout = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   
@@ -46,7 +43,7 @@ const Layout = ({
             <NavigationHeader currentPageLabel={currentPageLabel} menuItems={menuItems} />
             <BreadcrumbNavigation />
             <div className="flex-1">
-              {children}
+              <Outlet />
             </div>
             <Footer />
           </main>

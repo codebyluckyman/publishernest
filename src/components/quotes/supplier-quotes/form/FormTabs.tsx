@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Control, UseFormReturn } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -8,7 +7,7 @@ import { DetailsTab } from "./DetailsTab";
 import { ProductionScheduleSection } from "./ProductionScheduleSection";
 import { PackagingTab } from "./PackagingTab";
 import { PricingTab } from "./PricingTab";
-import { ExtraCostsTab } from "./ExtraCostsTab"; // New import
+import { ExtraCostsTab } from "./ExtraCostsTab";
 
 interface FormTabsProps {
   control: Control<SupplierQuoteFormValues>;
@@ -34,8 +33,8 @@ export function FormTabs({
       <TabsList className="grid grid-cols-5">
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="pricing">Pricing</TabsTrigger>
-        <TabsTrigger value="extra-costs">Extra Costs</TabsTrigger>
-        <TabsTrigger value="production">Production</TabsTrigger>
+        <TabsTrigger value="extra-costs">Extra Costs & Savings</TabsTrigger>
+        <TabsTrigger value="production">Schedule</TabsTrigger>
         <TabsTrigger value="packaging">Packaging</TabsTrigger>
       </TabsList>
       

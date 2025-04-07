@@ -4,14 +4,17 @@ import { UnitOfMeasure } from "@/types/unitOfMeasure";
 import { fetchUnitOfMeasures } from "@/components/organizations/unitOfMeasures/unitOfMeasuresService";
 import { useOrganization } from "./useOrganization";
 
-export function useUnitOfMeasures() {
+export function useUnitOfMeasures(organizationId?: string) {
   const { currentOrganization } = useOrganization();
   const [unitOfMeasures, setUnitOfMeasures] = useState<UnitOfMeasure[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Use either the provided organizationId or fall back to currentOrganization.id
+  const effectiveOrgId = organizationId || currentOrganization?.id;
+
   useEffect(() => {
-    if (!currentOrganization) {
+    if (!effectiveOrgId) {
       setIsLoading(false);
       return;
     }
@@ -20,7 +23,7 @@ export function useUnitOfMeasures() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await fetchUnitOfMeasures(currentOrganization.id);
+        const data = await fetchUnitOfMeasures(effectiveOrgId);
         setUnitOfMeasures(data);
       } catch (err) {
         console.error("Error loading unit of measures:", err);
@@ -31,7 +34,7 @@ export function useUnitOfMeasures() {
     };
 
     loadUnitOfMeasures();
-  }, [currentOrganization]);
+  }, [effectiveOrgId]);
 
   // Format for UI Select/Combobox components
   const unitOptions = unitOfMeasures.map(unit => ({

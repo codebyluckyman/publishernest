@@ -10,7 +10,7 @@ import { PackagingDetailsView } from "./PackagingDetailsView";
 import { AttachmentsView } from "./AttachmentsView";
 import { QuoteStatusActions } from "./QuoteStatusActions";
 import { PriceBreaksView } from "./PriceBreaksView";
-import { ExtraCostsView } from "./ExtraCostsView"; // New import
+import { ExtraCostsView } from "./ExtraCostsView";
 
 interface SupplierQuoteDetailProps {
   quote: SupplierQuote;
@@ -50,7 +50,7 @@ export function SupplierQuoteDetail({
             Pricing
           </TabsTrigger>
           <TabsTrigger value="extra-costs" className="py-2 text-xs md:text-sm">
-            Extra Costs
+            Extra Costs & Savings
           </TabsTrigger>
           <TabsTrigger value="notes" className="py-2 text-xs md:text-sm">
             Notes

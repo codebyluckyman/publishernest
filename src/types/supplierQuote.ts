@@ -1,3 +1,4 @@
+
 export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface SupplierQuotePriceBreak {
@@ -36,6 +37,34 @@ export interface SupplierQuoteExtraCost {
   unit_cost_9?: number | null;
   unit_cost_10?: number | null;
   unit_of_measure_id?: string | null;
+}
+
+export interface SupplierQuoteSaving {
+  id?: string;
+  supplier_quote_id?: string;
+  saving_id: string;
+  price_break_id?: string | null;  // Reference to specific price break for inventory items
+  unit_cost?: number | null;
+  unit_cost_1?: number | null;
+  unit_cost_2?: number | null;
+  unit_cost_3?: number | null;
+  unit_cost_4?: number | null;
+  unit_cost_5?: number | null;
+  unit_cost_6?: number | null;
+  unit_cost_7?: number | null;
+  unit_cost_8?: number | null;
+  unit_cost_9?: number | null;
+  unit_cost_10?: number | null;
+  unit_of_measure_id?: string | null;
+  
+  // Additional properties for mapping in the UI
+  saving_name?: string;
+  saving_description?: string | null;
+  unit_of_measure_name?: string | null;
+  is_inventory_unit?: boolean;
+  
+  // Generic key-value for any additional properties
+  [key: string]: any;
 }
 
 export interface SupplierQuote {
@@ -83,6 +112,7 @@ export interface SupplierQuote {
   formats?: SupplierQuoteFormat[];
   price_breaks?: SupplierQuotePriceBreak[];
   extra_costs?: SupplierQuoteExtraCost[];
+  savings?: SupplierQuoteSaving[];
 }
 
 export interface SupplierQuoteFormat {
@@ -136,4 +166,5 @@ export interface SupplierQuoteFormValues {
   packaging_copies_per_40ft_unpalletized?: number | null;
   
   extra_costs?: SupplierQuoteExtraCost[];
+  savings?: SupplierQuoteSaving[];
 }
