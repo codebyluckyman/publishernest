@@ -12,43 +12,72 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 interface SupplierQuoteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  quoteRequest: QuoteRequest;
+  quoteRequest?: QuoteRequest;
+  quoteRequestId?: string;
+  quoteId?: string;
+  supplierId?: string;
+  mode?: 'create' | 'edit';
 }
 
-export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: SupplierQuoteDialogProps) {
+export function SupplierQuoteDialog({ 
+  open, 
+  onOpenChange, 
+  quoteRequest, 
+  quoteRequestId,
+  quoteId,
+  supplierId,
+  mode = 'create'
+}: SupplierQuoteDialogProps) {
   const { currentOrganization } = useOrganization();
-  const { useCreateSupplierQuote, useSubmitSupplierQuote } = useSupplierQuotes();
+  const { useCreateSupplierQuote, useSubmitSupplierQuote, useSupplierQuoteById } = useSupplierQuotes();
   const createMutation = useCreateSupplierQuote();
   const submitMutation = useSubmitSupplierQuote();
-  const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
-  const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(null);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>(supplierId || "");
+  const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(quoteId || null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const [submissionType, setSubmissionType] = useState<'draft' | 'submit'>('draft');
   const [currentFormData, setCurrentFormData] = useState<SupplierQuoteFormValues | null>(null);
+  const [loadedQuoteRequest, setLoadedQuoteRequest] = useState<QuoteRequest | null>(null);
+  
+  // Fetch the quote data if in edit mode
+  const { data: quoteData, isLoading: isLoadingQuote } = useSupplierQuoteById(quoteId || null);
 
   // Initialize the form with the selected supplier
   useEffect(() => {
-    if (open && quoteRequest) {
-      if (quoteRequest.supplier_id) {
-        setSelectedSupplierId(quoteRequest.supplier_id);
-      } else if (quoteRequest.supplier_ids && quoteRequest.supplier_ids.length > 0) {
-        setSelectedSupplierId(quoteRequest.supplier_ids[0]);
+    if (open) {
+      if (quoteRequest) {
+        setLoadedQuoteRequest(quoteRequest);
+        
+        if (quoteRequest.supplier_id) {
+          setSelectedSupplierId(quoteRequest.supplier_id);
+        } else if (quoteRequest.supplier_ids && quoteRequest.supplier_ids.length > 0) {
+          setSelectedSupplierId(quoteRequest.supplier_ids[0]);
+        }
+      } else if (quoteData && quoteData.quote_request) {
+        // If we have quote data from an edit, use its quote request
+        setLoadedQuoteRequest(quoteData.quote_request as QuoteRequest);
+        
+        if (quoteData.supplier_id) {
+          setSelectedSupplierId(quoteData.supplier_id);
+        }
       }
     } else {
       // Reset state when closing dialog
-      setCreatedQuoteId(null);
+      if (mode === 'create') {
+        setCreatedQuoteId(null);
+      }
     }
-  }, [open, quoteRequest]);
+  }, [open, quoteRequest, quoteData, mode]);
 
   // Initialize production schedule based on quote request required step
   const getInitialProductionSchedule = () => {
-    if (quoteRequest.production_schedule_requested && 
-        quoteRequest.required_step_id && 
-        quoteRequest.required_step_date) {
+    if (loadedQuoteRequest?.production_schedule_requested && 
+        loadedQuoteRequest?.required_step_id && 
+        loadedQuoteRequest?.required_step_date) {
       // Create a production schedule object with the required step date
       return {
-        [quoteRequest.required_step_id]: quoteRequest.required_step_date
+        [loadedQuoteRequest.required_step_id]: loadedQuoteRequest.required_step_date
       };
     }
     return {};
@@ -129,38 +158,60 @@ export function SupplierQuoteDialog({ open, onOpenChange, quoteRequest }: Suppli
     setShowExitConfirmation(false);
   };
 
+  // If the quote request is not loaded yet or the quote is still loading in edit mode
+  if ((mode === 'create' && !loadedQuoteRequest) || (mode === 'edit' && isLoadingQuote)) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] max-h-[95vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Create Quote Response</DialogTitle>
+            <DialogTitle>
+              {mode === 'create' ? 'Create Quote Response' : 'Edit Quote Response'}
+            </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="h-[calc(95vh-8rem)]">
-            <div className="p-1">
-              <SupplierQuoteForm
-                quoteRequest={quoteRequest}
-                initialValues={{
-                  quote_request_id: quoteRequest.id,
-                  supplier_id: selectedSupplierId,
-                  price_breaks: [],
-                  currency: quoteRequest.currency || "USD",
-                  reference: "",
-                  production_schedule: getInitialProductionSchedule()
-                }}
-                onSubmit={handleDraftSave}
-                onFinalSubmit={handleSubmitClick}
-                isSubmitting={createMutation.isPending || submitMutation.isPending}
-                onCancel={() => handleOpenChange(false)}
-                onSupplierChange={setSelectedSupplierId}
-                createdQuoteId={createdQuoteId}
-                onDone={() => onOpenChange(false)}
-                onFormChange={handleFormChange}
-                setCurrentFormData={setCurrentFormData}
-              />
-            </div>
-          </ScrollArea>
+          {loadedQuoteRequest && (
+            <ScrollArea className="h-[calc(95vh-8rem)]">
+              <div className="p-1">
+                <SupplierQuoteForm
+                  quoteRequest={loadedQuoteRequest}
+                  initialValues={{
+                    quote_request_id: loadedQuoteRequest.id,
+                    supplier_id: selectedSupplierId,
+                    price_breaks: [],
+                    currency: loadedQuoteRequest.currency || "USD",
+                    reference: "",
+                    production_schedule: getInitialProductionSchedule(),
+                    ...(quoteData ? {
+                      notes: quoteData.notes || "",
+                      currency: quoteData.currency || "USD",
+                      reference: quoteData.reference || "",
+                      valid_from: quoteData.valid_from || undefined,
+                      valid_to: quoteData.valid_to || undefined,
+                      terms: quoteData.terms || "",
+                      remarks: quoteData.remarks || "",
+                      production_schedule: quoteData.production_schedule || {},
+                      price_breaks: quoteData.price_breaks || [],
+                      extra_costs: quoteData.extra_costs || [],
+                      savings: quoteData.savings || []
+                    } : {})
+                  }}
+                  onSubmit={handleDraftSave}
+                  onFinalSubmit={handleSubmitClick}
+                  isSubmitting={createMutation.isPending || submitMutation.isPending}
+                  onCancel={() => handleOpenChange(false)}
+                  onSupplierChange={setSelectedSupplierId}
+                  createdQuoteId={createdQuoteId}
+                  onDone={() => onOpenChange(false)}
+                  onFormChange={handleFormChange}
+                  setCurrentFormData={setCurrentFormData}
+                />
+              </div>
+            </ScrollArea>
+          )}
         </DialogContent>
       </Dialog>
 
