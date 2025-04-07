@@ -11,7 +11,8 @@ import {
   submitSupplierQuote,
   fetchSupplierQuoteAudit,
   acceptSupplierQuote,
-  declineSupplierQuote
+  declineSupplierQuote,
+  deleteSupplierQuote
 } from "@/api/supplierQuotes";
 import { approveSupplierQuote } from "@/api/supplierQuotes/approveSupplierQuote";
 import { rejectSupplierQuote } from "@/api/supplierQuotes/rejectSupplierQuote";
@@ -235,6 +236,24 @@ export function useSupplierQuotes() {
     });
   };
 
+  /**
+   * Hook to delete a supplier quote
+   */
+  const useDeleteSupplierQuote = () => {
+    return useMutation({
+      mutationFn: (id: string) => {
+        return deleteSupplierQuote(id);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
+        toast.success("Supplier quote deleted successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to delete supplier quote");
+      }
+    });
+  };
+
   return {
     useSupplierQuotesList,
     useSupplierQuoteById,
@@ -245,6 +264,7 @@ export function useSupplierQuotes() {
     useDeclineSupplierQuote,
     useApproveSupplierQuote,
     useRejectSupplierQuote,
-    useSupplierQuoteAudit
+    useSupplierQuoteAudit,
+    useDeleteSupplierQuote
   };
 }
