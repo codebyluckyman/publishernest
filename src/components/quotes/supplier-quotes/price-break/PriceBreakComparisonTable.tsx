@@ -1,17 +1,26 @@
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatters";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { formatDate } from "@/lib/utils";
+import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 interface PriceBreakComparisonTableProps {
   quotes: SupplierQuote[];
   formatId?: string;
+  includeExpiredQuotes?: boolean;
+  includeDraftQuotes?: boolean;
 }
 
-export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakComparisonTableProps) {
+export function PriceBreakComparisonTable({ 
+  quotes, 
+  formatId, 
+  includeExpiredQuotes = true, 
+  includeDraftQuotes = false 
+}: PriceBreakComparisonTableProps) {
   // Get number of products from the quote request format - default to 4 to handle all possible products
   const numProducts = useMemo(() => {
     if (!quotes.length) return 4;
@@ -38,20 +47,47 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
     return Array.from(uniqueQuantities).sort((a, b) => a - b);
   }, [quotes, formatId]);
 
-  // Extract all unique suppliers
+  // Filter quotes based on status and validity
+  const filteredQuotes = useMemo(() => {
+    return quotes.filter(quote => {
+      // Filter by draft status if needed
+      if (!includeDraftQuotes && quote.status === 'draft') {
+        return false;
+      }
+      
+      // Filter by validity if needed
+      if (!includeExpiredQuotes) {
+        const isExpired = quote.valid_to ? new Date(quote.valid_to) < new Date() : false;
+        if (isExpired) return false;
+      }
+      
+      return true;
+    });
+  }, [quotes, includeExpiredQuotes, includeDraftQuotes]);
+
+  // Extract all unique suppliers after filtering
   const suppliers = useMemo(() => {
-    return quotes.map(quote => ({
-      id: quote.supplier_id,
-      name: quote.supplier?.supplier_name || "Unknown Supplier",
-      quote: quote
-    }));
-  }, [quotes]);
+    return filteredQuotes.map(quote => {
+      // Check quote validity
+      const isValid = !quote.valid_to || new Date(quote.valid_to) >= new Date();
+      const isDraft = quote.status === 'draft';
+      
+      return {
+        id: quote.supplier_id,
+        name: quote.supplier?.supplier_name || "Unknown Supplier",
+        quote: quote,
+        isValid,
+        isDraft,
+        validUntil: quote.valid_to
+      };
+    });
+  }, [filteredQuotes]);
 
   // Extract product titles from quote request
   const productTitles = useMemo(() => {
-    if (!quotes.length) return [];
+    if (!filteredQuotes.length) return [];
     
-    const quoteRequestFormat = quotes[0].quote_request?.formats?.find(f => 
+    const quoteRequestFormat = filteredQuotes[0].quote_request?.formats?.find(f => 
       formatId ? f.id === formatId : true
     );
     
@@ -59,19 +95,27 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
     
     for (let i = 0; i < numProducts; i++) {
       const product = quoteRequestFormat?.products?.[i];
-      // Show the product name with multiplier to indicate number of products
       titles.push(`${i + 1}× ${product?.product_name || 'Product'}`);
     }
     
     return titles;
-  }, [quotes, formatId, numProducts]);
+  }, [filteredQuotes, formatId, numProducts]);
+
+  // Helper to check if a quote is valid
+  const isQuoteValid = (quote: SupplierQuote) => {
+    if (quote.status === 'draft') return false;
+    return !quote.valid_to || new Date(quote.valid_to) >= new Date();
+  };
 
   // Find the best price for a specific quantity and product index across all suppliers
   const getBestPrice = (quantity: number, productIndex: number) => {
     let bestPrice: { supplierId: string, price: number } | null = null;
     const unitCostKey = `unit_cost_${productIndex + 1}`;
     
-    quotes.forEach(quote => {
+    filteredQuotes.forEach(quote => {
+      // Only consider valid quotes for "best" price
+      if (!isQuoteValid(quote)) return;
+      
       const priceBreak = quote.price_breaks?.find(pb => {
         // Match both quantity and format if formatId is provided
         if (formatId) {
@@ -110,7 +154,9 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
           supplierName: string,
           unitCost: number | null,
           currency: string,
-          isBest: boolean
+          isBest: boolean,
+          isValid: boolean,
+          isDraft: boolean
         }>
       }>
     }> = [];
@@ -129,7 +175,9 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
             supplierName: string,
             unitCost: number | null,
             currency: string,
-            isBest: boolean
+            isBest: boolean,
+            isValid: boolean,
+            isDraft: boolean
           }>
         }>
       };
@@ -165,7 +213,9 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
           // Check if this is the best price
           const isBest = bestPrice?.supplierId === supplier.id && 
                          unitCost === bestPrice.price && 
-                         unitCost !== null;
+                         unitCost !== null && 
+                         supplier.isValid && 
+                         !supplier.isDraft;
           
           if (unitCost !== null && unitCost !== undefined) {
             hasAnyData = true;
@@ -176,7 +226,9 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
             supplierName: supplier.name,
             unitCost,
             currency: quote.currency || "USD",
-            isBest
+            isBest,
+            isValid: supplier.isValid,
+            isDraft: supplier.isDraft
           };
         });
         
@@ -212,11 +264,37 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
           <TableHeader>
             <TableRow className="sticky top-0 z-10">
               <TableHead className="sticky left-0 bg-white z-20 font-bold">Base Quantity</TableHead>
-              <TableHead className="font-bold">Product Multiplier</TableHead>
-              <TableHead className="font-bold text-gray-500 text-xs">(Total Units)</TableHead>
+              <TableHead className="font-bold">Product</TableHead>
+              <TableHead className="font-bold text-gray-500 text-xs">Total Units</TableHead>
               {suppliers.map(supplier => (
                 <TableHead key={supplier.id} className="min-w-[120px]">
-                  {supplier.name}
+                  <div className="flex items-center space-x-1">
+                    <span>{supplier.name}</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          {supplier.isDraft ? (
+                            <AlertCircle size={16} className="text-amber-500" />
+                          ) : supplier.isValid ? (
+                            <CheckCircle2 size={16} className="text-green-500" />
+                          ) : (
+                            <XCircle size={16} className="text-red-500" />
+                          )}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {supplier.isDraft ? (
+                            <span>Draft quote (not submitted)</span>
+                          ) : supplier.isValid ? (
+                            <span>Valid quote</span>
+                          ) : (
+                            <span>
+                              Expired quote (valid until {supplier.validUntil ? formatDate(supplier.validUntil) : 'N/A'})
+                            </span>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </TableHead>
               ))}
             </TableRow>
@@ -241,7 +319,7 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                   </TableCell>
                   
                   <TableCell className="text-gray-500 text-xs">
-                    ({product.totalQuantity.toLocaleString()} units)
+                    {product.totalQuantity.toLocaleString()}
                   </TableCell>
                   
                   {/* For each supplier, show the price */}
@@ -252,7 +330,11 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className="flex items-center space-x-2">
-                                <span className={supplier.isBest ? "font-medium" : ""}>
+                                <span className={cn(
+                                  supplier.isBest && "font-medium", 
+                                  (!supplier.isValid || supplier.isDraft) && "text-gray-400",
+                                  !supplier.isValid && "line-through"
+                                )}>
                                   {formatCurrency(supplier.unitCost, supplier.currency)}
                                 </span>
                                 {supplier.isBest && (
@@ -263,10 +345,15 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {supplier.isBest 
-                                ? `Best price for ${product.multiplier}× quantity of ${row.quantity}`
-                                : `Price for ${product.multiplier}× quantity of ${row.quantity}`
-                              }
+                              {supplier.isDraft ? (
+                                <span>Draft quote - not yet submitted</span>
+                              ) : !supplier.isValid ? (
+                                <span>Expired quote - no longer valid</span>
+                              ) : supplier.isBest ? (
+                                `Best price for ${product.multiplier}× quantity of ${row.quantity}`
+                              ) : (
+                                `Price for ${product.multiplier}× quantity of ${row.quantity}`
+                              )}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -283,13 +370,31 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
       </div>
       
       <div className="mt-4 text-sm space-y-2">
-        <div className="flex items-center">
-          <Badge className="bg-green-100 text-green-800 mr-2">BEST</Badge>
-          <span>= Best price available for that quantity and product multiplier</span>
+        <div className="flex items-center flex-wrap gap-4">
+          <div className="flex items-center">
+            <Badge className="bg-green-100 text-green-800 mr-2">BEST</Badge>
+            <span>= Best price available for that quantity and product multiplier</span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 size={16} className="text-green-500" />
+            <span>= Valid quote</span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <XCircle size={16} className="text-red-500" />
+            <span>= Expired quote</span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <AlertCircle size={16} className="text-amber-500" />
+            <span>= Draft quote (not submitted)</span>
+          </div>
         </div>
+        
         <div className="text-gray-600">
-          <p>Note: The multiplier (e.g., 2×) indicates how many times the base quantity is being produced.</p>
-          <p>For example, with a base quantity of 2,000 and 2× multiplier, the total is 4,000 units.</p>
+          <p>Note: The product multiplier (e.g., 2×) indicates the number of products being produced.</p>
+          <p>For example, with a base quantity of 2,000 and 2× product multiplier, the total is 4,000 units.</p>
         </div>
       </div>
     </div>
