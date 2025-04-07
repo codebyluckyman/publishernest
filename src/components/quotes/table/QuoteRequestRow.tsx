@@ -33,6 +33,7 @@ export const QuoteRequestRow = ({
     <TableRow 
       key={request.id}
       className="cursor-pointer hover:bg-gray-50"
+      onClick={() => onViewDetails(request)}
     >
       <TableCell className="w-12" onClick={(e) => e.stopPropagation()}>
         <Checkbox 
@@ -43,7 +44,6 @@ export const QuoteRequestRow = ({
       </TableCell>
       <TableCell 
         className="font-medium"
-        onClick={() => onViewDetails(request)}
       >
         <div className="flex flex-col">
           <span>{request.title}</span>
@@ -56,15 +56,15 @@ export const QuoteRequestRow = ({
           supplierNames={request.supplier_names || []} 
         />
       </TableCell>
-      <TableCell onClick={() => onViewDetails(request)}>
+      <TableCell>
         {format(new Date(request.requested_at), "MMM d, yyyy")}
       </TableCell>
-      <TableCell onClick={() => onViewDetails(request)}>
+      <TableCell>
         {request.due_date 
           ? format(new Date(request.due_date), "MMM d, yyyy") 
           : "Not set"}
       </TableCell>
-      <TableCell onClick={() => onViewDetails(request)}>
+      <TableCell>
         <StatusBadge status={request.status} />
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>

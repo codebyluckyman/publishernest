@@ -10,6 +10,7 @@ import { QuoteComparisonView } from "@/components/quotes/supplier-quotes/QuoteCo
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { SupplierQuote } from "@/types/supplierQuote";
+import { SupplierQuoteDetailsSheet } from "@/components/quotes/supplier-quotes/details/SupplierQuoteDetailsSheet";
 
 export default function QuoteComparison() {
   const navigate = useNavigate();
@@ -20,6 +21,8 @@ export default function QuoteComparison() {
   const approveMutation = useApproveSupplierQuote();
   
   const [quoteRequestTitle, setQuoteRequestTitle] = useState<string | undefined>();
+  const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
+  const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
   
   const { data: quotes = [], isLoading } = useSupplierQuotesList(
     currentOrganization,
@@ -47,8 +50,14 @@ export default function QuoteComparison() {
     }, {
       onSuccess: () => {
         toast.success("Quote approved successfully");
+        setDetailsSheetOpen(false);
       }
     });
+  };
+
+  const handleViewDetails = (quote: SupplierQuote) => {
+    setSelectedQuote(quote);
+    setDetailsSheetOpen(true);
   };
   
   return (
@@ -90,11 +99,21 @@ export default function QuoteComparison() {
           </CardContent>
         </Card>
       ) : (
-        <QuoteComparisonView 
-          quotes={quotes} 
-          quoteRequestTitle={quoteRequestTitle}
-          onSelectQuote={handleSelectQuote}
-        />
+        <>
+          <QuoteComparisonView 
+            quotes={quotes} 
+            quoteRequestTitle={quoteRequestTitle}
+            onSelectQuote={handleSelectQuote}
+          />
+          
+          {/* Supplier Quote Details Sheet */}
+          <SupplierQuoteDetailsSheet
+            quote={selectedQuote}
+            open={detailsSheetOpen}
+            onOpenChange={setDetailsSheetOpen}
+            onApprove={handleSelectQuote}
+          />
+        </>
       )}
     </div>
   );

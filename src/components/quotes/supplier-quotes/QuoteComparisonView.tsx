@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import {
   ColumnDef,
@@ -20,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronDown, ChevronRight, XCircle, Filter } from "lucide-react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { formatDate, cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
@@ -31,6 +30,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { StatusBadge } from "../table/StatusBadge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { SupplierQuoteDetailsSheet } from "./details/SupplierQuoteDetailsSheet";
 
 interface QuoteComparisonViewProps {
   quotes: SupplierQuote[];
@@ -46,12 +46,24 @@ export function QuoteComparisonView({
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
   const [comparisonView, setComparisonView] = useState<'summary' | 'priceBreaks' | 'products'>('summary');
+  const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
+  const [quoteForDetailsSheet, setQuoteForDetailsSheet] = useState<SupplierQuote | null>(null);
   
-  // Add filter state for expired and draft quotes
   const [includeExpiredQuotes, setIncludeExpiredQuotes] = useState(true);
   const [includeDraftQuotes, setIncludeDraftQuotes] = useState(false);
   
-  // Count expired and draft quotes for filter badges
+  const handleViewDetails = (quote: SupplierQuote) => {
+    setQuoteForDetailsSheet(quote);
+    setDetailsSheetOpen(true);
+  };
+  
+  const handleApproveQuote = (quote: SupplierQuote) => {
+    if (onSelectQuote) {
+      onSelectQuote(quote);
+      setDetailsSheetOpen(false);
+    }
+  };
+
   const expiredQuoteCount = useMemo(() => {
     return quotes.filter(quote => 
       quote.valid_to && new Date(quote.valid_to) < new Date()
@@ -62,7 +74,6 @@ export function QuoteComparisonView({
     return quotes.filter(quote => quote.status === 'draft').length;
   }, [quotes]);
   
-  // Group quotes by format to compare prices for the same format
   const formatGroups = useMemo(() => {
     const groups: Record<string, { formatName: string, formatId: string, quotes: SupplierQuote[] }> = {};
     
@@ -78,13 +89,11 @@ export function QuoteComparisonView({
             };
           }
           
-          // Only add the quote once per format group
           if (!groups[formatId].quotes.some(q => q.id === quote.id)) {
             groups[formatId].quotes.push(quote);
           }
         });
       } else {
-        // If no format, put in "Unknown" group
         const unknownKey = "unknown";
         if (!groups[unknownKey]) {
           groups[unknownKey] = {
@@ -94,7 +103,6 @@ export function QuoteComparisonView({
           };
         }
         
-        // Only add the quote once
         if (!groups[unknownKey].quotes.some(q => q.id === quote.id)) {
           groups[unknownKey].quotes.push(quote);
         }
@@ -104,11 +112,9 @@ export function QuoteComparisonView({
     return groups;
   }, [quotes]);
 
-  // Find the quote with the lowest total cost
   const getBestQuote = (quotes: SupplierQuote[]): SupplierQuote | null => {
     if (!quotes.length) return null;
     
-    // Only consider valid and submitted quotes for "best"
     const validQuotes = quotes.filter(q => 
       q.status === 'submitted' && 
       (!q.valid_to || new Date(q.valid_to) >= new Date())
@@ -139,7 +145,6 @@ export function QuoteComparisonView({
     subRows?: any[];
   };
   
-  // Define the columns for the comparison table
   const columns: ColumnDef<SupplierComparisonRow>[] = [
     {
       id: "expander",
@@ -169,7 +174,10 @@ export function QuoteComparisonView({
         const isDraft = row.original.isDraft;
         
         return (
-          <div className="flex items-center gap-2">
+          <div 
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => handleViewDetails(row.original.quote)}
+          >
             <div className={cn(
               "font-medium",
               (isExpired || isDraft) && "text-gray-500"
@@ -204,7 +212,7 @@ export function QuoteComparisonView({
       header: "Total Cost",
       cell: ({ row }) => {
         const value = row.getValue("totalCost") as number | null;
-        const currency = row.original.currency || "USD"; // Ensure we always have a default currency
+        const currency = row.original.currency || "USD";
         
         if (value === null) return "Not provided";
         
@@ -236,7 +244,6 @@ export function QuoteComparisonView({
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
-        // Use the StatusBadge component to handle status display
         return status ? <StatusBadge status={status} /> : <span>Unknown</span>;
       },
     },
@@ -253,7 +260,7 @@ export function QuoteComparisonView({
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => setSelectedQuote(row.original.quote)}
+            onClick={() => handleViewDetails(row.original.quote)}
           >
             View Details
           </Button>
@@ -275,16 +282,13 @@ export function QuoteComparisonView({
     },
   ];
 
-  // Filter quotes based on user preferences
   const getFilteredQuotes = (quotes: SupplierQuote[]) => {
     return quotes.filter(quote => {
-      // Filter expired quotes if needed
       if (!includeExpiredQuotes) {
         const isExpired = quote.valid_to ? new Date(quote.valid_to) < new Date() : false;
         if (isExpired) return false;
       }
       
-      // Filter draft quotes if needed
       if (!includeDraftQuotes && quote.status === 'draft') {
         return false;
       }
@@ -299,7 +303,6 @@ export function QuoteComparisonView({
         <div className="flex items-center justify-between">
           <CardTitle>{quoteRequestTitle ? `Quote Comparison: ${quoteRequestTitle}` : "Quote Comparison"}</CardTitle>
           
-          {/* Filter controls */}
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <Switch 
@@ -337,10 +340,8 @@ export function QuoteComparisonView({
       </CardHeader>
       <CardContent>
         {Object.entries(formatGroups).map(([formatId, group]) => {
-          // Filter quotes for this format group
           const filteredQuotes = getFilteredQuotes(group.quotes);
           
-          // Skip rendering this format group if no quotes pass the filter
           if (filteredQuotes.length === 0) {
             return null;
           }
@@ -349,7 +350,6 @@ export function QuoteComparisonView({
             <div key={formatId} className="mb-8">
               <h3 className="text-lg font-semibold mb-4">{group.formatName}</h3>
               
-              {/* Summary cards showing key metrics */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <Card>
                   <CardContent className="pt-6">
@@ -383,7 +383,6 @@ export function QuoteComparisonView({
                 </Card>
               </div>
               
-              {/* View toggle for different comparison views */}
               <Tabs defaultValue="summary" className="mb-4">
                 <TabsList>
                   <TabsTrigger value="summary" onClick={() => setComparisonView('summary')}>
@@ -398,7 +397,6 @@ export function QuoteComparisonView({
                 </TabsList>
                 
                 <TabsContent value="summary" className="mt-4">
-                  {/* Interactive comparison table */}
                   <div className="rounded-md border">
                     <ComparisonTable 
                       quotes={filteredQuotes} 
@@ -444,7 +442,6 @@ export function QuoteComparisonView({
           );
         })}
         
-        {/* Quote details dialog */}
         {selectedQuote && (
           <Dialog open={!!selectedQuote} onOpenChange={() => setSelectedQuote(null)}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -456,6 +453,13 @@ export function QuoteComparisonView({
             </DialogContent>
           </Dialog>
         )}
+        
+        <SupplierQuoteDetailsSheet
+          quote={quoteForDetailsSheet}
+          open={detailsSheetOpen}
+          onOpenChange={setDetailsSheetOpen}
+          onApprove={onSelectQuote ? handleApproveQuote : undefined}
+        />
       </CardContent>
     </Card>
   );
@@ -471,7 +475,6 @@ interface ComparisonTableProps {
 function ComparisonTable({ quotes, columns, expanded, setExpanded }: ComparisonTableProps) {
   const data = useMemo(() => {
     return quotes.map(quote => {
-      // Check if quote is expired
       const isExpired = quote.valid_to ? new Date(quote.valid_to) < new Date() : false;
       const isDraft = quote.status === 'draft';
       
@@ -479,9 +482,9 @@ function ComparisonTable({ quotes, columns, expanded, setExpanded }: ComparisonT
         supplier: quote.supplier?.supplier_name || "Unknown Supplier",
         supplierId: quote.supplier_id,
         totalCost: quote.total_cost,
-        currency: quote.currency || "USD", // Ensure there's always a fallback currency
+        currency: quote.currency || "USD",
         status: quote.status,
-        deliveryTime: "Not specified", // This would come from production schedule if available
+        deliveryTime: "Not specified",
         quoteId: quote.id,
         validUntil: quote.valid_to ? formatDate(quote.valid_to) : undefined,
         submittedAt: quote.submitted_at ? formatDate(quote.submitted_at) : undefined,
@@ -490,7 +493,6 @@ function ComparisonTable({ quotes, columns, expanded, setExpanded }: ComparisonT
         isDraft
       };
       
-      // Add subrows for price breaks if available
       const subRows = quote.price_breaks?.length ? 
         quote.price_breaks.map(pb => ({
           quantity: pb.quantity,
@@ -565,7 +567,6 @@ function ComparisonTable({ quotes, columns, expanded, setExpanded }: ComparisonT
   );
 }
 
-// Helper component for product comparison view
 function ProductComparisonView({ 
   quotes, 
   includeExpiredQuotes = true, 
@@ -575,16 +576,13 @@ function ProductComparisonView({
   includeExpiredQuotes?: boolean,
   includeDraftQuotes?: boolean 
 }) {
-  // Filter quotes based on expired and draft status
   const filteredQuotes = useMemo(() => {
     return quotes.filter(quote => {
-      // Filter by expired status
       if (!includeExpiredQuotes) {
         const isExpired = quote.valid_to ? new Date(quote.valid_to) < new Date() : false;
         if (isExpired) return false;
       }
       
-      // Filter by draft status
       if (!includeDraftQuotes && quote.status === 'draft') {
         return false;
       }
@@ -593,7 +591,6 @@ function ProductComparisonView({
     });
   }, [quotes, includeExpiredQuotes, includeDraftQuotes]);
   
-  // Get all product IDs from the quotes
   const productIds = useMemo(() => {
     const ids = new Set<string>();
     
@@ -618,7 +615,6 @@ function ProductComparisonView({
     return <div className="text-center py-6">No product information available for comparison.</div>;
   }
   
-  // Helper function to check if a quote is valid
   const isQuoteValid = (quote: SupplierQuote) => {
     if (quote.status === 'draft') return false;
     return !quote.valid_to || new Date(quote.valid_to) >= new Date();
@@ -643,15 +639,10 @@ function ProductComparisonView({
               </TableHeader>
               <TableBody>
                 {filteredQuotes.map(quote => {
-                  // Check quote validity
                   const isValid = isQuoteValid(quote);
                   const isDraft = quote.status === 'draft';
                   
-                  // Find price breaks that match this product
                   const productPriceBreaks = quote.price_breaks?.filter(pb => {
-                    // Check if this price break is related to this product
-                    // This is a simplified check - in a real app you'd need to map
-                    // price breaks to specific products more precisely
                     const pbProductKey = `unit_cost_${productId}`;
                     return pb[pbProductKey] !== undefined;
                   }) || [];
@@ -663,9 +654,8 @@ function ProductComparisonView({
                     const unitCost = pb[unitCostKey];
                     const total = pb.quantity * (unitCost || 0);
                     
-                    // Find best price across all quotes for this quantity
                     const isBestPrice = filteredQuotes
-                      .filter(isQuoteValid) // Only consider valid quotes for "best"
+                      .filter(isQuoteValid)
                       .every(q => {
                         const matchingPb = q.price_breaks?.find(otherPb => 
                           otherPb.quantity === pb.quantity
@@ -689,11 +679,23 @@ function ProductComparisonView({
                             {!isValid && !isDraft && (
                               <TooltipProvider>
                                 <Tooltip>
-                                  <TooltipTrigger>
-                                    <XCircle size={16} className="text-red-500" />
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center">
+                                      <span className={cn(
+                                        (!isValid || isDraft) && "text-gray-400",
+                                        !isValid && "line-through"
+                                      )}>
+                                        {formatCurrency(unitCost, quote.currency || "USD")}
+                                      </span>
+                                      {isBestPrice && isValid && !isDraft && (
+                                        <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">
+                                          Best
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    Expired quote
+                                    {!isValid ? "Expired quote" : isDraft ? "Draft quote" : "Best price for this quantity"}
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
