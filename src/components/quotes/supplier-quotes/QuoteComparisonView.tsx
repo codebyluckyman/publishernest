@@ -28,6 +28,7 @@ import { formatCurrency } from "@/utils/formatters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PriceBreakComparisonTable } from "./price-break/PriceBreakComparisonTable";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { StatusBadge } from "../table/StatusBadge";
 
 interface QuoteComparisonViewProps {
   quotes: SupplierQuote[];
@@ -168,21 +169,8 @@ export function QuoteComparisonView({
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
-        const getStatusColor = () => {
-          switch (status.toLowerCase()) {
-            case "draft": return "bg-gray-100 text-gray-800";
-            case "submitted": return "bg-blue-100 text-blue-800";
-            case "approved": return "bg-green-100 text-green-800";
-            case "rejected": return "bg-red-100 text-red-800";
-            default: return "bg-gray-100 text-gray-800";
-          }
-        };
-        
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </span>
-        );
+        // Use the StatusBadge component to handle status display
+        return status ? <StatusBadge status={status} /> : <span>Unknown</span>;
       },
     },
     {
@@ -208,9 +196,9 @@ export function QuoteComparisonView({
               size="sm"
               onClick={() => onSelectQuote(row.original.quote)}
               className={cn(
-                row.original.status.toLowerCase() !== "submitted" && "opacity-50 cursor-not-allowed"
+                row.original.status !== "submitted" && "opacity-50 cursor-not-allowed"
               )}
-              disabled={row.original.status.toLowerCase() !== "submitted"}
+              disabled={row.original.status !== "submitted"}
             >
               Select Quote
             </Button>
