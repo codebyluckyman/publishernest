@@ -1,10 +1,9 @@
-
 import { useMemo } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatters";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 interface PriceBreakComparisonTableProps {
   quotes: SupplierQuote[];
@@ -123,6 +122,11 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                             ? priceBreak[unitCostKey] 
                             : null;
                           
+                          // Get the product title for the current product index
+                          const productTitle = quote.quote_request?.formats
+                            ?.find(f => formatId ? f.id === formatId : true)
+                            ?.products?.[productIndex]?.product_name || `Product ${productIndex + 1}`;
+                          
                           // Only show products that have data or are within the valid range
                           if (unitCost === null && unitCost === undefined) {
                             return null;
@@ -136,7 +140,9 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                           
                           return (
                             <div key={productIndex} className="flex items-center space-x-1">
-                              <span className="text-sm text-gray-600">Product {productIndex + 1}:</span>
+                              <span className="text-sm text-gray-600">
+                                {productIndex + 1} x {productTitle}:
+                              </span>
                               <div className={`flex items-center ${isBest ? "font-medium" : ""}`}>
                                 {unitCost !== null ? (
                                   <TooltipProvider>
