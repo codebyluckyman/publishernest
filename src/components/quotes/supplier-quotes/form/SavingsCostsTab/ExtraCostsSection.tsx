@@ -28,10 +28,13 @@ export function ExtraCostsSection({ extraCostsData }: ExtraCostsSectionProps) {
   console.log("Current extra costs data:", extraCosts);
 
   const handleCostChange = (index: number, field: string, value: number | null) => {
+    // Use the proper type for accessing nested fields in react-hook-form
+    const fieldPath = `extra_costs.${index}.${field}` as any;
+    
     if (value === null || isNaN(Number(value))) {
-      setValue(`extra_costs.${index}.${field}`, null);
+      setValue(fieldPath, null);
     } else {
-      setValue(`extra_costs.${index}.${field}`, Number(value));
+      setValue(fieldPath, Number(value));
     }
   };
 

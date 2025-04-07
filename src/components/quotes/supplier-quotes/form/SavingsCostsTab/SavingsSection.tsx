@@ -30,10 +30,13 @@ export function SavingsSection({ savingsData }: SavingsSectionProps) {
   console.log("Form savings data:", savingsData);
 
   const handleCostChange = (index: number, field: string, value: number | null) => {
+    // Use the proper type for accessing nested fields in react-hook-form
+    const fieldPath = `savings.${index}.${field}` as any;
+    
     if (value === null || isNaN(Number(value))) {
-      setValue(`savings.${index}.${field}`, null);
+      setValue(fieldPath, null);
     } else {
-      setValue(`savings.${index}.${field}`, Number(value));
+      setValue(fieldPath, Number(value));
     }
   };
 
@@ -162,7 +165,10 @@ export function SavingsSection({ savingsData }: SavingsSectionProps) {
                     <Label htmlFor={`saving-${index}-price-break`}>Associated Price Break</Label>
                     <Select
                       value={savings[index]?.price_break_id || ""}
-                      onValueChange={(value) => setValue(`savings.${index}.price_break_id`, value || null)}
+                      onValueChange={(value) => {
+                        // Cast to any to avoid TypeScript errors
+                        setValue(`savings.${index}.price_break_id` as any, value || null);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select price break" />

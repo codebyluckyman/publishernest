@@ -50,6 +50,7 @@ export function FormTabs({
             control={control} 
             currencies={currencies}
             quoteRequest={quoteRequest}
+            selectedSupplier={selectedSupplier}
           />
         </TabsContent>
 
