@@ -5,7 +5,7 @@ export interface SupplierQuoteAudit {
   id: string;
   supplier_quote_id: string | null;
   changed_by: string | null;
-  action: 'create' | 'update' | 'submit' | 'accept' | 'decline' | 'approve' | 'reject';
+  action: 'create' | 'update' | 'submit' | 'accept' | 'decline' | 'approve' | 'reject' | 'delete';
   changes: any; // Using any here as the JSONB structure could vary
   created_at: string;
   changed_by_user?: { email: string } | undefined;
@@ -14,7 +14,7 @@ export interface SupplierQuoteAudit {
 export async function recordSupplierQuoteAudit(
   supplierQuoteId: string,
   userId: string,
-  action: 'create' | 'update' | 'submit' | 'accept' | 'decline' | 'approve' | 'reject',
+  action: 'create' | 'update' | 'submit' | 'accept' | 'decline' | 'approve' | 'reject' | 'delete',
   changes: Record<string, any>
 ): Promise<void> {
   const { error } = await supabase

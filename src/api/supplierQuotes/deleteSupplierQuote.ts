@@ -23,25 +23,30 @@ export async function deleteSupplierQuote(
   }
 
   // Delete related records first (in cascade order)
-  const tables = [
-    "supplier_quote_price_breaks",
-    "supplier_quote_extra_costs",
-    "supplier_quote_savings",
-    "supplier_quote_formats",
-    "supplier_quote_attachments"
-  ];
-
-  for (const table of tables) {
+  // Use typed table names instead of string literals
+  const deleteFromTable = async (table: 
+    'supplier_quote_price_breaks' | 
+    'supplier_quote_extra_costs' | 
+    'supplier_quote_savings' | 
+    'supplier_quote_formats' | 
+    'supplier_quote_attachments'
+  ) => {
     const { error } = await supabase
       .from(table)
       .delete()
       .eq("supplier_quote_id", id);
-
+    
     if (error) {
       console.error(`Error deleting related records from ${table}:`, error);
-      // Continue with deletion of other tables
     }
-  }
+  };
+
+  // Delete from each table in sequence
+  await deleteFromTable('supplier_quote_price_breaks');
+  await deleteFromTable('supplier_quote_extra_costs');
+  await deleteFromTable('supplier_quote_savings');
+  await deleteFromTable('supplier_quote_formats');
+  await deleteFromTable('supplier_quote_attachments');
 
   // Now delete the supplier quote
   const { error } = await supabase
