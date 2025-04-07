@@ -1,9 +1,9 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { PriceBreakTable } from "@/components/quotes/shared/price-break";
+import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
 interface ExtraCostsViewProps {
   quote: SupplierQuote;
@@ -11,6 +11,7 @@ interface ExtraCostsViewProps {
 
 export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
   const [activeTab, setActiveTab] = useState("extra-costs");
+  const { unitOfMeasures } = useUnitOfMeasures();
   
   // Get extra costs and savings from the quote request
   const extraCosts = quote.quote_request?.extra_costs || [];
@@ -24,13 +25,23 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
   const hasSavings = savings.length > 0;
   
   // Group savings by whether they use inventory units or not
-  const inventorySavings = savings.filter(item => 
-    item.unit_of_measure?.is_inventory_unit
-  );
+  const inventorySavings = savings.filter(item => {
+    // Find the unit of measure using unit_of_measure_id
+    const unitOfMeasure = unitOfMeasures.find(
+      unit => unit.id === item.unit_of_measure_id
+    );
+    
+    return unitOfMeasure?.is_inventory_unit;
+  });
   
-  const regularSavings = savings.filter(item => 
-    !item.unit_of_measure?.is_inventory_unit
-  );
+  const regularSavings = savings.filter(item => {
+    // Find the unit of measure using unit_of_measure_id
+    const unitOfMeasure = unitOfMeasures.find(
+      unit => unit.id === item.unit_of_measure_id
+    );
+    
+    return !unitOfMeasure?.is_inventory_unit;
+  });
   
   if (!hasExtraCosts && !hasSavings) {
     return (

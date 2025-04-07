@@ -1,4 +1,3 @@
-
 import { Control, useFormContext, useFieldArray } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuoteExtraCost, SupplierQuoteSaving } from "@/types/supplierQuote";
@@ -9,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { FormField, FormItem, FormControl, FormLabel } from "@/components/ui/form";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 import { PriceBreakTable } from "@/components/quotes/shared/price-break";
+import { useUnitOfMeasures } from "@/hooks/useUnitOfMeasures";
 
 interface ExtraCostsTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -18,6 +18,7 @@ interface ExtraCostsTabProps {
 export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
   const [activeTab, setActiveTab] = useState("extra-costs");
   const { getValues, watch } = useFormContext<SupplierQuoteFormValues>();
+  const { unitOfMeasures } = useUnitOfMeasures();
   
   const extraCostsFieldArray = useFieldArray({
     control,
@@ -40,13 +41,25 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
   // Group savings by whether they use inventory units or not
   const inventorySavings = savings.filter(saving => {
     const savingDetails = quoteRequest.savings?.find(s => s.id === saving.saving_id);
-    const unitOfMeasure = savingDetails?.unit_of_measure;
+    if (!savingDetails) return false;
+    
+    // Get the unit of measure from the unitOfMeasures array using the unit_of_measure_id
+    const unitOfMeasure = unitOfMeasures.find(
+      unit => unit.id === savingDetails.unit_of_measure_id
+    );
+    
     return unitOfMeasure?.is_inventory_unit;
   });
   
   const regularSavings = savings.filter(saving => {
     const savingDetails = quoteRequest.savings?.find(s => s.id === saving.saving_id);
-    const unitOfMeasure = savingDetails?.unit_of_measure;
+    if (!savingDetails) return false;
+    
+    // Get the unit of measure from the unitOfMeasures array using the unit_of_measure_id
+    const unitOfMeasure = unitOfMeasures.find(
+      unit => unit.id === savingDetails.unit_of_measure_id
+    );
+    
     return !unitOfMeasure?.is_inventory_unit;
   });
   
