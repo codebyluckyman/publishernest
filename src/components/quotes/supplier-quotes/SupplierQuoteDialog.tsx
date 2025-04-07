@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useEffect, useState } from "react";
@@ -49,13 +48,14 @@ export function SupplierQuoteDialog({
       if (quoteRequest) {
         setLoadedQuoteRequest(quoteRequest);
         
-        if (quoteRequest.supplier_id) {
+        if (supplierId) {
+          setSelectedSupplierId(supplierId);
+        } else if (quoteRequest.supplier_id) {
           setSelectedSupplierId(quoteRequest.supplier_id);
         } else if (quoteRequest.supplier_ids && quoteRequest.supplier_ids.length > 0) {
           setSelectedSupplierId(quoteRequest.supplier_ids[0]);
         }
       } else if (quoteData && quoteData.quote_request) {
-        // If we have quote data from an edit, use its quote request
         setLoadedQuoteRequest(quoteData.quote_request as QuoteRequest);
         
         if (quoteData.supplier_id) {
@@ -63,19 +63,17 @@ export function SupplierQuoteDialog({
         }
       }
     } else {
-      // Reset state when closing dialog
       if (mode === 'create') {
         setCreatedQuoteId(null);
       }
     }
-  }, [open, quoteRequest, quoteData, mode]);
+  }, [open, quoteRequest, quoteData, mode, supplierId]);
 
   // Initialize production schedule based on quote request required step
   const getInitialProductionSchedule = () => {
     if (loadedQuoteRequest?.production_schedule_requested && 
         loadedQuoteRequest?.required_step_id && 
         loadedQuoteRequest?.required_step_date) {
-      // Create a production schedule object with the required step date
       return {
         [loadedQuoteRequest.required_step_id]: loadedQuoteRequest.required_step_date
       };
@@ -106,6 +104,7 @@ export function SupplierQuoteDialog({
         onSuccess: () => {
           console.log('Successfully submitted supplier quote with ID:', createdQuoteId);
           setHasUnsavedChanges(false);
+          onOpenChange(false); // Close the dialog after successful submission
         }
       });
     }
@@ -114,17 +113,16 @@ export function SupplierQuoteDialog({
   const handleSubmitClick = () => {
     setSubmissionType('submit');
     if (currentFormData && createdQuoteId) {
-      // If we already have a quote ID, submit it directly
       submitMutation.mutate({
         id: createdQuoteId,
         totalCost: 0 // This should be calculated or passed from the form
       }, {
         onSuccess: () => {
           setHasUnsavedChanges(false);
+          onOpenChange(false); // Close the dialog after successful submission
         }
       });
     } else if (currentFormData) {
-      // Otherwise create and submit in sequence
       handleSubmit(currentFormData);
     }
   };
@@ -136,10 +134,8 @@ export function SupplierQuoteDialog({
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen && hasUnsavedChanges && !createdQuoteId) {
-      // If trying to close with unsaved changes, show confirmation dialog
       setShowExitConfirmation(true);
     } else {
-      // If no unsaved changes or closing after successful save, close normally
       onOpenChange(isOpen);
     }
   };
@@ -158,9 +154,8 @@ export function SupplierQuoteDialog({
     setShowExitConfirmation(false);
   };
 
-  // If the quote request is not loaded yet or the quote is still loading in edit mode
   if ((mode === 'create' && !loadedQuoteRequest) || (mode === 'edit' && isLoadingQuote)) {
-    return <div>Loading...</div>;
+    return null;
   }
 
   return (
