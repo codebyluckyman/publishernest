@@ -1,84 +1,80 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DetailsTab } from "./DetailsTab";
-import { PriceBreaksTab } from "./PriceBreaksTab";
-import { PackagingTab } from "./PackagingTab";
-import { SavingsCostsTab } from "./SavingsCostsTab";
-import { AttachmentsTab } from "./AttachmentsTab";
-import { Control } from "react-hook-form";
+import { Control, UseFormReturn } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Supplier } from "@/types/supplier";
-import { UseFormReturn } from "react-hook-form";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
+import { DetailsTab } from "./DetailsTab";
+import { ProductionScheduleSection } from "./ProductionScheduleSection";
+import { PackagingTab } from "./PackagingTab";
+import { PricingTab } from "./PricingTab";
+import { ExtraCostsTab } from "./ExtraCostsTab";
 
 interface FormTabsProps {
-  control: Control<any>;
+  control: Control<SupplierQuoteFormValues>;
   quoteRequest: QuoteRequest;
   selectedSupplier: Supplier | null;
   activeTab: string;
-  setActiveTab: (tab: string) => void;
+  setActiveTab: (value: string) => void;
   currencies: { label: string; value: string }[];
   form: UseFormReturn<SupplierQuoteFormValues>;
 }
 
-export function FormTabs({ 
-  control, 
-  quoteRequest, 
-  selectedSupplier, 
+export function FormTabs({
+  control,
+  quoteRequest,
+  selectedSupplier,
   activeTab,
   setActiveTab,
   currencies,
   form
-}: FormTabsProps) {
+}: FormTabsProps) {  
   return (
-    <Tabs 
-      value={activeTab} 
-      onValueChange={setActiveTab}
-      className="w-full"
-    >
-      <TabsList className="grid grid-cols-5 w-full">
+    <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid grid-cols-5">
         <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="price-breaks">Price Breaks</TabsTrigger>
-        <TabsTrigger value="costs-savings">Costs & Savings</TabsTrigger>
+        <TabsTrigger value="pricing">Pricing</TabsTrigger>
+        <TabsTrigger value="extra-costs">Extra Costs & Savings</TabsTrigger>
+        <TabsTrigger value="production">Production</TabsTrigger>
         <TabsTrigger value="packaging">Packaging</TabsTrigger>
-        <TabsTrigger value="attachments">Attachments</TabsTrigger>
       </TabsList>
-
-      <div className="mt-6">
-        <TabsContent value="details" className="space-y-4">
-          <DetailsTab 
-            control={control} 
-            currencies={currencies}
-            quoteRequest={quoteRequest}
-            selectedSupplier={selectedSupplier}
-          />
-        </TabsContent>
-
-        <TabsContent value="price-breaks" className="space-y-4">
-          <PriceBreaksTab 
-            control={control}
-            quoteRequest={quoteRequest}
-          />
-        </TabsContent>
-
-        <TabsContent value="costs-savings" className="space-y-4">
-          <SavingsCostsTab 
-            control={control}
-            quoteRequest={quoteRequest}
-            form={form}
-          />
-        </TabsContent>
-
-        <TabsContent value="packaging" className="space-y-4">
-          <PackagingTab 
-            control={control}
-          />
-        </TabsContent>
-
-        <TabsContent value="attachments" className="space-y-4">
-          <AttachmentsTab />
-        </TabsContent>
-      </div>
+      
+      <TabsContent value="details" className="space-y-4 pt-4">
+        <DetailsTab 
+          control={control} 
+          quoteRequest={quoteRequest}
+          selectedSupplier={selectedSupplier}
+          currencies={currencies}
+        />
+      </TabsContent>
+      
+      <TabsContent value="pricing" className="space-y-4 pt-4">
+        <PricingTab 
+          control={control}
+          quoteRequest={quoteRequest}
+        />
+      </TabsContent>
+      
+      <TabsContent value="extra-costs" className="space-y-4 pt-4">
+        <ExtraCostsTab 
+          control={control}
+          quoteRequest={quoteRequest}
+        />
+      </TabsContent>
+      
+      <TabsContent value="production" className="space-y-4 pt-4">
+        <ProductionScheduleSection 
+          control={control}
+          scheduleRequested={quoteRequest.production_schedule_requested}
+          selectedSupplier={selectedSupplier}
+        />
+      </TabsContent>
+      
+      <TabsContent value="packaging" className="space-y-4 pt-4">
+        <PackagingTab 
+          control={control}
+        />
+      </TabsContent>
     </Tabs>
   );
 }

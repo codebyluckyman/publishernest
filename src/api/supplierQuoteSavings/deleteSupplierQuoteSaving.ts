@@ -7,7 +7,5 @@ export async function deleteSupplierQuoteSaving(id: string): Promise<void> {
     .delete()
     .eq('id', id);
   
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 }
