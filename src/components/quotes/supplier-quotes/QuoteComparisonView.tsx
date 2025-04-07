@@ -25,6 +25,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
 import { formatCurrency } from "@/utils/formatters";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PriceBreakComparisonTable } from "./price-break/PriceBreakComparisonTable";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuoteComparisonViewProps {
   quotes: SupplierQuote[];
@@ -39,6 +42,7 @@ export function QuoteComparisonView({
 }: QuoteComparisonViewProps) {
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
+  const [comparisonView, setComparisonView] = useState<'summary' | 'priceBreaks' | 'products'>('summary');
   
   // Group quotes by format to compare prices for the same format
   const formatGroups = useMemo(() => {
@@ -250,15 +254,54 @@ export function QuoteComparisonView({
               </Card>
             </div>
             
-            {/* Interactive comparison table */}
-            <div className="rounded-md border">
-              <ComparisonTable 
-                quotes={group.quotes} 
-                columns={columns} 
-                expanded={expanded}
-                setExpanded={setExpanded}
-              />
-            </div>
+            {/* View toggle for different comparison views */}
+            <Tabs defaultValue="summary" className="mb-4">
+              <TabsList>
+                <TabsTrigger value="summary" onClick={() => setComparisonView('summary')}>
+                  Summary View
+                </TabsTrigger>
+                <TabsTrigger value="priceBreaks" onClick={() => setComparisonView('priceBreaks')}>
+                  Price Break Comparison
+                </TabsTrigger>
+                <TabsTrigger value="products" onClick={() => setComparisonView('products')}>
+                  Product Comparison
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="summary" className="mt-4">
+                {/* Interactive comparison table */}
+                <div className="rounded-md border">
+                  <ComparisonTable 
+                    quotes={group.quotes} 
+                    columns={columns} 
+                    expanded={expanded}
+                    setExpanded={setExpanded}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="priceBreaks" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Price Break Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <PriceBreakComparisonTable quotes={group.quotes} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="products" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Product Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ProductComparisonView quotes={group.quotes} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         ))}
         
@@ -374,5 +417,127 @@ function ComparisonTable({ quotes, columns, expanded, setExpanded }: ComparisonT
         )}
       </TableBody>
     </Table>
+  );
+}
+
+// Helper component for product comparison view
+function ProductComparisonView({ quotes }: { quotes: SupplierQuote[] }) {
+  // Get all product IDs from the quotes
+  const productIds = useMemo(() => {
+    const ids = new Set<string>();
+    
+    quotes.forEach(quote => {
+      if (quote.formats) {
+        quote.formats.forEach(format => {
+          const formatProductIds = quote.quote_request?.formats
+            ?.find(f => f.id === format.quote_request_format_id)
+            ?.products?.map(p => p.product_id) || [];
+            
+          formatProductIds.forEach(id => {
+            if (id) ids.add(id);
+          });
+        });
+      }
+    });
+    
+    return Array.from(ids);
+  }, [quotes]);
+  
+  if (!productIds.length) {
+    return <div className="text-center py-6">No product information available for comparison.</div>;
+  }
+  
+  return (
+    <div className="space-y-6">
+      {productIds.map((productId, index) => (
+        <Card key={productId} className="overflow-hidden">
+          <CardHeader className="bg-muted/20 py-3">
+            <CardTitle className="text-sm">Product {index + 1}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Supplier</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Unit Cost</TableHead>
+                  <TableHead>Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {quotes.map(quote => {
+                  // Find price breaks that match this product
+                  const productPriceBreaks = quote.price_breaks?.filter(pb => {
+                    // Check if this price break is related to this product
+                    // This is a simplified check - in a real app you'd need to map
+                    // price breaks to specific products more precisely
+                    const pbProductKey = `unit_cost_${productId}`;
+                    return pb[pbProductKey] !== undefined;
+                  }) || [];
+                  
+                  if (!productPriceBreaks.length) return null;
+                  
+                  return productPriceBreaks.map((pb, pbIndex) => {
+                    const unitCostKey = `unit_cost_${productId}`;
+                    const unitCost = pb[unitCostKey];
+                    const total = pb.quantity * (unitCost || 0);
+                    
+                    // Find best price across all quotes for this quantity
+                    const isBestPrice = quotes.every(q => {
+                      const matchingPb = q.price_breaks?.find(otherPb => 
+                        otherPb.quantity === pb.quantity
+                      );
+                      
+                      if (!matchingPb) return true;
+                      const otherCost = matchingPb[unitCostKey];
+                      if (!otherCost) return true;
+                      
+                      return unitCost <= otherCost;
+                    });
+                    
+                    return (
+                      <TableRow key={`${quote.id}-${pbIndex}`}>
+                        <TableCell>
+                          {quote.supplier?.supplier_name || "Unknown"}
+                        </TableCell>
+                        <TableCell>{pb.quantity.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            {unitCost ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center">
+                                      <span>{formatCurrency(unitCost, quote.currency || "USD")}</span>
+                                      {isBestPrice && (
+                                        <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">
+                                          Best
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Best price for this quantity
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              "Not provided"
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {unitCost ? formatCurrency(total, quote.currency || "USD") : "N/A"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  });
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }
