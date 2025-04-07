@@ -43,8 +43,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
         <AuthProvider>
-          <OrganizationProvider>
-            <Router>
+          <Router>
+            <OrganizationProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
 
@@ -73,10 +73,10 @@ function App() {
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>
-            </Router>
-            <SonnerToaster position="top-right" richColors />
-            <Toaster />
-          </OrganizationProvider>
+              <SonnerToaster position="top-right" richColors />
+              <Toaster />
+            </OrganizationProvider>
+          </Router>
         </AuthProvider>
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />
