@@ -47,7 +47,25 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
     }));
   }, [quotes]);
 
-  // Find the best price for a specific quantity and product index
+  // Extract product titles from quote request
+  const productTitles = useMemo(() => {
+    if (!quotes.length) return [];
+    
+    const quoteRequestFormat = quotes[0].quote_request?.formats?.find(f => 
+      formatId ? f.id === formatId : true
+    );
+    
+    const titles: string[] = [];
+    
+    for (let i = 0; i < numProducts; i++) {
+      const product = quoteRequestFormat?.products?.[i];
+      titles.push(product?.product_name || `Product ${i + 1}`);
+    }
+    
+    return titles;
+  }, [quotes, formatId, numProducts]);
+
+  // Find the best price for a specific quantity and product index across all suppliers
   const getBestPrice = (quantity: number, productIndex: number) => {
     let bestPrice: { supplierId: string, price: number } | null = null;
     const unitCostKey = `unit_cost_${productIndex + 1}`;
@@ -77,104 +95,171 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
     return bestPrice;
   };
 
-  if (quantities.length === 0) {
+  // Generate structured data for the consolidated table
+  const tableData = useMemo(() => {
+    const data: Array<{
+      quantity: number,
+      products: Array<{
+        productIndex: number,
+        productTitle: string,
+        suppliers: Array<{
+          supplierId: string,
+          supplierName: string,
+          unitCost: number | null,
+          currency: string,
+          isBest: boolean
+        }>
+      }>
+    }> = [];
+
+    // For each quantity
+    quantities.forEach(quantity => {
+      const quantityRow = {
+        quantity,
+        products: [] as Array<{
+          productIndex: number,
+          productTitle: string,
+          suppliers: Array<{
+            supplierId: string,
+            supplierName: string,
+            unitCost: number | null,
+            currency: string,
+            isBest: boolean
+          }>
+        }>
+      };
+
+      // For each product
+      for (let productIndex = 0; productIndex < numProducts; productIndex++) {
+        const productTitle = productTitles[productIndex] || `Product ${productIndex + 1}`;
+        const bestPrice = getBestPrice(quantity, productIndex);
+        
+        // Skip products that don't have any price breaks
+        let hasAnyData = false;
+        
+        // Collect data for each supplier
+        const supplierData = suppliers.map(supplier => {
+          const quote = supplier.quote;
+          const priceBreak = quote.price_breaks?.find(pb => {
+            // Match both quantity and format if formatId is provided
+            if (formatId) {
+              return pb.quantity === quantity && pb.quote_request_format_id === formatId;
+            }
+            return pb.quantity === quantity;
+          });
+          
+          // Get the unit cost for this specific product index
+          const unitCostKey = `unit_cost_${productIndex + 1}`;
+          // Look for cost in the price break
+          const unitCost = priceBreak && unitCostKey in priceBreak 
+            ? priceBreak[unitCostKey] 
+            : null;
+            
+          // Check if this is the best price
+          const isBest = bestPrice?.supplierId === supplier.id && 
+                        unitCost === bestPrice.price && 
+                        unitCost !== null;
+          
+          if (unitCost !== null && unitCost !== undefined) {
+            hasAnyData = true;
+          }
+          
+          return {
+            supplierId: supplier.id,
+            supplierName: supplier.name,
+            unitCost,
+            currency: quote.currency || "USD",
+            isBest
+          };
+        });
+        
+        // Only add the product if it has data from at least one supplier
+        if (hasAnyData) {
+          quantityRow.products.push({
+            productIndex,
+            productTitle,
+            suppliers: supplierData
+          });
+        }
+      }
+      
+      // Only add quantities that have at least one product with data
+      if (quantityRow.products.length > 0) {
+        data.push(quantityRow);
+      }
+    });
+    
+    return data;
+  }, [quantities, numProducts, productTitles, suppliers, formatId]);
+
+  if (tableData.length === 0) {
     return <div className="text-center py-6">No price break information available for comparison.</div>;
   }
 
   return (
     <div className="space-y-4">
-      <div className="overflow-auto">
-        <Table>
+      <div className="overflow-x-auto">
+        <Table className="w-full">
           <TableHeader>
-            <TableRow>
-              <TableHead className="sticky left-0 bg-white z-10 font-bold">Quantity</TableHead>
+            <TableRow className="sticky top-0 z-10">
+              <TableHead className="sticky left-0 bg-white z-20 font-bold">Quantity</TableHead>
+              <TableHead className="font-bold">Product</TableHead>
               {suppliers.map(supplier => (
-                <TableHead key={supplier.id} className="min-w-[150px]">
+                <TableHead key={supplier.id} className="min-w-[120px]">
                   {supplier.name}
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {quantities.map(quantity => (
-              <TableRow key={quantity}>
-                <TableCell className="sticky left-0 bg-white z-10 font-bold">
-                  {quantity.toLocaleString()}
-                </TableCell>
-                
-                {suppliers.map(supplier => {
-                  const quote = supplier.quote;
-                  const priceBreak = quote.price_breaks?.find(pb => {
-                    // Match both quantity and format if formatId is provided
-                    if (formatId) {
-                      return pb.quantity === quantity && pb.quote_request_format_id === formatId;
-                    }
-                    return pb.quantity === quantity;
-                  });
+            {tableData.map(row => (
+              // For each quantity, render potentially multiple rows (one for each product)
+              row.products.map((product, productIndex) => (
+                <TableRow key={`${row.quantity}-${product.productIndex}`}>
+                  {/* Show quantity only in the first row of each quantity group */}
+                  {productIndex === 0 ? (
+                    <TableCell 
+                      className="sticky left-0 bg-white z-10 font-bold"
+                      rowSpan={row.products.length}
+                    >
+                      {row.quantity.toLocaleString()}
+                    </TableCell>
+                  ) : null}
                   
-                  return (
-                    <TableCell key={supplier.id}>
-                      <div className="space-y-2">
-                        {[...Array(numProducts)].map((_, productIndex) => {
-                          // Get the unit cost for this specific product index
-                          const unitCostKey = `unit_cost_${productIndex + 1}`;
-                          // Look for cost in the price break
-                          const unitCost = priceBreak && unitCostKey in priceBreak 
-                            ? priceBreak[unitCostKey] 
-                            : null;
-                          
-                          // Get the product title for the current product index
-                          const productTitle = quote.quote_request?.formats
-                            ?.find(f => formatId ? f.id === formatId : true)
-                            ?.products?.[productIndex]?.product_name || `Product ${productIndex + 1}`;
-                          
-                          // Only show products that have data or are within the valid range
-                          if (unitCost === null && unitCost === undefined) {
-                            return null;
-                          }
-                          
-                          // Determine if this is the best price for this product and quantity
-                          const bestPrice = getBestPrice(quantity, productIndex);
-                          const isBest = bestPrice?.supplierId === supplier.id && 
-                                        unitCost === bestPrice.price && 
-                                        unitCost !== null;
-                          
-                          return (
-                            <div key={productIndex} className="flex items-center space-x-1">
-                              <span className="text-sm text-gray-600">
-                                {productTitle}:
-                              </span>
-                              <div className={`flex items-center ${isBest ? "font-medium" : ""}`}>
-                                {unitCost !== null ? (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="flex items-center space-x-2">
-                                          <span>{formatCurrency(unitCost, quote.currency || "USD")}</span>
-                                          {isBest && (
-                                            <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-                                              BEST
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        {isBest ? "Best price for this quantity and product" : "Compare with other suppliers"}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                ) : (
-                                  <span className="text-gray-400">—</span>
+                  <TableCell className="font-medium">
+                    {product.productTitle}
+                  </TableCell>
+                  
+                  {/* For each supplier, show the price */}
+                  {product.suppliers.map(supplier => (
+                    <TableCell key={supplier.supplierId}>
+                      {supplier.unitCost !== null ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center space-x-2">
+                                <span className={supplier.isBest ? "font-medium" : ""}>
+                                  {formatCurrency(supplier.unitCost, supplier.currency)}
+                                </span>
+                                {supplier.isBest && (
+                                  <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                                    BEST
+                                  </Badge>
                                 )}
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {supplier.isBest ? "Best price for this quantity and product" : "Compare with other suppliers"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </TableCell>
-                  );
-                })}
-              </TableRow>
+                  ))}
+                </TableRow>
+              ))
             ))}
           </TableBody>
         </Table>
