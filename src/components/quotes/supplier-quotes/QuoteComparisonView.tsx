@@ -46,7 +46,7 @@ export function QuoteComparisonView({
   
   // Group quotes by format to compare prices for the same format
   const formatGroups = useMemo(() => {
-    const groups: Record<string, { formatName: string, quotes: SupplierQuote[] }> = {};
+    const groups: Record<string, { formatName: string, formatId: string, quotes: SupplierQuote[] }> = {};
     
     quotes.forEach(quote => {
       if (quote.formats && quote.formats.length > 0) {
@@ -55,10 +55,15 @@ export function QuoteComparisonView({
           if (!groups[formatId]) {
             groups[formatId] = {
               formatName: format.format_name,
+              formatId: format.format_id,
               quotes: []
             };
           }
-          groups[formatId].quotes.push(quote);
+          
+          // Only add the quote once per format group
+          if (!groups[formatId].quotes.some(q => q.id === quote.id)) {
+            groups[formatId].quotes.push(quote);
+          }
         });
       } else {
         // If no format, put in "Unknown" group
@@ -66,10 +71,15 @@ export function QuoteComparisonView({
         if (!groups[unknownKey]) {
           groups[unknownKey] = {
             formatName: "Unknown Format",
+            formatId: unknownKey,
             quotes: []
           };
         }
-        groups[unknownKey].quotes.push(quote);
+        
+        // Only add the quote once
+        if (!groups[unknownKey].quotes.some(q => q.id === quote.id)) {
+          groups[unknownKey].quotes.push(quote);
+        }
       }
     });
     
@@ -286,7 +296,10 @@ export function QuoteComparisonView({
                     <CardTitle className="text-lg">Price Break Comparison</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <PriceBreakComparisonTable quotes={group.quotes} />
+                    <PriceBreakComparisonTable 
+                      quotes={group.quotes} 
+                      formatId={formatId !== "unknown" ? formatId : undefined}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>

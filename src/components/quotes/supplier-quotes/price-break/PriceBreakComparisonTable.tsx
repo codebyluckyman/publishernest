@@ -9,19 +9,23 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface PriceBreakComparisonTableProps {
   quotes: SupplierQuote[];
+  formatId?: string;
 }
 
-export function PriceBreakComparisonTable({ quotes }: PriceBreakComparisonTableProps) {
+export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakComparisonTableProps) {
   // Extract all unique price break quantities across all quotes
   const quantities = useMemo(() => {
     const uniqueQuantities = new Set<number>();
     quotes.forEach(quote => {
       quote.price_breaks?.forEach(pb => {
-        uniqueQuantities.add(pb.quantity);
+        // Only include price breaks for the specific format if formatId is provided
+        if (!formatId || pb.quote_request_format_id === formatId) {
+          uniqueQuantities.add(pb.quantity);
+        }
       });
     });
     return Array.from(uniqueQuantities).sort((a, b) => a - b);
-  }, [quotes]);
+  }, [quotes, formatId]);
 
   // Extract all unique suppliers
   const suppliers = useMemo(() => {
@@ -37,7 +41,14 @@ export function PriceBreakComparisonTable({ quotes }: PriceBreakComparisonTableP
     let bestPrice: { supplierId: string, price: number } | null = null;
     
     quotes.forEach(quote => {
-      const priceBreak = quote.price_breaks?.find(pb => pb.quantity === quantity);
+      const priceBreak = quote.price_breaks?.find(pb => {
+        // Match both quantity and format if formatId is provided
+        if (formatId) {
+          return pb.quantity === quantity && pb.quote_request_format_id === formatId;
+        }
+        return pb.quantity === quantity;
+      });
+
       if (priceBreak?.unit_cost) {
         if (!bestPrice || priceBreak.unit_cost < bestPrice.price) {
           bestPrice = {
@@ -80,7 +91,13 @@ export function PriceBreakComparisonTable({ quotes }: PriceBreakComparisonTableP
                 
                 {suppliers.map(supplier => {
                   const quote = supplier.quote;
-                  const priceBreak = quote.price_breaks?.find(pb => pb.quantity === quantity);
+                  const priceBreak = quote.price_breaks?.find(pb => {
+                    // Match both quantity and format if formatId is provided
+                    if (formatId) {
+                      return pb.quantity === quantity && pb.quote_request_format_id === formatId;
+                    }
+                    return pb.quantity === quantity;
+                  });
                   const unitCost = priceBreak?.unit_cost;
                   const isBest = bestPrice?.supplierId === supplier.id && unitCost === bestPrice.price;
                   
@@ -116,7 +133,6 @@ export function PriceBreakComparisonTable({ quotes }: PriceBreakComparisonTableP
         </TableBody>
       </Table>
       
-      {/* Key/Legend */}
       <div className="mt-4 text-sm text-gray-600 flex items-center">
         <Badge className="bg-green-100 text-green-800 mr-2">Best</Badge>
         <span>= Best price available for that quantity</span>
