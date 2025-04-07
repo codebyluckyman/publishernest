@@ -5,8 +5,6 @@ import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
 import { BasicFormFields } from "./form/BasicFormFields";
 import { FormatFieldArray } from "./form/FormatFieldArray";
 import { FormActions } from "./form/FormActions";
-import { ExtraCostsField } from "./form/extra-costs/ExtraCostsField";
-import { SavingsField } from "./form/savings/SavingsField";
 import { ProductionScheduleField } from "./form/ProductionScheduleField";
 import { AttachmentsField } from "./form/AttachmentsField";
 import { Supplier } from "@/types/supplier";
@@ -14,6 +12,7 @@ import { Form } from "@/components/ui/form";
 import { useEffect, useState } from "react";
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { useOrganization } from "@/hooks/useOrganization";
+import { CostsAndSavingsTabsField } from "./form/CostsAndSavingsTabsField";
 
 interface QuoteRequestFormProps {
   onSubmit: (data: QuoteRequestFormValues) => void;
@@ -142,8 +141,7 @@ export function QuoteRequestForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormatFieldArray form={form} />
-        <ExtraCostsField />
-        <SavingsField />
+        <CostsAndSavingsTabsField />
         <ProductionScheduleField />
         <AttachmentsField />
         <BasicFormFields 
