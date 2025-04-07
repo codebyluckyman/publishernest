@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -141,7 +142,7 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                           return (
                             <div key={productIndex} className="flex items-center space-x-1">
                               <span className="text-sm text-gray-600">
-                                {productIndex + 1} x {productTitle}:
+                                {productTitle}:
                               </span>
                               <div className={`flex items-center ${isBest ? "font-medium" : ""}`}>
                                 {unitCost !== null ? (
