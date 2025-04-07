@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -10,7 +11,12 @@ export async function createSupplierQuote(
   // Log the entire form data for debugging
   console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
 
-  // Log extra costs with improved structure to show we're removing price breaks
+  // Log savings for debugging
+  if (formData.savings && formData.savings.length > 0) {
+    console.log('Savings before filtering:', formData.savings);
+  }
+
+  // Log extra costs with improved structure
   if (formData.extra_costs && formData.extra_costs.length > 0) {
     console.log('Extra costs after form initialization:');
     
@@ -184,7 +190,7 @@ export async function createSupplierQuote(
   // Insert savings if any
   if (formData.savings && formData.savings.length > 0) {
     // Log all savings for debugging
-    console.log('Savings before filtering:', formData.savings);
+    console.log('Savings before filtering for insert:', formData.savings);
     
     const savingsToInsert = formData.savings
       .filter(s => {
@@ -205,7 +211,7 @@ export async function createSupplierQuote(
         // For debugging purposes, log the saving and whether it has values
         console.log(`Saving ${s.saving_id} has values: ${hasValue}`, s);
         
-        return hasValue;
+        return true; // We now insert all savings even with null values for better user experience
       })
       .map(s => ({
         supplier_quote_id: supplierQuote.id,

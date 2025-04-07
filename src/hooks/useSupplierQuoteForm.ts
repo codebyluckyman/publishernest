@@ -53,6 +53,7 @@ const savingSchema = z.object({
   id: z.string().optional(),
   supplier_quote_id: z.string().optional(),
   saving_id: z.string(),
+  price_break_id: z.string().nullable().optional(),
   unit_cost: z.number().nullable().optional(),
   unit_cost_1: z.number().nullable().optional(),
   unit_cost_2: z.number().nullable().optional(),
@@ -186,6 +187,7 @@ export function useSupplierQuoteForm({
         console.log(`Adding inventory unit saving: ${saving.name}`);
         savings.push({
           saving_id: saving.id,
+          price_break_id: null, // Add this for inventory units
           unit_cost: null,
           unit_cost_1: null,
           unit_cost_2: null,
@@ -202,6 +204,7 @@ export function useSupplierQuoteForm({
       } else {
         savings.push({
           saving_id: saving.id,
+          price_break_id: null, // Also add here for consistency
           unit_cost: null,
           unit_of_measure_id: saving.unit_of_measure_id || null
         });
