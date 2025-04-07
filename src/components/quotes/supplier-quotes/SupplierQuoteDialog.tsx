@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useEffect, useState } from "react";
@@ -32,7 +33,7 @@ export function SupplierQuoteDialog({
   const createMutation = useCreateSupplierQuote();
   const submitMutation = useSubmitSupplierQuote();
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>(supplierId || "");
-  const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(quoteId || null);
+  const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(mode === 'edit' ? quoteId || null : null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const [submissionType, setSubmissionType] = useState<'draft' | 'submit'>('draft');
@@ -158,6 +159,9 @@ export function SupplierQuoteDialog({
     return null;
   }
 
+  // For edit mode, show the form regardless of createdQuoteId value
+  const showForm = mode === 'edit' || (mode === 'create' && !createdQuoteId);
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -171,39 +175,49 @@ export function SupplierQuoteDialog({
           {loadedQuoteRequest && (
             <ScrollArea className="h-[calc(95vh-8rem)]">
               <div className="p-1">
-                <SupplierQuoteForm
-                  quoteRequest={loadedQuoteRequest}
-                  initialValues={{
-                    quote_request_id: loadedQuoteRequest.id,
-                    supplier_id: selectedSupplierId,
-                    price_breaks: [],
-                    currency: loadedQuoteRequest.currency || "USD",
-                    reference: "",
-                    production_schedule: getInitialProductionSchedule(),
-                    ...(quoteData ? {
-                      notes: quoteData.notes || "",
-                      currency: quoteData.currency || "USD",
-                      reference: quoteData.reference || "",
-                      valid_from: quoteData.valid_from || undefined,
-                      valid_to: quoteData.valid_to || undefined,
-                      terms: quoteData.terms || "",
-                      remarks: quoteData.remarks || "",
-                      production_schedule: quoteData.production_schedule || {},
-                      price_breaks: quoteData.price_breaks || [],
-                      extra_costs: quoteData.extra_costs || [],
-                      savings: quoteData.savings || []
-                    } : {})
-                  }}
-                  onSubmit={handleDraftSave}
-                  onFinalSubmit={handleSubmitClick}
-                  isSubmitting={createMutation.isPending || submitMutation.isPending}
-                  onCancel={() => handleOpenChange(false)}
-                  onSupplierChange={setSelectedSupplierId}
-                  createdQuoteId={createdQuoteId}
-                  onDone={() => onOpenChange(false)}
-                  onFormChange={handleFormChange}
-                  setCurrentFormData={setCurrentFormData}
-                />
+                {showForm ? (
+                  <SupplierQuoteForm
+                    quoteRequest={loadedQuoteRequest}
+                    initialValues={{
+                      quote_request_id: loadedQuoteRequest.id,
+                      supplier_id: selectedSupplierId,
+                      price_breaks: [],
+                      currency: loadedQuoteRequest.currency || "USD",
+                      reference: "",
+                      production_schedule: getInitialProductionSchedule(),
+                      ...(quoteData ? {
+                        notes: quoteData.notes || "",
+                        currency: quoteData.currency || "USD",
+                        reference: quoteData.reference || "",
+                        valid_from: quoteData.valid_from || undefined,
+                        valid_to: quoteData.valid_to || undefined,
+                        terms: quoteData.terms || "",
+                        remarks: quoteData.remarks || "",
+                        production_schedule: quoteData.production_schedule || {},
+                        price_breaks: quoteData.price_breaks || [],
+                        extra_costs: quoteData.extra_costs || [],
+                        savings: quoteData.savings || []
+                      } : {})
+                    }}
+                    onSubmit={handleDraftSave}
+                    onFinalSubmit={handleSubmitClick}
+                    isSubmitting={createMutation.isPending || submitMutation.isPending}
+                    onCancel={() => handleOpenChange(false)}
+                    onSupplierChange={setSelectedSupplierId}
+                    createdQuoteId={mode === 'create' ? createdQuoteId : null}
+                    onDone={() => onOpenChange(false)}
+                    onFormChange={handleFormChange}
+                    setCurrentFormData={setCurrentFormData}
+                  />
+                ) : (
+                  <SuccessView 
+                    createdQuoteId={createdQuoteId || ""} 
+                    onDone={() => onOpenChange(false)} 
+                    onSubmit={handleSubmitClick}
+                    isSubmitReady={true}
+                    isSubmitting={submitMutation.isPending}
+                  />
+                )}
               </div>
             </ScrollArea>
           )}
