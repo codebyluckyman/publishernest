@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useEffect, useState } from "react";
@@ -8,6 +7,7 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { SuccessView } from "./form/SuccessView";
 
 interface SupplierQuoteDialogProps {
   open: boolean;
@@ -29,8 +29,9 @@ export function SupplierQuoteDialog({
   mode = 'create'
 }: SupplierQuoteDialogProps) {
   const { currentOrganization } = useOrganization();
-  const { useCreateSupplierQuote, useSubmitSupplierQuote, useSupplierQuoteById } = useSupplierQuotes();
+  const { useCreateSupplierQuote, useUpdateSupplierQuote, useSubmitSupplierQuote, useSupplierQuoteById } = useSupplierQuotes();
   const createMutation = useCreateSupplierQuote();
+  const updateMutation = useUpdateSupplierQuote();
   const submitMutation = useSubmitSupplierQuote();
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>(supplierId || "");
   const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(mode === 'edit' ? quoteId || null : null);
@@ -86,7 +87,23 @@ export function SupplierQuoteDialog({
     if (!currentOrganization) return;
     setCurrentFormData(data);
     
-    if (submissionType === 'draft') {
+    if (mode === 'edit' && quoteId) {
+      // Update existing quote
+      updateMutation.mutate({
+        id: quoteId,
+        updates: data,
+        previousData: quoteData
+      }, {
+        onSuccess: () => {
+          console.log('Successfully updated supplier quote with ID:', quoteId);
+          setHasUnsavedChanges(false);
+          if (submissionType === 'submit') {
+            handleSubmitClick();
+          }
+        }
+      });
+    } else if (submissionType === 'draft') {
+      // Create new quote
       createMutation.mutate({
         formData: data,
         organizationId: currentOrganization.id
@@ -95,17 +112,12 @@ export function SupplierQuoteDialog({
           console.log('Successfully created supplier quote with ID:', id);
           setCreatedQuoteId(id);
           setHasUnsavedChanges(false);
-        }
-      });
-    } else if (submissionType === 'submit' && createdQuoteId) {
-      submitMutation.mutate({
-        id: createdQuoteId,
-        totalCost: 0 // This should be calculated or passed from the form
-      }, {
-        onSuccess: () => {
-          console.log('Successfully submitted supplier quote with ID:', createdQuoteId);
-          setHasUnsavedChanges(false);
-          onOpenChange(false); // Close the dialog after successful submission
+          if (submissionType === 'submit') {
+            submitMutation.mutate({
+              id: id,
+              totalCost: 0 // This should be calculated or passed from the form
+            });
+          }
         }
       });
     }
@@ -113,18 +125,33 @@ export function SupplierQuoteDialog({
 
   const handleSubmitClick = () => {
     setSubmissionType('submit');
-    if (currentFormData && createdQuoteId) {
-      submitMutation.mutate({
-        id: createdQuoteId,
-        totalCost: 0 // This should be calculated or passed from the form
-      }, {
-        onSuccess: () => {
-          setHasUnsavedChanges(false);
-          onOpenChange(false); // Close the dialog after successful submission
-        }
-      });
-    } else if (currentFormData) {
-      handleSubmit(currentFormData);
+    if (currentFormData) {
+      if (mode === 'edit' && quoteId) {
+        // If we're in edit mode and already saved changes, submit the quote
+        submitMutation.mutate({
+          id: quoteId,
+          totalCost: 0 // This should be calculated or passed from the form
+        }, {
+          onSuccess: () => {
+            setHasUnsavedChanges(false);
+            onOpenChange(false); // Close the dialog after successful submission
+          }
+        });
+      } else if (createdQuoteId) {
+        // If we've already created the quote, submit it
+        submitMutation.mutate({
+          id: createdQuoteId,
+          totalCost: 0 // This should be calculated or passed from the form
+        }, {
+          onSuccess: () => {
+            setHasUnsavedChanges(false);
+            onOpenChange(false); // Close the dialog after successful submission
+          }
+        });
+      } else {
+        // Otherwise save first then submit
+        handleSubmit(currentFormData);
+      }
     }
   };
 
@@ -159,8 +186,8 @@ export function SupplierQuoteDialog({
     return null;
   }
 
-  // For edit mode, show the form regardless of createdQuoteId value
-  const showForm = mode === 'edit' || (mode === 'create' && !createdQuoteId);
+  // Determine whether to show the form or success view
+  const showForm = mode === 'edit' || !createdQuoteId;
 
   return (
     <>
@@ -196,15 +223,26 @@ export function SupplierQuoteDialog({
                         production_schedule: quoteData.production_schedule || {},
                         price_breaks: quoteData.price_breaks || [],
                         extra_costs: quoteData.extra_costs || [],
-                        savings: quoteData.savings || []
+                        savings: quoteData.savings || [],
+                        packaging_carton_quantity: quoteData.packaging_carton_quantity,
+                        packaging_carton_weight: quoteData.packaging_carton_weight,
+                        packaging_carton_length: quoteData.packaging_carton_length,
+                        packaging_carton_width: quoteData.packaging_carton_width,
+                        packaging_carton_height: quoteData.packaging_carton_height,
+                        packaging_carton_volume: quoteData.packaging_carton_volume,
+                        packaging_cartons_per_pallet: quoteData.packaging_cartons_per_pallet,
+                        packaging_copies_per_20ft_palletized: quoteData.packaging_copies_per_20ft_palletized,
+                        packaging_copies_per_40ft_palletized: quoteData.packaging_copies_per_40ft_palletized,
+                        packaging_copies_per_20ft_unpalletized: quoteData.packaging_copies_per_20ft_unpalletized,
+                        packaging_copies_per_40ft_unpalletized: quoteData.packaging_copies_per_40ft_unpalletized
                       } : {})
                     }}
                     onSubmit={handleDraftSave}
                     onFinalSubmit={handleSubmitClick}
-                    isSubmitting={createMutation.isPending || submitMutation.isPending}
+                    isSubmitting={createMutation.isPending || updateMutation.isPending || submitMutation.isPending}
                     onCancel={() => handleOpenChange(false)}
                     onSupplierChange={setSelectedSupplierId}
-                    createdQuoteId={mode === 'create' ? createdQuoteId : null}
+                    createdQuoteId={mode === 'create' ? createdQuoteId : quoteId}
                     onDone={() => onOpenChange(false)}
                     onFormChange={handleFormChange}
                     setCurrentFormData={setCurrentFormData}
