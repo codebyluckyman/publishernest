@@ -55,6 +55,9 @@ export interface SupplierQuoteSaving {
   unit_cost_9?: number | null;
   unit_cost_10?: number | null;
   unit_of_measure_id?: string | null;
+  
+  // Additional properties for mapping in the UI
+  [key: string]: any;
 }
 
 export interface SupplierQuote {

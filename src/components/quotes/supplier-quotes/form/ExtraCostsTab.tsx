@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FormField, FormItem, FormControl, FormLabel } from "@/components/ui/form";
 import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
+import { PriceBreakTable } from "@/components/quotes/shared/price-break";
 
 interface ExtraCostsTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -35,6 +36,25 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
   const savings = watch("savings") || [];
   const currency = watch("currency") || "USD";
   const currencySymbol = getSymbolForCurrency(currency);
+  
+  // Group savings by whether they use inventory units or not
+  const inventorySavings = savings.filter(saving => {
+    const savingDetails = quoteRequest.savings?.find(s => s.id === saving.saving_id);
+    const unitOfMeasure = savingDetails?.unit_of_measure;
+    return unitOfMeasure?.is_inventory_unit;
+  });
+  
+  const regularSavings = savings.filter(saving => {
+    const savingDetails = quoteRequest.savings?.find(s => s.id === saving.saving_id);
+    const unitOfMeasure = savingDetails?.unit_of_measure;
+    return !unitOfMeasure?.is_inventory_unit;
+  });
+  
+  // Create a map of saving ID to index in the form array for easy lookup
+  const savingIndexMap = savings.reduce((map, saving, index) => {
+    map[saving.saving_id] = index;
+    return map;
+  }, {} as Record<string, number>);
   
   if (!hasExtraCosts && !hasSavings) {
     return (
@@ -116,57 +136,135 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
           
           <TabsContent value="savings">
             {hasSavings ? (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
+              <div className="space-y-6">
+                <p className="text-sm text-muted-foreground mb-4">
                   Enter the savings details as specified in the quote request
                 </p>
                 
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
-                      <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
-                      <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
-                      <th className="py-2 px-4 text-right text-sm font-medium">Unit Value {currency}{currencySymbol}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {savings.map((saving, index) => {
-                      const savingDetails = quoteRequest.savings?.find(
-                        s => s.id === saving.saving_id
-                      ) || { name: 'Unknown', description: '', unit_of_measure_name: '' };
-                      
-                      return (
-                        <tr key={saving.saving_id || index} className="border-b">
-                          <td className="py-2 px-4 text-sm">{savingDetails.name}</td>
-                          <td className="py-2 px-4 text-sm text-muted-foreground">{savingDetails.description || '-'}</td>
-                          <td className="py-2 px-4 text-sm text-right">{savingDetails.unit_of_measure_name || '-'}</td>
-                          <td className="py-2 px-4 text-sm text-right flex justify-end items-center">
-                            <FormField
-                              control={control}
-                              name={`savings.${index}.unit_cost`}
-                              render={({ field }) => (
-                                <FormItem className="w-24">
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      type="number"
-                                      step="0.01"
-                                      value={field.value || ''}
-                                      onChange={(e) => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
-                                      className="text-right"
-                                      placeholder="0.00"
-                                    />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                          </td>
+                {/* Regular (non-inventory) savings */}
+                {regularSavings.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-2">Standard Savings</h3>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
+                          <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
+                          <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
+                          <th className="py-2 px-4 text-right text-sm font-medium">Unit Value {currency}{currencySymbol}</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {regularSavings.map((saving) => {
+                          const savingDetails = quoteRequest.savings?.find(
+                            s => s.id === saving.saving_id
+                          ) || { name: 'Unknown', description: '', unit_of_measure_name: '' };
+                          
+                          const index = savingIndexMap[saving.saving_id];
+                          
+                          return (
+                            <tr key={saving.saving_id || index} className="border-b">
+                              <td className="py-2 px-4 text-sm">{savingDetails.name}</td>
+                              <td className="py-2 px-4 text-sm text-muted-foreground">{savingDetails.description || '-'}</td>
+                              <td className="py-2 px-4 text-sm text-right">{savingDetails.unit_of_measure_name || '-'}</td>
+                              <td className="py-2 px-4 text-sm text-right flex justify-end items-center">
+                                <FormField
+                                  control={control}
+                                  name={`savings.${index}.unit_cost`}
+                                  render={({ field }) => (
+                                    <FormItem className="w-24">
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          type="number"
+                                          step="0.01"
+                                          value={field.value || ''}
+                                          onChange={(e) => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
+                                          className="text-right"
+                                          placeholder="0.00"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                
+                {/* Inventory-based savings with price breaks */}
+                {inventorySavings.length > 0 && inventorySavings.map((saving) => {
+                  const savingDetails = quoteRequest.savings?.find(
+                    s => s.id === saving.saving_id
+                  ) || { name: 'Unknown', description: '', unit_of_measure_name: '' };
+                  
+                  const index = savingIndexMap[saving.saving_id];
+                  
+                  // For each format in the quote request, show price break tables for this saving
+                  return quoteRequest.formats?.map((format) => {
+                    // Get price breaks for this format
+                    const priceBreaks = format.price_breaks || [];
+                    
+                    // Create the products array for the price break table - use the number of products from the format
+                    const numProducts = format.num_products || 1;
+                    const products = Array.from({ length: numProducts }, (_, productIndex) => ({
+                      index: productIndex,
+                      heading: `Product ${productIndex + 1}`
+                    }));
+                    
+                    // Map the price breaks to the structure expected by PriceBreakTable
+                    const mappedPriceBreaks = priceBreaks.map((pb) => {
+                      return {
+                        id: pb.id,
+                        price_break_id: pb.id,
+                        quantity: pb.quantity,
+                        unit_cost_1: saving[`unit_cost_1`] || null,
+                        unit_cost_2: saving[`unit_cost_2`] || null,
+                        unit_cost_3: saving[`unit_cost_3`] || null,
+                        unit_cost_4: saving[`unit_cost_4`] || null,
+                        unit_cost_5: saving[`unit_cost_5`] || null,
+                        unit_cost_6: saving[`unit_cost_6`] || null,
+                        unit_cost_7: saving[`unit_cost_7`] || null,
+                        unit_cost_8: saving[`unit_cost_8`] || null,
+                        unit_cost_9: saving[`unit_cost_9`] || null,
+                        unit_cost_10: saving[`unit_cost_10`] || null,
+                      };
+                    });
+                    
+                    return (
+                      <div className="mb-6" key={`${saving.saving_id}-${format.id}`}>
+                        <h3 className="text-sm font-medium mb-2">
+                          {savingDetails.name} - {format.format_name} 
+                          <span className="text-muted-foreground ml-2">({savingDetails.unit_of_measure_name})</span>
+                        </h3>
+                        
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {savingDetails.description || "Enter savings values by quantity and product"}
+                        </p>
+                        
+                        <PriceBreakTable
+                          formatName={`${savingDetails.name} Savings`}
+                          formatDescription={savingDetails.description}
+                          priceBreaks={mappedPriceBreaks}
+                          products={products}
+                          isReadOnly={false}
+                          currency={currency}
+                          control={control}
+                          fieldArrayName={`savings.${index}`}
+                          className="mt-2"
+                        />
+                      </div>
+                    );
+                  });
+                })}
+                
+                {inventorySavings.length === 0 && regularSavings.length === 0 && (
+                  <p className="text-muted-foreground py-2">No savings defined for this quote request</p>
+                )}
               </div>
             ) : (
               <p className="text-muted-foreground py-2">No savings defined for this quote request</p>
