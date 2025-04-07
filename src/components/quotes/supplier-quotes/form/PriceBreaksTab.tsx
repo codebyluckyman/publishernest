@@ -1,6 +1,6 @@
 
 import { Control } from "react-hook-form";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { QuoteRequest, QuoteRequestFormat } from "@/types/quoteRequest";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
 import { PriceBreakTable } from "@/components/quotes/shared/price-break/PriceBreakTable";
@@ -26,9 +26,8 @@ export function PriceBreaksTab({ control, quoteRequest }: PriceBreaksTabProps) {
       ) : (
         formats.map((format) => {
           // Get price breaks for this format
-          const formatPriceBreaks = quoteRequest.price_breaks?.filter(
-            pb => pb.quote_request_format_id === format.quote_request_format_id
-          ) || [];
+          // Updated to use the format's price_breaks directly instead of quoteRequest.price_breaks
+          const formatPriceBreaks = format.price_breaks || [];
           
           // Get products for this format
           const formatProducts = format.products?.map((product, index) => ({
@@ -41,14 +40,14 @@ export function PriceBreaksTab({ control, quoteRequest }: PriceBreaksTabProps) {
           }
           
           return (
-            <Card key={format.format_id || format.quote_request_format_id}>
+            <Card key={format.format_id || format.id}>
               <CardHeader>
                 <CardTitle className="text-lg">Format: {format.format_name}</CardTitle>
               </CardHeader>
               <CardContent>
                 <PriceBreakTable
                   formatName={format.format_name || ""}
-                  formatDescription={format.dimensions || ""}
+                  formatDescription={format.notes || ""}
                   priceBreaks={formatPriceBreaks}
                   products={formatProducts}
                   control={control}
