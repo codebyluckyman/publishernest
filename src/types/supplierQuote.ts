@@ -43,6 +43,7 @@ export interface SupplierQuoteSaving {
   id?: string;
   supplier_quote_id?: string;
   saving_id: string;
+  price_break_id?: string | null;  // Reference to specific price break for inventory items
   unit_cost?: number | null;
   unit_cost_1?: number | null;
   unit_cost_2?: number | null;

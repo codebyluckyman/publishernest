@@ -291,13 +291,15 @@ export async function updateSupplierQuote(
       console.error("Error fetching existing savings:", fetchSavingsError);
     } else {
       // Create a map of existing savings for quick lookup
-      const existingSavingsMap = new Map<string, any>();
+      const existingSavingsMap = new Map<string, SupplierQuoteSaving>();
       
       if (existingSavings) {
         existingSavings.forEach(s => {
-          // Create a key using just the saving_id
-          const savingId = s.saving_id;
-          existingSavingsMap.set(savingId, s);
+          // Cast to SupplierQuoteSaving to ensure consistency
+          const saving = s as unknown as SupplierQuoteSaving;
+          // Create a composite key using saving_id and price_break_id (or null if none)
+          const key = `${saving.saving_id}_${saving.price_break_id || 'null'}`;
+          existingSavingsMap.set(key, saving);
         });
       }
 
@@ -319,8 +321,8 @@ export async function updateSupplierQuote(
                
         if (!hasValue) continue;
 
-        // Create a key using just the saving_id
-        const key = saving.saving_id;
+        // Create a composite key using saving_id and price_break_id (or null if none)
+        const key = `${saving.saving_id}_${saving.price_break_id || 'null'}`;
         const existingSaving = existingSavingsMap.get(key);
 
         if (existingSaving) {
@@ -353,6 +355,7 @@ export async function updateSupplierQuote(
             .insert({
               supplier_quote_id: id,
               saving_id: saving.saving_id,
+              price_break_id: saving.price_break_id || null,
               unit_cost: saving.unit_cost === undefined ? null : saving.unit_cost,
               unit_cost_1: saving.unit_cost_1 === undefined ? null : saving.unit_cost_1,
               unit_cost_2: saving.unit_cost_2 === undefined ? null : saving.unit_cost_2,

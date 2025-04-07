@@ -18,6 +18,7 @@ export async function updateSupplierQuoteSaving(id: string, updates: Partial<Sup
   if (updates.unit_cost_9 !== undefined) updateData.unit_cost_9 = updates.unit_cost_9;
   if (updates.unit_cost_10 !== undefined) updateData.unit_cost_10 = updates.unit_cost_10;
   if (updates.unit_of_measure_id !== undefined) updateData.unit_of_measure_id = updates.unit_of_measure_id;
+  if (updates.price_break_id !== undefined) updateData.price_break_id = updates.price_break_id;
 
   const { data, error } = await supabase
     .from('supplier_quote_savings')
@@ -37,6 +38,7 @@ export async function updateSupplierQuoteSaving(id: string, updates: Partial<Sup
     id: data.id,
     supplier_quote_id: data.supplier_quote_id,
     saving_id: data.saving_id,
+    price_break_id: data.price_break_id || null,
     unit_cost: data.unit_cost,
     unit_cost_1: data.unit_cost_1,
     unit_cost_2: data.unit_cost_2,

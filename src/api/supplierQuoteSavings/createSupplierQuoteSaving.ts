@@ -10,6 +10,7 @@ export async function createSupplierQuoteSaving(saving: Omit<SupplierQuoteSaving
     .insert({
       supplier_quote_id: saving.supplier_quote_id,
       saving_id: saving.saving_id,
+      price_break_id: saving.price_break_id || null,
       unit_cost: saving.unit_cost,
       unit_cost_1: saving.unit_cost_1,
       unit_cost_2: saving.unit_cost_2,
@@ -37,6 +38,7 @@ export async function createSupplierQuoteSaving(saving: Omit<SupplierQuoteSaving
     id: data.id,
     supplier_quote_id: data.supplier_quote_id,
     saving_id: data.saving_id,
+    price_break_id: data.price_break_id || null,
     unit_cost: data.unit_cost,
     unit_cost_1: data.unit_cost_1,
     unit_cost_2: data.unit_cost_2,

@@ -11,7 +11,7 @@ export async function fetchSupplierQuoteSavings(supplierQuoteId: string): Promis
     .from('supplier_quote_savings')
     .select(`
       *,
-      quote_request_savings:saving_id(*),
+      savings:saving_id(*),
       unit_of_measures:unit_of_measure_id(*)
     `)
     .eq('supplier_quote_id', supplierQuoteId);
@@ -27,6 +27,7 @@ export async function fetchSupplierQuoteSavings(supplierQuoteId: string): Promis
       id: item.id,
       supplier_quote_id: item.supplier_quote_id,
       saving_id: item.saving_id,
+      price_break_id: item.price_break_id || null,
       unit_cost: item.unit_cost,
       unit_cost_1: item.unit_cost_1,
       unit_cost_2: item.unit_cost_2,
@@ -42,9 +43,9 @@ export async function fetchSupplierQuoteSavings(supplierQuoteId: string): Promis
     };
 
     // Add additional properties for UI display if available
-    if (item.quote_request_savings) {
-      savingData.saving_name = item.quote_request_savings.name;
-      savingData.saving_description = item.quote_request_savings.description;
+    if (item.savings) {
+      savingData.saving_name = item.savings.name;
+      savingData.saving_description = item.savings.description;
     }
 
     if (item.unit_of_measures) {
