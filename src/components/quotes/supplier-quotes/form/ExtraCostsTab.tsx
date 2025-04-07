@@ -1,3 +1,4 @@
+
 import { Control } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues } from "@/types/supplierQuote";
@@ -43,7 +44,26 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                   Enter the unit costs for the extra costs specified in the quote request
                 </p>
                 
-                <div className="border rounded-md p-4">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
+                      <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
+                      <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {quoteRequest.extra_costs.map((cost, index) => (
+                      <tr key={cost.id || index} className="border-b">
+                        <td className="py-2 px-4 text-sm">{cost.name}</td>
+                        <td className="py-2 px-4 text-sm text-muted-foreground">{cost.description || '-'}</td>
+                        <td className="py-2 px-4 text-sm text-right">{cost.unit_of_measure_name || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                <div className="border rounded-md p-4 mt-4">
                   <p className="text-sm">
                     Extra costs pricing component would be implemented here based on specific requirements
                   </p>
@@ -61,7 +81,26 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                   Enter the savings details as specified in the quote request
                 </p>
                 
-                <div className="border rounded-md p-4">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
+                      <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
+                      <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {quoteRequest.savings.map((saving, index) => (
+                      <tr key={saving.id || index} className="border-b">
+                        <td className="py-2 px-4 text-sm">{saving.name}</td>
+                        <td className="py-2 px-4 text-sm text-muted-foreground">{saving.description || '-'}</td>
+                        <td className="py-2 px-4 text-sm text-right">{saving.unit_of_measure_name || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                <div className="border rounded-md p-4 mt-4">
                   <p className="text-sm">
                     Savings pricing component would be implemented here based on specific requirements
                   </p>
