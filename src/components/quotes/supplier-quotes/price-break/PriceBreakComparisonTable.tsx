@@ -1,11 +1,10 @@
-
 import { useMemo, useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/utils/formatters";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 interface PriceBreakComparisonTableProps {
