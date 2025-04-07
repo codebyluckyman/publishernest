@@ -1,4 +1,3 @@
-
 import { Control, useFormContext, useFieldArray } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteFormValues, SupplierQuoteExtraCost } from "@/types/supplierQuote";
@@ -7,6 +6,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FormField, FormItem, FormControl, FormLabel } from "@/components/ui/form";
+import { getSymbolForCurrency } from "@/api/organizations/currencySymbols";
 
 interface ExtraCostsTabProps {
   control: Control<SupplierQuoteFormValues>;
@@ -23,12 +23,12 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     name: "extra_costs",
   });
   
-  // We'll implement savings field array later when we have the data structure
-  
   const hasExtraCosts = quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0;
   const hasSavings = quoteRequest.savings && quoteRequest.savings.length > 0;
   
   const extraCosts = watch("extra_costs") || [];
+  const currency = watch("currency") || "USD";
+  const currencySymbol = getSymbolForCurrency(currency);
   
   // If there are no extra costs or savings, show a message
   if (!hasExtraCosts && !hasSavings) {
@@ -63,7 +63,7 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
                       <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
                       <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
-                      <th className="py-2 px-4 text-right text-sm font-medium">Unit Cost</th>
+                      <th className="py-2 px-4 text-right text-sm font-medium">Unit Cost {currency}{currencySymbol}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -133,7 +133,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                         <td className="py-2 px-4 text-sm text-muted-foreground">{saving.description || '-'}</td>
                         <td className="py-2 px-4 text-sm text-right">{saving.unit_of_measure_name || '-'}</td>
                         <td className="py-2 px-4 text-sm text-right">
-                          {/* We'll add form fields for savings later when we implement the savings data structure */}
                           <Input
                             type="number"
                             step="0.01"
