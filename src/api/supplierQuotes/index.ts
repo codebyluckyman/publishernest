@@ -10,4 +10,3 @@ export { approveSupplierQuote } from './approveSupplierQuote';
 export { rejectSupplierQuote } from './rejectSupplierQuote';
 export { getSupplierQuoteAttachments } from './getAttachments';
 export { getPublicUrl } from './getPublicUrls';
-export { deleteSupplierQuote } from './deleteSupplierQuote';

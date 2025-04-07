@@ -57,18 +57,12 @@ export function SupplierQuoteForm({
     createdQuoteId
   });
 
-  // Update selected supplier when suppliers are loaded - this was causing infinite loop!
-  // We need to use useEffect to safely update selectedSupplier
-  if (suppliers && !selectedSupplier && form) {
-    const supplierId = form.getValues().supplier_id;
+  // Update selected supplier when suppliers are loaded
+  if (suppliers && !selectedSupplier) {
+    const supplierId = form.watch("supplier_id");
     if (supplierId) {
-      const supplier = suppliers.find(s => s.id === supplierId);
-      if (supplier) {
-        // Use setTimeout to break the render cycle
-        setTimeout(() => {
-          setSelectedSupplier(supplier);
-        }, 0);
-      }
+      const supplier = suppliers.find(s => s.id === supplierId) || null;
+      setSelectedSupplier(supplier);
     }
   }
 
@@ -77,7 +71,7 @@ export function SupplierQuoteForm({
   };
 
   // Show success view if quote has been created
-  if (createdQuoteId && !initialValues.id) {
+  if (createdQuoteId) {
     return (
       <SuccessView 
         createdQuoteId={createdQuoteId} 
@@ -113,8 +107,6 @@ export function SupplierQuoteForm({
           isSubmitting={isSubmitting}
           onCancel={onCancel}
           isValid={form.formState.isValid}
-          onSubmit={onFinalSubmit}
-          isSubmitReady={isFormComplete}
         />
       </form>
     </Form>
