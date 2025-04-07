@@ -1556,6 +1556,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          price_break_id: string | null
           saving_id: string
           supplier_quote_id: string
           unit_cost: number | null
@@ -1575,6 +1576,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          price_break_id?: string | null
           saving_id: string
           supplier_quote_id: string
           unit_cost?: number | null
@@ -1594,6 +1596,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          price_break_id?: string | null
           saving_id?: string
           supplier_quote_id?: string
           unit_cost?: number | null
@@ -1611,6 +1614,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "supplier_quote_savings_price_break_id_fkey"
+            columns: ["price_break_id"]
+            isOneToOne: false
+            referencedRelation: "quote_request_format_price_breaks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "supplier_quote_savings_saving_id_fkey"
             columns: ["saving_id"]
