@@ -17,7 +17,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
   const [activeTab, setActiveTab] = useState("extra-costs");
   const { getValues, watch } = useFormContext<SupplierQuoteFormValues>();
   
-  // Set up field arrays for extra costs and savings
   const extraCostsFieldArray = useFieldArray({
     control,
     name: "extra_costs",
@@ -30,7 +29,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
   const currency = watch("currency") || "USD";
   const currencySymbol = getSymbolForCurrency(currency);
   
-  // If there are no extra costs or savings, show a message
   if (!hasExtraCosts && !hasSavings) {
     return (
       <Card>
@@ -68,7 +66,6 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                   </thead>
                   <tbody>
                     {extraCosts.map((cost, index) => {
-                      // Find the corresponding extra cost from the quote request to get name and description
                       const extraCostDetails = quoteRequest.extra_costs?.find(
                         ec => ec.id === cost.extra_cost_id
                       ) || { name: 'Unknown', description: '', unit_of_measure_name: '' };
@@ -78,12 +75,12 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                           <td className="py-2 px-4 text-sm">{extraCostDetails.name}</td>
                           <td className="py-2 px-4 text-sm text-muted-foreground">{extraCostDetails.description || '-'}</td>
                           <td className="py-2 px-4 text-sm text-right">{extraCostDetails.unit_of_measure_name || '-'}</td>
-                          <td className="py-2 px-4 text-sm text-right">
+                          <td className="py-2 px-4 text-sm text-right flex justify-end items-center">
                             <FormField
                               control={control}
                               name={`extra_costs.${index}.unit_cost`}
                               render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="w-24">
                                   <FormControl>
                                     <Input
                                       {...field}
@@ -91,7 +88,7 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                                       step="0.01"
                                       value={field.value || ''}
                                       onChange={(e) => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
-                                      className="w-24 text-right"
+                                      className="text-right"
                                       placeholder="0.00"
                                     />
                                   </FormControl>
