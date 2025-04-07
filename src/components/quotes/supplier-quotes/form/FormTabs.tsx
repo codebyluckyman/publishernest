@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Control, UseFormReturn } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -35,7 +34,7 @@ export function FormTabs({
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="pricing">Pricing</TabsTrigger>
         <TabsTrigger value="extra-costs">Extra Costs & Savings</TabsTrigger>
-        <TabsTrigger value="production">Production</TabsTrigger>
+        <TabsTrigger value="production">Schedule</TabsTrigger>
         <TabsTrigger value="packaging">Packaging</TabsTrigger>
       </TabsList>
       
