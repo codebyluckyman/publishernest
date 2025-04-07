@@ -65,6 +65,11 @@ export function ExtraCostsField() {
       unit_of_measure_id: cost.unit_of_measure_id || ""
     });
     
+    // Ensure the collapsible is open when adding an item
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+    
     toast.success(`"${cost.name}" added to extra costs`);
   };
 
@@ -87,7 +92,7 @@ export function ExtraCostsField() {
             <CardContent className="space-y-4 pt-3">
               <ExtraCostsList control={control} extraCosts={extraCosts} />
               
-              {/* <Button 
+              <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => setIsLibraryOpen(true)}
@@ -96,7 +101,7 @@ export function ExtraCostsField() {
               >
                 <Library className="h-4 w-4 mr-2" />
                 Add from Library
-              </Button> */}
+              </Button>
               
               <ExtraCostLibraryDialog
                 open={isLibraryOpen}
