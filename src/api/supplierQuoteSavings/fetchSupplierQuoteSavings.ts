@@ -6,13 +6,13 @@ export async function fetchSupplierQuoteSavings(supplierQuoteId: string): Promis
   if (!supplierQuoteId) return [];
   
   // Since TypeScript doesn't recognize supplier_quote_savings in the type definitions yet,
-  // we need to use any for the query result
+  // we need to use the any type for the query result
   const { data, error } = await supabase
     .from('supplier_quote_savings')
     .select(`
       *,
       quote_request_savings:saving_id(*),
-      unit_of_measures(*)
+      unit_of_measures:unit_of_measure_id(*)
     `)
     .eq('supplier_quote_id', supplierQuoteId);
   
@@ -22,7 +22,8 @@ export async function fetchSupplierQuoteSavings(supplierQuoteId: string): Promis
   
   // Transform data to match SupplierQuoteSaving type
   return data.map(item => {
-    const savingData = {
+    // Create the base saving data object
+    const savingData: any = {
       id: item.id,
       supplier_quote_id: item.supplier_quote_id,
       saving_id: item.saving_id,

@@ -57,6 +57,12 @@ export interface SupplierQuoteSaving {
   unit_of_measure_id?: string | null;
   
   // Additional properties for mapping in the UI
+  saving_name?: string;
+  saving_description?: string | null;
+  unit_of_measure_name?: string | null;
+  is_inventory_unit?: boolean;
+  
+  // Generic key-value for any additional properties
   [key: string]: any;
 }
 
