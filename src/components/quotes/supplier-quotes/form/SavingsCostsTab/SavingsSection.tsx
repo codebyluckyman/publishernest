@@ -164,17 +164,17 @@ export function SavingsSection({ savingsData }: SavingsSectionProps) {
                   <div>
                     <Label htmlFor={`saving-${index}-price-break`}>Associated Price Break</Label>
                     <Select
-                      value={savings[index]?.price_break_id || ""}
+                      value={savings[index]?.price_break_id || "null"} 
                       onValueChange={(value) => {
                         // Cast to any to avoid TypeScript errors
-                        setValue(`savings.${index}.price_break_id` as any, value || null);
+                        setValue(`savings.${index}.price_break_id` as any, value === "null" ? null : value);
                       }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select price break" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="null">None</SelectItem>
                         {/* Add price break options here from context/props */}
                       </SelectContent>
                     </Select>
