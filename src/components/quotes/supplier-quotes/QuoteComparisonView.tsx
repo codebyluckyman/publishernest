@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
+import { formatCurrency } from "@/utils/formatters";
 
 interface QuoteComparisonViewProps {
   quotes: SupplierQuote[];
@@ -128,21 +129,17 @@ export function QuoteComparisonView({
       header: "Total Cost",
       cell: ({ row }) => {
         const value = row.getValue("totalCost") as number | null;
-        const currency = row.getValue("currency") as string;
+        const currency = row.original.currency || "USD"; // Ensure we always have a default currency
         
         if (value === null) return "Not provided";
         
-        const formatter = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: currency,
-          minimumFractionDigits: 2,
-        });
+        const formattedValue = formatCurrency(value, currency);
         
         const isBest = getBestQuote(quotes)?.id === row.original.quoteId;
         
         return (
           <div className="flex items-center">
-            <span>{formatter.format(value)}</span>
+            <span>{formattedValue}</span>
             {isBest && (
               <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">
                 Best Price
@@ -296,7 +293,7 @@ function ComparisonTable({ quotes, columns, expanded, setExpanded }: ComparisonT
         supplier: quote.supplier?.supplier_name || "Unknown Supplier",
         supplierId: quote.supplier_id,
         totalCost: quote.total_cost,
-        currency: quote.currency,
+        currency: quote.currency || "USD", // Ensure there's always a fallback currency
         status: quote.status,
         deliveryTime: "Not specified", // This would come from production schedule if available
         quoteId: quote.id,
