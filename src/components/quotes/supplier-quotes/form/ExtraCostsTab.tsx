@@ -1,6 +1,7 @@
+
 import { Control, useFormContext, useFieldArray } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
-import { SupplierQuoteFormValues, SupplierQuoteExtraCost } from "@/types/supplierQuote";
+import { SupplierQuoteFormValues, SupplierQuoteExtraCost, SupplierQuoteSaving } from "@/types/supplierQuote";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,10 +23,16 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
     name: "extra_costs",
   });
   
+  const savingsFieldArray = useFieldArray({
+    control,
+    name: "savings",
+  });
+  
   const hasExtraCosts = quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0;
   const hasSavings = quoteRequest.savings && quoteRequest.savings.length > 0;
   
   const extraCosts = watch("extra_costs") || [];
+  const savings = watch("savings") || [];
   const currency = watch("currency") || "USD";
   const currencySymbol = getSymbolForCurrency(currency);
   
@@ -120,32 +127,46 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                       <th className="py-2 px-4 text-left text-sm font-medium">Item</th>
                       <th className="py-2 px-4 text-left text-sm font-medium">Description</th>
                       <th className="py-2 px-4 text-right text-sm font-medium">Unit of Measure</th>
-                      <th className="py-2 px-4 text-right text-sm font-medium">Unit Cost</th>
+                      <th className="py-2 px-4 text-right text-sm font-medium">Unit Value {currency}{currencySymbol}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {quoteRequest.savings?.map((saving, index) => (
-                      <tr key={saving.id || index} className="border-b">
-                        <td className="py-2 px-4 text-sm">{saving.name}</td>
-                        <td className="py-2 px-4 text-sm text-muted-foreground">{saving.description || '-'}</td>
-                        <td className="py-2 px-4 text-sm text-right">{saving.unit_of_measure_name || '-'}</td>
-                        <td className="py-2 px-4 text-sm text-right">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            className="w-24 text-right"
-                            placeholder="0.00"
-                            disabled
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                    {savings.map((saving, index) => {
+                      const savingDetails = quoteRequest.savings?.find(
+                        s => s.id === saving.saving_id
+                      ) || { name: 'Unknown', description: '', unit_of_measure_name: '' };
+                      
+                      return (
+                        <tr key={saving.saving_id || index} className="border-b">
+                          <td className="py-2 px-4 text-sm">{savingDetails.name}</td>
+                          <td className="py-2 px-4 text-sm text-muted-foreground">{savingDetails.description || '-'}</td>
+                          <td className="py-2 px-4 text-sm text-right">{savingDetails.unit_of_measure_name || '-'}</td>
+                          <td className="py-2 px-4 text-sm text-right flex justify-end items-center">
+                            <FormField
+                              control={control}
+                              name={`savings.${index}.unit_cost`}
+                              render={({ field }) => (
+                                <FormItem className="w-24">
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      step="0.01"
+                                      value={field.value || ''}
+                                      onChange={(e) => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
+                                      className="text-right"
+                                      placeholder="0.00"
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
-                
-                <p className="text-sm text-amber-500">
-                  Note: Savings capture will be implemented in a future update
-                </p>
               </div>
             ) : (
               <p className="text-muted-foreground py-2">No savings defined for this quote request</p>

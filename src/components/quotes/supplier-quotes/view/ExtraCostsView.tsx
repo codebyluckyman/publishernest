@@ -15,8 +15,9 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
   const extraCosts = quote.quote_request?.extra_costs || [];
   const savings = quote.quote_request?.savings || [];
   
-  // Get submitted extra costs from the supplier quote
+  // Get submitted extra costs and savings from the supplier quote
   const submittedExtraCosts = quote.extra_costs || [];
+  const submittedSavings = quote.savings || [];
   
   const hasExtraCosts = extraCosts.length > 0;
   const hasSavings = savings.length > 0;
@@ -94,20 +95,29 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {savings.map((item, index) => (
-                    <tr key={item.id || index} className="border-b">
-                      <td className="py-2 px-4 text-sm">{item.name}</td>
-                      <td className="py-2 px-4 text-sm text-muted-foreground">
-                        {item.description || '-'}
-                      </td>
-                      <td className="py-2 px-4 text-sm">
-                        {item.unit_of_measure_name || '-'}
-                      </td>
-                      <td className="py-2 px-4 text-sm text-right">
-                        -
-                      </td>
-                    </tr>
-                  ))}
+                  {savings.map((item, index) => {
+                    // Find if there's a corresponding saving submission
+                    const submittedSaving = submittedSavings.find(
+                      s => s.saving_id === item.id
+                    );
+                    
+                    return (
+                      <tr key={item.id || index} className="border-b">
+                        <td className="py-2 px-4 text-sm">{item.name}</td>
+                        <td className="py-2 px-4 text-sm text-muted-foreground">
+                          {item.description || '-'}
+                        </td>
+                        <td className="py-2 px-4 text-sm">
+                          {item.unit_of_measure_name || '-'}
+                        </td>
+                        <td className="py-2 px-4 text-sm text-right">
+                          {submittedSaving && submittedSaving.unit_cost !== null 
+                            ? `${quote.currency} ${submittedSaving.unit_cost.toFixed(2)}` 
+                            : '-'}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (
