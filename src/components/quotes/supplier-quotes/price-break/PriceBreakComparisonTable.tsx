@@ -59,7 +59,8 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
     
     for (let i = 0; i < numProducts; i++) {
       const product = quoteRequestFormat?.products?.[i];
-      titles.push(product?.product_name || `Product ${i + 1}`);
+      // Show the product name with multiplier to indicate number of products
+      titles.push(`${i + 1}× ${product?.product_name || 'Product'}`);
     }
     
     return titles;
@@ -102,6 +103,8 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
       products: Array<{
         productIndex: number,
         productTitle: string,
+        multiplier: number,
+        totalQuantity: number,
         suppliers: Array<{
           supplierId: string,
           supplierName: string,
@@ -119,6 +122,8 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
         products: [] as Array<{
           productIndex: number,
           productTitle: string,
+          multiplier: number,
+          totalQuantity: number,
           suppliers: Array<{
             supplierId: string,
             supplierName: string,
@@ -131,7 +136,9 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
 
       // For each product
       for (let productIndex = 0; productIndex < numProducts; productIndex++) {
-        const productTitle = productTitles[productIndex] || `Product ${productIndex + 1}`;
+        const productTitle = productTitles[productIndex] || `${productIndex + 1}× Product`;
+        const multiplier = productIndex + 1; // Product index starts at 0, multiplier starts at 1
+        const totalQuantity = quantity * multiplier;
         const bestPrice = getBestPrice(quantity, productIndex);
         
         // Skip products that don't have any price breaks
@@ -157,8 +164,8 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
             
           // Check if this is the best price
           const isBest = bestPrice?.supplierId === supplier.id && 
-                        unitCost === bestPrice.price && 
-                        unitCost !== null;
+                         unitCost === bestPrice.price && 
+                         unitCost !== null;
           
           if (unitCost !== null && unitCost !== undefined) {
             hasAnyData = true;
@@ -178,6 +185,8 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
           quantityRow.products.push({
             productIndex,
             productTitle,
+            multiplier,
+            totalQuantity,
             suppliers: supplierData
           });
         }
@@ -202,8 +211,9 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
         <Table className="w-full">
           <TableHeader>
             <TableRow className="sticky top-0 z-10">
-              <TableHead className="sticky left-0 bg-white z-20 font-bold">Quantity</TableHead>
-              <TableHead className="font-bold">Product</TableHead>
+              <TableHead className="sticky left-0 bg-white z-20 font-bold">Base Quantity</TableHead>
+              <TableHead className="font-bold">Product Multiplier</TableHead>
+              <TableHead className="font-bold text-gray-500 text-xs">(Total Units)</TableHead>
               {suppliers.map(supplier => (
                 <TableHead key={supplier.id} className="min-w-[120px]">
                   {supplier.name}
@@ -230,6 +240,10 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                     {product.productTitle}
                   </TableCell>
                   
+                  <TableCell className="text-gray-500 text-xs">
+                    ({product.totalQuantity.toLocaleString()} units)
+                  </TableCell>
+                  
                   {/* For each supplier, show the price */}
                   {product.suppliers.map(supplier => (
                     <TableCell key={supplier.supplierId}>
@@ -249,7 +263,10 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {supplier.isBest ? "Best price for this quantity and product" : "Compare with other suppliers"}
+                              {supplier.isBest 
+                                ? `Best price for ${product.multiplier}× quantity of ${row.quantity}`
+                                : `Price for ${product.multiplier}× quantity of ${row.quantity}`
+                              }
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -265,9 +282,15 @@ export function PriceBreakComparisonTable({ quotes, formatId }: PriceBreakCompar
         </Table>
       </div>
       
-      <div className="mt-4 text-sm text-gray-600 flex items-center">
-        <Badge className="bg-green-100 text-green-800 mr-2">BEST</Badge>
-        <span>= Best price available for that quantity and product</span>
+      <div className="mt-4 text-sm space-y-2">
+        <div className="flex items-center">
+          <Badge className="bg-green-100 text-green-800 mr-2">BEST</Badge>
+          <span>= Best price available for that quantity and product multiplier</span>
+        </div>
+        <div className="text-gray-600">
+          <p>Note: The multiplier (e.g., 2×) indicates how many times the base quantity is being produced.</p>
+          <p>For example, with a base quantity of 2,000 and 2× multiplier, the total is 4,000 units.</p>
+        </div>
       </div>
     </div>
   );
