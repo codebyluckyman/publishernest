@@ -11,6 +11,7 @@ import "./App.css";
 
 // Helper function to create route elements
 const createRouteElement = (element: any) => {
+  // Using createElement to properly instantiate the component
   return createElement(element.type);
 };
 
