@@ -25,6 +25,36 @@ export interface SalesOrder {
   created_at: string;
   updated_at: string;
   created_by: string;
+  customer?: {
+    id: string;
+    customer_name: string;
+    address?: string;
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
+  };
+  line_items?: Array<{
+    id: string;
+    product_id: string;
+    format_id?: string;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+    product?: {
+      id: string;
+      title: string;
+    };
+    format?: {
+      id: string;
+      format_name: string;
+    };
+  }>;
+  charges?: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    taxable: boolean;
+  }>;
 }
 
 export interface SalesOrderLineItem {

@@ -29,7 +29,7 @@ interface SupplierQuoteWithDetails {
 export function useSupplierQuotesByProduct(productId?: string, formatId?: string) {
   const { currentOrganization } = useOrganization();
   
-  return useQuery({
+  const query = useQuery({
     queryKey: ['supplier-quotes-by-product', currentOrganization?.id, productId, formatId],
     queryFn: async () => {
       if (!currentOrganization || !productId) return [];
@@ -78,4 +78,11 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
     },
     enabled: !!currentOrganization && !!productId,
   });
+
+  return {
+    data: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error,
+    ...query
+  };
 }

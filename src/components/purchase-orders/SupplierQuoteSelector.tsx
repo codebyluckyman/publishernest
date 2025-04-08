@@ -23,7 +23,7 @@ export function SupplierQuoteSelector({
   onQuoteSelect,
   disabled = false
 }: SupplierQuoteSelectorProps) {
-  const { supplierQuotes, isLoading } = useSupplierQuotesByProduct(productId, formatId);
+  const { data: supplierQuotes, isLoading } = useSupplierQuotesByProduct(productId, formatId);
   const [selectedQuoteId, setSelectedQuoteId] = useState<string>('');
 
   // Reset selection when product changes
