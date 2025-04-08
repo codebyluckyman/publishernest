@@ -1,3 +1,4 @@
+
 import { Control, useWatch } from "react-hook-form";
 import { FormField } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
@@ -40,7 +41,7 @@ export function FormatSpecificationsDisplay({
       render={({ field }) => {
         const selectedFormatId = field.value || "";
         const selectedFormat = safeFormats.find(
-          (format) => format.id === selectedFormatId
+          (format) => format.value === selectedFormatId
         );
         
         return selectedFormat ? (

@@ -21,8 +21,8 @@ export function FormatSelectField({
   // Transform formats data for the combobox - ensure this is always an array
   const formatOptions = Array.isArray(formats) 
     ? formats.map(format => ({
-        label: format.format_name,
-        value: format.id
+        label: format.label,
+        value: format.value
       }))
     : [];
 

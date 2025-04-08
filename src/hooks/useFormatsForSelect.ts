@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from './useOrganization';
@@ -33,12 +34,17 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
           return [];
         }
 
-        return Array.isArray(data) 
+        // Transform data to include both original data and FormatOption format
+        const transformedData = Array.isArray(data) 
           ? data.map(format => ({ 
+              id: format.id, 
+              format_name: format.format_name,
               value: format.id, 
               label: format.format_name 
             }))
           : [];
+          
+        return transformedData;
       } catch (err) {
         console.error("Exception fetching formats:", err);
         return [];

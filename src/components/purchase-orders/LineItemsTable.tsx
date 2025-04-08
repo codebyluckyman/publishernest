@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,15 +129,15 @@ export function LineItemsTable({ items = [], onChange, disabled = false }: LineI
                   </TableCell>
                   <TableCell>
                     <Select
-                      value={item.format_id || ""}
-                      onValueChange={(value) => handleItemChange(index, 'format_id', value)}
+                      value={item.format_id || "no_format"}
+                      onValueChange={(value) => handleItemChange(index, 'format_id', value === "no_format" ? undefined : value)}
                       disabled={disabled || isFormatsLoading}
                     >
                       <SelectTrigger className="w-[200px]">
                         <SelectValue placeholder="Select Format" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="no_format">None</SelectItem>
                         {formats?.map((format) => (
                           <SelectItem key={format.value} value={format.value}>
                             {format.label}
