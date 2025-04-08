@@ -30,8 +30,12 @@ const CreateSalesOrder = () => {
         createdBy: user.id
       });
       
-      toast.success('Sales order created successfully');
-      navigate(`/sales-orders/${result.id}`);
+      if (result && result.id) {
+        toast.success('Sales order created successfully');
+        navigate(`/sales-orders/${result.id}`);
+      } else {
+        toast.error('Failed to create sales order: No ID returned');
+      }
     } catch (error) {
       console.error('Error creating sales order:', error);
       toast.error('Failed to create sales order');

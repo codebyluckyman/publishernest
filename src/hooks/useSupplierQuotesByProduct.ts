@@ -72,9 +72,9 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
       const filteredQuotes = quotes.map(quote => ({
         ...quote,
         price_breaks: (quote.price_breaks || []).filter((pb: any) => pb.product_id === productId)
-      }));
+      })) as SupplierQuoteWithDetails[];
       
-      return filteredQuotes as SupplierQuoteWithDetails[];
+      return filteredQuotes;
     },
     enabled: !!currentOrganization && !!productId,
   });
