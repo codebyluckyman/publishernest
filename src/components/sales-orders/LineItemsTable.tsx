@@ -18,7 +18,7 @@ interface LineItemsTableProps {
 }
 
 export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTableProps) {
-  const { products, isLoadingProducts } = useProducts();
+  const { products, isLoading: isLoadingProducts } = useProducts();
   const { formats, isLoadingFormats } = useFormats();
 
   const addLineItem = () => {
@@ -197,4 +197,59 @@ export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTabl
       </Button>
     </div>
   );
+  
+  // Helper functions
+  function addLineItem() {
+    const newItem: LineItem = {
+      product_id: '',
+      format_id: '',
+      quantity: 1,
+      unit_cost: 0,
+      unit_price: 0,
+      total_cost: 0,
+      total_price: 0,
+    };
+    onItemsChange([...items, newItem]);
+  }
+
+  function updateLineItem(index: number, key: keyof LineItem, value: any) {
+    const updatedItems = [...items];
+    updatedItems[index] = { ...updatedItems[index], [key]: value };
+
+    // Auto-calculate totals
+    if (key === 'quantity' || key === 'unit_price') {
+      const qty = key === 'quantity' ? value : items[index].quantity;
+      const price = key === 'unit_price' ? value : items[index].unit_price;
+      updatedItems[index].total_price = qty * price;
+    }
+
+    if (key === 'quantity' || key === 'unit_cost') {
+      const qty = key === 'quantity' ? value : items[index].quantity;
+      const cost = key === 'unit_cost' ? value : items[index].unit_cost;
+      updatedItems[index].total_cost = qty * cost;
+    }
+
+    onItemsChange(updatedItems);
+  }
+
+  function removeLineItem(index: number) {
+    const updatedItems = [...items];
+    updatedItems.splice(index, 1);
+    onItemsChange(updatedItems);
+  }
+
+  function getProductById(id: string) {
+    return products?.find(product => product.id === id);
+  }
+
+  function getFormatById(id: string) {
+    return formats?.find(format => format.id === id);
+  }
+
+  function formatCurrency(amount: number) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency || 'USD'
+    }).format(amount);
+  }
 }

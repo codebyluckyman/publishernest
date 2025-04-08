@@ -18,7 +18,7 @@ import { CustomerSelector } from '@/components/sales-orders/CustomerSelector';
 import { LineItemsTable } from '@/components/sales-orders/LineItemsTable';
 import { ChargesTable } from '@/components/sales-orders/ChargesTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from 'sonner';
+import { toast } from 'sonner';
 import { SalesOrderLineItem, SalesOrderCharge } from '@/types/salesOrder';
 import { useAuth } from '@/context/AuthContext';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -45,7 +45,6 @@ interface SalesOrderFormProps {
 }
 
 export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps) {
-  const { toast } = useToast;
   const { user } = useAuth();
   
   const form = useForm<SalesOrderFormValues>({
@@ -84,11 +83,7 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
       
     } catch (error) {
       console.error('Error submitting sales order:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create sales order. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to create sales order. Please try again.');
     }
   };
   
@@ -162,7 +157,6 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
                       <DatePicker
                         date={field.value}
                         setDate={field.onChange}
-                        placeholder="Select delivery date"
                       />
                     </FormControl>
                     <FormMessage />

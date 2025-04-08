@@ -55,8 +55,8 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
           reference,
           status,
           currency,
-          supplier:supplier_id (id, supplier_name),
-          price_breaks:supplier_quote_price_breaks!inner(
+          supplier:suppliers!supplier_id(id, supplier_name),
+          price_breaks:supplier_quote_price_breaks(
             id, product_id, quantity, unit_cost
           )
         `)
@@ -74,7 +74,7 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
         price_breaks: (quote.price_breaks || []).filter((pb: any) => pb.product_id === productId)
       }));
       
-      return filteredQuotes as SupplierQuoteWithDetails[];
+      return filteredQuotes as unknown as SupplierQuoteWithDetails[];
     },
     enabled: !!currentOrganization && !!productId,
   });
