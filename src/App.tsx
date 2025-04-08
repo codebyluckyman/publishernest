@@ -5,8 +5,14 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { OrganizationProvider } from "./context/OrganizationProvider";
-import { routes, protectedRoutes } from "./routes/routesConfig";
+import { routes, protectedRoutes, routeComponents } from "./routes/routesConfig";
+import { createElement } from "react";
 import "./App.css";
+
+// Helper function to create route elements
+const createRouteElement = (element: { type: React.LazyExoticComponent<() => JSX.Element> }) => {
+  return createElement(element.type);
+};
 
 function App() {
   return (
@@ -20,7 +26,7 @@ function App() {
                 <Route 
                   key={route.path} 
                   path={route.path} 
-                  element={route.element} 
+                  element={createRouteElement(route.element as any)} 
                 />
               ))}
               
@@ -30,7 +36,7 @@ function App() {
                   <Route 
                     key={route.path} 
                     path={route.path} 
-                    element={route.element} 
+                    element={createRouteElement(route.element as any)} 
                   />
                 ))}
               </Route>

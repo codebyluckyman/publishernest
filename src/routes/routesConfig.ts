@@ -49,15 +49,39 @@ export const PATHS = {
   NOT_FOUND: "*"
 };
 
-// Export the routes config
+// Create a mapping of components for routes
+export const routeComponents = {
+  login: Login,
+  notFound: NotFound,
+  dashboard: Dashboard,
+  profile: Profile,
+  organizations: Organizations,
+  organizationSettings: OrganizationSettings,
+  products: ProductsPage,
+  productDetail: ProductDetailPage,
+  formats: FormatsPage,
+  formatDetail: FormatDetailPage,
+  quoteRequests: QuoteRequestsPage,
+  quoteRequestDetail: QuoteRequestDetailPage,
+  suppliers: SuppliersPage,
+  supplierDetail: SupplierDetailPage,
+  quotes: QuotesPage,
+  quoteNew: SupplierQuoteCreate,
+  quoteDetail: SupplierQuoteDetail,
+  printRuns: PrintRunsPage,
+  purchaseOrders: PurchaseOrdersPage,
+  purchaseOrderNew: CreatePurchaseOrderPage
+};
+
+// Export the routes config without using JSX
 export const routes: RouteObject[] = [
   {
     path: PATHS.LOGIN,
-    element: <Login />
+    element: { type: routeComponents.login }
   },
   {
     path: PATHS.NOT_FOUND,
-    element: <NotFound />
+    element: { type: routeComponents.notFound }
   }
 ];
 
@@ -65,78 +89,78 @@ export const routes: RouteObject[] = [
 export const protectedRoutes: RouteObject[] = [
   {
     path: PATHS.HOME,
-    element: <Dashboard />
+    element: { type: routeComponents.dashboard }
   },
   {
     path: PATHS.PROFILE,
-    element: <Profile />
+    element: { type: routeComponents.profile }
   },
   {
     path: PATHS.ORGANIZATIONS,
-    element: <Organizations />
+    element: { type: routeComponents.organizations }
   },
   {
     path: PATHS.ORGANIZATION_SETTINGS,
-    element: <OrganizationSettings />
+    element: { type: routeComponents.organizationSettings }
   },
   {
     path: PATHS.PRODUCTS,
-    element: <ProductsPage />
+    element: { type: routeComponents.products }
   },
   {
     path: PATHS.PRODUCT_DETAIL,
-    element: <ProductDetailPage />
+    element: { type: routeComponents.productDetail }
   },
   {
     path: PATHS.FORMATS,
-    element: <FormatsPage />
+    element: { type: routeComponents.formats }
   },
   {
     path: PATHS.FORMAT_DETAIL,
-    element: <FormatDetailPage />
+    element: { type: routeComponents.formatDetail }
   },
   {
     path: PATHS.QUOTE_REQUESTS,
-    element: <QuoteRequestsPage />
+    element: { type: routeComponents.quoteRequests }
   },
   {
     path: PATHS.QUOTE_REQUEST_DETAIL,
-    element: <QuoteRequestDetailPage />
+    element: { type: routeComponents.quoteRequestDetail }
   },
   {
     path: PATHS.SUPPLIERS,
-    element: <SuppliersPage />
+    element: { type: routeComponents.suppliers }
   },
   {
     path: PATHS.SUPPLIER_DETAIL,
-    element: <SupplierDetailPage />
+    element: { type: routeComponents.supplierDetail }
   },
   {
     path: PATHS.QUOTES,
-    element: <QuotesPage />
+    element: { type: routeComponents.quotes }
   },
   {
     path: PATHS.QUOTE_NEW,
-    element: <SupplierQuoteCreate />
+    element: { type: routeComponents.quoteNew }
   },
   {
     path: PATHS.QUOTE_DETAIL,
-    element: <SupplierQuoteDetail />
+    element: { type: routeComponents.quoteDetail }
   },
   {
     path: PATHS.QUOTE_DETAILS,
-    element: <SupplierQuoteDetail />
+    element: { type: routeComponents.quoteDetail }
   },
   {
     path: PATHS.PRINT_RUNS,
-    element: <PrintRunsPage />
+    element: { type: routeComponents.printRuns }
   },
   {
     path: PATHS.PURCHASE_ORDERS,
-    element: <PurchaseOrdersPage />
+    element: { type: routeComponents.purchaseOrders }
   },
   {
     path: PATHS.PURCHASE_ORDER_NEW,
-    element: <CreatePurchaseOrderPage />
+    element: { type: routeComponents.purchaseOrderNew }
   }
 ];
