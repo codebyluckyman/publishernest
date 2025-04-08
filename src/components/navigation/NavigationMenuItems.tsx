@@ -1,119 +1,105 @@
+import {
+  HomeIcon,
+  LayoutIcon,
+  Package2Icon,
+  BuildingIcon,
+  FileTextIcon,
+  PrinterIcon,
+  ClipboardListIcon,
+  PackageIcon,
+  ShoppingCartIcon
+} from 'lucide-react';
+import { MainNavItem } from "@/types"
 
-import { 
-  BarChart3, 
-  Package, 
-  BookOpen, 
-  Archive, 
-  ShoppingCart, 
-  Truck, 
-  Building,
-  LayoutDashboard,
-  Store,
-  FileText,
-  MessageSquarePlus,
-  Warehouse,
-  Printer,
-  ClipboardList
-} from "lucide-react";
-import { LucideIcon } from "lucide-react";
+interface Props {
+  items: MainNavItem[]
+}
 
-export interface MenuItem {
-  title: string;
-  label: string;
-  path: string;
-  icon: LucideIcon;
-  submenu?: MenuItem[];
+export const NavigationMenuItems = ({ items }: Props) => {
+  return (
+    <>
+      {items?.length ? (
+        items.map((item) => (
+          item.href ? (
+            <a
+              key={item.id}
+              href={item.href}
+              className="flex items-center text-sm font-medium transition-colors hover:text-foreground"
+            >
+              {item.icon && (
+                <item.icon className="mr-2 h-4 w-4" />
+              )}
+              {item.title}
+            </a>
+          ) : null
+        ))
+      ) : null}
+    </>
+  )
 }
 
 export const navigationItems = [
   {
-    title: "Dashboard",
-    href: "/",
-    icon: <LayoutDashboard className="h-5 w-5" />,
+    id: 'home',
+    name: 'Home',
+    path: '/',
+    icon: <HomeIcon className="h-5 w-5" />
   },
   {
-    title: "Products",
-    href: "/products",
-    icon: <Package className="h-5 w-5" />,
+    id: 'formats',
+    name: 'Formats',
+    path: '/formats',
+    icon: <LayoutIcon className="h-5 w-5" />,
+    requiresAuth: true
   },
   {
-    title: "Formats",
-    href: "/formats",
-    icon: <BookOpen className="h-5 w-5" />,
-  },  
-  {
-    title: "Suppliers",
-    href: "/suppliers",
-    icon: <Store className="h-5 w-5" />,
+    id: 'products',
+    name: 'Products',
+    path: '/products',
+    icon: <Package2Icon className="h-5 w-5" />,
+    requiresAuth: true
   },
   {
-    title: "Quotes",
-    href: "/quotes",
-    icon: <FileText className="h-5 w-5" />,
-    submenu: [
-      {
-        title: "Quote Requests",
-        href: "/quote-requests",
-        icon: <MessageSquarePlus className="h-5 w-5" />,
-      },
-      {
-        title: "Quotes",
-        href: "/quotes",
-        icon: <FileText className="h-5 w-5" />,
-      }
-    ]
+    id: 'suppliers',
+    name: 'Suppliers',
+    path: '/suppliers',
+    icon: <BuildingIcon className="h-5 w-5" />,
+    requiresAuth: true
   },
   {
-    title: "Production",
-    href: "/production",
-    icon: <Printer className="h-5 w-5" />,
-    submenu: [
-      {
-        title: "Print Runs",
-        href: "/print-runs",
-        icon: <ClipboardList className="h-5 w-5" />,
-      },
-      {
-        title: "Purchase Orders",
-        href: "/purchase-orders",
-        icon: <ShoppingCart className="h-5 w-5" />,
-      }
-    ]
+    id: 'quotes',
+    name: 'Quote Requests',
+    path: '/quotes',
+    icon: <FileTextIcon className="h-5 w-5" />,
+    requiresAuth: true
   },
   {
-    title: "Shipments",
-    href: "/shipments",
-    icon: <Truck className="h-5 w-5" />,
-  },  
+    id: 'print-runs',
+    name: 'Print Runs',
+    path: '/print-runs',
+    icon: <PrinterIcon className="h-5 w-5" />,
+    requiresAuth: true
+  },
   {
-    title: "Stock Management",
-    href: "/stock",
-    icon: <Warehouse className="h-5 w-5" />,
-  },    
+    id: 'purchase-orders',
+    name: 'Purchase Orders',
+    path: '/purchase-orders',
+    icon: <ClipboardListIcon className="h-5 w-5" />,
+    requiresAuth: true
+  },
   {
-    title: "Organizations",
-    href: "/organizations",
-    icon: <Building className="h-5 w-5" />,
-  },  
+    id: 'sales-orders',
+    name: 'Sales Orders',
+    path: '/sales-orders',
+    icon: <ShoppingCartIcon className="h-5 w-5" />,
+    requiresAuth: true
+  },
+  {
+    id: 'stock',
+    name: 'Stock',
+    path: '/stock',
+    icon: <PackageIcon className="h-5 w-5" />,
+    requiresAuth: true
+  }
 ];
 
-// Function to convert the navigation items to MenuItem objects for use in different components
-export function getNavigationMenuItems(): MenuItem[] {
-  return navigationItems.map(item => {
-    // Create the MenuItem object
-    const menuItem: MenuItem = {
-      title: item.title,
-      label: item.title, // Using title as label
-      path: item.href,
-      icon: item.icon.type,
-      submenu: item.submenu ? item.submenu.map(subItem => ({
-        title: subItem.title,
-        label: subItem.title,
-        path: subItem.href,
-        icon: subItem.icon.type
-      })) : undefined
-    };
-    
-    return menuItem;
-  });
-}
