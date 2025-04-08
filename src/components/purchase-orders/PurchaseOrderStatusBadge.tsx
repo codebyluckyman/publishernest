@@ -14,23 +14,23 @@ export function PurchaseOrderStatusBadge({ status }: PurchaseOrderStatusBadgePro
   switch (status) {
     case 'draft':
       variant = "outline";
-      label = "Draft";
+      label = "draft";
       break;
     case 'approved':
       variant = "secondary";
-      label = "Approved";
+      label = "approved";
       break;
     case 'sent':
       variant = "default";
-      label = "Sent";
+      label = "sent";
       break;
     case 'received':
       variant = "default";
-      label = "Received";
+      label = "received";
       break;
     case 'cancelled':
       variant = "destructive";
-      label = "Cancelled";
+      label = "cancelled";
       break;
   }
 
