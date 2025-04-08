@@ -4,6 +4,7 @@ export interface SalesOrder {
   organization_id: string;
   customer_id: string;
   print_run_id?: string;
+  delivery_location_id?: string;
   so_number: string;
   status: string;
   currency: string;
@@ -32,6 +33,15 @@ export interface SalesOrder {
     contact_name?: string;
     contact_email?: string;
     contact_phone?: string;
+  };
+  delivery_location?: {
+    id: string;
+    location_name: string;
+    address: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
   };
   line_items?: Array<{
     id: string;

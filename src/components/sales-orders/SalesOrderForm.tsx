@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CustomerSelector } from '@/components/sales-orders/CustomerSelector';
+import { DeliveryLocationSelector } from '@/components/sales-orders/DeliveryLocationSelector';
 import { EnhancedLineItemsTable } from '@/components/sales-orders/EnhancedLineItemsTable';
 import { EnhancedChargesTable } from '@/components/sales-orders/EnhancedChargesTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 // Schema for form validation
 const salesOrderSchema = z.object({
   customerId: z.string().uuid({ message: 'Please select a customer' }),
+  deliveryLocationId: z.string().uuid().optional(),
   printRunId: z.string().uuid().optional(),
   currency: z.string().min(1, { message: 'Currency is required' }),
   taxRate: z.number().min(0).default(0),
@@ -66,6 +67,16 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
   const [charges, setCharges] = React.useState<Omit<SalesOrderCharge, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>[]>(
     defaultValues?.charges || []
   );
+
+  // Get the selected customer ID
+  const selectedCustomerId = form.watch('customerId');
+  
+  // Reset delivery location when customer changes
+  useEffect(() => {
+    if (selectedCustomerId) {
+      form.setValue('deliveryLocationId', undefined);
+    }
+  }, [selectedCustomerId, form]);
   
   const handleFormSubmit = async (data: SalesOrderFormValues) => {
     try {
@@ -98,6 +109,13 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
             </CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-2">
               <CustomerSelector control={form.control} />
+              
+              {selectedCustomerId && (
+                <DeliveryLocationSelector 
+                  customerId={selectedCustomerId} 
+                  control={form.control} 
+                />
+              )}
               
               <FormField
                 control={form.control}

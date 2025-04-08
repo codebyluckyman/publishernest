@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCustomers } from '@/hooks/useCustomers';
@@ -10,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CustomerRequirementsTab } from '@/components/customers/requirements/CustomerRequirementsTab';
+import { DeliveryLocationsTab } from '@/components/customers/delivery-locations/DeliveryLocationsTab';
 
 const CustomerDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,6 +87,7 @@ const CustomerDetail = () => {
       <Tabs defaultValue="details">
         <TabsList className="mb-6">
           <TabsTrigger value="details">Customer Details</TabsTrigger>
+          <TabsTrigger value="delivery-locations">Delivery Locations</TabsTrigger>
           <TabsTrigger value="requirements">Requirements</TabsTrigger>
         </TabsList>
         
@@ -218,6 +219,10 @@ const CustomerDetail = () => {
               )}
             </div>
           )}
+        </TabsContent>
+        
+        <TabsContent value="delivery-locations">
+          <DeliveryLocationsTab customerId={customer.id} />
         </TabsContent>
         
         <TabsContent value="requirements">

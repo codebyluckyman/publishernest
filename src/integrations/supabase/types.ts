@@ -54,6 +54,68 @@ export type Database = {
           },
         ]
       }
+      customer_delivery_locations: {
+        Row: {
+          address: string
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          is_default: boolean
+          location_name: string
+          notes: string | null
+          postal_code: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          is_default?: boolean
+          location_name: string
+          notes?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          is_default?: boolean
+          location_name?: string
+          notes?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_delivery_locations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_requirements: {
         Row: {
           created_at: string
@@ -1665,6 +1727,7 @@ export type Database = {
           currency: string
           customer_id: string
           delivery_date: string | null
+          delivery_location_id: string | null
           file_approval_status: string | null
           grand_total: number | null
           id: string
@@ -1692,6 +1755,7 @@ export type Database = {
           currency?: string
           customer_id: string
           delivery_date?: string | null
+          delivery_location_id?: string | null
           file_approval_status?: string | null
           grand_total?: number | null
           id?: string
@@ -1719,6 +1783,7 @@ export type Database = {
           currency?: string
           customer_id?: string
           delivery_date?: string | null
+          delivery_location_id?: string | null
           file_approval_status?: string | null
           grand_total?: number | null
           id?: string
@@ -1740,6 +1805,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_delivery_location_id_fkey"
+            columns: ["delivery_location_id"]
+            isOneToOne: false
+            referencedRelation: "customer_delivery_locations"
             referencedColumns: ["id"]
           },
           {

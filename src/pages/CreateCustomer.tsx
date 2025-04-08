@@ -26,9 +26,11 @@ const CreateCustomer = () => {
 
       const result = await createCustomer(customerData);
       
-      if (result) {
+      if (result && result.id) {
         toast.success('Customer created successfully');
         navigate(`/customers/${result.id}`);
+      } else {
+        toast.error('Failed to create customer');
       }
     } catch (error) {
       console.error('Error creating customer:', error);

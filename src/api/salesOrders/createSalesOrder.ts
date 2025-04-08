@@ -7,6 +7,7 @@ interface CreateSalesOrderParams {
   organizationId: string;
   customerId: string;
   printRunId?: string;
+  deliveryLocationId?: string;
   currency: string;
   lineItems: Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>[];
   charges?: Omit<SalesOrderCharge, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>[];
@@ -21,6 +22,7 @@ export async function createSalesOrder({
   organizationId,
   customerId,
   printRunId,
+  deliveryLocationId,
   currency,
   lineItems,
   charges = [],
@@ -47,6 +49,7 @@ export async function createSalesOrder({
       organization_id: organizationId,
       customer_id: customerId,
       print_run_id: printRunId,
+      delivery_location_id: deliveryLocationId,
       currency,
       total_amount: totalAmount,
       tax_rate: taxRate,
