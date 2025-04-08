@@ -42,7 +42,7 @@ export async function createPurchaseOrder({
       status,
       created_by: createdBy,
     })
-    .select('id')
+    .select('id, po_number')  // Also retrieve the auto-generated po_number
     .single();
 
   if (error) {
