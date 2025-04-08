@@ -1,9 +1,9 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseCustom } from "@/integrations/supabase/client-custom";
 import { SalesOrderRequirement } from "@/types/customerRequirement";
 
 export async function fetchSalesOrderRequirements(salesOrderId: string): Promise<SalesOrderRequirement[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseCustom
     .from('sales_order_requirements')
     .select(`
       *,
@@ -15,5 +15,5 @@ export async function fetchSalesOrderRequirements(salesOrderId: string): Promise
     throw new Error(`Error fetching sales order requirements: ${error.message}`);
   }
 
-  return data || [];
+  return data as SalesOrderRequirement[] || [];
 }

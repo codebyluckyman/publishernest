@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseCustom } from "@/integrations/supabase/client-custom";
 import { CustomerRequirement } from "@/types/customerRequirement";
 
 type CreateCustomerRequirementInput = Omit<CustomerRequirement, 'id' | 'created_at' | 'updated_at'>;
@@ -7,7 +7,7 @@ type CreateCustomerRequirementInput = Omit<CustomerRequirement, 'id' | 'created_
 export async function createCustomerRequirement(
   requirementData: CreateCustomerRequirementInput
 ): Promise<CustomerRequirement> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseCustom
     .from('customer_requirements')
     .insert(requirementData)
     .select()
@@ -17,5 +17,5 @@ export async function createCustomerRequirement(
     throw new Error(`Error creating customer requirement: ${error.message}`);
   }
 
-  return data;
+  return data as CustomerRequirement;
 }

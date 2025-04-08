@@ -67,4 +67,26 @@ export type Tables = {
       updated_at: string;
     };
   };
+  customer_requirements: {
+    Row: {
+      id: string;
+      customer_id: string;
+      requirement_type: string;
+      description: string;
+      is_mandatory: boolean;
+      created_at: string;
+      updated_at: string;
+    };
+  };
+  sales_order_requirements: {
+    Row: {
+      id: string;
+      sales_order_id: string;
+      requirement_id: string;
+      status: string;
+      notes?: string;
+      created_at: string;
+      updated_at: string;
+    };
+  };
 };

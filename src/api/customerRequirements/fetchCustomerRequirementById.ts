@@ -1,9 +1,9 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseCustom } from "@/integrations/supabase/client-custom";
 import { CustomerRequirement } from "@/types/customerRequirement";
 
 export async function fetchCustomerRequirementById(requirementId: string): Promise<CustomerRequirement> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseCustom
     .from('customer_requirements')
     .select('*')
     .eq('id', requirementId)
@@ -13,5 +13,5 @@ export async function fetchCustomerRequirementById(requirementId: string): Promi
     throw new Error(`Error fetching customer requirement: ${error.message}`);
   }
 
-  return data;
+  return data as CustomerRequirement;
 }

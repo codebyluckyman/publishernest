@@ -32,7 +32,7 @@ const CreateSalesOrder = () => {
 
       const result = await createSalesOrder(salesOrderData);
       
-      if (result && result.id) {
+      if (result) {
         toast.success('Sales order created successfully');
         navigate(`/sales-orders/${result.id}`);
       }

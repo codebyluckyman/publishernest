@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseCustom } from "@/integrations/supabase/client-custom";
 import { SalesOrderRequirement } from "@/types/customerRequirement";
 
 type UpdateSalesOrderRequirementInput = Partial<Omit<SalesOrderRequirement, 'id' | 'created_at' | 'updated_at' | 'requirement'>> & { id: string };
@@ -9,7 +9,7 @@ export async function updateSalesOrderRequirement(
 ): Promise<SalesOrderRequirement> {
   const { id, ...dataToUpdate } = requirementData;
   
-  const { data, error } = await supabase
+  const { data, error } = await supabaseCustom
     .from('sales_order_requirements')
     .update(dataToUpdate)
     .eq('id', id)
@@ -20,5 +20,5 @@ export async function updateSalesOrderRequirement(
     throw new Error(`Error updating sales order requirement: ${error.message}`);
   }
 
-  return data;
+  return data as SalesOrderRequirement;
 }
