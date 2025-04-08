@@ -29,8 +29,7 @@ interface SupplierQuoteWithDetails {
 export function useSupplierQuotesByProduct(productId?: string, formatId?: string) {
   const { currentOrganization } = useOrganization();
   
-  // Use a type assertion to resolve the excessive depth issue
-  const query = useQuery<SupplierQuoteWithDetails[], Error>({
+  const query = useQuery({
     queryKey: ['supplier-quotes-by-product', currentOrganization?.id, productId, formatId],
     queryFn: async () => {
       if (!currentOrganization || !productId) return [];
