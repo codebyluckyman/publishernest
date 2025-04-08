@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { SupplierQuoteDetails } from "../../supplier-quotes/SupplierQuoteDetails";
+import { SupplierQuoteDetails } from "../SupplierQuoteDetails";
 
 interface SupplierQuoteDetailsSheetProps {
   quote: SupplierQuote | null;

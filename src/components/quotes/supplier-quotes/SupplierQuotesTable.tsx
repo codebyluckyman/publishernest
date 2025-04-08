@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import {
   ColumnDef,
@@ -23,8 +22,6 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { SupplierQuote, SupplierQuoteStatus } from "@/types/supplierQuote";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
 import { formatDate } from "@/lib/utils";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
 import { useOrganization } from "@/context/OrganizationContext";
 import { SupplierQuoteDialog } from "./SupplierQuoteDialog";
 import { SupplierQuoteActions } from "./SupplierQuoteActions";
@@ -40,6 +37,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
+import { SupplierQuoteDetailsSheet } from "./details/SupplierQuoteDetailsSheet";
 
 interface SupplierQuotesTableProps {
   statusFilter?: SupplierQuoteStatus[];
@@ -53,17 +51,18 @@ export function SupplierQuotesTable({
   quoteRequestId
 }: SupplierQuotesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [showDetails, setShowDetails] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
+  const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quoteForDeletion, setQuoteForDeletion] = useState<SupplierQuote | null>(null);
   const { currentOrganization } = useOrganization();
-  const { useSupplierQuotesList, useSubmitSupplierQuote, useDeleteSupplierQuote } = useSupplierQuotes();
+  const { useSupplierQuotesList, useSubmitSupplierQuote, useDeleteSupplierQuote, useApproveSupplierQuote, useRejectSupplierQuote } = useSupplierQuotes();
   const submitMutation = useSubmitSupplierQuote();
   const deleteMutation = useDeleteSupplierQuote();
+  const approveMutation = useApproveSupplierQuote();
+  const rejectMutation = useRejectSupplierQuote();
   
-  // Use the existing hook with appropriate filters
   const { data: quotes = [], isLoading } = useSupplierQuotesList(
     currentOrganization,
     statusFilter ? statusFilter.join(',') : undefined,
@@ -75,10 +74,10 @@ export function SupplierQuotesTable({
   const [pageSize, setPageSize] = useState(10);
   
   useEffect(() => {
-    if (!showDetails) {
+    if (!detailsSheetOpen) {
       setSelectedQuote(null);
     }
-  }, [showDetails]);
+  }, [detailsSheetOpen]);
 
   useEffect(() => {
     if (!showEditDialog) {
@@ -86,10 +85,9 @@ export function SupplierQuotesTable({
     }
   }, [showEditDialog]);
 
-  // Quote actions handlers
-  const handleView = (quote: SupplierQuote) => {
+  const handleViewDetails = (quote: SupplierQuote) => {
     setSelectedQuote(quote);
-    setShowDetails(true);
+    setDetailsSheetOpen(true);
   };
 
   const handleEdit = (quote: SupplierQuote) => {
@@ -104,6 +102,30 @@ export function SupplierQuotesTable({
     }, {
       onSuccess: () => {
         toast.success('Quote submitted successfully');
+      }
+    });
+  };
+
+  const handleApprove = (quote: SupplierQuote) => {
+    approveMutation.mutate({
+      id: quote.id,
+      approvedCost: quote.total_cost || 0
+    }, {
+      onSuccess: () => {
+        toast.success('Quote approved successfully');
+        setDetailsSheetOpen(false);
+      }
+    });
+  };
+
+  const handleReject = (quote: SupplierQuote) => {
+    rejectMutation.mutate({
+      id: quote.id,
+      reason: "Quote rejected by administrator"
+    }, {
+      onSuccess: () => {
+        toast.success('Quote rejected successfully');
+        setDetailsSheetOpen(false);
       }
     });
   };
@@ -224,10 +246,10 @@ export function SupplierQuotesTable({
         return (
           <SupplierQuoteActions 
             quote={quote}
-            onView={handleView}
-            onEdit={handleEdit}
-            onSubmit={handleSubmit}
-            onDelete={handleDelete}
+            onView={() => handleViewDetails(quote)}
+            onEdit={() => handleEdit(quote)}
+            onSubmit={() => handleSubmit(quote)}
+            onDelete={() => handleDelete(quote)}
           />
         );
       },
@@ -293,9 +315,13 @@ export function SupplierQuotesTable({
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow 
+                  key={row.id} 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleViewDetails(row.original)}
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} onClick={cell.column.id === 'actions' ? (e) => e.stopPropagation() : undefined}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -348,16 +374,13 @@ export function SupplierQuotesTable({
         </div>
       </div>
 
-      {showDetails && selectedQuote && (
-        <Dialog open={showDetails} onOpenChange={setShowDetails}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <SupplierQuoteDetails 
-              quote={selectedQuote} 
-              onClose={() => setShowDetails(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
+      <SupplierQuoteDetailsSheet
+        quote={selectedQuote}
+        open={detailsSheetOpen}
+        onOpenChange={setDetailsSheetOpen}
+        onApprove={selectedQuote && selectedQuote.status === 'submitted' ? () => handleApprove(selectedQuote) : undefined}
+        onReject={selectedQuote && selectedQuote.status === 'submitted' ? () => handleReject(selectedQuote) : undefined}
+      />
 
       {showEditDialog && selectedQuote && selectedQuote.quote_request && (
         <SupplierQuoteDialog
