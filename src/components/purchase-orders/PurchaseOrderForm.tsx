@@ -167,6 +167,7 @@ export function PurchaseOrderForm({
                 <DatePicker 
                   date={field.value} 
                   onSelect={field.onChange}
+                  setDate={field.onChange}
                   disabled={isSubmitting}
                 />
                 <FormMessage />
@@ -183,6 +184,7 @@ export function PurchaseOrderForm({
                 <DatePicker 
                   date={field.value} 
                   onSelect={field.onChange} 
+                  setDate={field.onChange}
                   disabled={isSubmitting}
                 />
                 <FormMessage />

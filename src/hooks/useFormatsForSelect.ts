@@ -1,15 +1,17 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Organization } from "@/types/organization";
+import { useOrganization } from './useOrganization';
 
-export interface FormatForSelect {
-  id: string;
-  format_name: string;
+export interface FormatOption {
+  value: string;
+  label: string;
 }
 
-export function useFormatsForSelect(currentOrganization: Organization | null) {
-  return useQuery({
+export function useFormatsForSelect() {
+  const { currentOrganization } = useOrganization();
+  
+  const query = useQuery({
     queryKey: ["formats-for-select", currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) return [];
@@ -26,7 +28,12 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
           return [];
         }
 
-        return Array.isArray(data) ? data : [];
+        return Array.isArray(data) 
+          ? data.map(format => ({ 
+              value: format.id, 
+              label: format.format_name 
+            }))
+          : [];
       } catch (err) {
         console.error("Exception fetching formats:", err);
         return [];
@@ -36,4 +43,11 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
     initialData: [], // Always provide empty array as initial data
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes to improve performance
   });
+
+  return {
+    formats: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error
+  };
 }

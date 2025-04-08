@@ -19,7 +19,9 @@ export function useProducts() {
         .order('title');
         
       if (error) throw error;
-      return data as Product[];
+      
+      // Cast the data to Product[] type
+      return data as unknown as Product[];
     },
     enabled: !!currentOrganization,
   });
