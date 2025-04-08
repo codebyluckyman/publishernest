@@ -1,86 +1,64 @@
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
-import ProtectedRoute from "@/components/ProtectedRoute";
-
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { OrganizationProvider } from "./context/OrganizationProvider";
-import { Toaster as SonnerToaster } from "sonner";
-
-// Pages
-import Auth from "./pages/Auth";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Formats from "./pages/Formats";
-import Products from "./pages/Products";
-import Profile from "./pages/Profile";
-import OrganizationSettings from "./pages/OrganizationSettings";
-import Organizations from "./pages/Organizations";
-import Suppliers from "./pages/Suppliers";
-import Stock from "./pages/Stock";
-import QuoteRequests from "./pages/QuoteRequests";
-import Quotes from "./pages/Quotes";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/auth/Login";
+import Profile from "./pages/auth/Profile";
+import Organizations from "./pages/organizations/Organizations";
+import OrganizationSettings from "./pages/organizations/OrganizationSettings";
+import ProductsPage from "./pages/ProductsPage";
+import FormatsPage from "./pages/FormatsPage";
+import FormatDetailPage from "./pages/FormatDetailPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import QuoteRequestsPage from "./pages/QuoteRequestsPage";
+import QuoteRequestDetailPage from "./pages/QuoteRequestDetailPage";
+import SuppliersPage from "./pages/SuppliersPage";
+import SupplierDetailPage from "./pages/SupplierDetailPage";
+import QuotesPage from "./pages/QuotesPage";
 import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
-import QuoteComparison from "./pages/QuoteComparison";
+import SupplierQuoteCreate from "./pages/SupplierQuoteCreate";
+import PrintRunsPage from "./pages/PrintRunsPage";
+import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
+import CreatePurchaseOrderPage from "./pages/CreatePurchaseOrderPage";
 
-// Create a React Query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 0,
-      refetchOnWindowFocus: false,
-      staleTime: 60000, // 1 minute
-    },
-  },
-});
+import "./App.css";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <AuthProvider>
-          <Router>
-            <OrganizationProvider>
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
+    <AuthProvider>
+      <OrganizationProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<ProtectedRoute element={<Layout />} />}>
+            <Route index element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="organizations" element={<Organizations />} />
+            <Route path="organizations/:id/settings" element={<OrganizationSettings />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="products/:id" element={<ProductDetailPage />} />
+            <Route path="formats" element={<FormatsPage />} />
+            <Route path="formats/:id" element={<FormatDetailPage />} />
+            <Route path="quote-requests" element={<QuoteRequestsPage />} />
+            <Route path="quote-requests/:id" element={<QuoteRequestDetailPage />} />
+            <Route path="suppliers" element={<SuppliersPage />} />
+            <Route path="suppliers/:id" element={<SupplierDetailPage />} />
+            <Route path="quotes" element={<QuotesPage />} />
+            <Route path="quotes/new" element={<SupplierQuoteCreate />} />
+            <Route path="quotes/:id" element={<SupplierQuoteDetail />} />
+            <Route path="quotes/:id/details" element={<SupplierQuoteDetail />} />
 
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Index />} />
-                  <Route path="formats" element={<Formats />} />
-                  <Route path="products" element={<Products />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="organization-settings" element={<OrganizationSettings />} />
-                  <Route path="organizations" element={<Organizations />} />
-                  <Route path="suppliers" element={<Suppliers />} />
-                  <Route path="stock" element={<Stock />} />
-                  <Route path="quote-requests" element={<QuoteRequests />} />
-                  <Route path="quotes" element={<Quotes />} />
-                  <Route path="quotes/:id" element={<SupplierQuoteDetail />} />
-                  <Route path="quotes/compare" element={<QuoteComparison />} />
-                </Route>
-
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
-              </Routes>
-              <SonnerToaster position="top-right" richColors />
-              <Toaster />
-            </OrganizationProvider>
-          </Router>
-        </AuthProvider>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+            {/* New Print Runs and Purchase Orders Routes */}
+            <Route path="print-runs" element={<PrintRunsPage />} />
+            <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+            <Route path="purchase-orders/new" element={<CreatePurchaseOrderPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </OrganizationProvider>
+    </AuthProvider>
   );
 }
 
