@@ -18,8 +18,15 @@ const CreateSalesOrder = () => {
     }
 
     try {
+      // Strip cost_source from line items before sending to API
+      const cleanedLineItems = data.lineItems.map((item: any) => {
+        const { cost_source, ...cleanItem } = item;
+        return cleanItem;
+      });
+
       const result = await createSalesOrder({
         ...data,
+        lineItems: cleanedLineItems,
         createdBy: user.id
       });
       

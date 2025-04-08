@@ -15,8 +15,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CustomerSelector } from '@/components/sales-orders/CustomerSelector';
-import { LineItemsTable } from '@/components/sales-orders/LineItemsTable';
-import { ChargesTable } from '@/components/sales-orders/ChargesTable';
+import { EnhancedLineItemsTable } from '@/components/sales-orders/EnhancedLineItemsTable';
+import { EnhancedChargesTable } from '@/components/sales-orders/EnhancedChargesTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/utils/toast-utils';
 import { SalesOrderLineItem, SalesOrderCharge } from '@/types/salesOrder';
@@ -35,7 +35,7 @@ const salesOrderSchema = z.object({
 });
 
 type SalesOrderFormValues = z.infer<typeof salesOrderSchema> & {
-  lineItems: Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>[];
+  lineItems: (Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'> & { cost_source?: string })[];
   charges: Omit<SalesOrderCharge, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>[];
 };
 
@@ -58,7 +58,8 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
     }
   });
   
-  const [lineItems, setLineItems] = React.useState<Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>[]>(
+  // Using enhanced line items with cost source tracking
+  const [lineItems, setLineItems] = React.useState<(Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'> & { cost_source?: string })[]>(
     defaultValues?.lineItems || []
   );
   
@@ -171,7 +172,7 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
               <CardTitle>Line Items</CardTitle>
             </CardHeader>
             <CardContent>
-              <LineItemsTable 
+              <EnhancedLineItemsTable 
                 items={lineItems} 
                 onItemsChange={setLineItems} 
                 currency={form.watch('currency')} 
@@ -184,7 +185,7 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
               <CardTitle>Additional Charges</CardTitle>
             </CardHeader>
             <CardContent>
-              <ChargesTable 
+              <EnhancedChargesTable 
                 charges={charges} 
                 onChargesChange={setCharges} 
                 currency={form.watch('currency')} 
