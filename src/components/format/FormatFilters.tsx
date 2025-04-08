@@ -35,8 +35,11 @@ export function FormatFilters({
   showFilters,
   resetFilters,
 }: FormatFiltersProps) {
-  const handleFilterChange = (field: keyof FilterOptions, value: string | null) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
+  const handleFilterChange = (field: keyof FilterOptions, value: string) => {
+    setFilters(prev => ({ 
+      ...prev, 
+      [field]: value === "ALL_STOCK" ? null : value 
+    }));
   };
 
   const areFiltersActive = () => {
@@ -53,14 +56,14 @@ export function FormatFilters({
           <div>
             <label className="text-sm font-medium mb-1 block">Cover Stock/Print</label>
             <Select 
-              value={filters.cover_stock_print || ""}
-              onValueChange={(value) => handleFilterChange("cover_stock_print", value || null)}
+              value={filters.cover_stock_print || "ALL_STOCK"}
+              onValueChange={(value) => handleFilterChange("cover_stock_print", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Cover Stock" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="ALL_STOCK">All Cover Stock</SelectItem>
                 {filterOptions.cover_stock_print.map((option) => (
                   <SelectItem key={option} value={option}>{option}</SelectItem>
                 ))}
@@ -73,14 +76,14 @@ export function FormatFilters({
           <div>
             <label className="text-sm font-medium mb-1 block">Internal Stock/Print</label>
             <Select 
-              value={filters.internal_stock_print || ""}
-              onValueChange={(value) => handleFilterChange("internal_stock_print", value || null)}
+              value={filters.internal_stock_print || "ALL_STOCK"}
+              onValueChange={(value) => handleFilterChange("internal_stock_print", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Internal Stock" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="ALL_STOCK">All Internal Stock</SelectItem>
                 {filterOptions.internal_stock_print.map((option) => (
                   <SelectItem key={option} value={option}>{option}</SelectItem>
                 ))}

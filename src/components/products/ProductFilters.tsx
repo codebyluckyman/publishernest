@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FilterX } from "lucide-react";
@@ -31,7 +30,6 @@ const ProductFilters = ({
   filters,
   setFilters,
   showFilters,
-  setShowFilters
 }: ProductFiltersProps) => {
   const { currentOrganization } = useOrganization();
   const [filterOptions, setFilterOptions] = useState<{
@@ -42,20 +40,17 @@ const ProductFilters = ({
     publisher_name: []
   });
 
-  // Load filter options
   useQuery({
     queryKey: ["productFilterOptions", currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) return null;
 
-      // Fetch product forms
       const { data: productForms } = await supabase
         .from("products")
         .select("product_form")
         .eq("organization_id", currentOrganization.id)
         .not("product_form", "is", null);
 
-      // Fetch publishers
       const { data: publishers } = await supabase
         .from("products")
         .select("publisher_name")
@@ -83,10 +78,10 @@ const ProductFilters = ({
     enabled: !!currentOrganization
   });
 
-  const handleFilterChange = (field: keyof FilterOptions, value: string | null) => {
+  const handleFilterChange = (field: keyof FilterOptions, value: string) => {
     setFilters({
       ...filters,
-      [field]: value === "all" ? null : value
+      [field]: value === "ALL_FORMATS" ? null : value
     });
   };
 
@@ -110,14 +105,14 @@ const ProductFilters = ({
           <div>
             <label className="text-sm font-medium mb-1 block">Product Format</label>
             <Select 
-              value={filters.product_form || ""}
-              onValueChange={(value) => handleFilterChange("product_form", value || null)}
+              value={filters.product_form || "ALL_FORMATS"}
+              onValueChange={(value) => handleFilterChange("product_form", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Format" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Formats</SelectItem>
+                <SelectItem value="ALL_FORMATS">All Formats</SelectItem>
                 {filterOptions.product_form.map((option) => (
                   <SelectItem key={option} value={option}>{option}</SelectItem>
                 ))}
@@ -130,14 +125,14 @@ const ProductFilters = ({
           <div>
             <label className="text-sm font-medium mb-1 block">Publisher</label>
             <Select 
-              value={filters.publisher_name || ""}
-              onValueChange={(value) => handleFilterChange("publisher_name", value || null)}
+              value={filters.publisher_name || "ALL_PUBLISHERS"}
+              onValueChange={(value) => handleFilterChange("publisher_name", value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Publisher" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Publishers</SelectItem>
+                <SelectItem value="ALL_PUBLISHERS">All Publishers</SelectItem>
                 {filterOptions.publisher_name.map((option) => (
                   <SelectItem key={option} value={option}>{option}</SelectItem>
                 ))}
