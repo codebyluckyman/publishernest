@@ -24,14 +24,15 @@ const CreateCustomer = () => {
         status: data.status || 'active',
       };
 
-      const result = await createCustomer(customerData);
-      
-      if (result && result.id) {
-        toast.success('Customer created successfully');
-        navigate(`/customers/${result.id}`);
-      } else {
-        toast.error('Failed to create customer');
-      }
+      createCustomer(customerData, {
+        onSuccess: (result) => {
+          toast.success('Customer created successfully');
+          navigate(`/customers/${result.id}`);
+        },
+        onError: () => {
+          toast.error('Failed to create customer');
+        }
+      });
     } catch (error) {
       console.error('Error creating customer:', error);
       toast.error('Failed to create customer');

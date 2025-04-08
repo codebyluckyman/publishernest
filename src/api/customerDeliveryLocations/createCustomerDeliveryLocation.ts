@@ -20,9 +20,10 @@ export async function createCustomerDeliveryLocation(
     .from('customer_delivery_locations')
     .insert({
       ...locationData,
-      customer_id: customerId
+      customer_id: customerId,
+      is_default: locationData.is_default ?? false
     })
-    .select()
+    .select('*')
     .single();
 
   if (error) {
@@ -30,5 +31,9 @@ export async function createCustomerDeliveryLocation(
     throw error;
   }
 
-  return data;
+  if (!data) {
+    throw new Error('Failed to create customer delivery location');
+  }
+
+  return data as CustomerDeliveryLocation;
 }

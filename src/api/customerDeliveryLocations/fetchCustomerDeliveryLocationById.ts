@@ -18,5 +18,5 @@ export async function fetchCustomerDeliveryLocationById(id: string): Promise<Cus
     throw new Error(`No delivery location found with id ${id}`);
   }
 
-  return data;
+  return data as CustomerDeliveryLocation;
 }

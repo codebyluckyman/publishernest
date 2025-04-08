@@ -20,9 +20,12 @@ export async function updateCustomerDeliveryLocation(
   // Update the location
   const { data, error } = await supabase
     .from('customer_delivery_locations')
-    .update(locationData)
+    .update({
+      ...locationData,
+      is_default: locationData.is_default ?? false
+    })
     .eq('id', id)
-    .select()
+    .select('*')
     .single();
 
   if (error) {
@@ -30,5 +33,9 @@ export async function updateCustomerDeliveryLocation(
     throw error;
   }
 
-  return data;
+  if (!data) {
+    throw new Error(`No delivery location found with id ${id}`);
+  }
+
+  return data as CustomerDeliveryLocation;
 }

@@ -15,5 +15,5 @@ export async function fetchCustomerDeliveryLocations(customerId: string): Promis
     throw error;
   }
 
-  return data || [];
+  return (data || []) as CustomerDeliveryLocation[];
 }
