@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabaseCustom } from '@/integrations/supabase/client-custom';
+import { supabase } from '@/integrations/supabase/client';
 import { useOrganization } from './useOrganization';
 
 // Define simplified interfaces that don't extend from complex types
@@ -11,29 +11,31 @@ interface SimplePriceBreak {
   unit_cost: number;
 }
 
+interface SimpleSupplier {
+  id: string;
+  supplier_name: string;
+}
+
 interface SupplierQuoteWithDetails {
   id: string;
   supplier_id: string;
   reference: string | null;
   status: string;
   currency: string;
-  supplier: {
-    id: string;
-    supplier_name: string;
-  };
+  supplier: SimpleSupplier;
   price_breaks: SimplePriceBreak[];
 }
 
 export function useSupplierQuotesByProduct(productId?: string, formatId?: string) {
   const { currentOrganization } = useOrganization();
   
-  const query = useQuery({
+  return useQuery({
     queryKey: ['supplier-quotes-by-product', currentOrganization?.id, productId, formatId],
     queryFn: async () => {
       if (!currentOrganization || !productId) return [];
       
       // First, find quotes that have price breaks for this product
-      const { data: quoteIds, error: quoteError } = await supabaseCustom
+      const { data: quoteIds, error: quoteError } = await supabase
         .from('supplier_quote_price_breaks')
         .select('supplier_quote_id')
         .eq('product_id', productId)
@@ -45,7 +47,7 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
       if (!quoteIds || quoteIds.length === 0) return [];
       
       // Then, fetch the full quotes with supplier information
-      const { data: quotes, error: quotesError } = await supabaseCustom
+      const { data: quotes, error: quotesError } = await supabase
         .from('supplier_quotes')
         .select(`
           id,
@@ -64,21 +66,16 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
       
       if (quotesError) throw quotesError;
       
+      if (!quotes) return [];
+      
       // Filter further to ensure we only get quotes with relevant price breaks
       const filteredQuotes = quotes.map(quote => ({
         ...quote,
-        price_breaks: quote.price_breaks.filter((pb: any) => pb.product_id === productId)
+        price_breaks: (quote.price_breaks || []).filter((pb: any) => pb.product_id === productId)
       }));
       
       return filteredQuotes as SupplierQuoteWithDetails[];
     },
     enabled: !!currentOrganization && !!productId,
   });
-  
-  return {
-    supplierQuotes: query.data || [],
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-  };
 }

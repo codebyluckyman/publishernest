@@ -1,0 +1,270 @@
+
+import React from 'react';
+import { useParams } from 'react-router-dom';
+import { useSalesOrders } from '@/hooks/useSalesOrders';
+import { format } from 'date-fns';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+
+const SalesOrderDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const { 
+    getSalesOrderById, 
+    updateSalesOrderStatus,
+    isUpdatingStatus
+  } = useSalesOrders();
+  
+  const { 
+    data: salesOrder,
+    isLoading,
+    isError,
+    error
+  } = getSalesOrderById(id || '');
+
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'draft':
+        return <Badge variant="outline">Draft</Badge>;
+      case 'approved':
+        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Approved</Badge>;
+      case 'pending':
+        return <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">Pending</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive">Cancelled</Badge>;
+      case 'completed':
+        return <Badge variant="default">Completed</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    if (!salesOrder) return;
+    
+    updateSalesOrderStatus({
+      id: salesOrder.id,
+      status: newStatus,
+      changedBy: '00000000-0000-0000-0000-000000000000' // In a real app, get this from auth context
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="animate-pulse">
+          <div className="h-8 w-1/4 bg-gray-200 rounded mb-4"></div>
+          <div className="h-64 bg-gray-100 rounded mb-4"></div>
+          <div className="h-64 bg-gray-100 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Alert variant="destructive" className="container mx-auto p-4 mt-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          {error instanceof Error ? error.message : 'Failed to load sales order details'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!salesOrder) {
+    return (
+      <Alert variant="destructive" className="container mx-auto p-4 mt-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Not Found</AlertTitle>
+        <AlertDescription>
+          The requested sales order could not be found.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: salesOrder.currency
+    }).format(amount);
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">{salesOrder.so_number}</h1>
+          <p className="text-gray-500">
+            {salesOrder.issue_date ? 
+              `Issued: ${format(new Date(salesOrder.issue_date), 'MMM d, yyyy')}` : 
+              'Not yet issued'
+            }
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {getStatusBadge(salesOrder.status)}
+          {salesOrder.status === 'draft' && (
+            <Button 
+              onClick={() => handleStatusChange('approved')}
+              disabled={isUpdatingStatus}
+            >
+              Approve
+            </Button>
+          )}
+          {salesOrder.status === 'draft' && (
+            <Button 
+              variant="destructive" 
+              onClick={() => handleStatusChange('cancelled')}
+              disabled={isUpdatingStatus}
+            >
+              Cancel
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="font-medium">{salesOrder.customer?.customer_name}</p>
+            <p className="text-sm text-gray-500">{salesOrder.customer?.address}</p>
+            {salesOrder.customer?.contact_name && (
+              <div className="mt-4">
+                <p className="font-medium">Contact</p>
+                <p>{salesOrder.customer.contact_name}</p>
+                <p>{salesOrder.customer.contact_email}</p>
+                <p>{salesOrder.customer.contact_phone}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Order Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between">
+              <span>Status</span>
+              <span>{getStatusBadge(salesOrder.status)}</span>
+            </div>
+            {salesOrder.payment_terms && (
+              <div className="flex justify-between">
+                <span>Payment Terms</span>
+                <span>{salesOrder.payment_terms}</span>
+              </div>
+            )}
+            {salesOrder.delivery_date && (
+              <div className="flex justify-between">
+                <span>Delivery Date</span>
+                <span>{format(new Date(salesOrder.delivery_date), 'MMM d, yyyy')}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Order Totals</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax ({salesOrder.tax_rate}%)</span>
+              <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
+            </div>
+            <Separator className="my-2" />
+            <div className="flex justify-between font-bold">
+              <span>Total</span>
+              <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Line Items</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-50 text-left">
+                  <th className="p-2">Product</th>
+                  <th className="p-2">Quantity</th>
+                  <th className="p-2">Unit Price</th>
+                  <th className="p-2 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesOrder.line_items?.map((item) => (
+                  <tr key={item.id} className="border-b border-gray-200">
+                    <td className="p-2">
+                      <div className="font-medium">{item.product?.title}</div>
+                      {item.format && <div className="text-sm text-gray-500">{item.format.format_name}</div>}
+                    </td>
+                    <td className="p-2">{item.quantity}</td>
+                    <td className="p-2">{formatCurrency(item.unit_price)}</td>
+                    <td className="p-2 text-right">{formatCurrency(item.total_price)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="font-semibold">
+                  <td colSpan={3} className="p-2 text-right">Subtotal:</td>
+                  <td className="p-2 text-right">{formatCurrency(salesOrder.total_amount || 0)}</td>
+                </tr>
+                <tr>
+                  <td colSpan={3} className="p-2 text-right">Tax ({salesOrder.tax_rate}%):</td>
+                  <td className="p-2 text-right">{formatCurrency(salesOrder.tax_amount || 0)}</td>
+                </tr>
+                {salesOrder.charges?.map((charge) => (
+                  <tr key={charge.id}>
+                    <td colSpan={3} className="p-2 text-right">{charge.description}:</td>
+                    <td className="p-2 text-right">{formatCurrency(charge.amount)}</td>
+                  </tr>
+                ))}
+                <tr className="font-bold">
+                  <td colSpan={3} className="p-2 text-right">Total:</td>
+                  <td className="p-2 text-right">{formatCurrency(salesOrder.grand_total || 0)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {salesOrder.notes && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-wrap">{salesOrder.notes}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default SalesOrderDetail;

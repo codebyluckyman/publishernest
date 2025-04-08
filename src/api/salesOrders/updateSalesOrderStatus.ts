@@ -1,19 +1,19 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-interface UpdateStatusParams {
+interface UpdateSalesOrderStatusParams {
   id: string;
-  status: 'draft' | 'pending' | 'approved' | 'cancelled' | 'completed';
-  userId: string;
-  reason?: string;
+  status: string;
+  changedBy: string;
+  cancellationReason?: string;
 }
 
 export async function updateSalesOrderStatus({
   id,
   status,
-  userId,
-  reason
-}: UpdateStatusParams) {
+  changedBy,
+  cancellationReason
+}: UpdateSalesOrderStatusParams) {
   // Get original order for comparison
   const { data: originalOrder, error: fetchError } = await supabase
     .from('sales_orders')
@@ -22,7 +22,7 @@ export async function updateSalesOrderStatus({
     .single();
 
   if (fetchError) {
-    throw new Error(`Error fetching sales order: ${fetchError.message}`);
+    throw new Error(`Error fetching original sales order: ${fetchError.message}`);
   }
 
   // Prepare update data
@@ -30,17 +30,19 @@ export async function updateSalesOrderStatus({
     status
   };
 
-  // Add specific fields based on status
+  // Add additional fields based on status
   if (status === 'approved') {
     updateData.approved_at = new Date().toISOString();
-    updateData.approved_by = userId;
+    updateData.approved_by = changedBy;
   } else if (status === 'cancelled') {
     updateData.cancelled_at = new Date().toISOString();
-    updateData.cancelled_by = userId;
-    updateData.cancellation_reason = reason;
+    updateData.cancelled_by = changedBy;
+    if (cancellationReason) {
+      updateData.cancellation_reason = cancellationReason;
+    }
   }
 
-  // Update sales order
+  // Update the sales order
   const { data: updatedOrder, error: updateError } = await supabase
     .from('sales_orders')
     .update(updateData)
@@ -55,12 +57,11 @@ export async function updateSalesOrderStatus({
   // Record audit
   await supabase.rpc('record_sales_order_audit', {
     p_sales_order_id: id,
-    p_changed_by: userId,
+    p_changed_by: changedBy,
     p_action: `status_changed_to_${status}`,
     p_changes: {
-      old_status: originalOrder.status,
-      new_status: status,
-      reason: reason
+      old: { status: originalOrder.status },
+      new: { status: updatedOrder.status }
     }
   });
 

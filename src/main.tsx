@@ -13,6 +13,7 @@ import PurchaseOrders from './pages/PurchaseOrders'
 import PurchaseOrderDetail from './pages/PurchaseOrderDetail'
 import CreatePurchaseOrder from './pages/CreatePurchaseOrder'
 import SalesOrders from './pages/SalesOrders'
+import SalesOrderDetail from './pages/SalesOrderDetail'
 import OrganizationSettings from './pages/OrganizationSettings'
 import Profile from './pages/Profile'
 import Auth from './pages/Auth'
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
       {
         path: "sales-orders",
         element: <ProtectedRoute><SalesOrders /></ProtectedRoute>
+      },
+      {
+        path: "sales-orders/:id",
+        element: <ProtectedRoute><SalesOrderDetail /></ProtectedRoute>
       },
       {
         path: "organization-settings",
