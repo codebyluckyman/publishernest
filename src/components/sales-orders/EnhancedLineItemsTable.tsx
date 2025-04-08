@@ -135,7 +135,7 @@ export function EnhancedLineItemsTable({ items, onItemsChange, currency }: Enhan
                 </TableCell>
                 <TableCell>
                   <Select
-                    value={item.format_id || ''}
+                    value={item.format_id || undefined}
                     onValueChange={(value) => updateLineItem(index, 'format_id', value || undefined)}
                     disabled={isLoadingFormats}
                   >
@@ -143,8 +143,8 @@ export function EnhancedLineItemsTable({ items, onItemsChange, currency }: Enhan
                       <SelectValue placeholder="Select format" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
-                      {formats?.map((format) => (
+                      <SelectItem value="none">None</SelectItem>
+                      {formats?.filter(format => format.id).map((format) => (
                         <SelectItem key={format.id} value={format.id}>
                           {format.format_name}
                         </SelectItem>
