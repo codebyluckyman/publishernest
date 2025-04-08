@@ -7,15 +7,18 @@ import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DateFormatter } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { PrintRun, PrintRunStatus } from "@/types/printRun";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePagination } from "@/hooks/usePagination";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
+
+export const FILTER_VALUES = {
+  ALL_STATUSES: "ALL_STATUSES"
+};
 
 const PrintRunDialog = ({
   printRun,
@@ -45,7 +48,7 @@ const PrintRunDialog = ({
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
+          <label className="text-sm font-medium block">Title</label>
           <Input 
             id="title" 
             value={title} 
@@ -56,7 +59,7 @@ const PrintRunDialog = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <label className="text-sm font-medium block">Description</label>
           <Input 
             id="description" 
             value={description} 
@@ -66,17 +69,17 @@ const PrintRunDialog = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Select value={status} onValueChange={(value) => setStatus(value as PrintRunStatus)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
+          <label className="text-sm font-medium block">Status</label>
+          <SelectFilter
+            value={status}
+            onValueChange={(value) => setStatus(value as PrintRunStatus)}
+            options={[
+              { value: "draft", label: "Draft" },
+              { value: "in_progress", label: "In Progress" },
+              { value: "completed", label: "Completed" }
+            ]}
+            placeholder="Select status"
+          />
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">
@@ -116,7 +119,7 @@ const PrintRuns = () => {
   const { currentOrganization } = useOrganization();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>(FILTER_VALUES.ALL_STATUSES);
 
   const { printRuns, isLoading, isError, error, createPrintRun, updatePrintRun, deletePrintRun } = usePrintRuns();
   
@@ -128,7 +131,7 @@ const PrintRuns = () => {
       printRun.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (printRun.description && printRun.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = statusFilter === "" || printRun.status === statusFilter;
+    const matchesStatus = statusFilter === FILTER_VALUES.ALL_STATUSES || printRun.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
@@ -183,6 +186,13 @@ const PrintRuns = () => {
     setIsDialogOpen(true);
   };
 
+  const statusOptions: FilterOption[] = [
+    { value: FILTER_VALUES.ALL_STATUSES, label: "All Statuses" },
+    { value: "draft", label: "Draft" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -207,17 +217,12 @@ const PrintRuns = () => {
               />
             </div>
             <div className="w-full md:w-1/3">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
+              <SelectFilter
+                value={statusFilter}
+                onValueChange={setStatusFilter}
+                options={statusOptions}
+                placeholder="Filter by status"
+              />
             </div>
           </div>
 
@@ -283,50 +288,16 @@ const PrintRuns = () => {
                 </Table>
               </div>
               
-              <div className="flex items-center justify-end space-x-2 py-4">
-                <div className="flex-1 text-sm text-muted-foreground">
-                  Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{" "}
-                  <span className="font-medium">
-                    {Math.min(currentPage * pageSize, filteredPrintRuns.length)}
-                  </span>{" "}
-                  of <span className="font-medium">{filteredPrintRuns.length}</span> print runs
-                </div>
-                <div className="space-x-2">
-                  <Select value={pageSize.toString()} onValueChange={(value) => changePageSize(Number(value) as 10 | 25 | 50)}>
-                    <SelectTrigger className="h-8 w-[70px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious onClick={() => previousPage()} aria-disabled={currentPage === 1} />
-                      </PaginationItem>
-                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                        const page = i + 1;
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationLink 
-                              isActive={currentPage === page}
-                              onClick={() => goToPage(page)}
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        );
-                      })}
-                      <PaginationItem>
-                        <PaginationNext onClick={() => nextPage()} aria-disabled={currentPage >= totalPages} />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              </div>
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredPrintRuns.length}
+                onPageChange={goToPage}
+                onPreviousPage={previousPage}
+                onNextPage={nextPage}
+                onPageSizeChange={changePageSize}
+              />
             </>
           )}
         </CardContent>

@@ -5,20 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Plus, Eye, Trash2 } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
-import { useOrganization } from "@/hooks/useOrganization";
-import { useAuth } from "@/context/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useNavigate } from "react-router-dom";
 import { DateFormatter } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { PurchaseOrderStatus } from "@/types/purchaseOrder";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePagination } from "@/hooks/usePagination";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { useSuppliers } from "@/hooks/useSuppliers";
+import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
+
+// Constants for filter values
+export const FILTER_VALUES = {
+  ALL_PRINT_RUNS: "ALL_PRINT_RUNS",
+  ALL_SUPPLIERS: "ALL_SUPPLIERS",
+  ALL_STATUSES: "ALL_STATUSES"
+};
 
 const PurchaseOrderStatusBadge = ({ status }: { status: PurchaseOrderStatus }) => {
   const colorMap = {
@@ -46,11 +50,10 @@ const PurchaseOrderStatusBadge = ({ status }: { status: PurchaseOrderStatus }) =
 
 const PurchaseOrders = () => {
   const navigate = useNavigate();
-  const { currentOrganization } = useOrganization();
   const [searchTerm, setSearchTerm] = useState("");
-  const [printRunFilter, setPrintRunFilter] = useState<string>("");
-  const [supplierFilter, setSupplierFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [printRunFilter, setPrintRunFilter] = useState<string>(FILTER_VALUES.ALL_PRINT_RUNS);
+  const [supplierFilter, setSupplierFilter] = useState<string>(FILTER_VALUES.ALL_SUPPLIERS);
+  const [statusFilter, setStatusFilter] = useState<string>(FILTER_VALUES.ALL_STATUSES);
 
   const { purchaseOrders, isLoading, isError, error, deletePurchaseOrder } = usePurchaseOrders();
   const { printRuns } = usePrintRuns();
@@ -61,9 +64,9 @@ const PurchaseOrders = () => {
       po.po_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (po.notes && po.notes.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesPrintRun = printRunFilter === "" || po.print_run_id === printRunFilter;
-    const matchesSupplier = supplierFilter === "" || po.supplier_id === supplierFilter;
-    const matchesStatus = statusFilter === "" || po.status === statusFilter;
+    const matchesPrintRun = printRunFilter === FILTER_VALUES.ALL_PRINT_RUNS || po.print_run_id === printRunFilter;
+    const matchesSupplier = supplierFilter === FILTER_VALUES.ALL_SUPPLIERS || po.supplier_id === supplierFilter;
+    const matchesStatus = statusFilter === FILTER_VALUES.ALL_STATUSES || po.status === statusFilter;
     
     return matchesSearch && matchesPrintRun && matchesSupplier && matchesStatus;
   });
@@ -93,6 +96,32 @@ const PurchaseOrders = () => {
     }
   };
 
+  // Create filter options
+  const printRunOptions: FilterOption[] = [
+    { value: FILTER_VALUES.ALL_PRINT_RUNS, label: "All Print Runs" },
+    ...printRuns.map((printRun) => ({
+      value: printRun.id,
+      label: printRun.title
+    }))
+  ];
+
+  const supplierOptions: FilterOption[] = [
+    { value: FILTER_VALUES.ALL_SUPPLIERS, label: "All Suppliers" },
+    ...suppliers.map((supplier) => ({
+      value: supplier.id,
+      label: supplier.supplier_name
+    }))
+  ];
+
+  const statusOptions: FilterOption[] = [
+    { value: FILTER_VALUES.ALL_STATUSES, label: "All Statuses" },
+    { value: "draft", label: "Draft" },
+    { value: "pending_approval", label: "Pending Approval" },
+    { value: "approved", label: "Approved" },
+    { value: "fulfilled", label: "Fulfilled" },
+    { value: "cancelled", label: "Cancelled" }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -117,49 +146,28 @@ const PurchaseOrders = () => {
               />
             </div>
             <div className="w-full md:w-1/6">
-              <Select value={printRunFilter} onValueChange={setPrintRunFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Print Run" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Print Runs</SelectItem>
-                  {printRuns.map((printRun) => (
-                    <SelectItem key={printRun.id} value={printRun.id}>
-                      {printRun.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectFilter
+                value={printRunFilter}
+                onValueChange={setPrintRunFilter}
+                options={printRunOptions}
+                placeholder="Print Run"
+              />
             </div>
             <div className="w-full md:w-1/6">
-              <Select value={supplierFilter} onValueChange={setSupplierFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Suppliers</SelectItem>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
-                      {supplier.supplier_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectFilter
+                value={supplierFilter}
+                onValueChange={setSupplierFilter}
+                options={supplierOptions}
+                placeholder="Supplier"
+              />
             </div>
             <div className="w-full md:w-1/6">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="pending_approval">Pending Approval</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="fulfilled">Fulfilled</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+              <SelectFilter
+                value={statusFilter}
+                onValueChange={setStatusFilter}
+                options={statusOptions}
+                placeholder="Status"
+              />
             </div>
           </div>
 
@@ -233,50 +241,16 @@ const PurchaseOrders = () => {
                 </Table>
               </div>
               
-              <div className="flex items-center justify-end space-x-2 py-4">
-                <div className="flex-1 text-sm text-muted-foreground">
-                  Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{" "}
-                  <span className="font-medium">
-                    {Math.min(currentPage * pageSize, filteredPurchaseOrders.length)}
-                  </span>{" "}
-                  of <span className="font-medium">{filteredPurchaseOrders.length}</span> purchase orders
-                </div>
-                <div className="space-x-2">
-                  <Select value={pageSize.toString()} onValueChange={(value) => changePageSize(Number(value) as 10 | 25 | 50)}>
-                    <SelectTrigger className="h-8 w-[70px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious onClick={() => previousPage()} aria-disabled={currentPage === 1} />
-                      </PaginationItem>
-                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                        const page = i + 1;
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationLink 
-                              isActive={currentPage === page}
-                              onClick={() => goToPage(page)}
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        );
-                      })}
-                      <PaginationItem>
-                        <PaginationNext onClick={() => nextPage()} aria-disabled={currentPage >= totalPages} />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              </div>
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={filteredPurchaseOrders.length}
+                onPageChange={goToPage}
+                onPreviousPage={previousPage}
+                onNextPage={nextPage}
+                onPageSizeChange={changePageSize}
+              />
             </>
           )}
         </CardContent>
