@@ -89,4 +89,33 @@ export type Tables = {
       updated_at: string;
     };
   };
+  sales_orders: {
+    Row: {
+      id: string;
+      organization_id: string;
+      customer_id: string;
+      print_run_id?: string;
+      so_number: string;
+      status: string;
+      currency: string;
+      total_amount?: number;
+      tax_rate?: number;
+      tax_amount?: number;
+      grand_total?: number;
+      issue_date?: string;
+      delivery_date?: string;
+      payment_terms?: string;
+      notes?: string;
+      file_approval_status?: string;
+      advance_payment_status?: string;
+      approved_at?: string;
+      approved_by?: string;
+      cancelled_at?: string;
+      cancelled_by?: string;
+      cancellation_reason?: string;
+      created_at: string;
+      updated_at: string;
+      created_by: string;
+    };
+  };
 };

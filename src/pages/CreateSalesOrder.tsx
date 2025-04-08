@@ -32,9 +32,11 @@ const CreateSalesOrder = () => {
 
       const result = await createSalesOrder(salesOrderData);
       
-      if (result) {
+      if (result && result.id) {
         toast.success('Sales order created successfully');
         navigate(`/sales-orders/${result.id}`);
+      } else {
+        toast.error('Failed to create sales order: No order ID returned');
       }
     } catch (error) {
       console.error('Error creating sales order:', error);
