@@ -1,9 +1,9 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 
 export async function deletePrintRun(id: string): Promise<void> {
   // Check if there are any purchase orders associated with this print run
-  const { data: purchaseOrders, error: checkError } = await supabase
+  const { data: purchaseOrders, error: checkError } = await supabaseCustom
     .from('purchase_orders')
     .select('id')
     .eq('print_run_id', id)
@@ -20,7 +20,7 @@ export async function deletePrintRun(id: string): Promise<void> {
   }
 
   // Delete the print run
-  const { error } = await supabase
+  const { error } = await supabaseCustom
     .from('print_runs')
     .delete()
     .eq('id', id);

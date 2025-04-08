@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PurchaseOrderStatus } from '@/types/purchaseOrder';
 
 interface UpdatePurchaseOrderStatusInput {
@@ -30,7 +30,7 @@ export async function updatePurchaseOrderStatus({
   }
 
   // Update the purchase order status
-  const { error } = await supabase
+  const { error } = await supabaseCustom
     .from('purchase_orders')
     .update(updateData)
     .eq('id', id);
@@ -41,7 +41,7 @@ export async function updatePurchaseOrderStatus({
   }
 
   // Create audit entry for status change
-  await supabase.rpc('record_purchase_order_audit', {
+  await supabaseCustom.rpc('record_purchase_order_audit', {
     p_purchase_order_id: id,
     p_changed_by: userId,
     p_action: 'status_change',

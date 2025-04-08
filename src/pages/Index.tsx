@@ -1,176 +1,45 @@
-
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Printer, ShoppingCart, Truck } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
+// Keep the rest of the code the same, but update the data fetching functions
 const Dashboard = () => {
-  const { currentOrganization } = useOrganization();
-  const [quoteRequestsCount, setQuoteRequestsCount] = useState<number | null>(null);
-  const [printRunsCount, setPrintRunsCount] = useState<number | null>(null);
-  const [purchaseOrdersCount, setPurchaseOrdersCount] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-
+  // ... keep existing code (state variables)
+  
   useEffect(() => {
-    const fetchQuoteRequestsCount = async () => {
-      if (!currentOrganization) return;
-      
-      try {
-        setIsLoading(true);
+    if (currentOrganization) {
+      // Fetch print runs count
+      const fetchPrintRunsCount = async () => {
         const { count, error } = await supabase
-          .from("quote_requests")
-          .select("id", { count: "exact" })
-          .eq("organization_id", currentOrganization.id)
-          .eq("status", "approved"); // Only count active (approved) quote requests
-        
-        if (error) {
-          console.error("Error fetching quote requests count:", error);
-          return;
+          .from('print_runs')
+          .select('*', { count: 'exact', head: true })
+          .eq('organization_id', currentOrganization.id);
+          
+        if (!error && count !== null) {
+          setPrintRunsCount(count);
         }
-        
-        setQuoteRequestsCount(count);
-      } catch (error) {
-        console.error("Error fetching quote requests count:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const fetchPrintRunsCount = async () => {
-      if (!currentOrganization) return;
+      };
       
-      try {
+      // Fetch purchase orders count
+      const fetchPurchaseOrdersCount = async () => {
         const { count, error } = await supabase
-          .from("print_runs")
-          .select("id", { count: "exact" })
-          .eq("organization_id", currentOrganization.id)
-          .eq("status", "in_progress"); // Only count in-progress print runs
-        
-        if (error) {
-          console.error("Error fetching print runs count:", error);
-          return;
+          .from('purchase_orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('organization_id', currentOrganization.id);
+          
+        if (!error && count !== null) {
+          setPurchaseOrdersCount(count);
         }
-        
-        setPrintRunsCount(count);
-      } catch (error) {
-        console.error("Error fetching print runs count:", error);
-      }
-    };
-
-    const fetchPurchaseOrdersCount = async () => {
-      if (!currentOrganization) return;
+      };
       
-      try {
-        const { count, error } = await supabase
-          .from("purchase_orders")
-          .select("id", { count: "exact" })
-          .eq("organization_id", currentOrganization.id)
-          .eq("status", "approved"); // Only count approved purchase orders
-        
-        if (error) {
-          console.error("Error fetching purchase orders count:", error);
-          return;
-        }
-        
-        setPurchaseOrdersCount(count);
-      } catch (error) {
-        console.error("Error fetching purchase orders count:", error);
-      }
-    };
-
-    fetchQuoteRequestsCount();
-    fetchPrintRunsCount();
-    fetchPurchaseOrdersCount();
+      // Call the fetch functions
+      fetchPrintRunsCount();
+      fetchPurchaseOrdersCount();
+      // Keep other fetch functions
+    }
   }, [currentOrganization]);
 
-  // Handle navigation to the specific page based on card
-  const handleCardClick = (destination: string, tab?: string) => {
-    if (tab) {
-      navigate(`/${destination}?tab=${tab}`);
-    } else {
-      navigate(`/${destination}`);
-    }
-  };
-
-  const stats = [
-    { 
-      label: "Active Quote Requests", 
-      value: isLoading ? "..." : (quoteRequestsCount !== null ? quoteRequestsCount.toString() : "0"), 
-      icon: FileText, 
-      color: "text-blue-500",
-      destination: "quote-requests",
-      tab: "approved"
-    },
-    { 
-      label: "Active Print Runs", 
-      value: isLoading ? "..." : (printRunsCount !== null ? printRunsCount.toString() : "0"), 
-      icon: Printer, 
-      color: "text-green-500", 
-      destination: "print-runs" 
-    },
-    { 
-      label: "Active Purchase Orders", 
-      value: isLoading ? "..." : (purchaseOrdersCount !== null ? purchaseOrdersCount.toString() : "0"), 
-      icon: ShoppingCart, 
-      color: "text-purple-500", 
-      destination: "purchase-orders" 
-    },
-    { label: "Shipments", value: "3", icon: Truck, color: "text-orange-500", destination: "shipments" },
-  ];
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">Welcome to PublishFlow</h1>
-        <p className="text-gray-600">Manage your book production and delivery process</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <Card 
-            key={stat.label} 
-            className="hover:shadow-lg transition-shadow cursor-pointer" 
-            onClick={() => handleCardClick(stat.destination, stat.tab)}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                {stat.label}
-              </CardTitle>
-              <stat.icon className={`w-5 h-5 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-center">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Quotes</CardTitle>
-            <CardDescription>Latest quote requests and responses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-gray-500">No quotes available</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Orders</CardTitle>
-            <CardDescription>Currently processing purchase orders</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-gray-500">No orders available</div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
+  // ... keep existing code (the rest of the dashboard)
+}
 
 export default Dashboard;

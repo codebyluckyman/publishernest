@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PrintRun } from '@/types/printRun';
 
 interface CreatePrintRunInput {
@@ -17,7 +17,7 @@ export async function createPrintRun({
   createdBy,
   status = 'draft',
 }: CreatePrintRunInput): Promise<string> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseCustom
     .from('print_runs')
     .insert({
       title,

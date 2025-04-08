@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PurchaseOrder, PurchaseOrderLineItem } from '@/types/purchaseOrder';
 
 export async function fetchPurchaseOrderById(id: string): Promise<{
@@ -7,7 +7,7 @@ export async function fetchPurchaseOrderById(id: string): Promise<{
   lineItems: PurchaseOrderLineItem[];
 }> {
   // Fetch the purchase order
-  const { data: purchaseOrder, error } = await supabase
+  const { data: purchaseOrder, error } = await supabaseCustom
     .from('purchase_orders')
     .select(`
       *,
@@ -27,7 +27,7 @@ export async function fetchPurchaseOrderById(id: string): Promise<{
   }
 
   // Fetch line items
-  const { data: lineItems, error: lineItemsError } = await supabase
+  const { data: lineItems, error: lineItemsError } = await supabaseCustom
     .from('purchase_order_line_items')
     .select('*')
     .eq('purchase_order_id', id);
@@ -38,7 +38,7 @@ export async function fetchPurchaseOrderById(id: string): Promise<{
   }
 
   return {
-    purchaseOrder: purchaseOrder as PurchaseOrder,
-    lineItems: lineItems as PurchaseOrderLineItem[] || [],
+    purchaseOrder: purchaseOrder as unknown as PurchaseOrder,
+    lineItems: lineItems as unknown as PurchaseOrderLineItem[] || [],
   };
 }

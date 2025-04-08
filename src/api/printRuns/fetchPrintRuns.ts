@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PrintRun } from '@/types/printRun';
 
 interface FetchPrintRunsOptions {
@@ -11,7 +11,7 @@ export async function fetchPrintRuns({
   organizationId,
   status,
 }: FetchPrintRunsOptions): Promise<PrintRun[]> {
-  let query = supabase
+  let query = supabaseCustom
     .from('print_runs')
     .select('*')
     .eq('organization_id', organizationId);
@@ -31,5 +31,5 @@ export async function fetchPrintRuns({
     throw error;
   }
 
-  return data || [];
+  return data as unknown as PrintRun[];
 }

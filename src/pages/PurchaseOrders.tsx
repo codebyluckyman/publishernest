@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +55,6 @@ const PurchaseOrders = () => {
   const { printRuns } = usePrintRuns();
   const { suppliers } = useSuppliers();
   
-  // Filter purchase orders based on search term, print run, supplier, and status
   const filteredPurchaseOrders = purchaseOrders.filter((po) => {
     const matchesSearch = searchTerm === "" || 
       po.po_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -69,7 +67,6 @@ const PurchaseOrders = () => {
     return matchesSearch && matchesPrintRun && matchesSupplier && matchesStatus;
   });
 
-  // Set up pagination
   const { 
     currentData: paginatedPurchaseOrders, 
     currentPage, 
@@ -235,7 +232,6 @@ const PurchaseOrders = () => {
                 </Table>
               </div>
               
-              {/* Pagination Controls */}
               <div className="flex items-center justify-end space-x-2 py-4">
                 <div className="flex-1 text-sm text-muted-foreground">
                   Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{" "}

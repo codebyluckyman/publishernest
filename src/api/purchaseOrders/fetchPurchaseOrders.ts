@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PurchaseOrder } from '@/types/purchaseOrder';
 
 interface FetchPurchaseOrdersOptions {
@@ -15,7 +15,7 @@ export async function fetchPurchaseOrders({
   supplierId,
   status,
 }: FetchPurchaseOrdersOptions): Promise<PurchaseOrder[]> {
-  let query = supabase
+  let query = supabaseCustom
     .from('purchase_orders')
     .select(`
       *,
@@ -45,5 +45,5 @@ export async function fetchPurchaseOrders({
     throw error;
   }
 
-  return data || [];
+  return data as unknown as PurchaseOrder[];
 }

@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 
 interface UpdatePrintRunInput {
   id: string;
@@ -20,7 +20,7 @@ export async function updatePrintRun({
   if (description !== undefined) updateData.description = description;
   if (status !== undefined) updateData.status = status;
 
-  const { error } = await supabase
+  const { error } = await supabaseCustom
     .from('print_runs')
     .update(updateData)
     .eq('id', id);

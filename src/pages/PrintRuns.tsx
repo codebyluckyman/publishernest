@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,12 +117,12 @@ const PrintRuns = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+
   const { printRuns, isLoading, isError, error, createPrintRun, updatePrintRun, deletePrintRun } = usePrintRuns();
   
   const [selectedPrintRun, setSelectedPrintRun] = useState<PrintRun | undefined>(undefined);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Filter print runs based on search term and status
   const filteredPrintRuns = printRuns.filter((printRun) => {
     const matchesSearch = searchTerm === "" || 
       printRun.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -134,7 +133,6 @@ const PrintRuns = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Set up pagination
   const { 
     currentData: paginatedPrintRuns, 
     currentPage, 
@@ -285,7 +283,6 @@ const PrintRuns = () => {
                 </Table>
               </div>
               
-              {/* Pagination Controls */}
               <div className="flex items-center justify-end space-x-2 py-4">
                 <div className="flex-1 text-sm text-muted-foreground">
                   Showing <span className="font-medium">{(currentPage - 1) * pageSize + 1}</span> to{" "}

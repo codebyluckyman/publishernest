@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PurchaseOrder, PurchaseOrderLineItem } from '@/types/purchaseOrder';
 
 interface CreatePurchaseOrderInput {
@@ -29,7 +29,7 @@ export async function createPurchaseOrder({
   const totalAmount = lineItems.reduce((sum, item) => sum + (item.total_cost || 0), 0);
 
   // Create the purchase order
-  const { data, error } = await supabase
+  const { data, error } = await supabaseCustom
     .from('purchase_orders')
     .insert({
       organization_id: organizationId,
@@ -53,7 +53,7 @@ export async function createPurchaseOrder({
   const purchaseOrderId = data.id;
 
   // Create audit entry
-  await supabase.rpc('record_purchase_order_audit', {
+  await supabaseCustom.rpc('record_purchase_order_audit', {
     p_purchase_order_id: purchaseOrderId,
     p_changed_by: createdBy,
     p_action: 'create',
@@ -71,7 +71,7 @@ export async function createPurchaseOrder({
       total_cost: item.total_cost,
     }));
 
-    const { error: lineItemError } = await supabase
+    const { error: lineItemError } = await supabaseCustom
       .from('purchase_order_line_items')
       .insert(formattedLineItems);
 

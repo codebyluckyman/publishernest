@@ -1,9 +1,9 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PrintRun } from '@/types/printRun';
 
 export async function fetchPrintRunById(id: string): Promise<PrintRun> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseCustom
     .from('print_runs')
     .select('*')
     .eq('id', id)
@@ -18,5 +18,5 @@ export async function fetchPrintRunById(id: string): Promise<PrintRun> {
     throw new Error('Print run not found');
   }
 
-  return data as PrintRun;
+  return data as unknown as PrintRun;
 }

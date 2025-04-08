@@ -1,9 +1,9 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 
 export async function deletePurchaseOrder(id: string, userId: string): Promise<void> {
   // First, delete related line items
-  const { error: lineItemError } = await supabase
+  const { error: lineItemError } = await supabaseCustom
     .from('purchase_order_line_items')
     .delete()
     .eq('purchase_order_id', id);
@@ -14,7 +14,7 @@ export async function deletePurchaseOrder(id: string, userId: string): Promise<v
   }
 
   // Create audit entry for deletion
-  await supabase.rpc('record_purchase_order_audit', {
+  await supabaseCustom.rpc('record_purchase_order_audit', {
     p_purchase_order_id: id,
     p_changed_by: userId,
     p_action: 'delete',
@@ -22,7 +22,7 @@ export async function deletePurchaseOrder(id: string, userId: string): Promise<v
   });
 
   // Delete the purchase order
-  const { error } = await supabase
+  const { error } = await supabaseCustom
     .from('purchase_orders')
     .delete()
     .eq('id', id);

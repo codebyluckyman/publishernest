@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PurchaseOrderLineItem } from '@/types/purchaseOrder';
 
 interface UpdatePurchaseOrderInput {
@@ -49,7 +49,7 @@ export async function updatePurchaseOrder({
   }
 
   // Update the purchase order
-  const { error } = await supabase
+  const { error } = await supabaseCustom
     .from('purchase_orders')
     .update(updateData)
     .eq('id', id);
@@ -60,7 +60,7 @@ export async function updatePurchaseOrder({
   }
 
   // Create audit entry
-  await supabase.rpc('record_purchase_order_audit', {
+  await supabaseCustom.rpc('record_purchase_order_audit', {
     p_purchase_order_id: id,
     p_changed_by: updatedBy,
     p_action: 'update',
@@ -81,7 +81,7 @@ export async function updatePurchaseOrder({
         total_cost: item.total_cost,
       }));
 
-      const { error: newItemError } = await supabase
+      const { error: newItemError } = await supabaseCustom
         .from('purchase_order_line_items')
         .insert(formattedNewItems);
 
@@ -94,7 +94,7 @@ export async function updatePurchaseOrder({
     // Handle updated line items
     const updatedItems = lineItems.filter(item => !item.isNew && !item.isDeleted);
     for (const item of updatedItems) {
-      const { error: updateItemError } = await supabase
+      const { error: updateItemError } = await supabaseCustom
         .from('purchase_order_line_items')
         .update({
           quantity: item.quantity,
@@ -115,7 +115,7 @@ export async function updatePurchaseOrder({
       .map(item => item.id);
     
     if (deletedItemIds.length > 0) {
-      const { error: deleteItemError } = await supabase
+      const { error: deleteItemError } = await supabaseCustom
         .from('purchase_order_line_items')
         .delete()
         .in('id', deletedItemIds);
