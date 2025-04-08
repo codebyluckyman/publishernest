@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Plus, FileText } from 'lucide-react';
@@ -31,9 +31,9 @@ const SalesOrders = () => {
       case 'draft':
         return <Badge variant="outline">Draft</Badge>;
       case 'approved':
-        return <Badge variant="success">Approved</Badge>;
+        return <Badge variant="default" className="bg-green-500 hover:bg-green-600">Approved</Badge>;
       case 'pending':
-        return <Badge variant="warning">Pending</Badge>;
+        return <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">Pending</Badge>;
       case 'cancelled':
         return <Badge variant="destructive">Cancelled</Badge>;
       case 'completed':

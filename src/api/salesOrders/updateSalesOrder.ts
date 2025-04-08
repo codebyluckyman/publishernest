@@ -13,6 +13,9 @@ interface UpdateSalesOrderParams {
   taxRate?: number;
   paymentTerms?: string;
   deliveryDate?: string;
+  issueDate?: string;
+  fileApprovalStatus?: string;
+  advancePaymentStatus?: string;
   changedBy: string;
 }
 
@@ -27,6 +30,9 @@ export async function updateSalesOrder({
   taxRate,
   paymentTerms,
   deliveryDate,
+  issueDate,
+  fileApprovalStatus,
+  advancePaymentStatus,
   changedBy
 }: UpdateSalesOrderParams) {
   // Get original order for comparison
@@ -49,6 +55,9 @@ export async function updateSalesOrder({
   if (taxRate !== undefined) updateData.tax_rate = taxRate;
   if (paymentTerms !== undefined) updateData.payment_terms = paymentTerms;
   if (deliveryDate !== undefined) updateData.delivery_date = deliveryDate;
+  if (issueDate !== undefined) updateData.issue_date = issueDate;
+  if (fileApprovalStatus !== undefined) updateData.file_approval_status = fileApprovalStatus;
+  if (advancePaymentStatus !== undefined) updateData.advance_payment_status = advancePaymentStatus;
 
   // Calculate new totals if line items or tax rate changes
   if (lineItems || taxRate !== undefined) {

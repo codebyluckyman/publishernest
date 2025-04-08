@@ -1,105 +1,51 @@
-import {
-  HomeIcon,
-  LayoutIcon,
-  Package2Icon,
-  BuildingIcon,
-  FileTextIcon,
-  PrinterIcon,
-  ClipboardListIcon,
-  PackageIcon,
-  ShoppingCartIcon
-} from 'lucide-react';
-import { MainNavItem } from "@/types"
 
-interface Props {
-  items: MainNavItem[]
+import { Home, LayoutGrid, FileText, Truck, FileCheck, Settings, Users } from "lucide-react";
+
+export interface MenuItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  children?: MenuItem[];
 }
 
-export const NavigationMenuItems = ({ items }: Props) => {
-  return (
-    <>
-      {items?.length ? (
-        items.map((item) => (
-          item.href ? (
-            <a
-              key={item.id}
-              href={item.href}
-              className="flex items-center text-sm font-medium transition-colors hover:text-foreground"
-            >
-              {item.icon && (
-                <item.icon className="mr-2 h-4 w-4" />
-              )}
-              {item.title}
-            </a>
-          ) : null
-        ))
-      ) : null}
-    </>
-  )
-}
-
-export const navigationItems = [
+export const NavigationMenuItems = [
   {
-    id: 'home',
-    name: 'Home',
-    path: '/',
-    icon: <HomeIcon className="h-5 w-5" />
+    name: "Dashboard",
+    href: "/",
+    icon: Home,
   },
   {
-    id: 'formats',
-    name: 'Formats',
-    path: '/formats',
-    icon: <LayoutIcon className="h-5 w-5" />,
-    requiresAuth: true
+    name: "Formats",
+    href: "/formats",
+    icon: LayoutGrid,
   },
   {
-    id: 'products',
-    name: 'Products',
-    path: '/products',
-    icon: <Package2Icon className="h-5 w-5" />,
-    requiresAuth: true
+    name: "Products",
+    href: "/products",
+    icon: FileText,
   },
   {
-    id: 'suppliers',
-    name: 'Suppliers',
-    path: '/suppliers',
-    icon: <BuildingIcon className="h-5 w-5" />,
-    requiresAuth: true
+    name: "Purchase Orders",
+    href: "/purchase-orders",
+    icon: Truck,
   },
   {
-    id: 'quotes',
-    name: 'Quote Requests',
-    path: '/quotes',
-    icon: <FileTextIcon className="h-5 w-5" />,
-    requiresAuth: true
+    name: "Sales Orders",
+    href: "/sales-orders",
+    icon: FileCheck,
   },
   {
-    id: 'print-runs',
-    name: 'Print Runs',
-    path: '/print-runs',
-    icon: <PrinterIcon className="h-5 w-5" />,
-    requiresAuth: true
+    name: "Settings",
+    href: "/organization-settings",
+    icon: Settings,
   },
   {
-    id: 'purchase-orders',
-    name: 'Purchase Orders',
-    path: '/purchase-orders',
-    icon: <ClipboardListIcon className="h-5 w-5" />,
-    requiresAuth: true
+    name: "Profile",
+    href: "/profile",
+    icon: Users,
   },
-  {
-    id: 'sales-orders',
-    name: 'Sales Orders',
-    path: '/sales-orders',
-    icon: <ShoppingCartIcon className="h-5 w-5" />,
-    requiresAuth: true
-  },
-  {
-    id: 'stock',
-    name: 'Stock',
-    path: '/stock',
-    icon: <PackageIcon className="h-5 w-5" />,
-    requiresAuth: true
-  }
 ];
 
+export function getNavigationMenuItems() {
+  return NavigationMenuItems;
+}
