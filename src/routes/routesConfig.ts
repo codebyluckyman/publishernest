@@ -2,23 +2,12 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
-// Lazy load pages for better performance
+// Lazy load pages that we know exist
 const Dashboard = lazy(() => import('../pages/Dashboard'));
 const Login = lazy(() => import('../pages/auth/Login'));
 const Profile = lazy(() => import('../pages/auth/Profile'));
 const Organizations = lazy(() => import('../pages/organizations/Organizations'));
 const OrganizationSettings = lazy(() => import('../pages/organizations/OrganizationSettings'));
-const ProductsPage = lazy(() => import('../pages/ProductsPage'));
-const FormatsPage = lazy(() => import('../pages/FormatsPage'));
-const FormatDetailPage = lazy(() => import('../pages/FormatDetailPage'));
-const ProductDetailPage = lazy(() => import('../pages/ProductDetailPage'));
-const QuoteRequestsPage = lazy(() => import('../pages/QuoteRequestsPage'));
-const QuoteRequestDetailPage = lazy(() => import('../pages/QuoteRequestDetailPage'));
-const SuppliersPage = lazy(() => import('../pages/SuppliersPage'));
-const SupplierDetailPage = lazy(() => import('../pages/SupplierDetailPage'));
-const QuotesPage = lazy(() => import('../pages/QuotesPage'));
-const SupplierQuoteDetail = lazy(() => import('../pages/SupplierQuoteDetail'));
-const SupplierQuoteCreate = lazy(() => import('../pages/SupplierQuoteCreate'));
 const PrintRunsPage = lazy(() => import('../pages/PrintRunsPage'));
 const PurchaseOrdersPage = lazy(() => import('../pages/PurchaseOrdersPage'));
 const CreatePurchaseOrderPage = lazy(() => import('../pages/CreatePurchaseOrderPage'));
@@ -57,17 +46,6 @@ export const routeComponents = {
   profile: Profile,
   organizations: Organizations,
   organizationSettings: OrganizationSettings,
-  products: ProductsPage,
-  productDetail: ProductDetailPage,
-  formats: FormatsPage,
-  formatDetail: FormatDetailPage,
-  quoteRequests: QuoteRequestsPage,
-  quoteRequestDetail: QuoteRequestDetailPage,
-  suppliers: SuppliersPage,
-  supplierDetail: SupplierDetailPage,
-  quotes: QuotesPage,
-  quoteNew: SupplierQuoteCreate,
-  quoteDetail: SupplierQuoteDetail,
   printRuns: PrintRunsPage,
   purchaseOrders: PurchaseOrdersPage,
   purchaseOrderNew: CreatePurchaseOrderPage
@@ -102,54 +80,6 @@ export const protectedRoutes: RouteObject[] = [
   {
     path: PATHS.ORGANIZATION_SETTINGS,
     element: { type: routeComponents.organizationSettings }
-  },
-  {
-    path: PATHS.PRODUCTS,
-    element: { type: routeComponents.products }
-  },
-  {
-    path: PATHS.PRODUCT_DETAIL,
-    element: { type: routeComponents.productDetail }
-  },
-  {
-    path: PATHS.FORMATS,
-    element: { type: routeComponents.formats }
-  },
-  {
-    path: PATHS.FORMAT_DETAIL,
-    element: { type: routeComponents.formatDetail }
-  },
-  {
-    path: PATHS.QUOTE_REQUESTS,
-    element: { type: routeComponents.quoteRequests }
-  },
-  {
-    path: PATHS.QUOTE_REQUEST_DETAIL,
-    element: { type: routeComponents.quoteRequestDetail }
-  },
-  {
-    path: PATHS.SUPPLIERS,
-    element: { type: routeComponents.suppliers }
-  },
-  {
-    path: PATHS.SUPPLIER_DETAIL,
-    element: { type: routeComponents.supplierDetail }
-  },
-  {
-    path: PATHS.QUOTES,
-    element: { type: routeComponents.quotes }
-  },
-  {
-    path: PATHS.QUOTE_NEW,
-    element: { type: routeComponents.quoteNew }
-  },
-  {
-    path: PATHS.QUOTE_DETAIL,
-    element: { type: routeComponents.quoteDetail }
-  },
-  {
-    path: PATHS.QUOTE_DETAILS,
-    element: { type: routeComponents.quoteDetail }
   },
   {
     path: PATHS.PRINT_RUNS,

@@ -1,4 +1,6 @@
 
+import { PrintRun } from './printRun';
+
 export type PurchaseOrderStatus = 'draft' | 'approved' | 'sent' | 'received' | 'cancelled';
 
 export interface PurchaseOrder {

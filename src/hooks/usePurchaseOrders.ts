@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -121,7 +120,9 @@ export function usePurchaseOrders() {
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        return data as PurchaseOrderAudit[];
+        
+        // Cast to the correct type to satisfy TypeScript
+        return data as unknown as PurchaseOrderAudit[];
       },
       enabled: !!purchaseOrderId,
     });
@@ -137,6 +138,9 @@ export function usePurchaseOrders() {
           throw new Error("User must be authenticated and organization selected");
         }
 
+        // Generate a PO number with prefix PO- and current date
+        const poNumber = `PO-${new Date().toISOString().substring(0, 10)}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+
         // Start a transaction
         const { data: purchaseOrder, error: poError } = await supabase
           .from("purchase_orders")
@@ -145,6 +149,7 @@ export function usePurchaseOrders() {
             print_run_id: formData.print_run_id,
             supplier_id: formData.supplier_id,
             supplier_quote_id: formData.supplier_quote_id,
+            po_number: poNumber, // Add the generated PO number
             status: "draft",
             issue_date: formData.issue_date ? new Date(formData.issue_date).toISOString().split('T')[0] : null,
             delivery_date: formData.delivery_date ? new Date(formData.delivery_date).toISOString().split('T')[0] : null,
