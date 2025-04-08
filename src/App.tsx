@@ -23,6 +23,7 @@ import SupplierQuoteCreate from "./pages/SupplierQuoteCreate";
 import PrintRunsPage from "./pages/PrintRunsPage";
 import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
 import CreatePurchaseOrderPage from "./pages/CreatePurchaseOrderPage";
+import NotFound from "./pages/NotFound";
 
 import "./App.css";
 
@@ -50,12 +51,12 @@ function App() {
             <Route path="quotes/:id" element={<SupplierQuoteDetail />} />
             <Route path="quotes/:id/details" element={<SupplierQuoteDetail />} />
 
-            {/* New Print Runs and Purchase Orders Routes */}
+            {/* Print Runs and Purchase Orders Routes */}
             <Route path="print-runs" element={<PrintRunsPage />} />
             <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
             <Route path="purchase-orders/new" element={<CreatePurchaseOrderPage />} />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </OrganizationProvider>
     </AuthProvider>
