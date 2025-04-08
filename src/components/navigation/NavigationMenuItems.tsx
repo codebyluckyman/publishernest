@@ -1,4 +1,3 @@
-
 import { Home, LayoutGrid, FileText, Truck, ShoppingCart, Settings, Users, FileCheck, Quote, Factory, ShoppingBag } from "lucide-react";
 
 export interface MenuItem {
@@ -86,6 +85,14 @@ export const NavigationMenuItems = [
         href: "/purchase-orders",
         path: "/purchase-orders",
         icon: Truck,
+      },
+      {
+        name: "Suppliers",
+        label: "Suppliers",
+        title: "Suppliers",
+        href: "/suppliers",
+        path: "/suppliers",
+        icon: Users,
       }
     ]
   },

@@ -8,7 +8,7 @@ import { toast } from '@/utils/toast-utils';
 
 const CreateSalesOrder = () => {
   const navigate = useNavigate();
-  const { createSalesOrder, isCreatingSalesOrder } = useSalesOrders();
+  const { createSalesOrder } = useSalesOrders();
   const { user } = useAuth();
 
   const handleSubmit = async (data: any) => {
@@ -32,11 +32,11 @@ const CreateSalesOrder = () => {
 
       const result = await createSalesOrder(salesOrderData);
       
-      if (result && result.id) {
+      if (result) {
         toast.success('Sales order created successfully');
         navigate(`/sales-orders/${result.id}`);
       } else {
-        toast.error('Failed to create sales order: No order ID returned');
+        toast.error('Failed to create sales order');
       }
     } catch (error) {
       console.error('Error creating sales order:', error);
