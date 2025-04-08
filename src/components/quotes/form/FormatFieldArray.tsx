@@ -1,4 +1,3 @@
-
 import { useFieldArray, Control, UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
@@ -16,7 +15,7 @@ interface FormatFieldArrayProps {
 
 export function FormatFieldArray({ form }: FormatFieldArrayProps) {
   const { currentOrganization } = useOrganization();
-  const { data: formats = [], isLoading: isFormatsLoading } = useFormatsForSelect(currentOrganization);
+  const { formats, isLoading: isFormatsLoading } = useFormatsForSelect();
   
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -31,7 +30,6 @@ export function FormatFieldArray({ form }: FormatFieldArrayProps) {
     });
   };
 
-  // Update existing formats with the default num_products if they don't have one set
   useEffect(() => {
     if (currentOrganization?.default_num_products && fields.length > 0) {
       fields.forEach((field, index) => {
@@ -42,7 +40,6 @@ export function FormatFieldArray({ form }: FormatFieldArrayProps) {
     }
   }, [currentOrganization?.default_num_products, fields, form]);
 
-  // Ensure formats is always a valid array
   const safeFormats = Array.isArray(formats) ? formats : [];
 
   return (

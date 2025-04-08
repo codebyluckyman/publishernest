@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from './useOrganization';
@@ -8,8 +7,14 @@ export interface FormatOption {
   label: string;
 }
 
-export function useFormatsForSelect() {
-  const { currentOrganization } = useOrganization();
+export interface FormatForSelect {
+  id: string;
+  format_name: string;
+}
+
+export function useFormatsForSelect(currentOrganizationParam?: any) {
+  const { currentOrganization: orgFromContext } = useOrganization();
+  const currentOrganization = currentOrganizationParam || orgFromContext;
   
   const query = useQuery({
     queryKey: ["formats-for-select", currentOrganization?.id],
@@ -46,8 +51,10 @@ export function useFormatsForSelect() {
 
   return {
     formats: query.data,
+    data: query.data, // Keep for backward compatibility
     isLoading: query.isLoading,
     isError: query.isError,
-    error: query.error
+    error: query.error,
+    refetch: query.refetch // Add the refetch method
   };
 }

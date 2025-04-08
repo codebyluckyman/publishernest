@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +28,7 @@ interface LineItemsTableProps {
 export function LineItemsTable({ items = [], onChange, disabled = false }: LineItemsTableProps) {
   const { products, isLoading: isProductsLoading } = useProducts();
   const { formats, isLoading: isFormatsLoading } = useFormatsForSelect();
-  const [lineItems, setLineItems] = useState<LineItem[]>(items);
+  const [lineItems, setLineItems] = useState(items);
 
   useEffect(() => {
     if (items.length > 0 && lineItems.length === 0) {
@@ -73,7 +72,6 @@ export function LineItemsTable({ items = [], onChange, disabled = false }: LineI
       [field]: value,
     };
 
-    // Calculate total cost if quantity or unit_cost changes
     if (field === 'quantity' || field === 'unit_cost') {
       const quantity = field === 'quantity' ? value : updatedItems[index].quantity;
       const unitCost = field === 'unit_cost' ? value : updatedItems[index].unit_cost;

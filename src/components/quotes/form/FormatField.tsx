@@ -1,10 +1,11 @@
+
 import { useFieldArray, Control, Controller, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { QuoteRequestFormValues } from "./schema";
-import { FormatForSelect } from "@/hooks/useFormatsForSelect";
+import { FormatOption } from "@/hooks/useFormatsForSelect";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FormatSpecifications } from "./FormatSpecifications";
@@ -20,7 +21,7 @@ import { FormatSelectField } from "./format-fields/FormatSelectField";
 interface FormatFieldProps {
   control: Control<QuoteRequestFormValues>;
   index: number;
-  formats: FormatForSelect[];
+  formats: FormatOption[];
   isFormatsLoading: boolean;
 }
 

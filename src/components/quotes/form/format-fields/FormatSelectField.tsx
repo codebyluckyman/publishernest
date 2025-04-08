@@ -2,13 +2,13 @@
 import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
-import { FormatForSelect } from "@/hooks/useFormatsForSelect";
+import { FormatOption } from "@/hooks/useFormatsForSelect";
 import { Combobox } from "@/components/ui/combobox";
 
 interface FormatSelectFieldProps {
   control: Control<QuoteRequestFormValues>;
   index: number;
-  formats: FormatForSelect[];
+  formats: FormatOption[];
   isLoading: boolean;
 }
 
