@@ -9,7 +9,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "./components/Layout";
 import { AuthProvider } from "./context/AuthContext";
 import { OrganizationProvider } from "./context/OrganizationProvider";
-import { Toaster as SonnerToaster } from "sonner";
 
 // Pages
 import Auth from "./pages/Auth";
@@ -87,7 +86,6 @@ function App() {
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<Navigate to="/404" replace />} />
               </Routes>
-              <SonnerToaster position="top-right" richColors />
               <Toaster />
             </OrganizationProvider>
           </Router>

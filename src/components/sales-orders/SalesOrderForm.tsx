@@ -18,7 +18,7 @@ import { CustomerSelector } from '@/components/sales-orders/CustomerSelector';
 import { LineItemsTable } from '@/components/sales-orders/LineItemsTable';
 import { ChargesTable } from '@/components/sales-orders/ChargesTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { toast } from '@/utils/toast-utils';
 import { SalesOrderLineItem, SalesOrderCharge } from '@/types/salesOrder';
 import { useAuth } from '@/context/AuthContext';
 import { DatePicker } from '@/components/ui/date-picker';

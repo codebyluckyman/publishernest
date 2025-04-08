@@ -55,7 +55,7 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
           reference,
           status,
           currency,
-          supplier:suppliers!supplier_id(id, supplier_name),
+          supplier:suppliers(id, supplier_name),
           price_breaks:supplier_quote_price_breaks(
             id, product_id, quantity, unit_cost
           )

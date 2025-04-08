@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { SalesOrderForm } from '@/components/sales-orders/SalesOrderForm';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/utils/toast-utils';
 
 const CreateSalesOrder = () => {
   const navigate = useNavigate();
