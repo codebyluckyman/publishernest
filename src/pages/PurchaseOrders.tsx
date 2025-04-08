@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -254,7 +255,7 @@ const PurchaseOrders = () => {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious onClick={previousPage} disabled={currentPage === 1} />
+                        <PaginationPrevious onClick={() => previousPage()} aria-disabled={currentPage === 1} />
                       </PaginationItem>
                       {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                         const page = i + 1;
@@ -270,7 +271,7 @@ const PurchaseOrders = () => {
                         );
                       })}
                       <PaginationItem>
-                        <PaginationNext onClick={nextPage} disabled={currentPage >= totalPages} />
+                        <PaginationNext onClick={() => nextPage()} aria-disabled={currentPage >= totalPages} />
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
