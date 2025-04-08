@@ -6,8 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { v4 as uuidv4 } from "uuid";
-import { useProducts } from "@/hooks/useProducts";
-import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
+import { useProductsWithFormats } from "@/hooks/useProductsWithFormats";
+import { Card, CardContent } from "@/components/ui/card";
+import { SupplierQuoteSelector } from "./SupplierQuoteSelector";
 
 interface LineItem {
   id?: string;
@@ -16,6 +17,8 @@ interface LineItem {
   quantity: number;
   unit_cost: number;
   total_cost: number;
+  supplier_id?: string;
+  supplier_quote_id?: string;
   isNew?: boolean;
   isDeleted?: boolean;
 }
@@ -23,13 +26,19 @@ interface LineItem {
 interface LineItemsTableProps {
   items: LineItem[];
   onChange: (items: LineItem[]) => void;
+  onSupplierSelect?: (supplierId: string) => void;
   disabled?: boolean;
 }
 
-export function LineItemsTable({ items = [], onChange, disabled = false }: LineItemsTableProps) {
-  const { products, isLoading: isProductsLoading } = useProducts();
-  const { formats, isLoading: isFormatsLoading } = useFormatsForSelect();
-  const [lineItems, setLineItems] = useState(items);
+export function LineItemsTable({ 
+  items = [], 
+  onChange, 
+  onSupplierSelect,
+  disabled = false 
+}: LineItemsTableProps) {
+  const { products, isLoading: isProductsLoading } = useProductsWithFormats();
+  const [lineItems, setLineItems] = useState<LineItem[]>(items);
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
   useEffect(() => {
     if (items.length > 0 && lineItems.length === 0) {
@@ -49,6 +58,7 @@ export function LineItemsTable({ items = [], onChange, disabled = false }: LineI
     const updatedItems = [...lineItems, newItem];
     setLineItems(updatedItems);
     onChange(updatedItems);
+    setExpandedItem(newItem.id || null);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -73,6 +83,21 @@ export function LineItemsTable({ items = [], onChange, disabled = false }: LineI
       [field]: value,
     };
 
+    // When product changes, update format_id if the product has a linked format
+    if (field === 'product_id') {
+      const selectedProduct = products.find(p => p.id === value);
+      if (selectedProduct?.format) {
+        updatedItems[index].format_id = selectedProduct.format.id;
+      } else {
+        updatedItems[index].format_id = undefined;
+      }
+      
+      // Reset supplier-related fields
+      updatedItems[index].supplier_id = undefined;
+      updatedItems[index].supplier_quote_id = undefined;
+    }
+    
+    // Calculate total cost
     if (field === 'quantity' || field === 'unit_cost') {
       const quantity = field === 'quantity' ? value : updatedItems[index].quantity;
       const unitCost = field === 'unit_cost' ? value : updatedItems[index].unit_cost;
@@ -81,6 +106,41 @@ export function LineItemsTable({ items = [], onChange, disabled = false }: LineI
 
     setLineItems(updatedItems);
     onChange(updatedItems);
+  };
+  
+  const handleQuoteSelect = (index: number, data: { supplierId: string, supplierQuoteId: string, unitCost: number }) => {
+    const updatedItems = [...lineItems];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      supplier_id: data.supplierId,
+      supplier_quote_id: data.supplierQuoteId,
+      unit_cost: data.unitCost,
+    };
+    
+    // Update total cost
+    updatedItems[index].total_cost = parseFloat((updatedItems[index].quantity * data.unitCost).toFixed(2));
+    
+    setLineItems(updatedItems);
+    onChange(updatedItems);
+    
+    // Notify parent of supplier selection
+    if (onSupplierSelect && data.supplierId) {
+      onSupplierSelect(data.supplierId);
+    }
+  };
+
+  const toggleExpandItem = (itemId: string | undefined) => {
+    if (!itemId) return;
+    
+    if (expandedItem === itemId) {
+      setExpandedItem(null);
+    } else {
+      setExpandedItem(itemId);
+    }
+  };
+
+  const getProductById = (productId: string) => {
+    return products.find(product => product.id === productId);
   };
 
   const visibleItems = lineItems.filter(item => !item.isDeleted);
@@ -108,79 +168,94 @@ export function LineItemsTable({ items = [], onChange, disabled = false }: LineI
               </TableRow>
             ) : (
               visibleItems.map((item, index) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <Select
-                      value={item.product_id}
-                      onValueChange={(value) => handleItemChange(index, 'product_id', value)}
-                      disabled={disabled || isProductsLoading}
-                    >
-                      <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder="Select Product" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products?.map((product) => (
-                          <SelectItem key={product.id} value={product.id}>
-                            {product.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={item.format_id || "no_format"}
-                      onValueChange={(value) => handleItemChange(index, 'format_id', value === "no_format" ? undefined : value)}
-                      disabled={disabled || isFormatsLoading}
-                    >
-                      <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder="Select Format" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="no_format">None</SelectItem>
-                        {formats?.map((format) => (
-                          <SelectItem key={format.value} value={format.value}>
-                            {format.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                      className="w-[100px]"
-                      min={1}
-                      disabled={disabled}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={item.unit_cost}
-                      onChange={(e) => handleItemChange(index, 'unit_cost', parseFloat(e.target.value) || 0)}
-                      className="w-[100px]"
-                      min={0}
-                      step={0.01}
-                      disabled={disabled}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {item.total_cost.toFixed(2)}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveItem(index)}
-                      disabled={disabled}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <>
+                  <TableRow 
+                    key={item.id}
+                    className={expandedItem === item.id ? "bg-muted/50" : ""}
+                    onClick={() => toggleExpandItem(item.id)}
+                  >
+                    <TableCell>
+                      <Select
+                        value={item.product_id}
+                        onValueChange={(value) => handleItemChange(index, 'product_id', value)}
+                        disabled={disabled || isProductsLoading}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Select Product" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {products.map((product) => (
+                            <SelectItem key={product.id} value={product.id}>
+                              {product.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      {item.product_id && getProductById(item.product_id)?.format ? (
+                        <span className="text-sm">
+                          {getProductById(item.product_id)?.format?.format_name}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">None</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 0)}
+                        className="w-[100px]"
+                        min={1}
+                        disabled={disabled}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        value={item.unit_cost}
+                        onChange={(e) => handleItemChange(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                        className="w-[100px]"
+                        min={0}
+                        step={0.01}
+                        disabled={disabled}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {item.total_cost.toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => { 
+                          e.stopPropagation();
+                          handleRemoveItem(index);
+                        }}
+                        disabled={disabled}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {expandedItem === item.id && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="bg-slate-50 p-0">
+                        <Card className="border-0 shadow-none">
+                          <CardContent className="p-4">
+                            <SupplierQuoteSelector
+                              productId={item.product_id}
+                              formatId={item.format_id}
+                              onQuoteSelect={(data) => handleQuoteSelect(index, data)}
+                              disabled={disabled}
+                            />
+                          </CardContent>
+                        </Card>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))
             )}
           </TableBody>
