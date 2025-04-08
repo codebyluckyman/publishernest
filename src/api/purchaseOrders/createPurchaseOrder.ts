@@ -1,0 +1,85 @@
+
+import { supabase } from '@/integrations/supabase/client';
+import { PurchaseOrder, PurchaseOrderLineItem } from '@/types/purchaseOrder';
+
+interface CreatePurchaseOrderInput {
+  organizationId: string;
+  printRunId: string;
+  supplierId: string;
+  supplierQuoteId?: string;
+  currency: string;
+  notes?: string;
+  createdBy: string;
+  status?: 'draft' | 'pending_approval';
+  lineItems?: Omit<PurchaseOrderLineItem, 'id' | 'purchase_order_id' | 'created_at' | 'updated_at'>[];
+}
+
+export async function createPurchaseOrder({
+  organizationId,
+  printRunId,
+  supplierId,
+  supplierQuoteId,
+  currency,
+  notes,
+  createdBy,
+  status = 'draft',
+  lineItems = [],
+}: CreatePurchaseOrderInput): Promise<string> {
+  // Calculate total amount from line items
+  const totalAmount = lineItems.reduce((sum, item) => sum + (item.total_cost || 0), 0);
+
+  // Create the purchase order
+  const { data, error } = await supabase
+    .from('purchase_orders')
+    .insert({
+      organization_id: organizationId,
+      print_run_id: printRunId,
+      supplier_id: supplierId,
+      supplier_quote_id: supplierQuoteId,
+      currency,
+      total_amount: totalAmount,
+      notes,
+      status,
+      created_by: createdBy,
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('Error creating purchase order:', error);
+    throw error;
+  }
+
+  const purchaseOrderId = data.id;
+
+  // Create audit entry
+  await supabase.rpc('record_purchase_order_audit', {
+    p_purchase_order_id: purchaseOrderId,
+    p_changed_by: createdBy,
+    p_action: 'create',
+    p_changes: { status },
+  });
+
+  // Insert line items if provided
+  if (lineItems.length > 0) {
+    const formattedLineItems = lineItems.map(item => ({
+      purchase_order_id: purchaseOrderId,
+      product_id: item.product_id,
+      format_id: item.format_id,
+      quantity: item.quantity,
+      unit_cost: item.unit_cost,
+      total_cost: item.total_cost,
+    }));
+
+    const { error: lineItemError } = await supabase
+      .from('purchase_order_line_items')
+      .insert(formattedLineItems);
+
+    if (lineItemError) {
+      console.error('Error creating purchase order line items:', lineItemError);
+      throw lineItemError;
+    }
+  }
+
+  return purchaseOrderId;
+}

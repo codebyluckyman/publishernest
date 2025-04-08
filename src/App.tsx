@@ -26,6 +26,8 @@ import QuoteRequests from "./pages/QuoteRequests";
 import Quotes from "./pages/Quotes";
 import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
 import QuoteComparison from "./pages/QuoteComparison";
+import PrintRuns from "./pages/PrintRuns";
+import PurchaseOrders from "./pages/PurchaseOrders";
 
 // Create a React Query client
 const queryClient = new QueryClient({
@@ -68,6 +70,8 @@ function App() {
                   <Route path="quotes" element={<Quotes />} />
                   <Route path="quotes/:id" element={<SupplierQuoteDetail />} />
                   <Route path="quotes/compare" element={<QuoteComparison />} />
+                  <Route path="print-runs" element={<PrintRuns />} />
+                  <Route path="purchase-orders" element={<PurchaseOrders />} />
                 </Route>
 
                 <Route path="/404" element={<NotFound />} />

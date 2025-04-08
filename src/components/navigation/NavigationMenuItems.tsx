@@ -11,7 +11,9 @@ import {
   Store,
   FileText,
   MessageSquarePlus,
-  Warehouse
+  Warehouse,
+  Printer,
+  ClipboardList
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -62,9 +64,21 @@ export const navigationItems = [
     ]
   },
   {
-    title: "Purchase Orders",
-    href: "/orders",
-    icon: <ShoppingCart className="h-5 w-5" />,
+    title: "Production",
+    href: "/production",
+    icon: <Printer className="h-5 w-5" />,
+    submenu: [
+      {
+        title: "Print Runs",
+        href: "/print-runs",
+        icon: <ClipboardList className="h-5 w-5" />,
+      },
+      {
+        title: "Purchase Orders",
+        href: "/purchase-orders",
+        icon: <ShoppingCart className="h-5 w-5" />,
+      }
+    ]
   },
   {
     title: "Shipments",

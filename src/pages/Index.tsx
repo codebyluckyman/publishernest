@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const { currentOrganization } = useOrganization();
   const [quoteRequestsCount, setQuoteRequestsCount] = useState<number | null>(null);
+  const [printRunsCount, setPrintRunsCount] = useState<number | null>(null);
+  const [purchaseOrdersCount, setPurchaseOrdersCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -37,7 +39,51 @@ const Dashboard = () => {
       }
     };
 
+    const fetchPrintRunsCount = async () => {
+      if (!currentOrganization) return;
+      
+      try {
+        const { count, error } = await supabase
+          .from("print_runs")
+          .select("id", { count: "exact" })
+          .eq("organization_id", currentOrganization.id)
+          .eq("status", "in_progress"); // Only count in-progress print runs
+        
+        if (error) {
+          console.error("Error fetching print runs count:", error);
+          return;
+        }
+        
+        setPrintRunsCount(count);
+      } catch (error) {
+        console.error("Error fetching print runs count:", error);
+      }
+    };
+
+    const fetchPurchaseOrdersCount = async () => {
+      if (!currentOrganization) return;
+      
+      try {
+        const { count, error } = await supabase
+          .from("purchase_orders")
+          .select("id", { count: "exact" })
+          .eq("organization_id", currentOrganization.id)
+          .eq("status", "approved"); // Only count approved purchase orders
+        
+        if (error) {
+          console.error("Error fetching purchase orders count:", error);
+          return;
+        }
+        
+        setPurchaseOrdersCount(count);
+      } catch (error) {
+        console.error("Error fetching purchase orders count:", error);
+      }
+    };
+
     fetchQuoteRequestsCount();
+    fetchPrintRunsCount();
+    fetchPurchaseOrdersCount();
   }, [currentOrganization]);
 
   // Handle navigation to the specific page based on card
@@ -58,8 +104,20 @@ const Dashboard = () => {
       destination: "quote-requests",
       tab: "approved"
     },
-    { label: "Open Orders", value: "8", icon: ShoppingCart, color: "text-purple-500", destination: "orders" },
-    { label: "In Production", value: "5", icon: Printer, color: "text-green-500", destination: "orders" },
+    { 
+      label: "Active Print Runs", 
+      value: isLoading ? "..." : (printRunsCount !== null ? printRunsCount.toString() : "0"), 
+      icon: Printer, 
+      color: "text-green-500", 
+      destination: "print-runs" 
+    },
+    { 
+      label: "Active Purchase Orders", 
+      value: isLoading ? "..." : (purchaseOrdersCount !== null ? purchaseOrdersCount.toString() : "0"), 
+      icon: ShoppingCart, 
+      color: "text-purple-500", 
+      destination: "purchase-orders" 
+    },
     { label: "Shipments", value: "3", icon: Truck, color: "text-orange-500", destination: "shipments" },
   ];
 
