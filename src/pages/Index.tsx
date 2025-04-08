@@ -58,8 +58,8 @@ const Dashboard = () => {
       destination: "quote-requests",
       tab: "approved"
     },
-    { label: "Open Orders", value: "8", icon: ShoppingCart, color: "text-purple-500", destination: "purchase-orders" },
-    { label: "In Production", value: "5", icon: Printer, color: "text-green-500", destination: "print-runs" },
+    { label: "Open Orders", value: "8", icon: ShoppingCart, color: "text-purple-500", destination: "orders" },
+    { label: "In Production", value: "5", icon: Printer, color: "text-green-500", destination: "orders" },
     { label: "Shipments", value: "3", icon: Truck, color: "text-orange-500", destination: "shipments" },
   ];
 

@@ -361,29 +361,6 @@ export type Database = {
           },
         ]
       }
-      organization_purchase_order_counters: {
-        Row: {
-          next_po_number: number
-          organization_id: string
-        }
-        Insert: {
-          next_po_number?: number
-          organization_id: string
-        }
-        Update: {
-          next_po_number?: number
-          organization_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organization_purchase_order_counters_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: true
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       organization_quote_counters: {
         Row: {
           next_quote_number: number
@@ -468,47 +445,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      print_runs: {
-        Row: {
-          created_at: string
-          created_by: string
-          description: string | null
-          id: string
-          organization_id: string
-          status: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          description?: string | null
-          id?: string
-          organization_id: string
-          status?: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          id?: string
-          organization_id?: string
-          status?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "print_runs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       product_prices: {
         Row: {
@@ -733,206 +669,6 @@ export type Database = {
             columns: ["current_organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      purchase_order_audit: {
-        Row: {
-          action: string
-          changed_by: string | null
-          changes: Json | null
-          created_at: string
-          id: string
-          purchase_order_id: string | null
-        }
-        Insert: {
-          action: string
-          changed_by?: string | null
-          changes?: Json | null
-          created_at?: string
-          id?: string
-          purchase_order_id?: string | null
-        }
-        Update: {
-          action?: string
-          changed_by?: string | null
-          changes?: Json | null
-          created_at?: string
-          id?: string
-          purchase_order_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "purchase_order_audit_purchase_order_id_fkey"
-            columns: ["purchase_order_id"]
-            isOneToOne: false
-            referencedRelation: "purchase_orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      purchase_order_line_items: {
-        Row: {
-          created_at: string
-          format_id: string | null
-          id: string
-          product_id: string
-          purchase_order_id: string
-          quantity: number
-          total_cost: number
-          unit_cost: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          format_id?: string | null
-          id?: string
-          product_id: string
-          purchase_order_id: string
-          quantity: number
-          total_cost: number
-          unit_cost: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          format_id?: string | null
-          id?: string
-          product_id?: string
-          purchase_order_id?: string
-          quantity?: number
-          total_cost?: number
-          unit_cost?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "purchase_order_line_items_format_id_fkey"
-            columns: ["format_id"]
-            isOneToOne: false
-            referencedRelation: "formats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_order_line_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_order_line_items_purchase_order_id_fkey"
-            columns: ["purchase_order_id"]
-            isOneToOne: false
-            referencedRelation: "purchase_orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      purchase_orders: {
-        Row: {
-          approved_at: string | null
-          approved_by: string | null
-          cancellation_reason: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
-          created_at: string
-          created_by: string
-          currency: string
-          delivery_date: string | null
-          id: string
-          issue_date: string | null
-          notes: string | null
-          organization_id: string
-          payment_terms: string | null
-          po_number: string
-          print_run_id: string
-          shipping_address: string | null
-          shipping_method: string | null
-          status: string
-          supplier_id: string
-          supplier_quote_id: string | null
-          total_amount: number | null
-          updated_at: string
-        }
-        Insert: {
-          approved_at?: string | null
-          approved_by?: string | null
-          cancellation_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
-          created_at?: string
-          created_by: string
-          currency?: string
-          delivery_date?: string | null
-          id?: string
-          issue_date?: string | null
-          notes?: string | null
-          organization_id: string
-          payment_terms?: string | null
-          po_number: string
-          print_run_id: string
-          shipping_address?: string | null
-          shipping_method?: string | null
-          status?: string
-          supplier_id: string
-          supplier_quote_id?: string | null
-          total_amount?: number | null
-          updated_at?: string
-        }
-        Update: {
-          approved_at?: string | null
-          approved_by?: string | null
-          cancellation_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
-          created_at?: string
-          created_by?: string
-          currency?: string
-          delivery_date?: string | null
-          id?: string
-          issue_date?: string | null
-          notes?: string | null
-          organization_id?: string
-          payment_terms?: string | null
-          po_number?: string
-          print_run_id?: string
-          shipping_address?: string | null
-          shipping_method?: string | null
-          status?: string
-          supplier_id?: string
-          supplier_quote_id?: string | null
-          total_amount?: number | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "purchase_orders_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_orders_print_run_id_fkey"
-            columns: ["print_run_id"]
-            isOneToOne: false
-            referencedRelation: "print_runs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_orders_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_orders_supplier_quote_id_fkey"
-            columns: ["supplier_quote_id"]
-            isOneToOne: false
-            referencedRelation: "supplier_quotes"
             referencedColumns: ["id"]
           },
         ]
@@ -2179,14 +1915,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
-      get_price_break_for_quantity: {
-        Args: {
-          p_supplier_quote_id: string
-          p_format_id: string
-          p_quantity: number
-        }
-        Returns: number
-      }
       get_quote_attachments: {
         Args: { quote_id: string }
         Returns: {
@@ -2220,15 +1948,6 @@ export type Database = {
       is_organization_member: {
         Args: { org_id: string; user_id?: string }
         Returns: boolean
-      }
-      record_purchase_order_audit: {
-        Args: {
-          p_purchase_order_id: string
-          p_changed_by: string
-          p_action: string
-          p_changes: Json
-        }
-        Returns: string
       }
       update_format_price_breaks: {
         Args: { formatid: string; pricebreaks: Json; numproducts?: number }

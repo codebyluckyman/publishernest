@@ -11,8 +11,7 @@ import {
   Store,
   FileText,
   MessageSquarePlus,
-  Warehouse,
-  Printer
+  Warehouse
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -63,13 +62,8 @@ export const navigationItems = [
     ]
   },
   {
-    title: "Print Runs",
-    href: "/print-runs",
-    icon: <Printer className="h-5 w-5" />,
-  },
-  {
     title: "Purchase Orders",
-    href: "/purchase-orders",
+    href: "/orders",
     icon: <ShoppingCart className="h-5 w-5" />,
   },
   {
