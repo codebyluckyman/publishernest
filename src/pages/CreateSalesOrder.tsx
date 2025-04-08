@@ -24,17 +24,17 @@ const CreateSalesOrder = () => {
         return cleanItem;
       });
 
-      const result = await createSalesOrder({
+      const salesOrderData = {
         ...data,
         lineItems: cleanedLineItems,
         createdBy: user.id
-      });
+      };
+
+      const result = await createSalesOrder(salesOrderData);
       
       if (result && result.id) {
         toast.success('Sales order created successfully');
         navigate(`/sales-orders/${result.id}`);
-      } else {
-        toast.error('Failed to create sales order: No ID returned');
       }
     } catch (error) {
       console.error('Error creating sales order:', error);

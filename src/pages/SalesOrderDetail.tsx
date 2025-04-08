@@ -15,6 +15,8 @@ import { Separator } from '@/components/ui/separator';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { SalesOrderRequirementsSection } from '@/components/sales-orders/requirements/SalesOrderRequirementsSection';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SalesOrderDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -101,6 +103,9 @@ const SalesOrderDetail = () => {
     }).format(amount);
   };
 
+  // Check if the order is editable (only draft orders can be edited)
+  const isEditable = salesOrder.status === 'draft';
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -135,134 +140,153 @@ const SalesOrderDetail = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-medium">{salesOrder.customer?.customer_name}</p>
-            <p className="text-sm text-gray-500">{salesOrder.customer?.address}</p>
-            {salesOrder.customer?.contact_name && (
-              <div className="mt-4">
-                <p className="font-medium">Contact</p>
-                <p>{salesOrder.customer.contact_name}</p>
-                <p>{salesOrder.customer.contact_email}</p>
-                <p>{salesOrder.customer.contact_phone}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="details" className="mb-6">
+        <TabsList>
+          <TabsTrigger value="details">Order Details</TabsTrigger>
+          <TabsTrigger value="requirements">Customer Requirements</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="details">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Customer Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="font-medium">{salesOrder.customer?.customer_name}</p>
+                <p className="text-sm text-gray-500">{salesOrder.customer?.address}</p>
+                {salesOrder.customer?.contact_name && (
+                  <div className="mt-4">
+                    <p className="font-medium">Contact</p>
+                    <p>{salesOrder.customer.contact_name}</p>
+                    <p>{salesOrder.customer.contact_email}</p>
+                    <p>{salesOrder.customer.contact_phone}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span>Status</span>
-              <span>{getStatusBadge(salesOrder.status)}</span>
-            </div>
-            {salesOrder.payment_terms && (
-              <div className="flex justify-between">
-                <span>Payment Terms</span>
-                <span>{salesOrder.payment_terms}</span>
-              </div>
-            )}
-            {salesOrder.delivery_date && (
-              <div className="flex justify-between">
-                <span>Delivery Date</span>
-                <span>{format(new Date(salesOrder.delivery_date), 'MMM d, yyyy')}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Status</span>
+                  <span>{getStatusBadge(salesOrder.status)}</span>
+                </div>
+                {salesOrder.payment_terms && (
+                  <div className="flex justify-between">
+                    <span>Payment Terms</span>
+                    <span>{salesOrder.payment_terms}</span>
+                  </div>
+                )}
+                {salesOrder.delivery_date && (
+                  <div className="flex justify-between">
+                    <span>Delivery Date</span>
+                    <span>{format(new Date(salesOrder.delivery_date), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Totals</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Tax ({salesOrder.tax_rate}%)</span>
-              <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
-            </div>
-            <Separator className="my-2" />
-            <div className="flex justify-between font-bold">
-              <span>Total</span>
-              <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Line Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-50 text-left">
-                  <th className="p-2">Product</th>
-                  <th className="p-2">Quantity</th>
-                  <th className="p-2">Unit Price</th>
-                  <th className="p-2 text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesOrder.line_items?.map((item) => (
-                  <tr key={item.id} className="border-b border-gray-200">
-                    <td className="p-2">
-                      <div className="font-medium">{item.product?.title}</div>
-                      {item.format && <div className="text-sm text-gray-500">{item.format.format_name}</div>}
-                    </td>
-                    <td className="p-2">{item.quantity}</td>
-                    <td className="p-2">{formatCurrency(item.unit_price)}</td>
-                    <td className="p-2 text-right">{formatCurrency(item.total_price)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="font-semibold">
-                  <td colSpan={3} className="p-2 text-right">Subtotal:</td>
-                  <td className="p-2 text-right">{formatCurrency(salesOrder.total_amount || 0)}</td>
-                </tr>
-                <tr>
-                  <td colSpan={3} className="p-2 text-right">Tax ({salesOrder.tax_rate}%):</td>
-                  <td className="p-2 text-right">{formatCurrency(salesOrder.tax_amount || 0)}</td>
-                </tr>
-                {salesOrder.charges?.map((charge) => (
-                  <tr key={charge.id}>
-                    <td colSpan={3} className="p-2 text-right">{charge.description}:</td>
-                    <td className="p-2 text-right">{formatCurrency(charge.amount)}</td>
-                  </tr>
-                ))}
-                <tr className="font-bold">
-                  <td colSpan={3} className="p-2 text-right">Total:</td>
-                  <td className="p-2 text-right">{formatCurrency(salesOrder.grand_total || 0)}</td>
-                </tr>
-              </tfoot>
-            </table>
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Totals</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tax ({salesOrder.tax_rate}%)</span>
+                  <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
+                </div>
+                <Separator className="my-2" />
+                <div className="flex justify-between font-bold">
+                  <span>Total</span>
+                  <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {salesOrder.notes && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap">{salesOrder.notes}</p>
-          </CardContent>
-        </Card>
-      )}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Line Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 text-left">
+                      <th className="p-2">Product</th>
+                      <th className="p-2">Quantity</th>
+                      <th className="p-2">Unit Price</th>
+                      <th className="p-2 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesOrder.line_items?.map((item) => (
+                      <tr key={item.id} className="border-b border-gray-200">
+                        <td className="p-2">
+                          <div className="font-medium">{item.product?.title}</div>
+                          {item.format && <div className="text-sm text-gray-500">{item.format.format_name}</div>}
+                        </td>
+                        <td className="p-2">{item.quantity}</td>
+                        <td className="p-2">{formatCurrency(item.unit_price)}</td>
+                        <td className="p-2 text-right">{formatCurrency(item.total_price)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="font-semibold">
+                      <td colSpan={3} className="p-2 text-right">Subtotal:</td>
+                      <td className="p-2 text-right">{formatCurrency(salesOrder.total_amount || 0)}</td>
+                    </tr>
+                    <tr>
+                      <td colSpan={3} className="p-2 text-right">Tax ({salesOrder.tax_rate}%):</td>
+                      <td className="p-2 text-right">{formatCurrency(salesOrder.tax_amount || 0)}</td>
+                    </tr>
+                    {salesOrder.charges?.map((charge) => (
+                      <tr key={charge.id}>
+                        <td colSpan={3} className="p-2 text-right">{charge.description}:</td>
+                        <td className="p-2 text-right">{formatCurrency(charge.amount)}</td>
+                      </tr>
+                    ))}
+                    <tr className="font-bold">
+                      <td colSpan={3} className="p-2 text-right">Total:</td>
+                      <td className="p-2 text-right">{formatCurrency(salesOrder.grand_total || 0)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {salesOrder.notes && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="whitespace-pre-wrap">{salesOrder.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="requirements">
+          {salesOrder.customer_id && (
+            <SalesOrderRequirementsSection 
+              salesOrderId={salesOrder.id} 
+              customerId={salesOrder.customer_id} 
+              readOnly={!isEditable}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

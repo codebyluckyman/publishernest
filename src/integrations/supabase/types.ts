@@ -54,6 +54,44 @@ export type Database = {
           },
         ]
       }
+      customer_requirements: {
+        Row: {
+          created_at: string
+          customer_id: string
+          description: string
+          id: string
+          is_mandatory: boolean
+          requirement_type: Database["public"]["Enums"]["requirement_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          description: string
+          id?: string
+          is_mandatory?: boolean
+          requirement_type: Database["public"]["Enums"]["requirement_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          description?: string
+          id?: string
+          is_mandatory?: boolean
+          requirement_type?: Database["public"]["Enums"]["requirement_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_requirements_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -1569,6 +1607,51 @@ export type Database = {
           },
         ]
       }
+      sales_order_requirements: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          requirement_id: string
+          sales_order_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          requirement_id: string
+          sales_order_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          requirement_id?: string
+          sales_order_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_order_requirements_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "customer_requirements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_order_requirements_sales_order_id_fkey"
+            columns: ["sales_order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_orders: {
         Row: {
           advance_payment_status: string | null
@@ -2606,7 +2689,14 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      requirement_type:
+        | "packaging"
+        | "shipping"
+        | "quality"
+        | "documentation"
+        | "approval"
+        | "payment"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2721,6 +2811,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      requirement_type: [
+        "packaging",
+        "shipping",
+        "quality",
+        "documentation",
+        "approval",
+        "payment",
+        "other",
+      ],
+    },
   },
 } as const

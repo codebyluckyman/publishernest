@@ -32,6 +32,8 @@ import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
 import SalesOrders from "./pages/SalesOrders";
 import SalesOrderDetail from "./pages/SalesOrderDetail";
 import CreateSalesOrder from "./pages/CreateSalesOrder";
+import Customers from "./pages/Customers";
+import CustomerDetail from "./pages/CustomerDetail";
 
 // Create a React Query client
 const queryClient = new QueryClient({
@@ -81,6 +83,8 @@ function App() {
                   <Route path="sales-orders" element={<SalesOrders />} />
                   <Route path="create-sales-order" element={<CreateSalesOrder />} />
                   <Route path="sales-orders/:id" element={<SalesOrderDetail />} />
+                  <Route path="customers" element={<Customers />} />
+                  <Route path="customers/:id" element={<CustomerDetail />} />
                 </Route>
 
                 <Route path="/404" element={<NotFound />} />
