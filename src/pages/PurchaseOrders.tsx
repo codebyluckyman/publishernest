@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Plus, Eye, Trash2 } from "lucide-react";
+import { Plus, Eye, Trash2, Filter } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useNavigate } from "react-router-dom";
@@ -16,12 +16,20 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
+import { useFilters } from "@/hooks/useFilters";
 
 // Constants for filter values
-export const FILTER_VALUES = {
+const FILTER_VALUES = {
   ALL_PRINT_RUNS: "ALL_PRINT_RUNS",
   ALL_SUPPLIERS: "ALL_SUPPLIERS",
   ALL_STATUSES: "ALL_STATUSES"
+};
+
+// Filter config
+const filterConfig = {
+  printRunId: { all: FILTER_VALUES.ALL_PRINT_RUNS, label: "Print Run" },
+  supplierId: { all: FILTER_VALUES.ALL_SUPPLIERS, label: "Supplier" },
+  status: { all: FILTER_VALUES.ALL_STATUSES, label: "Status" }
 };
 
 const PurchaseOrderStatusBadge = ({ status }: { status: PurchaseOrderStatus }) => {
@@ -51,9 +59,19 @@ const PurchaseOrderStatusBadge = ({ status }: { status: PurchaseOrderStatus }) =
 const PurchaseOrders = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [printRunFilter, setPrintRunFilter] = useState<string>(FILTER_VALUES.ALL_PRINT_RUNS);
-  const [supplierFilter, setSupplierFilter] = useState<string>(FILTER_VALUES.ALL_SUPPLIERS);
-  const [statusFilter, setStatusFilter] = useState<string>(FILTER_VALUES.ALL_STATUSES);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Initialize filters
+  const { 
+    filters, 
+    handleFilterChange, 
+    resetFilters, 
+    areFiltersActive 
+  } = useFilters({
+    printRunId: FILTER_VALUES.ALL_PRINT_RUNS,
+    supplierId: FILTER_VALUES.ALL_SUPPLIERS,
+    status: FILTER_VALUES.ALL_STATUSES
+  }, filterConfig);
 
   const { purchaseOrders, isLoading, isError, error, deletePurchaseOrder } = usePurchaseOrders();
   const { printRuns } = usePrintRuns();
@@ -64,9 +82,9 @@ const PurchaseOrders = () => {
       po.po_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (po.notes && po.notes.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesPrintRun = printRunFilter === FILTER_VALUES.ALL_PRINT_RUNS || po.print_run_id === printRunFilter;
-    const matchesSupplier = supplierFilter === FILTER_VALUES.ALL_SUPPLIERS || po.supplier_id === supplierFilter;
-    const matchesStatus = statusFilter === FILTER_VALUES.ALL_STATUSES || po.status === statusFilter;
+    const matchesPrintRun = filters.printRunId === FILTER_VALUES.ALL_PRINT_RUNS || po.print_run_id === filters.printRunId;
+    const matchesSupplier = filters.supplierId === FILTER_VALUES.ALL_SUPPLIERS || po.supplier_id === filters.supplierId;
+    const matchesStatus = filters.status === FILTER_VALUES.ALL_STATUSES || po.status === filters.status;
     
     return matchesSearch && matchesPrintRun && matchesSupplier && matchesStatus;
   });
@@ -122,6 +140,10 @@ const PurchaseOrders = () => {
     { value: "cancelled", label: "Cancelled" }
   ];
 
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -133,42 +155,76 @@ const PurchaseOrders = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Purchase Orders Management</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Purchase Orders Management</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleFilters}
+              className="flex items-center gap-1"
+            >
+              <Filter className="h-4 w-4" />
+              {showFilters ? "Hide Filters" : "Show Filters"}
+              {areFiltersActive() && <Badge className="ml-2 bg-primary">Active</Badge>}
+            </Button>
+          </div>
+
+          {showFilters && (
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="w-full">
+                  <SelectFilter
+                    label="Print Run"
+                    value={filters.printRunId}
+                    onValueChange={(value) => handleFilterChange("printRunId", value)}
+                    options={printRunOptions}
+                    placeholder="Select Print Run"
+                  />
+                </div>
+                <div className="w-full">
+                  <SelectFilter
+                    label="Supplier"
+                    value={filters.supplierId}
+                    onValueChange={(value) => handleFilterChange("supplierId", value)}
+                    options={supplierOptions}
+                    placeholder="Select Supplier"
+                  />
+                </div>
+                <div className="w-full">
+                  <SelectFilter
+                    label="Status"
+                    value={filters.status}
+                    onValueChange={(value) => handleFilterChange("status", value)}
+                    options={statusOptions}
+                    placeholder="Select Status"
+                  />
+                </div>
+              </div>
+
+              {areFiltersActive() && (
+                <div className="flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={resetFilters}
+                    size="sm" 
+                    className="gap-1"
+                  >
+                    <Filter className="h-4 w-4" />
+                    Reset Filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="w-full md:w-1/3">
-              <Input
-                placeholder="Search purchase orders..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <div className="w-full md:w-1/6">
-              <SelectFilter
-                value={printRunFilter}
-                onValueChange={setPrintRunFilter}
-                options={printRunOptions}
-                placeholder="Print Run"
-              />
-            </div>
-            <div className="w-full md:w-1/6">
-              <SelectFilter
-                value={supplierFilter}
-                onValueChange={setSupplierFilter}
-                options={supplierOptions}
-                placeholder="Supplier"
-              />
-            </div>
-            <div className="w-full md:w-1/6">
-              <SelectFilter
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-                options={statusOptions}
-                placeholder="Status"
-              />
-            </div>
+          <div className="mb-6">
+            <Input
+              placeholder="Search purchase orders..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-md"
+            />
           </div>
 
           {isError && (
