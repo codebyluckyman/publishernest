@@ -74,8 +74,7 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
         price_breaks: (quote.price_breaks || []).filter((pb: any) => pb.product_id === productId)
       }));
       
-      // Using type assertion instead of complex generics
-      return filteredQuotes as unknown as SupplierQuoteWithDetails[];
+      return filteredQuotes as SupplierQuoteWithDetails[];
     },
     enabled: !!currentOrganization && !!productId,
   });
