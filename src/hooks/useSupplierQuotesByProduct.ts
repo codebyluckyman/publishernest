@@ -4,17 +4,26 @@ import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { useOrganization } from './useOrganization';
 import { SupplierQuote } from '@/types/supplierQuote';
 
-interface SupplierQuoteWithDetails extends SupplierQuote {
+// Define a simplified price break interface specific to this component
+interface SimplePriceBreak {
+  id: string;
+  product_id: string;
+  quantity: number;
+  unit_cost: number;
+}
+
+// Create a new interface instead of extending SupplierQuote
+interface SupplierQuoteWithDetails {
+  id: string;
+  supplier_id: string;
+  reference: string | null;
+  status: string;
+  currency: string;
   supplier: {
     id: string;
     supplier_name: string;
   };
-  price_breaks: {
-    id: string;
-    product_id: string;
-    quantity: number;
-    unit_cost: number;
-  }[];
+  price_breaks: SimplePriceBreak[];
 }
 
 export function useSupplierQuotesByProduct(productId?: string, formatId?: string) {
@@ -41,7 +50,11 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
       const { data: quotes, error: quotesError } = await supabaseCustom
         .from('supplier_quotes')
         .select(`
-          *,
+          id,
+          supplier_id,
+          reference,
+          status,
+          currency,
           supplier:supplier_id (id, supplier_name),
           price_breaks:supplier_quote_price_breaks!inner(
             id, product_id, quantity, unit_cost

@@ -35,7 +35,14 @@ export function useProductsWithFormats() {
         
       if (error) throw error;
       
-      return data as ProductWithFormat[];
+      // Add missing default_price and default_currency properties to make it compatible with ProductWithFormat type
+      const productsWithDefaults = data.map(product => ({
+        ...product,
+        default_price: product.list_price,
+        default_currency: product.currency_code || 'USD',
+      }));
+      
+      return productsWithDefaults as ProductWithFormat[];
     },
     enabled: !!currentOrganization,
   });
