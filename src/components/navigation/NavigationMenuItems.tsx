@@ -1,5 +1,5 @@
 
-import { Home, LayoutGrid, FileText, Truck, FileCheck, Settings, Users, ShoppingCart } from "lucide-react";
+import { Home, LayoutGrid, FileText, Truck, ShoppingCart, Settings, Users, FileCheck, Quote, Factory } from "lucide-react";
 
 export interface MenuItem {
   name: string;
@@ -36,6 +36,50 @@ export const NavigationMenuItems = [
     href: "/products",
     path: "/products",
     icon: FileText,
+  },
+  {
+    name: "Quotes",
+    label: "Quotes",
+    title: "Quotes",
+    href: "#",
+    path: "#",
+    icon: Quote,
+    submenu: [
+      {
+        name: "Quote Requests",
+        label: "Quote Requests",
+        title: "Quote Requests",
+        href: "/quote-requests",
+        path: "/quote-requests",
+        icon: FileText,
+      },
+      {
+        name: "Supplier Quotes",
+        label: "Supplier Quotes",
+        title: "Supplier Quotes",
+        href: "/quotes",
+        path: "/quotes",
+        icon: Quote,
+      }
+    ]
+  },
+  {
+    name: "Production",
+    label: "Production",
+    title: "Production",
+    href: "#",
+    path: "#",
+    icon: Factory,
+    submenu: [
+      {
+        name: "Print Runs",
+        label: "Print Runs",
+        title: "Print Runs",
+        href: "/print-runs",
+        path: "/print-runs",
+        icon: FileCheck,
+      }
+    ]
   },
   {
     name: "Purchase Orders",
