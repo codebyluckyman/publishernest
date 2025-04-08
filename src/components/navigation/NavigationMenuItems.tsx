@@ -1,5 +1,5 @@
 
-import { Home, LayoutGrid, FileText, Truck, ShoppingCart, Settings, Users, FileCheck, Quote, Factory } from "lucide-react";
+import { Home, LayoutGrid, FileText, Truck, ShoppingCart, Settings, Users, FileCheck, Quote, Factory, ShoppingBag } from "lucide-react";
 
 export interface MenuItem {
   name: string;
@@ -78,24 +78,42 @@ export const NavigationMenuItems = [
         href: "/print-runs",
         path: "/print-runs",
         icon: FileCheck,
+      },
+      {
+        name: "Purchase Orders",
+        label: "Purchase Orders",
+        title: "Purchase Orders",
+        href: "/purchase-orders",
+        path: "/purchase-orders",
+        icon: Truck,
       }
     ]
   },
   {
-    name: "Purchase Orders",
-    label: "Purchase Orders",
-    title: "Purchase Orders",
-    href: "/purchase-orders",
-    path: "/purchase-orders",
-    icon: Truck,
-  },
-  {
-    name: "Sales Orders",
-    label: "Sales Orders",
-    title: "Sales Orders",
-    href: "/sales-orders",
-    path: "/sales-orders",
-    icon: ShoppingCart,
+    name: "Sales",
+    label: "Sales",
+    title: "Sales",
+    href: "#",
+    path: "#",
+    icon: ShoppingBag,
+    submenu: [
+      {
+        name: "Customers",
+        label: "Customers",
+        title: "Customers",
+        href: "/customers",
+        path: "/customers",
+        icon: Users,
+      },
+      {
+        name: "Sales Orders",
+        label: "Sales Orders",
+        title: "Sales Orders",
+        href: "/sales-orders",
+        path: "/sales-orders",
+        icon: ShoppingCart,
+      }
+    ]
   },
   {
     name: "Settings",
