@@ -12,7 +12,7 @@ interface SupplierQuoteDetailsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onApprove?: (quote: SupplierQuote) => void;
-  onReject?: (quote: SupplierQuote) => void;
+  onReject?: (quote: SupplierQuote, reason?: string) => void;
 }
 
 export function SupplierQuoteDetailsSheet({
@@ -28,6 +28,18 @@ export function SupplierQuoteDetailsSheet({
     if (quote) {
       navigate(`/quotes/${quote.id}/details`);
       onOpenChange(false);
+    }
+  };
+
+  const handleApprove = () => {
+    if (quote && onApprove) {
+      onApprove(quote);
+    }
+  };
+
+  const handleReject = () => {
+    if (quote && onReject) {
+      onReject(quote);
     }
   };
 
@@ -52,8 +64,8 @@ export function SupplierQuoteDetailsSheet({
             <SupplierQuoteDetails 
               quote={quote} 
               onClose={() => onOpenChange(false)}
-              onApprove={onApprove ? () => onApprove(quote) : undefined}
-              onReject={onReject ? () => onReject(quote) : undefined}
+              onApprove={onApprove ? handleApprove : undefined}
+              onReject={onReject ? handleReject : undefined}
             />
           </div>
         )}

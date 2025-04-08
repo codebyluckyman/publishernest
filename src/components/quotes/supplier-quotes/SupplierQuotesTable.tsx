@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import {
   ColumnDef,
@@ -38,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuoteDetailsSheet } from "./details/SupplierQuoteDetailsSheet";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SupplierQuotesTableProps {
   statusFilter?: SupplierQuoteStatus[];
@@ -56,6 +58,10 @@ export function SupplierQuotesTable({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quoteForDeletion, setQuoteForDeletion] = useState<SupplierQuote | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [quoteForRejection, setQuoteForRejection] = useState<SupplierQuote | null>(null);
+  
   const { currentOrganization } = useOrganization();
   const { useSupplierQuotesList, useSubmitSupplierQuote, useDeleteSupplierQuote, useApproveSupplierQuote, useRejectSupplierQuote } = useSupplierQuotes();
   const submitMutation = useSubmitSupplierQuote();
@@ -119,15 +125,27 @@ export function SupplierQuotesTable({
   };
 
   const handleReject = (quote: SupplierQuote) => {
-    rejectMutation.mutate({
-      id: quote.id,
-      reason: "Quote rejected by administrator"
-    }, {
-      onSuccess: () => {
-        toast.success('Quote rejected successfully');
-        setDetailsSheetOpen(false);
-      }
-    });
+    setQuoteForRejection(quote);
+    setRejectDialogOpen(true);
+  };
+
+  const confirmReject = () => {
+    if (quoteForRejection && rejectionReason.trim()) {
+      rejectMutation.mutate({
+        id: quoteForRejection.id,
+        reason: rejectionReason
+      }, {
+        onSuccess: () => {
+          toast.success('Quote rejected successfully');
+          setRejectDialogOpen(false);
+          setDetailsSheetOpen(false);
+          setRejectionReason('');
+          setQuoteForRejection(null);
+        }
+      });
+    } else {
+      toast.error('Please provide a reason for rejection');
+    }
   };
 
   const confirmDelete = () => {
@@ -378,8 +396,8 @@ export function SupplierQuotesTable({
         quote={selectedQuote}
         open={detailsSheetOpen}
         onOpenChange={setDetailsSheetOpen}
-        onApprove={selectedQuote && selectedQuote.status === 'submitted' ? () => handleApprove(selectedQuote) : undefined}
-        onReject={selectedQuote && selectedQuote.status === 'submitted' ? () => handleReject(selectedQuote) : undefined}
+        onApprove={selectedQuote && selectedQuote.status === 'submitted' ? handleApprove : undefined}
+        onReject={selectedQuote && selectedQuote.status === 'submitted' ? handleReject : undefined}
       />
 
       {showEditDialog && selectedQuote && selectedQuote.quote_request && (
@@ -407,6 +425,36 @@ export function SupplierQuotesTable({
               className="bg-red-600 text-white hover:bg-red-700"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Quote</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please provide a reason for rejecting this quote:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Rejection reason"
+            className="my-4"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setRejectionReason('');
+              setRejectDialogOpen(false);
+            }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmReject}
+              className="bg-red-600 text-white hover:bg-red-700"
+              disabled={!rejectionReason.trim()}
+            >
+              Reject
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

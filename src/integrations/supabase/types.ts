@@ -1646,6 +1646,8 @@ export type Database = {
       }
       supplier_quotes: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           currency: string
           id: string
@@ -1666,6 +1668,9 @@ export type Database = {
           quote_request_id: string
           reference: string | null
           reference_id: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           remarks: string | null
           status: string
           submitted_at: string | null
@@ -1677,6 +1682,8 @@ export type Database = {
           valid_to: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           currency?: string
           id?: string
@@ -1697,6 +1704,9 @@ export type Database = {
           quote_request_id: string
           reference?: string | null
           reference_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           remarks?: string | null
           status?: string
           submitted_at?: string | null
@@ -1708,6 +1718,8 @@ export type Database = {
           valid_to?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           currency?: string
           id?: string
@@ -1728,6 +1740,9 @@ export type Database = {
           quote_request_id?: string
           reference?: string | null
           reference_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           remarks?: string | null
           status?: string
           submitted_at?: string | null
