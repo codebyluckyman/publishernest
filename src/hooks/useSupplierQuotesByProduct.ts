@@ -2,9 +2,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { useOrganization } from './useOrganization';
-import { SupplierQuote } from '@/types/supplierQuote';
 
-// Define a simplified price break interface specific to this component
+// Define simplified interfaces that don't extend from complex types
 interface SimplePriceBreak {
   id: string;
   product_id: string;
@@ -12,7 +11,6 @@ interface SimplePriceBreak {
   unit_cost: number;
 }
 
-// Create a new interface instead of extending SupplierQuote
 interface SupplierQuoteWithDetails {
   id: string;
   supplier_id: string;

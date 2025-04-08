@@ -5,8 +5,18 @@ import { useOrganization } from './useOrganization';
 import { Product } from '@/types/product';
 import { Format } from '@/types/format';
 
+// Define a simplified format interface for the component needs
+interface FormatLight {
+  id: string;
+  format_name: string;
+  tps_height_mm: number | null;
+  tps_width_mm: number | null;
+  tps_depth_mm: number | null;
+  extent: string | null;
+}
+
 export interface ProductWithFormat extends Product {
-  format?: Format | null;
+  format?: FormatLight | null;
 }
 
 export function useProductsWithFormats() {
@@ -42,7 +52,7 @@ export function useProductsWithFormats() {
         default_currency: product.currency_code || 'USD',
       }));
       
-      return productsWithDefaults as ProductWithFormat[];
+      return productsWithDefaults as unknown as ProductWithFormat[];
     },
     enabled: !!currentOrganization,
   });
