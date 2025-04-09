@@ -18,6 +18,7 @@ import { SalesOrderRequirementsSection } from '@/components/sales-orders/require
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DeliveryLocationTab } from '@/components/sales-orders/DeliveryLocationTab';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getSymbolForCurrency } from '@/api/organizations/currencySymbols';
 
 const SalesOrderDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -192,6 +193,13 @@ const SalesOrderDetail = () => {
                 <div className="flex justify-between">
                   <span>Status</span>
                   <span>{getStatusBadge(salesOrder.status)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Currency</span>
+                  <span>
+                    {salesOrder.currency} 
+                    {` (${getSymbolForCurrency(salesOrder.currency)})`}
+                  </span>
                 </div>
                 {salesOrder.payment_terms && (
                   <div className="flex justify-between">
