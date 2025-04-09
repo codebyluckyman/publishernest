@@ -1,4 +1,3 @@
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
@@ -41,7 +40,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Index />
+        element: <ProtectedRoute><Index /></ProtectedRoute>
       },
       {
         path: "formats",
@@ -100,10 +99,6 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><Profile /></ProtectedRoute>
       },
       {
-        path: "auth",
-        element: <Auth />
-      },
-      {
         path: "sales-presentations",
         element: <ProtectedRoute><SalesPresentations /></ProtectedRoute>
       },
@@ -156,6 +151,10 @@ const router = createBrowserRouter([
   {
     path: "/shared/presentation/:accessCode",
     element: <SharedPresentationView />
+  },
+  {
+    path: "/auth",
+    element: <Auth />
   }
 ]);
 
