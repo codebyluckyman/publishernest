@@ -19,7 +19,10 @@ export function PurchaseOrderCostSelector({
   onChange,
   disabled = false
 }: PurchaseOrderCostSelectorProps) {
-  const { data: supplierQuotes, isLoading } = useSupplierQuotesByProduct(productId, formatId);
+  const { data: supplierQuotes = [], isLoading } = useSupplierQuotesByProduct({
+    productId,
+    formatId
+  });
   
   // Prepare options from supplier quotes with null check
   const options = React.useMemo(() => {
@@ -31,21 +34,25 @@ export function PurchaseOrderCostSelector({
 
     supplierQuotes.forEach(quote => {
       if (quote?.price_breaks && quote.price_breaks.length > 0) {
-        quote.price_breaks.forEach(priceBreak => {
-          allOptions.push({
-            id: `${quote.id}:${priceBreak.id}`,
-            label: `${quote.supplier?.supplier_name || 'Unknown Supplier'} - ${priceBreak.quantity} units at ${new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: quote.currency || 'USD'
-            }).format(priceBreak.unit_cost)}`,
-            cost: priceBreak.unit_cost
+        quote.price_breaks
+          .filter(priceBreak => priceBreak.product_id === productId)
+          .forEach(priceBreak => {
+            if (priceBreak.unit_cost) {
+              allOptions.push({
+                id: `${quote.id}:${priceBreak.id}`,
+                label: `${quote.supplier?.supplier_name || 'Unknown Supplier'} - ${priceBreak.quantity} units at ${new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: quote.currency || 'USD'
+                }).format(priceBreak.unit_cost)}`,
+                cost: priceBreak.unit_cost
+              });
+            }
           });
-        });
       }
     });
     
     return allOptions;
-  }, [supplierQuotes]);
+  }, [supplierQuotes, productId]);
 
   const handleSelectChange = (selectedId: string) => {
     const option = options.find(opt => opt.id === selectedId);

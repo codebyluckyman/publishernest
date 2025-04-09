@@ -23,7 +23,11 @@ export function SupplierQuoteSelector({
   onQuoteSelect,
   disabled = false
 }: SupplierQuoteSelectorProps) {
-  const { data: supplierQuotes, isLoading } = useSupplierQuotesByProduct(productId, formatId);
+  const { data: supplierQuotes = [], isLoading } = useSupplierQuotesByProduct({
+    productId,
+    formatId
+  });
+  
   const [selectedQuoteId, setSelectedQuoteId] = useState<string>('');
 
   // Reset selection when product changes
@@ -37,15 +41,21 @@ export function SupplierQuoteSelector({
     const selectedQuote = supplierQuotes.find(quote => quote.id === quoteId);
     if (selectedQuote) {
       // Find the best price break (lowest unit cost)
-      const bestPriceBreak = selectedQuote.price_breaks.reduce(
-        (best, current) => !best || current.unit_cost < best.unit_cost ? current : best,
-        null as any
-      );
+      let bestUnitCost = 0;
+      if (selectedQuote.price_breaks && selectedQuote.price_breaks.length > 0) {
+        bestUnitCost = selectedQuote.price_breaks.reduce(
+          (lowest, current) => {
+            const unitCost = current.unit_cost || 0;
+            return !lowest || unitCost < lowest ? unitCost : lowest;
+          },
+          0
+        );
+      }
       
       onQuoteSelect({
         supplierId: selectedQuote.supplier_id,
         supplierQuoteId: selectedQuote.id,
-        unitCost: bestPriceBreak?.unit_cost || 0
+        unitCost: bestUnitCost
       });
     }
   };
@@ -58,7 +68,7 @@ export function SupplierQuoteSelector({
     return <p className="text-sm text-muted-foreground">Select a product first</p>;
   }
 
-  if (supplierQuotes.length === 0) {
+  if (!supplierQuotes || supplierQuotes.length === 0) {
     return <p className="text-sm text-muted-foreground">No supplier quotes found for this product</p>;
   }
 
@@ -78,7 +88,7 @@ export function SupplierQuoteSelector({
             <SelectContent>
               {supplierQuotes.map((quote) => (
                 <SelectItem key={quote.id} value={quote.id}>
-                  {quote.supplier.supplier_name} - {quote.reference || quote.id.substring(0, 8)}
+                  {quote.supplier?.supplier_name || 'Unknown'} - {quote.reference || quote.id.substring(0, 8)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -93,11 +103,12 @@ export function SupplierQuoteSelector({
             <div className="grid grid-cols-2 gap-2">
               {supplierQuotes
                 .find(q => q.id === selectedQuoteId)
-                ?.price_breaks.map((pb, i) => (
+                ?.price_breaks?.filter(pb => pb.product_id === productId)
+                .map((pb, i) => (
                   <div key={i} className="flex justify-between">
                     <span>Qty {pb.quantity}: </span>
                     <span className="font-medium">
-                      {pb.unit_cost.toFixed(2)} / unit
+                      {pb.unit_cost ? pb.unit_cost.toFixed(2) : "N/A"} / unit
                     </span>
                   </div>
                 ))}

@@ -19,13 +19,14 @@ const CreateSalesOrder = () => {
       setIsSubmitting(true);
       setError(null);
       
-      const salesOrderId = await createSalesOrder({
+      const result = await createSalesOrder({
         ...formData,
         status: 'draft',
       });
       
-      if (salesOrderId) {
-        navigate(`/sales-orders/${salesOrderId}`);
+      // Check if we got back a valid ID
+      if (result && typeof result === 'string') {
+        navigate(`/sales-orders/${result}`);
       } else {
         throw new Error('Failed to create sales order');
       }
@@ -69,7 +70,6 @@ const CreateSalesOrder = () => {
         <CardContent>
           <SalesOrderForm 
             onSubmit={handleSubmit} 
-            onCancel={handleCancel} 
             isSubmitting={isSubmitting}
           />
         </CardContent>
