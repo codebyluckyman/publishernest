@@ -19,36 +19,39 @@ const PurchaseOrders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   
+  // Filter the purchase orders by search query and status
+  const filteredPurchaseOrders = purchaseOrders.filter(po => {
+    const matchesSearch = !searchQuery || 
+      po.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (po.supplier?.supplier_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus = statusFilter === "all" || 
+      po.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+  
   // Set up pagination
   const {
     currentPage,
     pageSize,
-    setPageSize,
     totalPages,
-    paginatedData: paginatedPurchaseOrders,
+    totalItems,
+    currentData: paginatedPurchaseOrders,
     goToPage,
     nextPage,
-    prevPage
-  } = usePagination(
-    // Filter the purchase orders by search query and status
-    purchaseOrders.filter(po => {
-      const matchesSearch = !searchQuery || 
-        po.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (po.supplier?.supplier_name || "").toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus = statusFilter === "all" || 
-        po.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    }),
-    10
-  );
+    previousPage,
+    changePageSize
+  } = usePagination({
+    data: filteredPurchaseOrders,
+    initialPageSize: 10
+  });
   
   const handleCreatePurchaseOrder = () => {
     toast.info("The Purchase Order creation feature is currently under development.");
     
     // Still navigate to the placeholder page
-    navigate("/create-purchase-order");
+    navigate("/purchase-orders/create");
   };
 
   const statusOptions: FilterOption[] = [
@@ -192,11 +195,11 @@ const PurchaseOrders = () => {
         currentPage={currentPage}
         totalPages={totalPages}
         pageSize={pageSize}
-        totalItems={purchaseOrders.length}
+        totalItems={totalItems}
         onPageChange={goToPage}
-        onPreviousPage={prevPage}
+        onPreviousPage={previousPage}
         onNextPage={nextPage}
-        onPageSizeChange={setPageSize}
+        onPageSizeChange={changePageSize}
       />
     </div>
   );

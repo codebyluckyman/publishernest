@@ -76,7 +76,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><PurchaseOrderDetail /></ProtectedRoute>
       },
       {
-        path: "create-purchase-order",
+        path: "purchase-orders/create",
         element: <ProtectedRoute><CreatePurchaseOrder /></ProtectedRoute>
       },
       {
