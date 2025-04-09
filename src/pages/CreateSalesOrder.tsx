@@ -24,8 +24,8 @@ const CreateSalesOrder = () => {
         status: 'draft',
       });
       
-      // Check if we got back a valid result with an ID
-      if (result && result.id) {
+      // Navigate to the created sales order if successful
+      if (result && 'id' in result) {
         navigate(`/sales-orders/${result.id}`);
       } else {
         throw new Error('Failed to create sales order');
