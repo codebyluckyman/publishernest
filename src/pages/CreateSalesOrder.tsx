@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { SalesOrderForm } from "@/components/sales-orders/SalesOrderForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const CreateSalesOrder = () => {
   const navigate = useNavigate();
   const { createSalesOrder } = useSalesOrders();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

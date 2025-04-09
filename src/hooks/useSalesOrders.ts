@@ -10,9 +10,11 @@ import {
   updateSalesOrderStatus
 } from '@/api/salesOrders';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 export function useSalesOrders() {
   const { currentOrganization } = useOrganization();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const salesOrdersQuery = useQuery({
@@ -31,7 +33,8 @@ export function useSalesOrders() {
     mutationFn: (orderData: any) => {
       return createSalesOrder({
         ...orderData,
-        organizationId: currentOrganization!.id
+        organizationId: currentOrganization!.id,
+        createdBy: user?.id
       });
     },
     onSuccess: () => {
