@@ -62,6 +62,18 @@ export const NavigationMenuItems: MenuItem[] = [
     ]
   },
   {
+    label: 'Publishing',
+    path: '#',
+    icon: Book,
+    submenu: [
+      {
+        label: 'Publishing Program',
+        path: '/publishing-program',
+        icon: ClipboardList,
+      }
+    ]
+  },
+  {
     label: 'Quotes',
     path: '#',
     icon: FileSpreadsheet,

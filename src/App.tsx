@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Formats from "./pages/Formats";
 import Products from "./pages/Products";
+import PublishingProgram from "./pages/PublishingProgram";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
 import CreatePurchaseOrder from "./pages/CreatePurchaseOrder";
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
       {
         path: "products",
         element: <ProtectedRoute><Products /></ProtectedRoute>
+      },
+      {
+        path: "publishing-program",
+        element: <ProtectedRoute><PublishingProgram /></ProtectedRoute>
       },
       {
         path: "quote-requests",
