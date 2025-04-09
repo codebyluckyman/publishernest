@@ -29,40 +29,35 @@ export function useSupplierQuotesByProduct({
         status: 'approved', // Only fetch approved quotes
       });
       
-      // Filter quotes that include the specified product and format
+      // Enhanced filtering logic to show quotes matching product ID, format ID, or both
       return quotes.filter(quote => {
-        // Check if any format matches the product and format criteria
+        // Skip quotes without formats
         if (!quote.formats || quote.formats.length === 0) {
           return false;
         }
         
-        return quote.formats.some(format => {
-          // If we're filtering by productId, check if format has any associated products with the matching ID
-          // Note: Since format.products might not exist directly, we need to check differently
-          if (productId) {
-            // Use a more generic approach to find matching products
-            // Look through price breaks to find matching product IDs
-            const hasMatchingProduct = quote.price_breaks?.some(pb => 
-              pb.product_id === productId
-            ) || false;
-            
-            // If we're also filtering by formatId, both must match
-            if (formatId) {
-              return hasMatchingProduct && format.format_id === formatId;
-            }
-            
-            // If only filtering by productId
-            return hasMatchingProduct;
-          } 
+        // If both product and format IDs are provided, look for quotes that match either or both
+        if (productId && formatId) {
+          // Check for quotes that match the format ID
+          const hasMatchingFormat = quote.formats.some(format => format.format_id === formatId);
           
-          // If we're only filtering by formatId
-          if (formatId) {
-            return format.format_id === formatId;
-          }
+          // Check for quotes that match the product ID in any price break
+          const hasMatchingProduct = quote.price_breaks?.some(pb => pb.product_id === productId);
           
-          // No filters applied
-          return false;
-        });
+          // Return quotes that match either product or format
+          return hasMatchingFormat || hasMatchingProduct;
+        } 
+        // If only product ID is provided
+        else if (productId) {
+          return quote.price_breaks?.some(pb => pb.product_id === productId) || false;
+        } 
+        // If only format ID is provided
+        else if (formatId) {
+          return quote.formats.some(format => format.format_id === formatId);
+        }
+        
+        // No filters applied
+        return false;
       });
     },
     enabled: queryEnabled,
