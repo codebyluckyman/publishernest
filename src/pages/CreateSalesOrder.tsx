@@ -25,7 +25,7 @@ const CreateSalesOrder = () => {
       });
       
       // Navigate to the created sales order if successful
-      if (result && result.id) {
+      if (result && typeof result === 'object' && 'id' in result) {
         navigate(`/sales-orders/${result.id}`);
       } else {
         throw new Error('Failed to create sales order');

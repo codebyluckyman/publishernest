@@ -16,7 +16,8 @@ import {
   Calculator,
   FileSpreadsheet,
   FileCog,
-  Store
+  Store,
+  BookOpen
 } from 'lucide-react';
 
 export interface MenuItem {
@@ -42,6 +43,23 @@ export const NavigationMenuItems: MenuItem[] = [
     label: 'Dashboard',
     path: '/',
     icon: LayoutDashboard,
+  },
+  {
+    label: 'Titles',
+    path: '#',
+    icon: BookOpen,
+    submenu: [
+      {
+        label: 'Products',
+        path: '/products',
+        icon: Book,
+      },
+      {
+        label: 'Formats',
+        path: '/formats',
+        icon: ClipboardList,
+      }
+    ]
   },
   {
     label: 'Quotes',
@@ -96,23 +114,13 @@ export const NavigationMenuItems: MenuItem[] = [
         label: 'Sales Orders',
         path: '/sales-orders',
         icon: CreditCard,
+      },
+      {
+        label: 'Sales Presentations',
+        path: '/sales-presentations',
+        icon: Presentation,
       }
     ]
-  },
-  {
-    label: 'Products',
-    path: '/products',
-    icon: Book,
-  },
-  {
-    label: 'Formats',
-    path: '/formats',
-    icon: ClipboardList,
-  },
-  {
-    label: 'Sales Presentations',
-    path: '/sales-presentations',
-    icon: Presentation,
   },
   {
     label: 'Organization',
