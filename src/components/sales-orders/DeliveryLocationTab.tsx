@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, UserCheck, Mail, Phone, FileText } from 'lucide-react';
 
 interface DeliveryLocationTabProps {
-  deliveryLocation?: CustomerDeliveryLocation;
+  deliveryLocation?: Partial<CustomerDeliveryLocation>;
   isLoading?: boolean;
 }
 

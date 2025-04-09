@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
@@ -120,7 +119,6 @@ const SalesOrderDetail = () => {
     }).format(amount);
   };
 
-  // Check if the order is editable (only draft orders can be edited)
   const isEditable = salesOrder.status === 'draft';
 
   return (
@@ -232,7 +230,6 @@ const SalesOrderDetail = () => {
             </Card>
           </div>
 
-          {/* Order Creation Information */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Order Information</CardTitle>
@@ -353,7 +350,10 @@ const SalesOrderDetail = () => {
         </TabsContent>
 
         <TabsContent value="delivery">
-          <DeliveryLocationTab deliveryLocation={salesOrder.delivery_location} isLoading={isLoading} />
+          <DeliveryLocationTab 
+            deliveryLocation={salesOrder.delivery_location} 
+            isLoading={isLoading} 
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -30,5 +30,6 @@ export async function fetchSalesOrderById(id: string): Promise<SalesOrder> {
     throw new Error(`Error fetching sales order: ${orderError.message}`);
   }
 
-  return salesOrder as SalesOrder;
+  // Ensure the response matches the expected SalesOrder type
+  return salesOrder as unknown as SalesOrder;
 }
