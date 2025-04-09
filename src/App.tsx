@@ -20,6 +20,8 @@ import CreateSalesPresentation from "./pages/CreateSalesPresentation";
 import SalesPresentationDetail from "./pages/SalesPresentationDetail";
 import EditSalesPresentation from "./pages/EditSalesPresentation";
 import SharedPresentationView from "./pages/SharedPresentationView";
+import QuoteRequests from "./pages/QuoteRequests"; 
+import Quotes from "./pages/Quotes";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +40,14 @@ const router = createBrowserRouter([
       {
         path: "products",
         element: <ProtectedRoute><Products /></ProtectedRoute>
+      },
+      {
+        path: "quote-requests",
+        element: <ProtectedRoute><QuoteRequests /></ProtectedRoute>
+      },
+      {
+        path: "quotes",
+        element: <ProtectedRoute><Quotes /></ProtectedRoute>
       },
       {
         path: "purchase-orders",
