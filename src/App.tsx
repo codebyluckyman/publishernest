@@ -22,6 +22,7 @@ import EditSalesPresentation from "./pages/EditSalesPresentation";
 import SharedPresentationView from "./pages/SharedPresentationView";
 import QuoteRequests from "./pages/QuoteRequests"; 
 import Quotes from "./pages/Quotes";
+import QuoteComparison from "./pages/QuoteComparison";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
       {
         path: "quotes",
         element: <ProtectedRoute><Quotes /></ProtectedRoute>
+      },
+      {
+        path: "quotes/compare",
+        element: <ProtectedRoute><QuoteComparison /></ProtectedRoute>
       },
       {
         path: "purchase-orders",
