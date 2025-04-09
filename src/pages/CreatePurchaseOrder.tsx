@@ -2,17 +2,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
-import { useSuppliers } from "@/hooks/useSuppliers";
-import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PurchaseOrderForm } from "@/components/purchase-orders/PurchaseOrderForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const CreatePurchaseOrder = () => {
   const navigate = useNavigate();
   const { createPurchaseOrder } = usePurchaseOrders();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,11 +24,17 @@ const CreatePurchaseOrder = () => {
       await createPurchaseOrder({
         ...formData,
         status: 'draft',
+      }, {
+        onSuccess: () => {
+          navigate('/purchase-orders');
+        },
+        onError: (error) => {
+          setError(`Failed to create purchase order: ${error.message}`);
+          console.error('Error creating purchase order:', error);
+        }
       });
-      
-      navigate('/purchase-orders');
-    } catch (err) {
-      setError('Failed to create purchase order. Please try again.');
+    } catch (err: any) {
+      setError(`Failed to create purchase order: ${err.message || 'Unknown error'}`);
       console.error('Error creating purchase order:', err);
     } finally {
       setIsSubmitting(false);
