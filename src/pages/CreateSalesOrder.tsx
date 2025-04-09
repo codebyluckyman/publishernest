@@ -19,17 +19,22 @@ const CreateSalesOrder = () => {
       setIsSubmitting(true);
       setError(null);
       
-      const result = await createSalesOrder({
+      await createSalesOrder({
         ...formData,
         status: 'draft',
+      }, {
+        onSuccess: (result) => {
+          if (result && result.id) {
+            navigate(`/sales-orders/${result.id}`);
+          } else {
+            throw new Error('Failed to create sales order');
+          }
+        },
+        onError: (error) => {
+          setError('Failed to create sales order. Please try again.');
+          console.error('Error creating sales order:', error);
+        }
       });
-      
-      // Navigate to the created sales order if successful
-      if (result && result.id) {
-        navigate(`/sales-orders/${result.id}`);
-      } else {
-        throw new Error('Failed to create sales order');
-      }
     } catch (err) {
       setError('Failed to create sales order. Please try again.');
       console.error('Error creating sales order:', err);

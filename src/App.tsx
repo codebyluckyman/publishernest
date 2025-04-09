@@ -25,6 +25,13 @@ import QuoteRequests from "./pages/QuoteRequests";
 import Quotes from "./pages/Quotes";
 import QuoteComparison from "./pages/QuoteComparison";
 import PrintRuns from "./pages/PrintRuns";
+import Suppliers from "./pages/Suppliers";
+import Customers from "./pages/Customers";
+import CustomerDetail from "./pages/CustomerDetail";
+import CreateCustomer from "./pages/CreateCustomer";
+import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
+import Organizations from "./pages/Organizations";
+import Stock from "./pages/Stock";
 
 const router = createBrowserRouter([
   {
@@ -115,6 +122,34 @@ const router = createBrowserRouter([
       {
         path: "print-runs",
         element: <ProtectedRoute><PrintRuns /></ProtectedRoute>
+      },
+      {
+        path: "suppliers",
+        element: <ProtectedRoute><Suppliers /></ProtectedRoute>
+      },
+      {
+        path: "customers",
+        element: <ProtectedRoute><Customers /></ProtectedRoute>
+      },
+      {
+        path: "customers/:id",
+        element: <ProtectedRoute><CustomerDetail /></ProtectedRoute>
+      },
+      {
+        path: "customers/create",
+        element: <ProtectedRoute><CreateCustomer /></ProtectedRoute>
+      },
+      {
+        path: "supplier-quotes/:id",
+        element: <ProtectedRoute><SupplierQuoteDetail /></ProtectedRoute>
+      },
+      {
+        path: "organizations",
+        element: <ProtectedRoute><Organizations /></ProtectedRoute>
+      },
+      {
+        path: "stock",
+        element: <ProtectedRoute><Stock /></ProtectedRoute>
       }
     ]
   },
