@@ -1,57 +1,79 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SalesOrderForm } from '@/components/sales-orders/SalesOrderForm';
-import { useSalesOrders } from '@/hooks/useSalesOrders';
-import { useAuth } from '@/context/AuthContext';
-import { toast } from '@/utils/toast-utils';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSalesOrders } from "@/hooks/useSalesOrders";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { SalesOrderForm } from "@/components/sales-orders/SalesOrderForm";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 
 const CreateSalesOrder = () => {
   const navigate = useNavigate();
   const { createSalesOrder } = useSalesOrders();
-  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (data: any) => {
-    if (!user?.id) {
-      toast.error('User information is missing. Please try logging in again.');
-      return;
-    }
-
+  const handleSubmit = async (formData: any) => {
     try {
-      // Strip cost_source from line items before sending to API
-      const cleanedLineItems = data.lineItems.map((item: any) => {
-        const { cost_source, ...cleanItem } = item;
-        return cleanItem;
-      });
-
-      const salesOrderData = {
-        ...data,
-        lineItems: cleanedLineItems,
-        createdBy: user.id
-      };
-
-      const result = await createSalesOrder(salesOrderData);
+      setIsSubmitting(true);
+      setError(null);
       
-      if (result && result.id) {
-        toast.success('Sales order created successfully');
-        navigate(`/sales-orders/${result.id}`);
+      const salesOrderId = await createSalesOrder({
+        ...formData,
+        status: 'draft',
+      });
+      
+      if (salesOrderId) {
+        navigate(`/sales-orders/${salesOrderId}`);
       } else {
-        toast.error('Failed to create sales order');
+        throw new Error('Failed to create sales order');
       }
-    } catch (error) {
-      console.error('Error creating sales order:', error);
-      toast.error('Failed to create sales order');
+    } catch (err) {
+      setError('Failed to create sales order. Please try again.');
+      console.error('Error creating sales order:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleCancel = () => {
+    navigate('/sales-orders');
+  };
+
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/sales-orders')}
+          className="mr-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Sales Orders
+        </Button>
         <h1 className="text-2xl font-bold">Create Sales Order</h1>
-        <p className="text-gray-500">Create a new sales order for a customer</p>
       </div>
 
-      <SalesOrderForm onSubmit={handleSubmit} />
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Sales Order Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SalesOrderForm 
+            onSubmit={handleSubmit} 
+            onCancel={handleCancel} 
+            isSubmitting={isSubmitting}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

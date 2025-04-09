@@ -79,7 +79,7 @@ function App() {
                   <Route path="quotes/compare" element={<QuoteComparison />} />
                   <Route path="print-runs" element={<PrintRuns />} />
                   <Route path="purchase-orders" element={<PurchaseOrders />} />
-                  <Route path="create-purchase-order" element={<CreatePurchaseOrder />} />
+                  <Route path="purchase-orders/create" element={<CreatePurchaseOrder />} />
                   <Route path="purchase-orders/:id" element={<PurchaseOrderDetail />} />
                   <Route path="sales-orders" element={<SalesOrders />} />
                   <Route path="create-sales-order" element={<CreateSalesOrder />} />

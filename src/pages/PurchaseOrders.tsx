@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,7 +60,6 @@ const PurchaseOrders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   
-  // Initialize filters
   const { 
     filters, 
     handleFilterChange, 
@@ -114,7 +112,6 @@ const PurchaseOrders = () => {
     }
   };
 
-  // Create filter options
   const printRunOptions: FilterOption[] = [
     { value: FILTER_VALUES.ALL_PRINT_RUNS, label: "All Print Runs" },
     ...printRuns.map((printRun) => ({

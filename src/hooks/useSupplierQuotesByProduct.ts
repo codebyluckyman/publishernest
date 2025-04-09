@@ -1,88 +1,92 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchSupplierQuotes } from '@/api/supplierQuotes';
 import { useOrganization } from './useOrganization';
+import { SupplierQuote } from '@/types/supplierQuote';
 
-// Define simplified interfaces that don't extend from complex types
-interface SimplePriceBreak {
-  id: string;
-  product_id: string;
-  quantity: number;
-  unit_cost: number;
+interface UseSupplierQuotesByProductProps {
+  productId?: string;
+  formatId?: string;
+  enabled?: boolean;
 }
 
-interface SimpleSupplier {
-  id: string;
-  supplier_name: string;
-}
-
-interface SupplierQuoteWithDetails {
-  id: string;
-  supplier_id: string;
-  reference: string | null;
-  status: string;
-  currency: string;
-  supplier: SimpleSupplier;
-  price_breaks: SimplePriceBreak[];
-}
-
-export function useSupplierQuotesByProduct(productId?: string, formatId?: string) {
+export function useSupplierQuotesByProduct({
+  productId,
+  formatId,
+  enabled = true,
+}: UseSupplierQuotesByProductProps = {}) {
   const { currentOrganization } = useOrganization();
   
-  const query = useQuery({
-    queryKey: ['supplier-quotes-by-product', currentOrganization?.id, productId, formatId],
+  const queryEnabled = enabled && !!currentOrganization?.id && (!!productId || !!formatId);
+  
+  return useQuery({
+    queryKey: ['supplierQuotes', 'product', productId, formatId, currentOrganization?.id],
     queryFn: async () => {
-      if (!currentOrganization || !productId) return [];
+      if (!currentOrganization?.id) return [];
       
-      // First, find quotes that have price breaks for this product
-      const { data: quoteIds, error: quoteError } = await supabase
-        .from('supplier_quote_price_breaks')
-        .select('supplier_quote_id')
-        .eq('product_id', productId)
-        .eq('status', 'approved')
-        .is('rejected_at', null);
+      const quotes = await fetchSupplierQuotes({
+        organizationId: currentOrganization.id,
+        status: 'approved', // Only fetch approved quotes
+      });
       
-      if (quoteError) throw quoteError;
-      
-      if (!quoteIds || quoteIds.length === 0) return [];
-      
-      // Then, fetch the full quotes with supplier information
-      const { data: quotes, error: quotesError } = await supabase
-        .from('supplier_quotes')
-        .select(`
-          id,
-          supplier_id,
-          reference,
-          status,
-          currency,
-          supplier:suppliers(id, supplier_name),
-          price_breaks:supplier_quote_price_breaks!inner(
-            id, product_id, quantity, unit_cost
-          )
-        `)
-        .in('id', quoteIds.map(q => q.supplier_quote_id))
-        .eq('status', 'approved')
-        .is('rejected_at', null);
-      
-      if (quotesError) throw quotesError;
-      
-      if (!quotes) return [];
-      
-      // Filter further to ensure we only get quotes with relevant price breaks
-      const filteredQuotes = quotes.map(quote => ({
-        ...quote,
-        price_breaks: (quote.price_breaks || []).filter((pb: any) => pb.product_id === productId)
-      }));
-      
-      return filteredQuotes as SupplierQuoteWithDetails[];
+      // Filter quotes that include the specified product and format
+      return quotes.filter(quote => {
+        // Check if any line item matches the product and format criteria
+        return quote.formats?.some(format => {
+          // If we're filtering by productId, check if any product matches
+          if (productId && format.products) {
+            const hasMatchingProduct = format.products.some(product => 
+              product.product_id === productId
+            );
+            
+            // If we're also filtering by formatId, both must match
+            if (formatId) {
+              return hasMatchingProduct && format.format_id === formatId;
+            }
+            
+            // If only filtering by productId
+            return hasMatchingProduct;
+          } 
+          
+          // If we're only filtering by formatId
+          if (formatId) {
+            return format.format_id === formatId;
+          }
+          
+          // No filters applied
+          return false;
+        });
+      });
     },
-    enabled: !!currentOrganization && !!productId,
+    enabled: queryEnabled,
   });
+}
 
-  return {
-    data: query.data || [],
-    isLoading: query.isLoading,
-    error: query.error,
-    ...query
-  };
+// Helper function to find the best quote by lowest price per unit
+export function findBestQuoteForProduct(quotes: SupplierQuote[], productId: string, formatId?: string) {
+  if (!quotes.length) return null;
+  
+  let bestQuote = null;
+  let lowestPrice = Number.MAX_VALUE;
+  
+  quotes.forEach(quote => {
+    quote.formats?.forEach(format => {
+      // Check if this format matches our criteria
+      if (formatId && format.format_id !== formatId) return;
+      
+      format.products?.forEach(product => {
+        if (product.product_id === productId && product.price_breaks?.length) {
+          // Get the lowest unit price from price breaks
+          // Assuming price_breaks are ordered by quantity ascending
+          const unitPrice = product.price_breaks[0].unit_price;
+          if (unitPrice < lowestPrice) {
+            lowestPrice = unitPrice;
+            bestQuote = quote;
+          }
+        }
+      });
+    });
+  });
+  
+  return bestQuote;
 }
