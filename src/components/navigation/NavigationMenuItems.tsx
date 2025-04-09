@@ -1,145 +1,61 @@
-import { Home, LayoutGrid, FileText, Truck, ShoppingCart, Settings, Users, FileCheck, Quote, Factory, ShoppingBag } from "lucide-react";
+import {
+  BarChart,
+  Building2,
+  Calendar,
+  CreditCard,
+  FileText,
+  LayoutDashboard,
+  ListChecks,
+  Package,
+  Presentation,
+  Receipt,
+  Settings,
+  ShoppingBag,
+  User,
+  Users,
+} from "lucide-react";
 
-export interface MenuItem {
-  name: string;
-  href: string;
-  path?: string; // Alias for href for backward compatibility
-  label?: string; // Alias for name for backward compatibility
-  title?: string; // Alias for name for backward compatibility
-  icon: React.ElementType;
-  submenu?: MenuItem[];
-  children?: MenuItem[]; // Alias for submenu for backward compatibility
-}
-
-export const NavigationMenuItems = [
-  {
-    name: "Dashboard",
-    label: "Dashboard",
-    title: "Dashboard",
-    href: "/",
-    path: "/",
-    icon: Home,
-  },
-  {
-    name: "Formats",
-    label: "Formats",
-    title: "Formats",
-    href: "/formats",
-    path: "/formats",
-    icon: LayoutGrid,
-  },
-  {
-    name: "Products",
-    label: "Products",
-    title: "Products", 
-    href: "/products",
-    path: "/products",
-    icon: FileText,
-  },
-  {
-    name: "Quotes",
-    label: "Quotes",
-    title: "Quotes",
-    href: "#",
-    path: "#",
-    icon: Quote,
-    submenu: [
-      {
-        name: "Quote Requests",
-        label: "Quote Requests",
-        title: "Quote Requests",
-        href: "/quote-requests",
-        path: "/quote-requests",
-        icon: FileText,
-      },
-      {
-        name: "Supplier Quotes",
-        label: "Supplier Quotes",
-        title: "Supplier Quotes",
-        href: "/quotes",
-        path: "/quotes",
-        icon: Quote,
-      }
-    ]
-  },
-  {
-    name: "Production",
-    label: "Production",
-    title: "Production",
-    href: "#",
-    path: "#",
-    icon: Factory,
-    submenu: [
-      {
-        name: "Print Runs",
-        label: "Print Runs",
-        title: "Print Runs",
-        href: "/print-runs",
-        path: "/print-runs",
-        icon: FileCheck,
-      },
-      {
-        name: "Purchase Orders",
-        label: "Purchase Orders",
-        title: "Purchase Orders",
-        href: "/purchase-orders",
-        path: "/purchase-orders",
-        icon: Truck,
-      },
-      {
-        name: "Suppliers",
-        label: "Suppliers",
-        title: "Suppliers",
-        href: "/suppliers",
-        path: "/suppliers",
-        icon: Users,
-      }
-    ]
-  },
-  {
-    name: "Sales",
-    label: "Sales",
-    title: "Sales",
-    href: "#",
-    path: "#",
-    icon: ShoppingBag,
-    submenu: [
-      {
-        name: "Customers",
-        label: "Customers",
-        title: "Customers",
-        href: "/customers",
-        path: "/customers",
-        icon: Users,
-      },
-      {
-        name: "Sales Orders",
-        label: "Sales Orders",
-        title: "Sales Orders",
-        href: "/sales-orders",
-        path: "/sales-orders",
-        icon: ShoppingCart,
-      }
-    ]
-  },
-  {
-    name: "Settings",
-    label: "Settings",
-    title: "Settings",
-    href: "/organization-settings",
-    path: "/organization-settings",
-    icon: Settings,
-  },
-  {
-    name: "Profile",
-    label: "Profile", 
-    title: "Profile",
-    href: "/profile",
-    path: "/profile",
-    icon: Users,
-  },
+const dashboardItems = [
+  { label: "Dashboard", path: "/", icon: <LayoutDashboard className="h-4 w-4" /> },
 ];
 
-export function getNavigationMenuItems() {
-  return NavigationMenuItems;
-}
+const productItems = [
+  { label: "Products", path: "/products", icon: <Package className="h-4 w-4" /> },
+  { label: "Formats", path: "/formats", icon: <FileText className="h-4 w-4" /> },
+];
+
+const purchaseItems = [
+  { label: "Suppliers", path: "/suppliers", icon: <Building2 className="h-4 w-4" /> },
+  { label: "Supplier Quotes", path: "/supplier-quotes", icon: <CreditCard className="h-4 w-4" /> },
+  { label: "Purchase Orders", path: "/purchase-orders", icon: <ShoppingBag className="h-4 w-4" /> },
+  { label: "Print Runs", path: "/print-runs", icon: <ListChecks className="h-4 w-4" /> },
+];
+
+const salesItems = [
+  { label: "Sales Orders", path: "/sales-orders", icon: <Receipt className="h-4 w-4" /> },
+  { label: "Sales Presentations", path: "/sales-presentations", icon: <Presentation className="h-4 w-4" /> },
+];
+
+const customerItems = [
+  { label: "Customers", path: "/customers", icon: <Users className="h-4 w-4" /> },
+  { label: "Customer Requirements", path: "/customer-requirements", icon: <User className="h-4 w-4" /> },
+];
+
+const reportItems = [
+  { label: "Reports", path: "/reports", icon: <BarChart className="h-4 w-4" /> },
+  { label: "Calendar", path: "/calendar", icon: <Calendar className="h-4 w-4" /> },
+];
+
+const settingsItems = [
+  { label: "Settings", path: "/settings", icon: <Settings className="h-4 w-4" /> },
+];
+
+export const NavigationMenuItems = {
+  dashboardItems,
+  productItems,
+  purchaseItems,
+  salesItems,
+  customerItems,
+  reportItems,
+  settingsItems,
+};

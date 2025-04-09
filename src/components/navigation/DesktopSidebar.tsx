@@ -1,5 +1,9 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { User, LogOut, Building, ChevronDown, ChevronRight } from "lucide-react";
+import { 
+  Link, 
+  useLocation, 
+  useNavigate 
+} from "react-router-dom";
+import { User, LogOut, Building, ChevronDown, ChevronRight, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";

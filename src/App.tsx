@@ -1,105 +1,269 @@
+import {
+  createBrowserRouter,
+} from "react-router-dom";
+import { Layout } from "@/components/layout/Layout";
+import { Dashboard } from "@/pages/Dashboard";
+import { Products } from "@/pages/Products";
+import { ProductDetail } from "@/pages/ProductDetail";
+import { EditProduct } from "@/pages/EditProduct";
+import { CreateProduct } from "@/pages/CreateProduct";
+import { Formats } from "@/pages/Formats";
+import { FormatDetail } from "@/pages/FormatDetail";
+import { EditFormat } from "@/pages/EditFormat";
+import { CreateFormat } from "@/pages/CreateFormat";
+import { Suppliers } from "@/pages/Suppliers";
+import { SupplierDetail } from "@/pages/SupplierDetail";
+import { EditSupplier } from "@/pages/EditSupplier";
+import { CreateSupplier } from "@/pages/CreateSupplier";
+import { Customers } from "@/pages/Customers";
+import { CustomerDetail } from "@/pages/CustomerDetail";
+import { EditCustomer } from "@/pages/EditCustomer";
+import { CreateCustomer } from "@/pages/CreateCustomer";
+import { DeliveryLocations } from "@/pages/DeliveryLocations";
+import { DeliveryLocationDetail } from "@/pages/DeliveryLocationDetail";
+import { EditDeliveryLocation } from "@/pages/EditDeliveryLocation";
+import { CreateDeliveryLocation } from "@/pages/CreateDeliveryLocation";
+import { Users } from "@/pages/Users";
+import { UserDetail } from "@/pages/UserDetail";
+import { EditUser } from "@/pages/EditUser";
+import { CreateUser } from "@/pages/CreateUser";
+import { Settings } from "@/pages/Settings";
+import { SalesOrders } from "@/pages/SalesOrders";
+import { SalesOrderDetail } from "@/pages/SalesOrderDetail";
+import { EditSalesOrder } from "@/pages/EditSalesOrder";
+import { CreateSalesOrder } from "@/pages/CreateSalesOrder";
+import { PurchaseOrders } from "@/pages/PurchaseOrders";
+import { PurchaseOrderDetail } from "@/pages/PurchaseOrderDetail";
+import { EditPurchaseOrder } from "@/pages/EditPurchaseOrder";
+import { CreatePurchaseOrder } from "@/pages/CreatePurchaseOrder";
+import { PrintRuns } from "@/pages/PrintRuns";
+import { PrintRunDetail } from "@/pages/PrintRunDetail";
+import { EditPrintRun } from "@/pages/EditPrintRun";
+import { CreatePrintRun } from "@/pages/CreatePrintRun";
+import { QuoteRequests } from "@/pages/QuoteRequests";
+import { QuoteRequestDetail } from "@/pages/QuoteRequestDetail";
+import { EditQuoteRequest } from "@/pages/EditQuoteRequest";
+import { CreateQuoteRequest } from "@/pages/CreateQuoteRequest";
+import { SupplierQuotes } from "@/pages/SupplierQuotes";
+import { SupplierQuoteDetail } from "@/pages/SupplierQuoteDetail";
+import { EditSupplierQuote } from "@/pages/EditSupplierQuote";
+import { CreateSupplierQuote } from "@/pages/CreateSupplierQuote";
+import { Billing } from "@/pages/Billing";
+import { SalesPresentations } from "@/pages/SalesPresentations";
+import { CreateSalesPresentation } from "@/pages/CreateSalesPresentation";
+import { SalesPresentationDetail } from "@/pages/SalesPresentationDetail";
+import { EditSalesPresentation } from "@/pages/EditSalesPresentation";
+import { SharedPresentationView } from "@/pages/SharedPresentationView";
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
-import ProtectedRoute from "@/components/ProtectedRoute";
-
-import Layout from "./components/Layout";
-import { AuthProvider } from "./context/AuthContext";
-import { OrganizationProvider } from "./context/OrganizationProvider";
-
-// Pages
-import Auth from "./pages/Auth";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Formats from "./pages/Formats";
-import Products from "./pages/Products";
-import Profile from "./pages/Profile";
-import OrganizationSettings from "./pages/OrganizationSettings";
-import Organizations from "./pages/Organizations";
-import Suppliers from "./pages/Suppliers";
-import Stock from "./pages/Stock";
-import QuoteRequests from "./pages/QuoteRequests";
-import Quotes from "./pages/Quotes";
-import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
-import QuoteComparison from "./pages/QuoteComparison";
-import PrintRuns from "./pages/PrintRuns";
-import PurchaseOrders from "./pages/PurchaseOrders";
-import CreatePurchaseOrder from "./pages/CreatePurchaseOrder";
-import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
-import SalesOrders from "./pages/SalesOrders";
-import SalesOrderDetail from "./pages/SalesOrderDetail";
-import CreateSalesOrder from "./pages/CreateSalesOrder";
-import Customers from "./pages/Customers";
-import CustomerDetail from "./pages/CustomerDetail";
-import CreateCustomer from "./pages/CreateCustomer";
-
-// Create a React Query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 0,
-      refetchOnWindowFocus: false,
-      staleTime: 60000, // 1 minute
-    },
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout><Dashboard /></Layout>,
   },
-});
+  {
+    path: "/products",
+    element: <Layout><Products /></Layout>,
+  },
+  {
+    path: "/products/:id",
+    element: <Layout><ProductDetail /></Layout>,
+  },
+  {
+    path: "/products/:id/edit",
+    element: <Layout><EditProduct /></Layout>,
+  },
+  {
+    path: "/products/create",
+    element: <Layout><CreateProduct /></Layout>,
+  },
+  {
+    path: "/formats",
+    element: <Layout><Formats /></Layout>,
+  },
+  {
+    path: "/formats/:id",
+    element: <Layout><FormatDetail /></Layout>,
+  },
+  {
+    path: "/formats/:id/edit",
+    element: <Layout><EditFormat /></Layout>,
+  },
+  {
+    path: "/formats/create",
+    element: <Layout><CreateFormat /></Layout>,
+  },
+  {
+    path: "/suppliers",
+    element: <Layout><Suppliers /></Layout>,
+  },
+  {
+    path: "/suppliers/:id",
+    element: <Layout><SupplierDetail /></Layout>,
+  },
+  {
+    path: "/suppliers/:id/edit",
+    element: <Layout><EditSupplier /></Layout>,
+  },
+  {
+    path: "/suppliers/create",
+    element: <Layout><CreateSupplier /></Layout>,
+  },
+  {
+    path: "/customers",
+    element: <Layout><Customers /></Layout>,
+  },
+  {
+    path: "/customers/:id",
+    element: <Layout><CustomerDetail /></Layout>,
+  },
+  {
+    path: "/customers/:id/edit",
+    element: <Layout><EditCustomer /></Layout>,
+  },
+  {
+    path: "/customers/create",
+    element: <Layout><CreateCustomer /></Layout>,
+  },
+  {
+    path: "/delivery-locations",
+    element: <Layout><DeliveryLocations /></Layout>,
+  },
+  {
+    path: "/delivery-locations/:id",
+    element: <Layout><DeliveryLocationDetail /></Layout>,
+  },
+  {
+    path: "/delivery-locations/:id/edit",
+    element: <Layout><EditDeliveryLocation /></Layout>,
+  },
+  {
+    path: "/delivery-locations/create",
+    element: <Layout><CreateDeliveryLocation /></Layout>,
+  },
+  {
+    path: "/users",
+    element: <Layout><Users /></Layout>,
+  },
+  {
+    path: "/users/:id",
+    element: <Layout><UserDetail /></Layout>,
+  },
+  {
+    path: "/users/:id/edit",
+    element: <Layout><EditUser /></Layout>,
+  },
+  {
+    path: "/users/create",
+    element: <Layout><CreateUser /></Layout>,
+  },
+  {
+    path: "/settings",
+    element: <Layout><Settings /></Layout>,
+  },
+  {
+    path: "/sales-orders",
+    element: <Layout><SalesOrders /></Layout>,
+  },
+  {
+    path: "/sales-orders/:id",
+    element: <Layout><SalesOrderDetail /></Layout>,
+  },
+  {
+    path: "/sales-orders/:id/edit",
+    element: <Layout><EditSalesOrder /></Layout>,
+  },
+  {
+    path: "/sales-orders/create",
+    element: <Layout><CreateSalesOrder /></Layout>,
+  },
+  {
+    path: "/purchase-orders",
+    element: <Layout><PurchaseOrders /></Layout>,
+  },
+  {
+    path: "/purchase-orders/:id",
+    element: <Layout><PurchaseOrderDetail /></Layout>,
+  },
+  {
+    path: "/purchase-orders/:id/edit",
+    element: <Layout><EditPurchaseOrder /></Layout>,
+  },
+  {
+    path: "/purchase-orders/create",
+    element: <Layout><CreatePurchaseOrder /></Layout>,
+  },
+  {
+    path: "/print-runs",
+    element: <Layout><PrintRuns /></Layout>,
+  },
+  {
+    path: "/print-runs/:id",
+    element: <Layout><PrintRunDetail /></Layout>,
+  },
+  {
+    path: "/print-runs/:id/edit",
+    element: <Layout><EditPrintRun /></Layout>,
+  },
+  {
+    path: "/print-runs/create",
+    element: <Layout><CreatePrintRun /></Layout>,
+  },
+  {
+    path: "/quote-requests",
+    element: <Layout><QuoteRequests /></Layout>,
+  },
+  {
+    path: "/quote-requests/:id",
+    element: <Layout><QuoteRequestDetail /></Layout>,
+  },
+  {
+    path: "/quote-requests/:id/edit",
+    element: <Layout><EditQuoteRequest /></Layout>,
+  },
+  {
+    path: "/quote-requests/create",
+    element: <Layout><CreateQuoteRequest /></Layout>,
+  },
+  {
+    path: "/supplier-quotes",
+    element: <Layout><SupplierQuotes /></Layout>,
+  },
+  {
+    path: "/supplier-quotes/:id",
+    element: <Layout><SupplierQuoteDetail /></Layout>,
+  },
+  {
+    path: "/supplier-quotes/:id/edit",
+    element: <Layout><EditSupplierQuote /></Layout>,
+  },
+  {
+    path: "/supplier-quotes/create",
+    element: <Layout><CreateSupplierQuote /></Layout>,
+  },
+  {
+    path: "/billing",
+    element: <Layout><Billing /></Layout>,
+  },
+  {
+    path: "/sales-presentations",
+    element: <Layout><SalesPresentations /></Layout>,
+  },
+  {
+    path: "/sales-presentations/create",
+    element: <Layout><CreateSalesPresentation /></Layout>,
+  },
+  {
+    path: "/sales-presentations/:id",
+    element: <Layout><SalesPresentationDetail /></Layout>,
+  },
+  {
+    path: "/sales-presentations/:id/edit",
+    element: <Layout><EditSalesPresentation /></Layout>,
+  },
+  {
+    path: "/shared/presentation/:accessCode",
+    element: <SharedPresentationView />,
+  },
+]);
 
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <AuthProvider>
-          <Router>
-            <OrganizationProvider>
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Index />} />
-                  <Route path="formats" element={<Formats />} />
-                  <Route path="products" element={<Products />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="organization-settings" element={<OrganizationSettings />} />
-                  <Route path="organizations" element={<Organizations />} />
-                  <Route path="suppliers" element={<Suppliers />} />
-                  <Route path="stock" element={<Stock />} />
-                  <Route path="quote-requests" element={<QuoteRequests />} />
-                  <Route path="quotes" element={<Quotes />} />
-                  <Route path="quotes/:id" element={<SupplierQuoteDetail />} />
-                  <Route path="quotes/compare" element={<QuoteComparison />} />
-                  <Route path="print-runs" element={<PrintRuns />} />
-                  <Route path="purchase-orders" element={<PurchaseOrders />} />
-                  <Route path="purchase-orders/create" element={<CreatePurchaseOrder />} />
-                  <Route path="purchase-orders/:id" element={<PurchaseOrderDetail />} />
-                  <Route path="sales-orders" element={<SalesOrders />} />
-                  <Route path="create-sales-order" element={<CreateSalesOrder />} />
-                  <Route path="sales-orders/:id" element={<SalesOrderDetail />} />
-                  <Route path="customers" element={<Customers />} />
-                  <Route path="customers/create" element={<CreateCustomer />} />
-                  <Route path="customers/:id" element={<CustomerDetail />} />
-                </Route>
-
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
-              </Routes>
-              <Toaster />
-            </OrganizationProvider>
-          </Router>
-        </AuthProvider>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  );
-}
-
-export default App;
+export default router;

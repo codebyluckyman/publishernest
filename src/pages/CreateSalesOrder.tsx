@@ -38,10 +38,6 @@ const CreateSalesOrder = () => {
     }
   };
 
-  const handleCancel = () => {
-    navigate('/sales-orders');
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center">
@@ -70,7 +66,7 @@ const CreateSalesOrder = () => {
         <CardContent>
           <SalesOrderForm 
             onSubmit={handleSubmit} 
-            isSubmitting={isSubmitting}
+            defaultValues={undefined}
           />
         </CardContent>
       </Card>

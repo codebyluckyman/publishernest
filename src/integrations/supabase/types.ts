@@ -666,6 +666,197 @@ export type Database = {
         }
         Relationships: []
       }
+      presentation_analytics: {
+        Row: {
+          id: string
+          items_viewed: Json | null
+          last_activity: string
+          presentation_id: string
+          sections_viewed: Json | null
+          view_date: string
+          view_duration: number | null
+          view_id: string
+          viewer_device: string | null
+          viewer_ip: string | null
+          viewer_location: string | null
+        }
+        Insert: {
+          id?: string
+          items_viewed?: Json | null
+          last_activity?: string
+          presentation_id: string
+          sections_viewed?: Json | null
+          view_date?: string
+          view_duration?: number | null
+          view_id: string
+          viewer_device?: string | null
+          viewer_ip?: string | null
+          viewer_location?: string | null
+        }
+        Update: {
+          id?: string
+          items_viewed?: Json | null
+          last_activity?: string
+          presentation_id?: string
+          sections_viewed?: Json | null
+          view_date?: string
+          view_duration?: number | null
+          view_id?: string
+          viewer_device?: string | null
+          viewer_ip?: string | null
+          viewer_location?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_analytics_presentation_id_fkey"
+            columns: ["presentation_id"]
+            isOneToOne: false
+            referencedRelation: "sales_presentations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presentation_items: {
+        Row: {
+          created_at: string
+          currency: string | null
+          custom_content: Json | null
+          custom_price: number | null
+          description: string | null
+          display_order: number
+          id: string
+          item_id: string | null
+          item_type: string
+          section_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          custom_content?: Json | null
+          custom_price?: number | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          item_id?: string | null
+          item_type: string
+          section_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          custom_content?: Json | null
+          custom_price?: number | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          item_id?: string | null
+          item_type?: string
+          section_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_items_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presentation_sections: {
+        Row: {
+          content: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          presentation_id: string
+          section_order: number
+          section_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          presentation_id: string
+          section_order?: number
+          section_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          presentation_id?: string
+          section_order?: number
+          section_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_sections_presentation_id_fkey"
+            columns: ["presentation_id"]
+            isOneToOne: false
+            referencedRelation: "sales_presentations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presentation_shares: {
+        Row: {
+          access_count: number | null
+          expires_at: string | null
+          id: string
+          last_accessed: string | null
+          presentation_id: string
+          share_link: string
+          shared_at: string
+          shared_by: string
+          shared_with: string | null
+        }
+        Insert: {
+          access_count?: number | null
+          expires_at?: string | null
+          id?: string
+          last_accessed?: string | null
+          presentation_id: string
+          share_link: string
+          shared_at?: string
+          shared_by: string
+          shared_with?: string | null
+        }
+        Update: {
+          access_count?: number | null
+          expires_at?: string | null
+          id?: string
+          last_accessed?: string | null
+          presentation_id?: string
+          share_link?: string
+          shared_at?: string
+          shared_by?: string
+          shared_with?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_shares_presentation_id_fkey"
+            columns: ["presentation_id"]
+            isOneToOne: false
+            referencedRelation: "sales_presentations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       print_runs: {
         Row: {
           created_at: string
@@ -1830,6 +2021,59 @@ export type Database = {
           },
         ]
       }
+      sales_presentations: {
+        Row: {
+          access_code: string | null
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          organization_id: string
+          published_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          access_code?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          organization_id: string
+          published_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          access_code?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          organization_id?: string
+          published_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_presentations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       savings: {
         Row: {
           created_at: string
@@ -2684,6 +2928,10 @@ export type Database = {
         Returns: undefined
       }
       generate_api_key: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_presentation_access_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
