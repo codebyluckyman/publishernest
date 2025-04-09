@@ -2,7 +2,7 @@
 import { Control, useWatch } from "react-hook-form";
 import { FormField } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
-import { FormatForSelect } from "@/hooks/useFormatsForSelect";
+import { FormatOption } from "@/hooks/useFormatsForSelect";
 import { FormatSpecifications } from "../FormatSpecifications";
 import { useEffect, useState } from "react";
 import { Format } from "@/components/format/types/FormatTypes";
@@ -11,7 +11,7 @@ import { useFormatDetails } from "@/hooks/format/useFormatDetails";
 interface FormatSpecificationsDisplayProps {
   control: Control<QuoteRequestFormValues>;
   index: number;
-  formats: FormatForSelect[];
+  formats: FormatOption[];
 }
 
 export function FormatSpecificationsDisplay({
@@ -41,7 +41,7 @@ export function FormatSpecificationsDisplay({
       render={({ field }) => {
         const selectedFormatId = field.value || "";
         const selectedFormat = safeFormats.find(
-          (format) => format.id === selectedFormatId
+          (format) => format.value === selectedFormatId
         );
         
         return selectedFormat ? (

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -30,7 +29,7 @@ export function QuoteRequestDialog({ suppliers, onSuccess }: QuoteRequestDialogP
   const createMutation = useCreateQuoteRequest();
   
   // Prefetch formats when dialog button is rendered
-  const { refetch: refetchFormats } = useFormatsForSelect(currentOrganization);
+  const { refetch: refetchFormats } = useFormatsForSelect();
   
   // Prefetch default price breaks when dialog button is rendered
   useDefaultPriceBreaks(currentOrganization);

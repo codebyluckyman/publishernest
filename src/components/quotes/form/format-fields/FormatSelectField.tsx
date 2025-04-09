@@ -2,13 +2,13 @@
 import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { QuoteRequestFormValues } from "../schema";
-import { FormatForSelect } from "@/hooks/useFormatsForSelect";
+import { FormatOption } from "@/hooks/useFormatsForSelect";
 import { Combobox } from "@/components/ui/combobox";
 
 interface FormatSelectFieldProps {
   control: Control<QuoteRequestFormValues>;
   index: number;
-  formats: FormatForSelect[];
+  formats: FormatOption[];
   isLoading: boolean;
 }
 
@@ -21,8 +21,8 @@ export function FormatSelectField({
   // Transform formats data for the combobox - ensure this is always an array
   const formatOptions = Array.isArray(formats) 
     ? formats.map(format => ({
-        label: format.format_name,
-        value: format.id
+        label: format.label,
+        value: format.value
       }))
     : [];
 

@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -8,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, FileText } from "lucide-react";
 import { SupplierQuoteDetail } from "@/components/quotes/supplier-quotes/view/SupplierQuoteDetail";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogContent, AlertDialogAction, AlertDialogCancel, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 const SupplierQuoteDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,18 +23,29 @@ const SupplierQuoteDetailPage = () => {
     useRejectSupplierQuote 
   } = useSupplierQuotes();
   
-  const { data: quote, isLoading, error } = useSupplierQuoteById(id || null);
+  const { data: quote, isLoading, error, refetch } = useSupplierQuoteById(id || null);
   const submitMutation = useSubmitSupplierQuote();
   const approveMutation = useApproveSupplierQuote();
   const rejectMutation = useRejectSupplierQuote();
+  
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   
   const isPublisher = currentOrganization?.organization_type === 'publisher';
   
   useEffect(() => {
     if (error) {
+      toast.error("Error loading quote details");
       navigate("/quotes");
     }
   }, [error, navigate]);
+  
+  // Handle successful mutations
+  useEffect(() => {
+    if (approveMutation.isSuccess || rejectMutation.isSuccess || submitMutation.isSuccess) {
+      refetch();
+    }
+  }, [approveMutation.isSuccess, rejectMutation.isSuccess, submitMutation.isSuccess, refetch]);
 
   const handleSubmit = () => {
     if (!quote || !quote.id) {
@@ -63,23 +77,37 @@ const SupplierQuoteDetailPage = () => {
     approveMutation.mutate({
       id: quote.id,
       approvedCost: quote.total_cost
+    }, {
+      onSuccess: () => {
+        toast.success("Quote approved successfully");
+      }
     });
   };
   
-  const handleReject = (reason?: string) => {
+  const handleOpenRejectDialog = () => {
+    setRejectDialogOpen(true);
+  };
+  
+  const handleReject = () => {
     if (!quote || !quote.id) {
       toast.error("Quote information is missing");
       return;
     }
     
-    if (!reason) {
+    if (!rejectionReason.trim()) {
       toast.error("Rejection reason is required");
       return;
     }
     
     rejectMutation.mutate({
       id: quote.id,
-      reason
+      reason: rejectionReason
+    }, {
+      onSuccess: () => {
+        toast.success("Quote rejected successfully");
+        setRejectDialogOpen(false);
+        setRejectionReason("");
+      }
     });
   };
 
@@ -139,10 +167,43 @@ const SupplierQuoteDetailPage = () => {
       <SupplierQuoteDetail 
         quote={quote} 
         isPublisher={isPublisher}
-        onSubmit={handleSubmit}
-        onApprove={handleApprove}
-        onReject={handleReject}
+        onSubmit={quote.status === 'draft' ? handleSubmit : undefined}
+        onApprove={quote.status === 'submitted' && isPublisher ? handleApprove : undefined}
+        onReject={quote.status === 'submitted' && isPublisher ? handleOpenRejectDialog : undefined}
       />
+      
+      <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Quote</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please provide a reason for rejecting this quote:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Rejection reason"
+            className="my-4"
+            required
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setRejectionReason('');
+              setRejectDialogOpen(false);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReject}
+              className="bg-red-600 text-white hover:bg-red-700"
+              disabled={!rejectionReason.trim()}
+            >
+              Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

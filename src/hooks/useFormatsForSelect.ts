@@ -1,15 +1,23 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Organization } from "@/types/organization";
+import { useOrganization } from './useOrganization';
+
+export interface FormatOption {
+  value: string;
+  label: string;
+}
 
 export interface FormatForSelect {
   id: string;
   format_name: string;
 }
 
-export function useFormatsForSelect(currentOrganization: Organization | null) {
-  return useQuery({
+export function useFormatsForSelect(currentOrganizationParam?: any) {
+  const { currentOrganization: orgFromContext } = useOrganization();
+  const currentOrganization = currentOrganizationParam || orgFromContext;
+  
+  const query = useQuery({
     queryKey: ["formats-for-select", currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) return [];
@@ -26,7 +34,17 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
           return [];
         }
 
-        return Array.isArray(data) ? data : [];
+        // Transform data to include both original data and FormatOption format
+        const transformedData = Array.isArray(data) 
+          ? data.map(format => ({ 
+              id: format.id, 
+              format_name: format.format_name,
+              value: format.id, 
+              label: format.format_name 
+            }))
+          : [];
+          
+        return transformedData;
       } catch (err) {
         console.error("Exception fetching formats:", err);
         return [];
@@ -36,4 +54,13 @@ export function useFormatsForSelect(currentOrganization: Organization | null) {
     initialData: [], // Always provide empty array as initial data
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes to improve performance
   });
+
+  return {
+    formats: query.data,
+    data: query.data, // Keep for backward compatibility
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch // Add the refetch method
+  };
 }

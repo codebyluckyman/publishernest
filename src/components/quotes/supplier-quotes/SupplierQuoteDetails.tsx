@@ -9,6 +9,8 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { OrganizationProductionStep } from "@/types/organization";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction, AlertDialogFooter } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface SupplierQuoteDetailsProps {
   quote: SupplierQuote;
@@ -25,6 +27,8 @@ export function SupplierQuoteDetails({
 }: SupplierQuoteDetailsProps) {
   const { currentOrganization } = useOrganization();
   const [productionSteps, setProductionSteps] = useState<OrganizationProductionStep[]>([]);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
   
   // Fetch production steps when component mounts
   useEffect(() => {
@@ -49,6 +53,13 @@ export function SupplierQuoteDetails({
 
   // Helper function to determine if a quote can be approved
   const canBeApproved = quote.status === 'submitted';
+
+  const handleRejectConfirm = () => {
+    if (onReject) {
+      onReject();
+    }
+    setRejectModalOpen(false);
+  };
   
   return (
     <div className="space-y-6">
@@ -104,8 +115,28 @@ export function SupplierQuoteDetails({
                 <p className="font-medium">{formatDate(quote.submitted_at)}</p>
               </div>
             )}
+            {quote.approved_at && (
+              <div>
+                <p className="text-sm text-muted-foreground">Approved</p>
+                <p className="font-medium">{formatDate(quote.approved_at)}</p>
+              </div>
+            )}
+            {quote.rejected_at && (
+              <div>
+                <p className="text-sm text-muted-foreground">Rejected</p>
+                <p className="font-medium">{formatDate(quote.rejected_at)}</p>
+              </div>
+            )}
           </div>
         </div>
+        
+        {/* Rejection reason */}
+        {quote.rejection_reason && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm font-semibold text-red-800">Rejection reason:</p>
+            <p className="text-sm text-red-700">{quote.rejection_reason}</p>
+          </div>
+        )}
         
         {/* Formats */}
         {quote.formats && quote.formats.length > 0 && (
@@ -247,7 +278,11 @@ export function SupplierQuoteDetails({
         {canBeApproved && (onApprove || onReject) && (
           <div className="flex justify-end space-x-3 mt-6">
             {onReject && (
-              <Button variant="outline" onClick={onReject} className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setRejectModalOpen(true)} 
+                className="flex items-center gap-2"
+              >
                 <AlertTriangle className="h-4 w-4" />
                 Reject Quote
               </Button>
@@ -261,6 +296,36 @@ export function SupplierQuoteDetails({
           </div>
         )}
       </div>
+
+      {/* Rejection Dialog */}
+      <AlertDialog open={rejectModalOpen} onOpenChange={setRejectModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Quote</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to reject this quote? This action cannot be undone.
+              Please provide a reason for rejecting:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Enter rejection reason"
+            className="my-4"
+            required
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleRejectConfirm}
+              className="bg-destructive text-destructive-foreground"
+              disabled={!rejectionReason.trim()}
+            >
+              Reject Quote
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -39,6 +39,7 @@ export function QuoteStatusActions({
       onReject(rejectReason);
     }
     setIsRejectDialogOpen(false);
+    setRejectReason("");
   };
 
   // Show actions based on status and user role

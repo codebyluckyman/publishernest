@@ -1,21 +1,20 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 
+// Constants for filter values
+export const FILTER_VALUES = {
+  ALL_FORMATS: "ALL_FORMATS",
+  ALL_PUBLISHERS: "ALL_PUBLISHERS"
+};
+
 type FilterOptions = {
-  product_form: string | null;
-  publisher_name: string | null;
+  product_form: string;
+  publisher_name: string;
 };
 
 interface ProductFiltersProps {
@@ -31,31 +30,20 @@ const ProductFilters = ({
   filters,
   setFilters,
   showFilters,
-  setShowFilters
 }: ProductFiltersProps) => {
   const { currentOrganization } = useOrganization();
-  const [filterOptions, setFilterOptions] = useState<{
-    product_form: string[];
-    publisher_name: string[];
-  }>({
-    product_form: [],
-    publisher_name: []
-  });
-
-  // Load filter options
-  useQuery({
+  
+  const { data: filterOptions = { product_form: [], publisher_name: [] } } = useQuery({
     queryKey: ["productFilterOptions", currentOrganization?.id],
     queryFn: async () => {
-      if (!currentOrganization) return null;
+      if (!currentOrganization) return { product_form: [], publisher_name: [] };
 
-      // Fetch product forms
       const { data: productForms } = await supabase
         .from("products")
         .select("product_form")
         .eq("organization_id", currentOrganization.id)
         .not("product_form", "is", null);
 
-      // Fetch publishers
       const { data: publishers } = await supabase
         .from("products")
         .select("publisher_name")
@@ -70,80 +58,69 @@ const ProductFilters = ({
         new Set(publishers?.map(p => p.publisher_name).filter(Boolean) || [])
       ) as string[];
 
-      setFilterOptions({
+      return {
         product_form: formOptions,
         publisher_name: publisherOptions
-      });
-
-      return {
-        formOptions,
-        publisherOptions
       };
     },
     enabled: !!currentOrganization
   });
 
-  const handleFilterChange = (field: keyof FilterOptions, value: string | null) => {
+  const handleFilterChange = (field: keyof FilterOptions, value: string) => {
     setFilters({
       ...filters,
-      [field]: value === "all" ? null : value
+      [field]: value === (field === "product_form" ? FILTER_VALUES.ALL_FORMATS : FILTER_VALUES.ALL_PUBLISHERS) 
+        ? (field === "product_form" ? FILTER_VALUES.ALL_FORMATS : FILTER_VALUES.ALL_PUBLISHERS) 
+        : value
     });
   };
 
   const resetFilters = () => {
     setFilters({
-      product_form: null,
-      publisher_name: null
+      product_form: FILTER_VALUES.ALL_FORMATS,
+      publisher_name: FILTER_VALUES.ALL_PUBLISHERS
     });
   };
 
   const areFiltersActive = () => {
-    return filters.product_form !== null || filters.publisher_name !== null;
+    return filters.product_form !== FILTER_VALUES.ALL_FORMATS || 
+           filters.publisher_name !== FILTER_VALUES.ALL_PUBLISHERS;
   };
 
   if (!showFilters) return null;
+
+  // Create options arrays for select filters
+  const productFormOptions: FilterOption[] = [
+    { value: FILTER_VALUES.ALL_FORMATS, label: "All Formats" },
+    ...filterOptions.product_form.map(option => ({ value: option, label: option }))
+  ];
+
+  const publisherOptions: FilterOption[] = [
+    { value: FILTER_VALUES.ALL_PUBLISHERS, label: "All Publishers" },
+    ...filterOptions.publisher_name.map(option => ({ value: option, label: option }))
+  ];
 
   return (
     <div className="mt-4 space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filterOptions.product_form.length > 0 && (
-          <div>
-            <label className="text-sm font-medium mb-1 block">Product Format</label>
-            <Select 
-              value={filters.product_form || ""}
-              onValueChange={(value) => handleFilterChange("product_form", value || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Format" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Formats</SelectItem>
-                {filterOptions.product_form.map((option) => (
-                  <SelectItem key={option} value={option}>{option}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectFilter
+            label="Product Format"
+            value={filters.product_form}
+            onValueChange={(value) => handleFilterChange("product_form", value)}
+            options={productFormOptions}
+            placeholder="Select Format"
+          />
         )}
 
         {filterOptions.publisher_name.length > 0 && (
-          <div>
-            <label className="text-sm font-medium mb-1 block">Publisher</label>
-            <Select 
-              value={filters.publisher_name || ""}
-              onValueChange={(value) => handleFilterChange("publisher_name", value || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Publisher" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Publishers</SelectItem>
-                {filterOptions.publisher_name.map((option) => (
-                  <SelectItem key={option} value={option}>{option}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectFilter
+            label="Publisher"
+            value={filters.publisher_name}
+            onValueChange={(value) => handleFilterChange("publisher_name", value)}
+            options={publisherOptions}
+            placeholder="Select Publisher"
+          />
         )}
       </div>
 

@@ -1,105 +1,146 @@
 
 import { 
-  BarChart3, 
-  Package, 
-  BookOpen, 
-  Archive, 
+  LayoutDashboard, 
+  Book, 
+  Landmark, 
   ShoppingCart, 
-  Truck, 
+  FileText, 
+  ClipboardList,
+  Presentation,
+  Settings, 
+  Users,
   Building,
-  LayoutDashboard,
+  CreditCard,
+  Truck,
+  Map,
+  Calculator,
+  FileSpreadsheet,
+  FileCog,
   Store,
-  FileText,
-  MessageSquarePlus,
-  Warehouse
-} from "lucide-react";
-import { LucideIcon } from "lucide-react";
+  BookOpen
+} from 'lucide-react';
 
 export interface MenuItem {
-  title: string;
   label: string;
   path: string;
-  icon: LucideIcon;
+  icon: React.ElementType;
   submenu?: MenuItem[];
 }
 
-export const navigationItems = [
+/**
+ * Navigation Menu Structure
+ * 
+ * This file defines the application's navigation structure with three main categories:
+ * 1. Quotes - For managing quote requests and supplier quotes
+ * 2. Production - For managing suppliers, print runs, and purchase orders
+ * 3. Sales - For managing customers and sales orders
+ * 
+ * Each main category has its own submenu items to provide organized access to related features.
+ * DO NOT remove or restructure these main categories as they represent core application functionality.
+ */
+export const NavigationMenuItems: MenuItem[] = [
   {
-    title: "Dashboard",
-    href: "/",
-    icon: <LayoutDashboard className="h-5 w-5" />,
+    label: 'Dashboard',
+    path: '/',
+    icon: LayoutDashboard,
   },
   {
-    title: "Products",
-    href: "/products",
-    icon: <Package className="h-5 w-5" />,
-  },
-  {
-    title: "Formats",
-    href: "/formats",
-    icon: <BookOpen className="h-5 w-5" />,
-  },  
-  {
-    title: "Suppliers",
-    href: "/suppliers",
-    icon: <Store className="h-5 w-5" />,
-  },
-  {
-    title: "Quotes",
-    href: "/quotes",
-    icon: <FileText className="h-5 w-5" />,
+    label: 'Titles',
+    path: '#',
+    icon: BookOpen,
     submenu: [
       {
-        title: "Quote Requests",
-        href: "/quote-requests",
-        icon: <MessageSquarePlus className="h-5 w-5" />,
+        label: 'Products',
+        path: '/products',
+        icon: Book,
       },
       {
-        title: "Quotes",
-        href: "/quotes",
-        icon: <FileText className="h-5 w-5" />,
+        label: 'Formats',
+        path: '/formats',
+        icon: ClipboardList,
       }
     ]
   },
   {
-    title: "Purchase Orders",
-    href: "/orders",
-    icon: <ShoppingCart className="h-5 w-5" />,
+    label: 'Publishing',
+    path: '#',
+    icon: Book,
+    submenu: [
+      {
+        label: 'Publishing Program',
+        path: '/publishing-program',
+        icon: ClipboardList,
+      }
+    ]
   },
   {
-    title: "Shipments",
-    href: "/shipments",
-    icon: <Truck className="h-5 w-5" />,
-  },  
+    label: 'Quotes',
+    path: '#',
+    icon: FileSpreadsheet,
+    submenu: [
+      {
+        label: 'Quote Requests',
+        path: '/quote-requests',
+        icon: FileText,
+      },
+      {
+        label: 'Quotes',
+        path: '/quotes',
+        icon: FileCog,
+      }
+    ]
+  },
   {
-    title: "Stock Management",
-    href: "/stock",
-    icon: <Warehouse className="h-5 w-5" />,
-  },    
+    label: 'Production',
+    path: '#',
+    icon: Building,
+    submenu: [
+      {
+        label: 'Suppliers',
+        path: '/suppliers',
+        icon: Store,
+      },
+      {
+        label: 'Print Runs',
+        path: '/print-runs',
+        icon: Map,
+      },
+      {
+        label: 'Purchase Orders',
+        path: '/purchase-orders',
+        icon: ShoppingCart,
+      }
+    ]
+  },
   {
-    title: "Organizations",
-    href: "/organizations",
-    icon: <Building className="h-5 w-5" />,
-  },  
+    label: 'Sales',
+    path: '#',
+    icon: Calculator,
+    submenu: [
+      {
+        label: 'Customers',
+        path: '/customers',
+        icon: Users,
+      },
+      {
+        label: 'Sales Orders',
+        path: '/sales-orders',
+        icon: CreditCard,
+      },
+      {
+        label: 'Sales Presentations',
+        path: '/sales-presentations',
+        icon: Presentation,
+      }
+    ]
+  },
+  {
+    label: 'Organization',
+    path: '/organization-settings',
+    icon: Landmark,
+  },
 ];
 
-// Function to convert the navigation items to MenuItem objects for use in different components
-export function getNavigationMenuItems(): MenuItem[] {
-  return navigationItems.map(item => {
-    // Create the MenuItem object
-    const menuItem: MenuItem = {
-      title: item.title,
-      label: item.title, // Using title as label
-      path: item.href,
-      icon: item.icon.type,
-      submenu: item.submenu ? item.submenu.map(subItem => ({
-        title: subItem.title,
-        label: subItem.title,
-        path: subItem.href,
-        icon: subItem.icon.type
-      })) : undefined
-    };
-    
-    return menuItem;
-  });
-}
+export const getNavigationMenuItems = (): MenuItem[] => {
+  return NavigationMenuItems;
+};

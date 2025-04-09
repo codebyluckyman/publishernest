@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -32,7 +31,7 @@ export function EditQuoteRequestDialog({
   const { currentOrganization } = useOrganization();
   
   // Prefetch formats when dialog is opened
-  const { refetch: refetchFormats } = useFormatsForSelect(currentOrganization);
+  const { refetch: refetchFormats } = useFormatsForSelect();
 
   // Prefetch formats when dialog opens
   useEffect(() => {

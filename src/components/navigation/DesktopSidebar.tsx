@@ -1,5 +1,10 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { User, LogOut, Building, ChevronDown, ChevronRight } from "lucide-react";
+
+import { 
+  Link, 
+  useLocation, 
+  useNavigate 
+} from "react-router-dom";
+import { User, LogOut, Building, ChevronDown, ChevronRight, Presentation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
@@ -43,7 +48,7 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
         if (isSubmenuActive) {
           setOpenSubmenus(prev => ({
             ...prev,
-            [item.title]: true
+            [item.label]: true
           }));
         }
       }
@@ -75,10 +80,10 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
     fetchUserProfile();
   }, [user?.id]);
 
-  const toggleSubmenu = (title: string) => {
+  const toggleSubmenu = (label: string) => {
     setOpenSubmenus(prev => ({
       ...prev,
-      [title]: !prev[title]
+      [label]: !prev[label]
     }));
   };
 
@@ -127,20 +132,20 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                     <div className="flex flex-col w-full">
                       <button 
                         className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-gray-100`}
-                        onClick={() => toggleSubmenu(item.title)}
+                        onClick={() => toggleSubmenu(item.label)}
                       >
                         <div className="flex items-center gap-3">
                           <item.icon className="w-5 h-5" />
                           <span>{item.label}</span>
                         </div>
-                        {openSubmenus[item.title] ? (
+                        {openSubmenus[item.label] ? (
                           <ChevronDown className="w-4 h-4" />
                         ) : (
                           <ChevronRight className="w-4 h-4" />
                         )}
                       </button>
                       
-                      {openSubmenus[item.title] && (
+                      {openSubmenus[item.label] && (
                         <div className="ml-6 pl-2 border-l border-gray-200 mt-1">
                           {item.submenu.map(subItem => (
                             <SidebarMenuButton key={subItem.path} asChild tooltip={subItem.label}>

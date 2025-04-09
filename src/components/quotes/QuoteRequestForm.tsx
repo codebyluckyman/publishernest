@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { quoteRequestFormSchema, QuoteRequestFormValues } from "./form/schema";
@@ -32,7 +31,7 @@ export function QuoteRequestForm({
   hasFormats = false,
 }: QuoteRequestFormProps) {
   const { currentOrganization } = useOrganization();
-  const { data: formats = [] } = useFormatsForSelect(currentOrganization);
+  const { formats = [] } = useFormatsForSelect();
   const [formatNames, setFormatNames] = useState<Record<string, string>>({});
 
   console.log("Quote Request Form initialValues:", initialValues);
@@ -62,7 +61,7 @@ export function QuoteRequestForm({
       required_step_date: initialValues?.required_step_date || null,
       attachments: [],
     },
-    mode: "onChange" // This will make validation happen on change rather than just on submit
+    mode: "onChange"
   });
 
   useEffect(() => {
@@ -105,7 +104,6 @@ export function QuoteRequestForm({
   const handleFormSubmit = async (data: QuoteRequestFormValues) => {
     console.log("Attempting to submit form with data:", data);
     
-    // Make sure title is set
     if (!data.title && data.formats?.length) {
       const formatsList = data.formats || [];
       if (formatsList.length > 0) {
@@ -123,7 +121,6 @@ export function QuoteRequestForm({
       }
     }
     
-    // Check if supplier_ids is populated
     if (!data.supplier_ids || data.supplier_ids.length === 0) {
       console.error("No suppliers selected");
       form.setError("supplier_ids", { 
