@@ -1,4 +1,3 @@
-
 export interface SalesOrder {
   id: string;
   organization_id: string;
