@@ -24,6 +24,7 @@ import SharedPresentationView from "./pages/SharedPresentationView";
 import QuoteRequests from "./pages/QuoteRequests"; 
 import Quotes from "./pages/Quotes";
 import QuoteComparison from "./pages/QuoteComparison";
+import PrintRuns from "./pages/PrintRuns";
 
 const router = createBrowserRouter([
   {
@@ -110,6 +111,10 @@ const router = createBrowserRouter([
       {
         path: "sales-presentations/:id/edit",
         element: <ProtectedRoute><EditSalesPresentation /></ProtectedRoute>
+      },
+      {
+        path: "print-runs",
+        element: <ProtectedRoute><PrintRuns /></ProtectedRoute>
       }
     ]
   },
