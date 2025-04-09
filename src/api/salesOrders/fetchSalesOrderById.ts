@@ -25,15 +25,20 @@ export async function fetchSalesOrderById(id: string): Promise<SalesOrder> {
     throw new Error(`Error fetching sales order: ${orderError.message}`);
   }
 
+  // Create a new object that extends salesOrder with the expected structure
+  const result: SalesOrder = {
+    ...salesOrder as unknown as SalesOrder,
+  };
+
   // Separately fetch the user who created the sales order
   if (salesOrder && salesOrder.created_by) {
     const createdByUser = await fetchUserById(salesOrder.created_by);
     if (createdByUser) {
-      // Add the created_by_user to the sales order
-      salesOrder.created_by_user = createdByUser;
+      // Add the created_by_user to the result object
+      result.created_by_user = createdByUser;
     }
   }
 
-  // Ensure the response matches the expected SalesOrder type
-  return salesOrder as unknown as SalesOrder;
+  // Return the properly typed result
+  return result;
 }
