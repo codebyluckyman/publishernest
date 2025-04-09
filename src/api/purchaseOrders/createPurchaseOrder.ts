@@ -1,4 +1,3 @@
-
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { PurchaseOrder, PurchaseOrderLineItem } from '@/types/purchaseOrder';
 
@@ -8,10 +7,22 @@ interface CreatePurchaseOrderInput {
   supplierId: string;
   supplierQuoteId?: string;
   currency: string;
+  issueDate?: Date;
+  deliveryDate?: Date;
+  shippingMethod?: string;
+  shippingAddress?: string;
   notes?: string;
   createdBy: string;
   status?: 'draft' | 'pending_approval';
-  lineItems?: Omit<PurchaseOrderLineItem, 'id' | 'purchase_order_id' | 'created_at' | 'updated_at'>[];
+  lineItems?: {
+    product_id: string;
+    format_id?: string;
+    quantity: number;
+    unit_cost: number;
+    total_cost: number;
+    supplier_id?: string;
+    supplier_quote_id?: string;
+  }[];
 }
 
 export async function createPurchaseOrder({
@@ -20,6 +31,10 @@ export async function createPurchaseOrder({
   supplierId,
   supplierQuoteId,
   currency,
+  issueDate,
+  deliveryDate,
+  shippingMethod,
+  shippingAddress,
   notes,
   createdBy,
   status = 'draft',
@@ -39,6 +54,10 @@ export async function createPurchaseOrder({
       supplier_quote_id: supplierQuoteId,
       currency,
       total_amount: totalAmount,
+      issue_date: issueDate,
+      delivery_date: deliveryDate,
+      shipping_method: shippingMethod,
+      shipping_address: shippingAddress,
       notes,
       status,
       created_by: createdBy,
