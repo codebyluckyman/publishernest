@@ -1,4 +1,3 @@
-
 # Project Knowledge File
 
 ## Project Overview
@@ -161,3 +160,38 @@ Create Format → Set Specifications → Associate with Products → Use in Quot
 - Optimize performance for potentially large data sets
 - Ensure proper permissions based on user roles
 
+## Product Display Guidelines
+
+### Product Detail Presentation
+When displaying products in line item tables, lists, or detail views, always include the following information in this order:
+1. Cover Image (with a fallback placeholder if no image is available)
+2. Product Title
+3. ISBN-13 (if available)
+4. Additional details like format, edition, etc.
+
+#### Recommended Display Approach
+- Cover Image: Small thumbnail (50-75px height recommended)
+- Use `object-fit: cover` to maintain image aspect ratio
+- Fallback to a default placeholder image if no cover image exists
+- Ensure images are aligned and consistent across different views
+
+#### Minimum Required Fields
+For each product display, prioritize:
+- `cover_image_url`
+- `title`
+- `isbn13`
+- `format_name` (if applicable)
+
+#### Fallback and Error Handling
+- Always provide a fallback mechanism for missing images
+  - Use `/placeholder.svg` for missing cover images
+- Gracefully handle missing data:
+  - Use "N/A" or "—" for missing ISBN or other identifiers
+  - Provide meaningful default text for missing information
+
+#### Consistent Formatting
+- Use Tailwind CSS classes for consistent styling
+- Implement responsive design principles
+- Maintain a clean, minimalistic approach to product information display
+
+This ensures a uniform and informative product representation across the application, improving user experience and information clarity.
