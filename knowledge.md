@@ -10,6 +10,24 @@ This is a publishing company management application designed for designers, prod
 - **Visual Appeal**: Use professional, appealing visuals that reflect publishing industry standards
 - **Accessibility**: Ensure the application is accessible to all users regardless of technical expertise
 
+## Navigation Structure
+The application's navigation is organized into three primary categories:
+
+1. **Quotes**
+   - Quote Requests - Create and manage quote requests to suppliers
+   - Quotes - View and manage supplier quotes and responses
+
+2. **Production**
+   - Suppliers - Manage supplier information and relationships
+   - Print Runs - Track production timelines
+   - Purchase Orders - Create and manage orders to suppliers
+
+3. **Sales**
+   - Customers - Maintain customer information and relationships
+   - Sales Orders - Generate and track client orders
+
+Each category has a collapsed/expandable submenu for easier navigation and organization.
+
 ## Core Features
 
 ### Quote Request Management
@@ -142,3 +160,4 @@ Create Format → Set Specifications → Associate with Products → Use in Quot
 - Preserve user context when navigating between pages
 - Optimize performance for potentially large data sets
 - Ensure proper permissions based on user roles
+
