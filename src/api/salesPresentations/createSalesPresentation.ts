@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { Organization } from '@/types/organization';
 import { SalesPresentation } from '@/types/salesPresentation';
 
@@ -19,7 +20,7 @@ export async function createSalesPresentation({
   coverImageUrl
 }: CreateSalesPresentationParams): Promise<string | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseCustom
       .from('sales_presentations')
       .insert({
         title,

@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 
 interface PublishSalesPresentationParams {
   id: string;
@@ -13,7 +14,7 @@ export async function publishSalesPresentation({
   try {
     const now = new Date().toISOString();
     
-    const { error } = await supabase
+    const { error } = await supabaseCustom
       .from('sales_presentations')
       .update({
         status: 'published',

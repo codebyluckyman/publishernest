@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { v4 as uuidv4 } from 'uuid';
 
 interface CreatePresentationShareParams {
@@ -20,7 +21,7 @@ export async function createPresentationShare({
     const shareToken = uuidv4().replace(/-/g, '').substring(0, 12);
     const shareLink = `${window.location.origin}/shared/presentation/${shareToken}`;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseCustom
       .from('presentation_shares')
       .insert({
         presentation_id: presentationId,

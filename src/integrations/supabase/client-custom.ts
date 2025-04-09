@@ -89,6 +89,205 @@ export type Tables = {
       updated_at: string;
     };
   };
+  sales_presentations: {
+    Row: {
+      id: string;
+      organization_id: string;
+      title: string;
+      description?: string;
+      created_by: string;
+      status: string;
+      cover_image_url?: string;
+      access_code?: string;
+      created_at: string;
+      updated_at: string;
+      published_at?: string;
+      expires_at?: string;
+    };
+    Insert: {
+      id?: string;
+      organization_id: string;
+      title: string;
+      description?: string;
+      created_by: string;
+      status?: string;
+      cover_image_url?: string;
+      access_code?: string;
+      created_at?: string;
+      updated_at?: string;
+      published_at?: string;
+      expires_at?: string;
+    };
+    Update: {
+      id?: string;
+      organization_id?: string;
+      title?: string;
+      description?: string;
+      created_by?: string;
+      status?: string;
+      cover_image_url?: string;
+      access_code?: string;
+      created_at?: string;
+      updated_at?: string;
+      published_at?: string;
+      expires_at?: string;
+    };
+  };
+  presentation_sections: {
+    Row: {
+      id: string;
+      presentation_id: string;
+      title: string;
+      description?: string;
+      section_order: number;
+      section_type: string;
+      content?: any;
+      created_at: string;
+      updated_at: string;
+    };
+    Insert: {
+      id?: string;
+      presentation_id: string;
+      title: string;
+      description?: string;
+      section_order?: number;
+      section_type?: string;
+      content?: any;
+      created_at?: string;
+      updated_at?: string;
+    };
+    Update: {
+      id?: string;
+      presentation_id?: string;
+      title?: string;
+      description?: string;
+      section_order?: number;
+      section_type?: string;
+      content?: any;
+      created_at?: string;
+      updated_at?: string;
+    };
+  };
+  presentation_items: {
+    Row: {
+      id: string;
+      section_id: string;
+      item_type: string;
+      item_id?: string;
+      title?: string;
+      description?: string;
+      custom_price?: number;
+      currency?: string;
+      custom_content?: any;
+      display_order: number;
+      created_at: string;
+      updated_at: string;
+    };
+    Insert: {
+      id?: string;
+      section_id: string;
+      item_type: string;
+      item_id?: string;
+      title?: string;
+      description?: string;
+      custom_price?: number;
+      currency?: string;
+      custom_content?: any;
+      display_order?: number;
+      created_at?: string;
+      updated_at?: string;
+    };
+    Update: {
+      id?: string;
+      section_id?: string;
+      item_type?: string;
+      item_id?: string;
+      title?: string;
+      description?: string;
+      custom_price?: number;
+      currency?: string;
+      custom_content?: any;
+      display_order?: number;
+      created_at?: string;
+      updated_at?: string;
+    };
+  };
+  presentation_analytics: {
+    Row: {
+      id: string;
+      presentation_id: string;
+      view_id: string;
+      viewer_ip?: string;
+      viewer_device?: string;
+      viewer_location?: string;
+      view_date: string;
+      view_duration?: number;
+      sections_viewed?: any[];
+      items_viewed?: any[];
+      last_activity: string;
+    };
+    Insert: {
+      id?: string;
+      presentation_id: string;
+      view_id: string;
+      viewer_ip?: string;
+      viewer_device?: string;
+      viewer_location?: string;
+      view_date?: string;
+      view_duration?: number;
+      sections_viewed?: any[];
+      items_viewed?: any[];
+      last_activity?: string;
+    };
+    Update: {
+      id?: string;
+      presentation_id?: string;
+      view_id?: string;
+      viewer_ip?: string;
+      viewer_device?: string;
+      viewer_location?: string;
+      view_date?: string;
+      view_duration?: number;
+      sections_viewed?: any[];
+      items_viewed?: any[];
+      last_activity?: string;
+    };
+  };
+  presentation_shares: {
+    Row: {
+      id: string;
+      presentation_id: string;
+      shared_by: string;
+      shared_with?: string;
+      share_link: string;
+      shared_at: string;
+      access_count?: number;
+      last_accessed?: string;
+      expires_at?: string;
+    };
+    Insert: {
+      id?: string;
+      presentation_id: string;
+      shared_by: string;
+      shared_with?: string;
+      share_link: string;
+      shared_at?: string;
+      access_count?: number;
+      last_accessed?: string;
+      expires_at?: string;
+    };
+    Update: {
+      id?: string;
+      presentation_id?: string;
+      shared_by?: string;
+      shared_with?: string;
+      share_link?: string;
+      shared_at?: string;
+      access_count?: number;
+      last_accessed?: string;
+      expires_at?: string;
+    };
+  };
   sales_orders: {
     Row: {
       id: string;

@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { SalesPresentation } from '@/types/salesPresentation';
 import { Organization } from '@/types/organization';
 
@@ -17,7 +18,7 @@ export async function fetchSalesPresentations({
   page = 1,
 }: FetchSalesPresentationsParams): Promise<SalesPresentation[]> {
   try {
-    let query = supabase
+    let query = supabaseCustom
       .from('sales_presentations')
       .select('*')
       .eq('organization_id', currentOrganization.id)

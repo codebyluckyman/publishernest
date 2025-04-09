@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { SalesPresentation, PresentationSection, PresentationItem } from '@/types/salesPresentation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,7 +27,7 @@ const SharedPresentationView = () => {
         setLoading(true);
         
         // First check the presentation_shares table to see if this access code is valid
-        const { data: shareData, error: shareError } = await supabase
+        const { data: shareData, error: shareError } = await supabaseCustom
           .from('presentation_shares')
           .select('presentation_id, expires_at')
           .eq('share_link', window.location.href)
@@ -43,7 +43,7 @@ const SharedPresentationView = () => {
         }
         
         // Now fetch the presentation
-        const { data: presentationData, error: presentationError } = await supabase
+        const { data: presentationData, error: presentationError } = await supabaseCustom
           .from('sales_presentations')
           .select('*')
           .eq('id', shareData.presentation_id)
@@ -57,7 +57,7 @@ const SharedPresentationView = () => {
         setPresentation(presentationData as SalesPresentation);
         
         // Fetch sections
-        const { data: sectionsData, error: sectionsError } = await supabase
+        const { data: sectionsData, error: sectionsError } = await supabaseCustom
           .from('presentation_sections')
           .select('*')
           .eq('presentation_id', presentationData.id)
@@ -73,7 +73,7 @@ const SharedPresentationView = () => {
         const itemsMap: Record<string, PresentationItem[]> = {};
         
         for (const section of sectionsData) {
-          const { data: itemsData, error: itemsError } = await supabase
+          const { data: itemsData, error: itemsError } = await supabaseCustom
             .from('presentation_items')
             .select('*')
             .eq('section_id', section.id)

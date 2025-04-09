@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { v4 as uuidv4 } from 'uuid';
 
 interface TrackPresentationViewParams {
@@ -22,7 +23,7 @@ export async function trackPresentationView({
     const currentViewId = viewId || uuidv4();
     
     // Check if this view already exists
-    const { data: existingView, error: fetchError } = await supabase
+    const { data: existingView, error: fetchError } = await supabaseCustom
       .from('presentation_analytics')
       .select('id')
       .eq('presentation_id', presentationId)
@@ -37,7 +38,7 @@ export async function trackPresentationView({
     
     if (existingView) {
       // Update existing view record
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseCustom
         .from('presentation_analytics')
         .update({
           last_activity: now,
@@ -49,7 +50,7 @@ export async function trackPresentationView({
       }
     } else {
       // Create new view record
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseCustom
         .from('presentation_analytics')
         .insert({
           presentation_id: presentationId,

@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { SalesPresentation } from '@/types/salesPresentation';
 
 interface UpdateSalesPresentationParams {
@@ -31,7 +32,7 @@ export async function updateSalesPresentation({
     // Add updated_at timestamp
     updates.updated_at = new Date().toISOString();
 
-    const { error } = await supabase
+    const { error } = await supabaseCustom
       .from('sales_presentations')
       .update(updates)
       .eq('id', id);
