@@ -1,49 +1,13 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PurchaseOrderForm } from "@/components/purchase-orders/PurchaseOrderForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, ArrowLeft } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { AlertCircle, ArrowLeft, Clock } from "lucide-react";
 
 const CreatePurchaseOrder = () => {
   const navigate = useNavigate();
-  const { createPurchaseOrder } = usePurchaseOrders();
-  const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (formData: any) => {
-    try {
-      setIsSubmitting(true);
-      setError(null);
-      
-      await createPurchaseOrder({
-        ...formData,
-        status: 'draft',
-      }, {
-        onSuccess: () => {
-          navigate('/purchase-orders');
-        },
-        onError: (error) => {
-          setError(`Failed to create purchase order: ${error.message}`);
-          console.error('Error creating purchase order:', error);
-        }
-      });
-    } catch (err: any) {
-      setError(`Failed to create purchase order: ${err.message || 'Unknown error'}`);
-      console.error('Error creating purchase order:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCancel = () => {
-    navigate('/purchase-orders');
-  };
 
   return (
     <div className="space-y-6">
@@ -59,23 +23,28 @@ const CreatePurchaseOrder = () => {
         <h1 className="text-2xl font-bold">Create Purchase Order</h1>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
       <Card>
         <CardHeader>
-          <CardTitle>Purchase Order Details</CardTitle>
+          <CardTitle className="flex items-center">
+            <Clock className="mr-2 h-5 w-5 text-muted-foreground" />
+            Coming Soon
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <PurchaseOrderForm 
-            onSubmit={handleSubmit} 
-            onCancel={handleCancel} 
-            isSubmitting={isSubmitting}
-          />
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            The Purchase Order creation feature is currently under development. We are working to enhance this functionality to provide a better user experience.
+          </p>
+          <p className="text-muted-foreground">
+            In the meantime, you can view and manage existing purchase orders. Check back soon for updates on this feature.
+          </p>
+          <div className="flex justify-end mt-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/purchase-orders')}
+            >
+              Return to Purchase Orders
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
