@@ -24,9 +24,9 @@ const CreateSalesOrder = () => {
         status: 'draft',
       });
       
-      // Check if we got back a valid ID
-      if (result) {
-        navigate(`/sales-orders/${result}`);
+      // Check if we got back a valid result with an ID
+      if (result && result.id) {
+        navigate(`/sales-orders/${result.id}`);
       } else {
         throw new Error('Failed to create sales order');
       }
@@ -67,7 +67,6 @@ const CreateSalesOrder = () => {
           <SalesOrderForm 
             onSubmit={handleSubmit} 
             defaultValues={undefined}
-            isSubmitting={isSubmitting}
           />
         </CardContent>
       </Card>

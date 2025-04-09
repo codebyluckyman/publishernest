@@ -46,7 +46,7 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
         if (isSubmenuActive) {
           setOpenSubmenus(prev => ({
             ...prev,
-            [item.title]: true
+            [item.label]: true
           }));
         }
       }
@@ -79,10 +79,10 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
     fetchUserProfile();
   }, [user?.id]);
 
-  const toggleSubmenu = (title: string) => {
+  const toggleSubmenu = (label: string) => {
     setOpenSubmenus(prev => ({
       ...prev,
-      [title]: !prev[title]
+      [label]: !prev[label]
     }));
   };
 
@@ -153,21 +153,21 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                         <div className="flex flex-col w-full">
                           <button 
                             className="flex items-center justify-between w-full px-4 py-3 text-base rounded-md text-gray-700 hover:bg-gray-100"
-                            onClick={() => toggleSubmenu(item.title)}
+                            onClick={() => toggleSubmenu(item.label)}
                           >
                             <div className="flex items-center">
                               {/* @ts-ignore - passing the real icon component here */}
                               <item.icon className="w-5 h-5 mr-3" />
                               {item.label}
                             </div>
-                            {openSubmenus[item.title] ? (
+                            {openSubmenus[item.label] ? (
                               <ChevronDown className="w-4 h-4" />
                             ) : (
                               <ChevronRight className="w-4 h-4" />
                             )}
                           </button>
                           
-                          {openSubmenus[item.title] && (
+                          {openSubmenus[item.label] && (
                             <div className="ml-8 pl-2 border-l border-gray-200 mt-1">
                               {item.submenu.map(subItem => (
                                 <Link
