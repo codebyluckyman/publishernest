@@ -7,8 +7,10 @@ import { fetchSupplierQuoteById } from './fetchSupplierQuoteById';
 import { submitSupplierQuote } from './submitSupplierQuote';
 import { approveSupplierQuote } from './approveSupplierQuote';
 import { rejectSupplierQuote } from './rejectSupplierQuote';
-import { getAttachments } from './getAttachments';
+import { getAttachments, getSupplierQuoteAttachments } from './getAttachments';
 import { getPublicUrl } from './getPublicUrls';
+import { fetchSupplierQuoteAudit, recordSupplierQuoteAudit } from './supplierQuoteAudit';
+import { acceptSupplierQuote, declineSupplierQuote } from './supplierQuoteStatusUpdate';
 
 // Create an API object with all the functions
 const api = {
@@ -20,8 +22,13 @@ const api = {
   submitSupplierQuote,
   approveSupplierQuote,
   rejectSupplierQuote,
+  acceptSupplierQuote,
+  declineSupplierQuote,
   getAttachments,
-  getPublicUrl
+  getSupplierQuoteAttachments,
+  getPublicUrl,
+  fetchSupplierQuoteAudit,
+  recordSupplierQuoteAudit
 };
 
 // Re-export all the functions individually
@@ -34,8 +41,13 @@ export {
   submitSupplierQuote,
   approveSupplierQuote,
   rejectSupplierQuote,
+  acceptSupplierQuote,
+  declineSupplierQuote,
   getAttachments,
-  getPublicUrl
+  getSupplierQuoteAttachments,
+  getPublicUrl,
+  fetchSupplierQuoteAudit,
+  recordSupplierQuoteAudit
 };
 
 // Export the API object as well

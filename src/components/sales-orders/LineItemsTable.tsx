@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -12,8 +13,11 @@ import { SupplierQuoteInfo } from '../purchase-orders/SupplierQuoteInfo';
 import { SupplierQuoteDetailsDialog } from '../purchase-orders/SupplierQuoteDetailsDialog';
 import { useSupplierQuotesByProduct } from '@/hooks/useSupplierQuotesByProduct';
 import { SupplierQuote } from '@/types/supplierQuote';
+import { fetchSupplierQuoteById } from '@/api/supplierQuotes';
 
-type LineItem = Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>;
+type LineItem = Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'> & {
+  supplier_quote_id?: string;
+};
 
 interface LineItemsTableProps {
   items: LineItem[];
@@ -92,6 +96,7 @@ export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTabl
 
   const handleCostSelect = (index: number, selectedId: string, unitCost: number, quoteDetails: any) => {
     updateLineItem(index, 'unit_cost', unitCost);
+    updateLineItem(index, 'supplier_quote_id', quoteDetails.quoteId);
     setSelectedQuotes({
       ...selectedQuotes,
       [index]: {
@@ -109,7 +114,7 @@ export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTabl
       setLoadingQuote(true);
       setSelectedQuoteDetails({ quoteId, lineItemIndex });
       
-      const quote = await api.fetchSupplierQuoteById(quoteId);
+      const quote = await fetchSupplierQuoteById(quoteId);
       setCurrentQuote(quote);
       setDetailsDialogOpen(true);
     } catch (error) {
