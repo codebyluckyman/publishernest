@@ -9,7 +9,7 @@ interface PurchaseOrderCostSelectorProps {
   productId?: string;
   formatId?: string;
   value?: string;
-  onChange: (value: string, unitCost: number) => void;
+  onChange: (value: string, unitCost: number, quoteDetails: any) => void;
   disabled?: boolean;
 }
 
@@ -31,15 +31,17 @@ export function PurchaseOrderCostSelector({
       id: q.id, 
       supplier: q.supplier?.supplier_name,
       formats: q.formats?.map(f => ({ id: f.format_id, name: f.format_name })),
-      priceBreaks: q.price_breaks?.length
+      priceBreaks: q.price_breaks?.length,
+      validFrom: q.valid_from,
+      validTo: q.valid_to
     }))
   );
   
   // Organize options by supplier and quote type
   const organizedOptions = useMemo(() => {
-    const productSpecificOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string }[] = [];
-    const formatSpecificOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string }[] = [];
-    const combinedOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string }[] = [];
+    const productSpecificOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string, quoteId: string, supplierName: string, validFrom?: string | null, validTo?: string | null }[] = [];
+    const formatSpecificOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string, quoteId: string, supplierName: string, validFrom?: string | null, validTo?: string | null }[] = [];
+    const combinedOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string, quoteId: string, supplierName: string, validFrom?: string | null, validTo?: string | null }[] = [];
     
     if (!supplierQuotes || supplierQuotes.length === 0) {
       return { productSpecificOptions, formatSpecificOptions, combinedOptions };
@@ -61,7 +63,11 @@ export function PurchaseOrderCostSelector({
             label: `${quote.supplier?.supplier_name || 'Unknown Supplier'} - ${priceBreak.quantity} units at ${formatCurrency(priceBreak.unit_cost || 0, quote.currency || 'USD')}`,
             cost: priceBreak.unit_cost || 0,
             supplierId: quote.supplier_id,
-            quoteReference: quote.reference_id || quote.reference || quote.id.substring(0, 8)
+            quoteReference: quote.reference_id || quote.reference || quote.id.substring(0, 8),
+            quoteId: quote.id,
+            supplierName: quote.supplier?.supplier_name || 'Unknown Supplier',
+            validFrom: quote.valid_from,
+            validTo: quote.valid_to
           };
           
           // Categorize options based on what they match
@@ -98,7 +104,14 @@ export function PurchaseOrderCostSelector({
     ];
     const option = allOptions.find(opt => opt.id === selectedId);
     if (option) {
-      onChange(selectedId, option.cost);
+      onChange(selectedId, option.cost, {
+        supplierId: option.supplierId,
+        supplierName: option.supplierName,
+        quoteReference: option.quoteReference,
+        quoteId: option.quoteId,
+        validFrom: option.validFrom,
+        validTo: option.validTo
+      });
     }
   };
 
