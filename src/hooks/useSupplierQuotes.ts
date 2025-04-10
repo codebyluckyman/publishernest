@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -12,6 +13,8 @@ import {
   approveSupplierQuote,
   rejectSupplierQuote,
   deleteSupplierQuote,
+  acceptSupplierQuote,
+  declineSupplierQuote,
 } from "@/api/supplierQuotes";
 import { api as supplierQuoteApi } from "@/api/supplierQuotes";
 
@@ -249,7 +252,7 @@ export function useSupplierQuotes() {
       queryKey: ['supplier-quote-audit', supplierQuoteId],
       queryFn: async () => {
         if (!supplierQuoteId) return [];
-        return supplierQuoteApi.fetchSupplierQuoteAudit?.(supplierQuoteId) || [];
+        return supplierQuoteApi.fetchSupplierQuoteAudit(supplierQuoteId) || [];
       },
       enabled: !!supplierQuoteId
     });
