@@ -24,21 +24,22 @@ export function useSupplierQuotesByProduct({
     queryFn: async () => {
       if (!currentOrganization?.id) return [];
       
-      // We'll use the format_id and product_id as query parameters for filtering
-      const filterParams = new URLSearchParams();
+      // We'll construct a search query string instead of using filterParams
+      // which isn't defined in the FetchQuotesParams interface
+      let searchQuery = '';
       
-      if (productId) {
-        filterParams.append('product_id', productId);
-      }
-      
-      if (formatId) {
-        filterParams.append('format_id', formatId);
+      if (productId && formatId) {
+        searchQuery = `product_id:${productId} OR format_id:${formatId}`;
+      } else if (productId) {
+        searchQuery = `product_id:${productId}`;
+      } else if (formatId) {
+        searchQuery = `format_id:${formatId}`;
       }
       
       const quotes = await fetchSupplierQuotes({
         currentOrganization: currentOrganization,
         status: 'approved', // Only fetch approved quotes
-        filterParams: filterParams.toString(),
+        searchQuery: searchQuery, // Using searchQuery which is part of FetchQuotesParams
       });
       
       console.log(`Fetched ${quotes.length} approved supplier quotes for product: ${productId}, format: ${formatId}`);
