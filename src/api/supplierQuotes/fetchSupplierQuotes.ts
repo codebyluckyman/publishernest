@@ -61,14 +61,33 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     query = query.eq("quote_request_id", quoteRequestId);
   }
 
-  // Apply search filter if provided
+  // Parse the search query to handle product_id and format_id
   if (searchQuery && searchQuery.trim() !== '') {
-    const searchTerm = searchQuery.trim().toLowerCase();
-    query = query.or(`
-      reference_id.ilike.%${searchTerm}%,
-      supplier.supplier_name.ilike.%${searchTerm}%,
-      quote_request.title.ilike.%${searchTerm}%
-    `);
+    // Extract product_id and format_id from searchQuery if they exist
+    const productIdMatch = searchQuery.match(/product_id:([a-zA-Z0-9-]+)/);
+    const formatIdMatch = searchQuery.match(/format_id:([a-zA-Z0-9-]+)/);
+    
+    const productId = productIdMatch ? productIdMatch[1] : null;
+    const formatId = formatIdMatch ? formatIdMatch[1] : null;
+    
+    if (productId && formatId && searchQuery.includes(" OR ")) {
+      // If both IDs are present with OR logic, we need to filter for either
+      query = query.or(`supplier_quote_price_breaks.product_id.eq.${productId},supplier_quote_formats.format_id.eq.${formatId}`);
+    } else if (productId) {
+      // Find quotes that have price breaks with the matching product ID
+      query = query.filter('supplier_quote_price_breaks.product_id', 'eq', productId);
+    } else if (formatId) {
+      // Find quotes that have formats with the matching format ID
+      query = query.filter('supplier_quote_formats.format_id', 'eq', formatId);
+    } else {
+      // Apply general search if no specific fields were extracted
+      const searchTerm = searchQuery.trim().toLowerCase();
+      query = query.or(`
+        reference_id.ilike.%${searchTerm}%,
+        supplier.supplier_name.ilike.%${searchTerm}%,
+        quote_request.title.ilike.%${searchTerm}%
+      `);
+    }
   }
 
   // Order by created_at in descending order
