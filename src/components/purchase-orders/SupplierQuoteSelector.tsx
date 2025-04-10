@@ -1,18 +1,23 @@
 
-import { useEffect, useState } from 'react';
-import { useSupplierQuotesByProduct } from '@/hooks/useSupplierQuotesByProduct';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useSupplierQuotesByProduct } from '@/hooks/useSupplierQuotesByProduct';
+import { Loader2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { formatDate, formatCurrency } from '@/lib/utils';
 
 interface SupplierQuoteSelectorProps {
   productId?: string;
   formatId?: string;
-  onQuoteSelect: (quoteData: { 
-    supplierId: string, 
-    supplierQuoteId: string, 
-    unitCost: number 
+  onQuoteSelect: (data: {
+    supplierId: string;
+    supplierQuoteId: string;
+    unitCost: number;
+    supplierName: string;
+    quoteReference: string;
+    validFrom?: string | null;
+    validTo?: string | null;
   }) => void;
   disabled?: boolean;
 }
@@ -21,101 +26,136 @@ export function SupplierQuoteSelector({
   productId,
   formatId,
   onQuoteSelect,
-  disabled = false
+  disabled
 }: SupplierQuoteSelectorProps) {
   const { data: supplierQuotes = [], isLoading } = useSupplierQuotesByProduct({
     productId,
     formatId
   });
   
-  const [selectedQuoteId, setSelectedQuoteId] = useState<string>('');
-
-  // Reset selection when product changes
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
+  
+  // Clear selection when product/format changes
   useEffect(() => {
-    setSelectedQuoteId('');
+    setSelectedQuoteId(null);
   }, [productId, formatId]);
-
-  const handleQuoteSelect = (quoteId: string) => {
-    setSelectedQuoteId(quoteId);
-    
-    const selectedQuote = supplierQuotes.find(quote => quote.id === quoteId);
-    if (selectedQuote) {
-      // Find the best price break (lowest unit cost)
-      let bestUnitCost = 0;
-      if (selectedQuote.price_breaks && selectedQuote.price_breaks.length > 0) {
-        bestUnitCost = selectedQuote.price_breaks.reduce(
-          (lowest, current) => {
-            const unitCost = current.unit_cost || 0;
-            return !lowest || unitCost < lowest ? unitCost : lowest;
-          },
-          0
-        );
-      }
-      
-      onQuoteSelect({
-        supplierId: selectedQuote.supplier_id,
-        supplierQuoteId: selectedQuote.id,
-        unitCost: bestUnitCost
-      });
-    }
-  };
-
-  if (isLoading) {
-    return <Skeleton className="h-10 w-full" />;
-  }
-
+  
+  // No product selected yet
   if (!productId) {
-    return <p className="text-sm text-muted-foreground">Select a product first</p>;
+    return (
+      <div className="text-center text-muted-foreground py-4">
+        Select a product to view available supplier quotes
+      </div>
+    );
   }
-
-  if (!supplierQuotes || supplierQuotes.length === 0) {
-    return <p className="text-sm text-muted-foreground">No supplier quotes found for this product</p>;
+  
+  // Loading quotes
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+        <p className="text-sm text-muted-foreground">Loading supplier quotes...</p>
+      </div>
+    );
   }
-
+  
+  // No quotes found
+  if (supplierQuotes.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground py-4">
+        No supplier quotes found for this product{formatId ? ' and format' : ''}
+      </div>
+    );
+  }
+  
+  const handleQuoteSelect = (quoteId: string, priceBreakId: string, unitCost: number, supplierId: string, supplierName: string, quoteReference: string, validFrom?: string | null, validTo?: string | null) => {
+    setSelectedQuoteId(quoteId);
+    onQuoteSelect({
+      supplierQuoteId: quoteId,
+      supplierId,
+      unitCost,
+      supplierName,
+      quoteReference,
+      validFrom,
+      validTo
+    });
+  };
+  
   return (
-    <div className="space-y-4">
-      <FormItem>
-        <FormLabel>Supplier Quote</FormLabel>
-        <FormControl>
-          <Select
-            value={selectedQuoteId}
-            onValueChange={handleQuoteSelect}
-            disabled={disabled || isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a supplier quote" />
-            </SelectTrigger>
-            <SelectContent>
-              {supplierQuotes.map((quote) => (
-                <SelectItem key={quote.id} value={quote.id}>
-                  {quote.supplier?.supplier_name || 'Unknown'} - {quote.reference || quote.id.substring(0, 8)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-
-      {selectedQuoteId && (
-        <Card>
-          <CardContent className="p-4 text-sm">
-            <div className="grid grid-cols-2 gap-2">
-              {supplierQuotes
-                .find(q => q.id === selectedQuoteId)
-                ?.price_breaks?.filter(pb => pb.product_id === productId)
-                .map((pb, i) => (
-                  <div key={i} className="flex justify-between">
-                    <span>Qty {pb.quantity}: </span>
-                    <span className="font-medium">
-                      {pb.unit_cost ? pb.unit_cost.toFixed(2) : "N/A"} / unit
+    <Card>
+      <CardContent className="p-4">
+        <h3 className="font-medium mb-4">Available Supplier Quotes</h3>
+        <RadioGroup 
+          value={selectedQuoteId || undefined}
+          onValueChange={value => {
+            // Do nothing here as we handle selection in the individual handler
+          }}
+          className="space-y-4"
+        >
+          {supplierQuotes.map((quote) => {
+            // Only look at price breaks that have unit costs
+            const validPriceBreaks = quote.price_breaks?.filter(pb => pb.unit_cost) || [];
+            
+            if (validPriceBreaks.length === 0) return null;
+            
+            return (
+              <div key={quote.id} className="border rounded-md p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-medium">{quote.supplier?.supplier_name}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Reference: {quote.reference_id || quote.reference || quote.id.substring(0, 8)}
+                    </p>
+                    {quote.valid_from && quote.valid_to && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Valid: {formatDate(quote.valid_from)} to {formatDate(quote.valid_to)}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-xs bg-muted px-2 py-1 rounded-full">
+                      {quote.status}
                     </span>
                   </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                </div>
+                
+                <div className="space-y-2 mt-4">
+                  {validPriceBreaks.map((priceBreak) => (
+                    <div 
+                      key={priceBreak.id}
+                      className="flex items-center space-x-2 pl-2"
+                      onClick={() => handleQuoteSelect(
+                        quote.id, 
+                        priceBreak.id, 
+                        priceBreak.unit_cost || 0, 
+                        quote.supplier_id,
+                        quote.supplier?.supplier_name || 'Unknown Supplier',
+                        quote.reference_id || quote.reference || quote.id.substring(0, 8),
+                        quote.valid_from,
+                        quote.valid_to
+                      )}
+                    >
+                      <RadioGroupItem 
+                        value={`${quote.id}:${priceBreak.id}`}
+                        id={`${quote.id}:${priceBreak.id}`}
+                        checked={selectedQuoteId === quote.id}
+                        disabled={disabled}
+                      />
+                      <Label 
+                        htmlFor={`${quote.id}:${priceBreak.id}`}
+                        className="flex justify-between w-full cursor-pointer"
+                      >
+                        <span>Quantity: {priceBreak.quantity}</span>
+                        <span>{formatCurrency(priceBreak.unit_cost || 0, quote.currency)} per unit</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </RadioGroup>
+      </CardContent>
+    </Card>
   );
 }

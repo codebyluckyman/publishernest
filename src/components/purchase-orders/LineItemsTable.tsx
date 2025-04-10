@@ -9,6 +9,10 @@ import { v4 as uuidv4 } from "uuid";
 import { useProductsWithFormats } from "@/hooks/useProductsWithFormats";
 import { Card, CardContent } from "@/components/ui/card";
 import { SupplierQuoteSelector } from "./SupplierQuoteSelector";
+import { SupplierQuoteInfo } from "../sales-orders/SupplierQuoteInfo";
+import { fetchSupplierQuoteById } from "@/api/supplierQuotes";
+import { SupplierQuoteDetailsDialog } from "../sales-orders/SupplierQuoteDetailsDialog";
+import { SupplierQuote } from "@/types/supplierQuote";
 
 interface LineItem {
   id?: string;
@@ -39,6 +43,23 @@ export function LineItemsTable({
   const { products, isLoading: isProductsLoading } = useProductsWithFormats();
   const [lineItems, setLineItems] = useState<LineItem[]>(items);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [selectedQuoteDetails, setSelectedQuoteDetails] = useState<{
+    quoteId: string;
+    lineItemIndex: number;
+  } | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [currentQuote, setCurrentQuote] = useState<SupplierQuote | null>(null);
+  const [loadingQuote, setLoadingQuote] = useState(false);
+  
+  const [selectedQuotes, setSelectedQuotes] = useState<{
+    [key: number]: {
+      quoteId: string;
+      supplierName: string;
+      quoteReference: string;
+      validFrom?: string | null;
+      validTo?: string | null;
+    };
+  }>({});
 
   useEffect(() => {
     if (items.length > 0 && lineItems.length === 0) {
@@ -73,6 +94,12 @@ export function LineItemsTable({
       updatedItems.splice(index, 1);
       setLineItems(updatedItems);
     }
+    
+    // Remove from selected quotes
+    const newSelectedQuotes = { ...selectedQuotes };
+    delete newSelectedQuotes[index];
+    setSelectedQuotes(newSelectedQuotes);
+    
     onChange(updatedItems.filter(item => !item.isDeleted));
   };
 
@@ -95,6 +122,11 @@ export function LineItemsTable({
       // Reset supplier-related fields
       updatedItems[index].supplier_id = undefined;
       updatedItems[index].supplier_quote_id = undefined;
+      
+      // Remove from selected quotes
+      const newSelectedQuotes = { ...selectedQuotes };
+      delete newSelectedQuotes[index];
+      setSelectedQuotes(newSelectedQuotes);
     }
     
     // Calculate total cost
@@ -108,7 +140,7 @@ export function LineItemsTable({
     onChange(updatedItems);
   };
   
-  const handleQuoteSelect = (index: number, data: { supplierId: string, supplierQuoteId: string, unitCost: number }) => {
+  const handleQuoteSelect = (index: number, data: { supplierId: string, supplierQuoteId: string, unitCost: number, supplierName: string, quoteReference: string, validFrom?: string | null, validTo?: string | null }) => {
     const updatedItems = [...lineItems];
     updatedItems[index] = {
       ...updatedItems[index],
@@ -120,12 +152,39 @@ export function LineItemsTable({
     // Update total cost
     updatedItems[index].total_cost = parseFloat((updatedItems[index].quantity * data.unitCost).toFixed(2));
     
+    // Store quote details for display
+    setSelectedQuotes({
+      ...selectedQuotes,
+      [index]: {
+        quoteId: data.supplierQuoteId,
+        supplierName: data.supplierName,
+        quoteReference: data.quoteReference,
+        validFrom: data.validFrom,
+        validTo: data.validTo
+      }
+    });
+    
     setLineItems(updatedItems);
     onChange(updatedItems);
     
     // Notify parent of supplier selection
     if (onSupplierSelect && data.supplierId) {
       onSupplierSelect(data.supplierId);
+    }
+  };
+
+  const handleViewQuoteDetails = async (quoteId: string, lineItemIndex: number) => {
+    try {
+      setLoadingQuote(true);
+      setSelectedQuoteDetails({ quoteId, lineItemIndex });
+      
+      const quote = await fetchSupplierQuoteById(quoteId);
+      setCurrentQuote(quote);
+      setDetailsDialogOpen(true);
+    } catch (error) {
+      console.error("Error loading quote details:", error);
+    } finally {
+      setLoadingQuote(false);
     }
   };
 
@@ -239,6 +298,22 @@ export function LineItemsTable({
                       </Button>
                     </TableCell>
                   </TableRow>
+                  
+                  {/* Display supplier quote information if selected */}
+                  {selectedQuotes[index] && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="px-0 pb-0 pt-0 border-t-0">
+                        <SupplierQuoteInfo
+                          supplierName={selectedQuotes[index].supplierName}
+                          quoteReference={selectedQuotes[index].quoteReference}
+                          validFrom={selectedQuotes[index].validFrom}
+                          validTo={selectedQuotes[index].validTo}
+                          onViewDetails={() => handleViewQuoteDetails(selectedQuotes[index].quoteId, index)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  
                   {expandedItem === item.id && (
                     <TableRow>
                       <TableCell colSpan={6} className="bg-slate-50 p-0">
@@ -271,6 +346,12 @@ export function LineItemsTable({
         <Plus className="mr-2 h-4 w-4" />
         Add Item
       </Button>
+      
+      <SupplierQuoteDetailsDialog
+        quote={currentQuote}
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+      />
     </div>
   );
 }
