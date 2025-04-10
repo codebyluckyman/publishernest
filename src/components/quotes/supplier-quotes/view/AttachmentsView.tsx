@@ -4,7 +4,7 @@ import { SupplierQuote } from "@/types/supplierQuote";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileIcon, Download, Paperclip, Eye } from "lucide-react";
-import { getSupplierQuoteAttachments } from "@/api/supplierQuotes/getAttachments";
+import { getAttachments } from "@/api/supplierQuotes";
 import { getPublicUrl } from "@/api/supplierQuotes";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -25,7 +25,7 @@ export function AttachmentsView({ quote }: AttachmentsViewProps) {
       if (quote.id) {
         setIsLoading(true);
         try {
-          const attachments = await getSupplierQuoteAttachments(quote.id);
+          const attachments = await getAttachments(quote.id);
           setFiles(attachments || []);
         } catch (error) {
           console.error("Error fetching attachments:", error);

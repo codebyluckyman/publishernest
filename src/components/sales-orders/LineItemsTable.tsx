@@ -12,7 +12,6 @@ import { SupplierQuoteInfo } from '../purchase-orders/SupplierQuoteInfo';
 import { SupplierQuoteDetailsDialog } from '../purchase-orders/SupplierQuoteDetailsDialog';
 import { useSupplierQuotesByProduct } from '@/hooks/useSupplierQuotesByProduct';
 import { SupplierQuote } from '@/types/supplierQuote';
-import { api } from '@/api/supplierQuotes/fetchSupplierQuoteById';
 
 type LineItem = Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>;
 
@@ -212,7 +211,7 @@ export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTabl
                       <PurchaseOrderCostSelector
                         productId={item.product_id}
                         formatId={item.format_id}
-                        value={item.supplier_quote_cost_id}
+                        value={item.supplier_quote_id}
                         onChange={(value, unitCost, quoteDetails) => handleCostSelect(index, value, unitCost, quoteDetails)}
                       />
                     )}

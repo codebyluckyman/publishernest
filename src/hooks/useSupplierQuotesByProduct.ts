@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { fetchSupplierQuotes } from '@/api/supplierQuotes';
 import { useOrganization } from './useOrganization';
@@ -31,47 +30,35 @@ export function useSupplierQuotesByProduct({
       
       console.log('Fetched approved supplier quotes:', quotes);
       
-      // Enhanced filtering logic to show quotes matching product ID, format ID, or both
       return quotes.filter(quote => {
-        // Skip quotes without formats
         if (!quote.formats || quote.formats.length === 0) {
           console.log(`Quote ${quote.id} skipped - no formats`);
           return false;
         }
         
-        // Log available format IDs for this quote
         console.log(`Quote ${quote.id} formats:`, 
           quote.formats.map(f => ({ format_id: f.format_id, name: f.format_name }))
         );
         
-        // If both product and format IDs are provided, look for quotes that match either or both
         if (productId && formatId) {
-          // Check for quotes that match the format ID
           const hasMatchingFormat = quote.formats.some(format => format.format_id === formatId);
-          
-          // Check for quotes that match the product ID in any price break
           const hasMatchingProduct = quote.price_breaks?.some(pb => pb.product_id === productId);
           
-          // Log match details
           console.log(`Quote ${quote.id} - Format match: ${hasMatchingFormat}, Product match: ${hasMatchingProduct}`);
           
-          // Return quotes that match either product or format
           return hasMatchingFormat || hasMatchingProduct;
         } 
-        // If only product ID is provided
         else if (productId) {
           const hasMatchingProduct = quote.price_breaks?.some(pb => pb.product_id === productId);
           console.log(`Quote ${quote.id} - Product only match: ${hasMatchingProduct}`);
           return hasMatchingProduct || false;
         } 
-        // If only format ID is provided
         else if (formatId) {
           const hasMatchingFormat = quote.formats.some(format => format.format_id === formatId);
           console.log(`Quote ${quote.id} - Format only match: ${hasMatchingFormat}`);
           return hasMatchingFormat;
         }
         
-        // No filters applied
         return false;
       });
     },
@@ -79,7 +66,6 @@ export function useSupplierQuotesByProduct({
   });
 }
 
-// Helper function to find the best quote by lowest price per unit
 export function findBestQuoteForProduct(quotes: SupplierQuote[], productId: string, formatId?: string) {
   if (!quotes || quotes.length === 0) return null;
   
@@ -89,16 +75,13 @@ export function findBestQuoteForProduct(quotes: SupplierQuote[], productId: stri
   quotes.forEach(quote => {
     if (!quote.formats || !quote.price_breaks) return;
     
-    // Find price breaks for this product
     const matchingPriceBreaks = quote.price_breaks.filter(pb => pb.product_id === productId);
     
-    // If looking for a specific format, check if this quote has that format
     if (formatId) {
       const hasFormat = quote.formats.some(format => format.format_id === formatId);
       if (!hasFormat) return;
     }
     
-    // Find the lowest unit price from matching price breaks
     matchingPriceBreaks.forEach(priceBreak => {
       if (priceBreak.unit_cost && priceBreak.unit_cost < lowestPrice) {
         lowestPrice = priceBreak.unit_cost;
