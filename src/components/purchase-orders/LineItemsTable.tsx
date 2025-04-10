@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +8,9 @@ import { v4 as uuidv4 } from "uuid";
 import { useProductsWithFormats } from "@/hooks/useProductsWithFormats";
 import { Card, CardContent } from "@/components/ui/card";
 import { SupplierQuoteSelector } from "./SupplierQuoteSelector";
-import { SupplierQuoteInfo } from "../sales-orders/SupplierQuoteInfo";
+import { SupplierQuoteInfo } from "./SupplierQuoteInfo";
 import { fetchSupplierQuoteById } from "@/api/supplierQuotes";
-import { SupplierQuoteDetailsDialog } from "../sales-orders/SupplierQuoteDetailsDialog";
+import { SupplierQuoteDetailsDialog } from "./SupplierQuoteDetailsDialog";
 import { SupplierQuote } from "@/types/supplierQuote";
 
 interface LineItem {
