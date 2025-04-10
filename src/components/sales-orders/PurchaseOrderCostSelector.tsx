@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSupplierQuotesByProduct } from '@/hooks/useSupplierQuotesByProduct';
 import { Loader2 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 
 interface PurchaseOrderCostSelectorProps {
   productId?: string;
@@ -24,11 +25,21 @@ export function PurchaseOrderCostSelector({
     formatId
   });
   
+  // Log the supplier quotes we're receiving for debugging
+  console.log("PurchaseOrderCostSelector - Supplier Quotes:", 
+    supplierQuotes.map(q => ({
+      id: q.id, 
+      supplier: q.supplier?.supplier_name,
+      formats: q.formats?.map(f => ({ id: f.format_id, name: f.format_name })),
+      priceBreaks: q.price_breaks?.length
+    }))
+  );
+  
   // Organize options by supplier and quote type
   const organizedOptions = useMemo(() => {
-    const productSpecificOptions: { id: string, label: string, cost: number, supplierId: string }[] = [];
-    const formatSpecificOptions: { id: string, label: string, cost: number, supplierId: string }[] = [];
-    const combinedOptions: { id: string, label: string, cost: number, supplierId: string }[] = [];
+    const productSpecificOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string }[] = [];
+    const formatSpecificOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string }[] = [];
+    const combinedOptions: { id: string, label: string, cost: number, supplierId: string, quoteReference: string }[] = [];
     
     if (!supplierQuotes || supplierQuotes.length === 0) {
       return { productSpecificOptions, formatSpecificOptions, combinedOptions };
@@ -39,27 +50,33 @@ export function PurchaseOrderCostSelector({
       if (!quote?.price_breaks || quote.price_breaks.length === 0) return;
       
       const hasMatchingFormat = quote.formats?.some(format => format.format_id === formatId);
+      const matchingFormat = quote.formats?.find(format => format.format_id === formatId);
+      const formatName = matchingFormat?.format_name || "Unknown Format";
       
       quote.price_breaks
         .forEach(priceBreak => {
           const isProductMatch = priceBreak.product_id === productId;
           const option = {
             id: `${quote.id}:${priceBreak.id}`,
-            label: `${quote.supplier?.supplier_name || 'Unknown Supplier'} - ${priceBreak.quantity} units at ${new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: quote.currency || 'USD'
-            }).format(priceBreak.unit_cost || 0)}`,
+            label: `${quote.supplier?.supplier_name || 'Unknown Supplier'} - ${priceBreak.quantity} units at ${formatCurrency(priceBreak.unit_cost || 0, quote.currency || 'USD')}`,
             cost: priceBreak.unit_cost || 0,
-            supplierId: quote.supplier_id
+            supplierId: quote.supplier_id,
+            quoteReference: quote.reference_id || quote.reference || quote.id.substring(0, 8)
           };
           
           // Categorize options based on what they match
           if (isProductMatch && hasMatchingFormat && priceBreak.unit_cost) {
-            combinedOptions.push(option);
+            combinedOptions.push({
+              ...option,
+              label: `${option.label} (${formatName})`
+            });
           } else if (isProductMatch && priceBreak.unit_cost) {
             productSpecificOptions.push(option);
           } else if (hasMatchingFormat && priceBreak.unit_cost && !isProductMatch) {
-            formatSpecificOptions.push(option);
+            formatSpecificOptions.push({
+              ...option,
+              label: `${option.label} (${formatName})`
+            });
           }
         });
     });
@@ -115,7 +132,10 @@ export function PurchaseOrderCostSelector({
                 <SelectLabel>Matching product and format</SelectLabel>
                 {organizedOptions.combinedOptions.map(option => (
                   <SelectItem key={option.id} value={option.id}>
-                    {option.label}
+                    <div className="flex flex-col gap-1">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-muted-foreground">Reference: {option.quoteReference}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -126,7 +146,10 @@ export function PurchaseOrderCostSelector({
                 <SelectLabel>Matching product only</SelectLabel>
                 {organizedOptions.productSpecificOptions.map(option => (
                   <SelectItem key={option.id} value={option.id}>
-                    {option.label}
+                    <div className="flex flex-col gap-1">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-muted-foreground">Reference: {option.quoteReference}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -137,7 +160,10 @@ export function PurchaseOrderCostSelector({
                 <SelectLabel>Matching format only</SelectLabel>
                 {organizedOptions.formatSpecificOptions.map(option => (
                   <SelectItem key={option.id} value={option.id}>
-                    {option.label}
+                    <div className="flex flex-col gap-1">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-muted-foreground">Reference: {option.quoteReference}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectGroup>

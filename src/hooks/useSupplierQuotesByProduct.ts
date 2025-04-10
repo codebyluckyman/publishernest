@@ -29,12 +29,20 @@ export function useSupplierQuotesByProduct({
         status: 'approved', // Only fetch approved quotes
       });
       
+      console.log('Fetched approved supplier quotes:', quotes);
+      
       // Enhanced filtering logic to show quotes matching product ID, format ID, or both
       return quotes.filter(quote => {
         // Skip quotes without formats
         if (!quote.formats || quote.formats.length === 0) {
+          console.log(`Quote ${quote.id} skipped - no formats`);
           return false;
         }
+        
+        // Log available format IDs for this quote
+        console.log(`Quote ${quote.id} formats:`, 
+          quote.formats.map(f => ({ format_id: f.format_id, name: f.format_name }))
+        );
         
         // If both product and format IDs are provided, look for quotes that match either or both
         if (productId && formatId) {
@@ -44,16 +52,23 @@ export function useSupplierQuotesByProduct({
           // Check for quotes that match the product ID in any price break
           const hasMatchingProduct = quote.price_breaks?.some(pb => pb.product_id === productId);
           
+          // Log match details
+          console.log(`Quote ${quote.id} - Format match: ${hasMatchingFormat}, Product match: ${hasMatchingProduct}`);
+          
           // Return quotes that match either product or format
           return hasMatchingFormat || hasMatchingProduct;
         } 
         // If only product ID is provided
         else if (productId) {
-          return quote.price_breaks?.some(pb => pb.product_id === productId) || false;
+          const hasMatchingProduct = quote.price_breaks?.some(pb => pb.product_id === productId);
+          console.log(`Quote ${quote.id} - Product only match: ${hasMatchingProduct}`);
+          return hasMatchingProduct || false;
         } 
         // If only format ID is provided
         else if (formatId) {
-          return quote.formats.some(format => format.format_id === formatId);
+          const hasMatchingFormat = quote.formats.some(format => format.format_id === formatId);
+          console.log(`Quote ${quote.id} - Format only match: ${hasMatchingFormat}`);
+          return hasMatchingFormat;
         }
         
         // No filters applied

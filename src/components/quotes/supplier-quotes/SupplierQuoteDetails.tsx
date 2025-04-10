@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Package, X, Check, AlertTriangle } from "lucide-react";
+import { CalendarDays, Package, X, Check, AlertTriangle, Book, ChevronDown, ChevronRight } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { fetchProductionSteps } from "@/api/organizations/productionSteps";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction, AlertDialogFooter } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { FormatDetailsPanel } from "./details/FormatDetailsPanel";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export interface SupplierQuoteDetailsProps {
   quote: SupplierQuote;
@@ -29,6 +31,7 @@ export function SupplierQuoteDetails({
   const [productionSteps, setProductionSteps] = useState<OrganizationProductionStep[]>([]);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [expandedFormats, setExpandedFormats] = useState<Record<string, boolean>>({});
   
   // Fetch production steps when component mounts
   useEffect(() => {
@@ -59,6 +62,13 @@ export function SupplierQuoteDetails({
       onReject();
     }
     setRejectModalOpen(false);
+  };
+
+  const toggleFormatExpand = (formatId: string) => {
+    setExpandedFormats(prev => ({
+      ...prev,
+      [formatId]: !prev[formatId]
+    }));
   };
   
   return (
@@ -138,17 +148,42 @@ export function SupplierQuoteDetails({
           </div>
         )}
         
-        {/* Formats */}
+        {/* Enhanced Formats Section */}
         {quote.formats && quote.formats.length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold mb-2">Formats</h3>
+            <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <Book className="h-5 w-5 text-primary" /> 
+              Formats
+            </h3>
             <div className="space-y-2">
               {quote.formats.map((format) => (
-                <div key={format.id} className="p-3 border rounded-md">
-                  <p className="font-medium">{format.format_name}</p>
-                  {format.dimensions && <p className="text-sm text-gray-600">Dimensions: {format.dimensions}</p>}
-                  {format.extent && <p className="text-sm text-gray-600">Extent: {format.extent}</p>}
-                </div>
+                <Collapsible 
+                  key={format.id} 
+                  open={!!expandedFormats[format.id]} 
+                  onOpenChange={(open) => toggleFormatExpand(format.id)}
+                  className="border rounded-md overflow-hidden"
+                >
+                  <CollapsibleTrigger asChild>
+                    <div className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{format.format_name}</span>
+                        <Badge variant="outline" className="font-normal">
+                          ID: {format.format_id.substring(0, 8)}
+                        </Badge>
+                      </div>
+                      {expandedFormats[format.id] ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="p-3 pt-0 border-t">
+                      <FormatDetailsPanel format={format} expanded={true} />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
             </div>
           </div>
