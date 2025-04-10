@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { fetchSupplierQuotes } from '@/api/supplierQuotes';
 import { useOrganization } from './useOrganization';
@@ -23,44 +24,26 @@ export function useSupplierQuotesByProduct({
     queryFn: async () => {
       if (!currentOrganization?.id) return [];
       
+      // We'll use the format_id and product_id as query parameters for filtering
+      const filterParams = new URLSearchParams();
+      
+      if (productId) {
+        filterParams.append('product_id', productId);
+      }
+      
+      if (formatId) {
+        filterParams.append('format_id', formatId);
+      }
+      
       const quotes = await fetchSupplierQuotes({
         currentOrganization: currentOrganization,
         status: 'approved', // Only fetch approved quotes
+        filterParams: filterParams.toString(),
       });
       
-      console.log('Fetched approved supplier quotes:', quotes);
+      console.log(`Fetched ${quotes.length} approved supplier quotes for product: ${productId}, format: ${formatId}`);
       
-      return quotes.filter(quote => {
-        if (!quote.formats || quote.formats.length === 0) {
-          console.log(`Quote ${quote.id} skipped - no formats`);
-          return false;
-        }
-        
-        console.log(`Quote ${quote.id} formats:`, 
-          quote.formats.map(f => ({ format_id: f.format_id, name: f.format_name }))
-        );
-        
-        if (productId && formatId) {
-          const hasMatchingFormat = quote.formats.some(format => format.format_id === formatId);
-          const hasMatchingProduct = quote.price_breaks?.some(pb => pb.product_id === productId);
-          
-          console.log(`Quote ${quote.id} - Format match: ${hasMatchingFormat}, Product match: ${hasMatchingProduct}`);
-          
-          return hasMatchingFormat || hasMatchingProduct;
-        } 
-        else if (productId) {
-          const hasMatchingProduct = quote.price_breaks?.some(pb => pb.product_id === productId);
-          console.log(`Quote ${quote.id} - Product only match: ${hasMatchingProduct}`);
-          return hasMatchingProduct || false;
-        } 
-        else if (formatId) {
-          const hasMatchingFormat = quote.formats.some(format => format.format_id === formatId);
-          console.log(`Quote ${quote.id} - Format only match: ${hasMatchingFormat}`);
-          return hasMatchingFormat;
-        }
-        
-        return false;
-      });
+      return quotes;
     },
     enabled: queryEnabled,
   });
