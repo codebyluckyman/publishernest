@@ -7,6 +7,7 @@ interface FetchPurchaseOrdersOptions {
   printRunId?: string;
   supplierId?: string;
   status?: string;
+  statusCode?: string;
 }
 
 export async function fetchPurchaseOrders({
@@ -14,6 +15,7 @@ export async function fetchPurchaseOrders({
   printRunId,
   supplierId,
   status,
+  statusCode,
 }: FetchPurchaseOrdersOptions): Promise<PurchaseOrder[]> {
   let query = supabaseCustom
     .from('purchase_orders')
@@ -33,6 +35,9 @@ export async function fetchPurchaseOrders({
   }
   if (status) {
     query = query.eq('status', status);
+  }
+  if (statusCode) {
+    query = query.eq('status_code', statusCode);
   }
 
   // Order by created date, newest first

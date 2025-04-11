@@ -1222,23 +1222,42 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          awaiting_shipment_at: string | null
+          awaiting_shipment_by: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
+          completed_at: string | null
+          completed_by: string | null
           created_at: string
           created_by: string
           currency: string
           delivery_date: string | null
+          goods_checked_at: string | null
+          goods_checked_by: string | null
           id: string
           issue_date: string | null
+          issued_at: string | null
+          issued_by: string | null
           notes: string | null
           organization_id: string
           payment_terms: string | null
           po_number: string
           print_run_id: string
+          production_completed_at: string | null
+          production_completed_by: string | null
+          production_started_at: string | null
+          production_started_by: string | null
+          received_at: string | null
+          received_by: string | null
+          scheduled_at: string | null
+          scheduled_by: string | null
+          shipped_at: string | null
+          shipped_by: string | null
           shipping_address: string | null
           shipping_method: string | null
           status: string
+          status_code: string
           supplier_id: string
           supplier_quote_id: string | null
           total_amount: number | null
@@ -1247,23 +1266,42 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          awaiting_shipment_at?: string | null
+          awaiting_shipment_by?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           created_by: string
           currency?: string
           delivery_date?: string | null
+          goods_checked_at?: string | null
+          goods_checked_by?: string | null
           id?: string
           issue_date?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
           notes?: string | null
           organization_id: string
           payment_terms?: string | null
           po_number: string
           print_run_id: string
+          production_completed_at?: string | null
+          production_completed_by?: string | null
+          production_started_at?: string | null
+          production_started_by?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          scheduled_at?: string | null
+          scheduled_by?: string | null
+          shipped_at?: string | null
+          shipped_by?: string | null
           shipping_address?: string | null
           shipping_method?: string | null
           status?: string
+          status_code?: string
           supplier_id: string
           supplier_quote_id?: string | null
           total_amount?: number | null
@@ -1272,23 +1310,42 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          awaiting_shipment_at?: string | null
+          awaiting_shipment_by?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           created_by?: string
           currency?: string
           delivery_date?: string | null
+          goods_checked_at?: string | null
+          goods_checked_by?: string | null
           id?: string
           issue_date?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
           notes?: string | null
           organization_id?: string
           payment_terms?: string | null
           po_number?: string
           print_run_id?: string
+          production_completed_at?: string | null
+          production_completed_by?: string | null
+          production_started_at?: string | null
+          production_started_by?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          scheduled_at?: string | null
+          scheduled_by?: string | null
+          shipped_at?: string | null
+          shipped_by?: string | null
           shipping_address?: string | null
           shipping_method?: string | null
           status?: string
+          status_code?: string
           supplier_id?: string
           supplier_quote_id?: string | null
           total_amount?: number | null
@@ -2952,6 +3009,10 @@ export type Database = {
           p_quantity: number
         }
         Returns: number
+      }
+      get_purchase_order_status_name: {
+        Args: { status_code: string }
+        Returns: string
       }
       get_quote_attachments: {
         Args: { quote_id: string }

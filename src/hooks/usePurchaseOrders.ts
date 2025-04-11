@@ -6,32 +6,35 @@ import {
   createPurchaseOrder, 
   updatePurchaseOrder, 
   deletePurchaseOrder,
-  updatePurchaseOrderStatus
+  updatePurchaseOrderStatus,
+  updatePurchaseOrderStatusCode
 } from '@/api/purchaseOrders';
 import { useOrganization } from './useOrganization';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { PurchaseOrderStatus } from '@/types/purchaseOrder';
+import { PurchaseOrderStatus, PurchaseOrderStatusCode } from '@/types/purchaseOrder';
 
 export function usePurchaseOrders(options?: {
   printRunId?: string;
   supplierId?: string;
   status?: string;
+  statusCode?: string;
 }) {
   const { currentOrganization } = useOrganization();
   const queryClient = useQueryClient();
   
-  const { printRunId, supplierId, status } = options || {};
+  const { printRunId, supplierId, status, statusCode } = options || {};
   
   const purchaseOrdersQuery = useQuery({
-    queryKey: ['purchaseOrders', currentOrganization?.id, printRunId, supplierId, status],
+    queryKey: ['purchaseOrders', currentOrganization?.id, printRunId, supplierId, status, statusCode],
     queryFn: () => {
       if (!currentOrganization) return Promise.resolve([]);
       return fetchPurchaseOrders({
         organizationId: currentOrganization.id,
         printRunId,
         supplierId,
-        status
+        status,
+        statusCode
       });
     },
     enabled: !!currentOrganization,
@@ -102,6 +105,19 @@ export function usePurchaseOrders(options?: {
     },
   });
 
+  const updateStatusCodeMutation = useMutation({
+    mutationFn: ({ id, statusCode, notes }: { id: string; statusCode: PurchaseOrderStatusCode; notes?: string }) => {
+      if (!user) throw new Error('User not available');
+      return updatePurchaseOrderStatusCode({ id, statusCode, userId: user.id, notes });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['purchaseOrders'] });
+    },
+    onError: (error) => {
+      toast.error(`Error updating purchase order status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    },
+  });
+
   return {
     purchaseOrders: purchaseOrdersQuery.data || [],
     isLoading: purchaseOrdersQuery.isLoading,
@@ -111,6 +127,7 @@ export function usePurchaseOrders(options?: {
     updatePurchaseOrder: updatePurchaseOrderMutation.mutate,
     deletePurchaseOrder: deletePurchaseOrderMutation.mutate,
     updatePurchaseOrderStatus: updateStatusMutation.mutate,
+    updatePurchaseOrderStatusCode: updateStatusCodeMutation.mutate,
   };
 }
 

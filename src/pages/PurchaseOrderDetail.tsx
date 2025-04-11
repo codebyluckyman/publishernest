@@ -4,21 +4,22 @@ import { useParams, useNavigate } from "react-router-dom";
 import { usePurchaseOrderDetails } from "@/hooks/usePurchaseOrders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PurchaseOrderApprovalDialog } from "@/components/purchase-orders/PurchaseOrderApprovalDialog";
 import { PurchaseOrderCancelDialog } from "@/components/purchase-orders/PurchaseOrderCancelDialog";
+import { PurchaseOrderStatusUpdate } from "@/components/purchase-orders/PurchaseOrderStatusUpdate";
+import { PurchaseOrderStatusBadge } from "@/components/purchase-orders/PurchaseOrderStatusBadge";
 import { 
   ArrowLeft, 
   Edit, 
-  CheckCircle, 
+  ClipboardList,
   AlertTriangle,
   XCircle, 
   FileText 
 } from "lucide-react";
-import { PurchaseOrderStatus } from "@/types/purchaseOrder";
+import { PurchaseOrder, PURCHASE_ORDER_STATUS_MAP } from "@/types/purchaseOrder";
 import { DateFormatter } from "@/utils/formatters";
 
 const PurchaseOrderDetail = () => {
@@ -28,6 +29,7 @@ const PurchaseOrderDetail = () => {
   
   const [isApprovalDialogOpen, setIsApprovalDialogOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isStatusUpdateOpen, setIsStatusUpdateOpen] = useState(false);
   
   if (isLoading) {
     return <div className="text-center py-8">Loading purchase order details...</div>;
@@ -53,23 +55,21 @@ const PurchaseOrderDetail = () => {
   
   const { purchaseOrder, lineItems } = data;
   
-  const getStatusBadge = (status: PurchaseOrderStatus) => {
-    const statusMap = {
-      'draft': <Badge variant="outline" className="bg-gray-100">Draft</Badge>,
-      'pending_approval': <Badge className="bg-yellow-100 text-yellow-800">Pending Approval</Badge>,
-      'approved': <Badge className="bg-blue-100 text-blue-800">Approved</Badge>,
-      'fulfilled': <Badge className="bg-green-100 text-green-800">Fulfilled</Badge>,
-      'cancelled': <Badge className="bg-red-100 text-red-800">Cancelled</Badge>
-    };
-    
-    return statusMap[status] || <Badge>Unknown</Badge>;
+  const canEdit = purchaseOrder.status_code === '00'; // Only editable in draft state
+  const canRequestApproval = purchaseOrder.status_code === '00';
+  const canCancel = purchaseOrder.status_code !== '90'; // Can cancel if not completed
+  const canUpdateStatus = true; // Always allow status updates
+  
+  // Format a date with the user's name if both are provided
+  const formatDateWithUser = (date: string | undefined, userId: string | undefined) => {
+    if (!date) return "—";
+    let result = DateFormatter.format(new Date(date));
+    if (userId) {
+      result += " by User"; // In a real app, you would fetch the user's name
+    }
+    return result;
   };
-  
-  const canEdit = purchaseOrder.status === 'draft';
-  const canApprove = purchaseOrder.status === 'pending_approval';
-  const canRequestApproval = purchaseOrder.status === 'draft';
-  const canCancel = ['draft', 'pending_approval', 'approved'].includes(purchaseOrder.status);
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -106,13 +106,13 @@ const PurchaseOrderDetail = () => {
             </Button>
           )}
           
-          {canApprove && (
+          {canUpdateStatus && (
             <Button 
               variant="default"
-              onClick={() => setIsApprovalDialogOpen(true)}
+              onClick={() => setIsStatusUpdateOpen(true)}
             >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Approve
+              <ClipboardList className="mr-2 h-4 w-4" />
+              Update Status
             </Button>
           )}
           
@@ -135,7 +135,7 @@ const PurchaseOrderDetail = () => {
               <CardTitle className="flex items-center gap-4">
                 <FileText className="h-6 w-6" />
                 <span>{purchaseOrder.po_number}</span>
-                {getStatusBadge(purchaseOrder.status)}
+                <PurchaseOrderStatusBadge status={purchaseOrder.status_code} />
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 Created on {DateFormatter.format(new Date(purchaseOrder.created_at))}
@@ -188,6 +188,80 @@ const PurchaseOrderDetail = () => {
                 <h3 className="font-medium">Shipping Method</h3>
                 <p>{purchaseOrder.shipping_method || "—"}</p>
               </div>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          <div>
+            <h3 className="font-medium mb-4">Status Timeline</h3>
+            <div className="space-y-2">
+              {purchaseOrder.approved_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Approved</span>
+                  <span>{formatDateWithUser(purchaseOrder.approved_at, purchaseOrder.approved_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.issued_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Issued to Supplier</span>
+                  <span>{formatDateWithUser(purchaseOrder.issued_at, purchaseOrder.issued_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.scheduled_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Scheduled</span>
+                  <span>{formatDateWithUser(purchaseOrder.scheduled_at, purchaseOrder.scheduled_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.production_started_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Production Started</span>
+                  <span>{formatDateWithUser(purchaseOrder.production_started_at, purchaseOrder.production_started_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.production_completed_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Production Completed</span>
+                  <span>{formatDateWithUser(purchaseOrder.production_completed_at, purchaseOrder.production_completed_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.awaiting_shipment_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Awaiting Shipment</span>
+                  <span>{formatDateWithUser(purchaseOrder.awaiting_shipment_at, purchaseOrder.awaiting_shipment_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.shipped_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Shipped</span>
+                  <span>{formatDateWithUser(purchaseOrder.shipped_at, purchaseOrder.shipped_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.received_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Received</span>
+                  <span>{formatDateWithUser(purchaseOrder.received_at, purchaseOrder.received_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.goods_checked_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Goods Checked</span>
+                  <span>{formatDateWithUser(purchaseOrder.goods_checked_at, purchaseOrder.goods_checked_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.completed_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Completed</span>
+                  <span>{formatDateWithUser(purchaseOrder.completed_at, purchaseOrder.completed_by)}</span>
+                </div>
+              )}
+              {purchaseOrder.cancelled_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">Cancelled</span>
+                  <span>{formatDateWithUser(purchaseOrder.cancelled_at, purchaseOrder.cancelled_by)}</span>
+                </div>
+              )}
             </div>
           </div>
           
@@ -267,6 +341,12 @@ const PurchaseOrderDetail = () => {
         purchaseOrder={purchaseOrder}
         open={isCancelDialogOpen}
         onOpenChange={setIsCancelDialogOpen}
+      />
+      
+      <PurchaseOrderStatusUpdate 
+        purchaseOrder={purchaseOrder}
+        open={isStatusUpdateOpen}
+        onOpenChange={setIsStatusUpdateOpen}
       />
     </div>
   );
