@@ -9,10 +9,20 @@ interface FetchQuotesParams {
   supplierId?: string;
   quoteRequestId?: string;
   searchQuery?: string;
+  productId?: string;
+  formatId?: string;
 }
 
 export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<SupplierQuote[]> {
-  const { currentOrganization, status, supplierId, quoteRequestId, searchQuery } = params;
+  const { 
+    currentOrganization, 
+    status, 
+    supplierId, 
+    quoteRequestId, 
+    searchQuery,
+    productId,
+    formatId 
+  } = params;
 
   if (!currentOrganization) {
     return [];
@@ -61,33 +71,46 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     query = query.eq("quote_request_id", quoteRequestId);
   }
 
-  // Parse the search query to handle product_id and format_id
-  if (searchQuery && searchQuery.trim() !== '') {
-    // Extract product_id and format_id from searchQuery if they exist
-    const productIdMatch = searchQuery.match(/product_id:([a-zA-Z0-9-]+)/);
-    const formatIdMatch = searchQuery.match(/format_id:([a-zA-Z0-9-]+)/);
+  // Handle product and format filtering based on relationships
+  if (productId || formatId) {
+    // We need to find quote request formats that match our criteria
+    let formatsQuery = supabase.from("quote_request_formats")
+      .select("id");
     
-    const productId = productIdMatch ? productIdMatch[1] : null;
-    const formatId = formatIdMatch ? formatIdMatch[1] : null;
-    
-    if (productId && formatId && searchQuery.includes(" OR ")) {
-      // If both IDs are present with OR logic, we need to filter for either
-      query = query.or(`supplier_quote_price_breaks.product_id.eq.${productId},supplier_quote_formats.format_id.eq.${formatId}`);
-    } else if (productId) {
-      // Find quotes that have price breaks with the matching product ID
-      query = query.filter('supplier_quote_price_breaks.product_id', 'eq', productId);
-    } else if (formatId) {
-      // Find quotes that have formats with the matching format ID
-      query = query.filter('supplier_quote_formats.format_id', 'eq', formatId);
-    } else {
-      // Apply general search if no specific fields were extracted
-      const searchTerm = searchQuery.trim().toLowerCase();
-      query = query.or(`
-        reference_id.ilike.%${searchTerm}%,
-        supplier.supplier_name.ilike.%${searchTerm}%,
-        quote_request.title.ilike.%${searchTerm}%
-      `);
+    if (formatId) {
+      // Direct format match
+      formatsQuery = formatsQuery.eq("format_id", formatId);
     }
+    
+    if (productId) {
+      // Find formats with this product linked
+      formatsQuery = formatsQuery.eq("quote_request_formats.products.product_id", productId);
+    }
+    
+    const { data: matchingFormats, error: formatsError } = await formatsQuery;
+    
+    if (formatsError) {
+      console.error("Error finding matching formats:", formatsError);
+      throw formatsError;
+    }
+    
+    if (matchingFormats && matchingFormats.length > 0) {
+      const formatIds = matchingFormats.map(f => f.id);
+      
+      // Filter supplier quotes where any price break has one of these quote_request_format_ids
+      query = query.in("supplier_quote_price_breaks.quote_request_format_id", formatIds);
+    } else {
+      // No matching formats found, return empty result
+      return [];
+    }
+  } else if (searchQuery && searchQuery.trim() !== '') {
+    // Apply general search if no specific productId/formatId filters
+    const searchTerm = searchQuery.trim().toLowerCase();
+    query = query.or(`
+      reference_id.ilike.%${searchTerm}%,
+      supplier.supplier_name.ilike.%${searchTerm}%,
+      quote_request.title.ilike.%${searchTerm}%
+    `);
   }
 
   // Order by created_at in descending order
