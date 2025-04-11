@@ -31,10 +31,10 @@ export function useSupplierCommunications(purchaseOrderId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supplierCommunications', purchaseOrderId] });
-      toast.success('Communication recorded successfully');
+      toast.success('Message sent successfully');
     },
     onError: (error) => {
-      toast.error(`Error recording communication: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Error sending message: ${error instanceof Error ? error.message : 'Unknown error'}`);
     },
   });
 

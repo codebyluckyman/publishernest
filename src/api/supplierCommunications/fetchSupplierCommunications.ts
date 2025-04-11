@@ -28,6 +28,19 @@ export const fetchSupplierCommunications = async (purchaseOrderId: string): Prom
 
   if (error) throw new Error(error.message);
   
-  // Cast the response to ensure TypeScript type safety
-  return (data as SupplierCommunication[]) || [];
+  // Handle the creator field properly by mapping it
+  const communications = data?.map(comm => {
+    // Ensure the creator field has the right shape
+    const creator = comm.creator && typeof comm.creator === 'object' && 'email' in comm.creator
+      ? comm.creator
+      : undefined;
+    
+    return {
+      ...comm,
+      communication_type: comm.communication_type as 'email' | 'phone' | 'note' | 'other',
+      creator
+    };
+  }) || [];
+  
+  return communications as SupplierCommunication[];
 };

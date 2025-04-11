@@ -11,8 +11,6 @@ interface CreateSupplierCommunicationParams {
 export const createSupplierCommunication = async (params: CreateSupplierCommunicationParams): Promise<string> => {
   const { purchaseOrderId, createdBy, message, communicationType } = params;
   
-  // Since we're using a custom function that might not be in TypeScript definitions,
-  // we'll use the standard insert method instead of rpc
   const { data, error } = await supabase
     .from('supplier_communications')
     .insert({
