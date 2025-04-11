@@ -30,7 +30,7 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
       // Filter by product in the price breaks
       queryBuilder = queryBuilder.eq('price_breaks.product_id', productId);
         
-      // Add format filter if provided - now using the direct format_id reference
+      // Add format filter if provided - using the direct format_id reference
       if (formatId) {
         queryBuilder = queryBuilder.eq('price_breaks.format_id', formatId);
       }

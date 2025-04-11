@@ -7,6 +7,7 @@ export interface SupplierQuotePriceBreak {
   quote_request_format_id: string;
   price_break_id: string;
   product_id?: string | null;
+  format_id?: string | null;
   quantity: number;
   unit_cost?: number | null;
   unit_cost_1?: number | null;
