@@ -27,5 +27,7 @@ export const fetchSupplierCommunications = async (purchaseOrderId: string): Prom
     .order('communication_date', { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data || [];
+  
+  // Cast the response to ensure TypeScript type safety
+  return (data as SupplierCommunication[]) || [];
 };

@@ -19,7 +19,8 @@ export const createSupplierCommunication = async (params: CreateSupplierCommunic
       purchase_order_id: purchaseOrderId,
       created_by: createdBy,
       message: message,
-      communication_type: communicationType
+      communication_type: communicationType,
+      communication_date: new Date().toISOString()
     })
     .select('id')
     .single();

@@ -2,15 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem
-} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Send, Loader2 } from 'lucide-react';
 
 interface SupplierCommunicationFormProps {
   onSubmit: (message: string, communicationType: 'email' | 'phone' | 'note' | 'other') => void;
@@ -32,52 +25,45 @@ export function SupplierCommunicationForm({ onSubmit, isSubmitting }: SupplierCo
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="communication-type">Communication Type</Label>
-        <Select 
+        <Label>Communication Type</Label>
+        <RadioGroup 
           value={communicationType} 
-          onValueChange={(value) => setCommunicationType(value as any)}
+          onValueChange={(value) => setCommunicationType(value as 'email' | 'phone' | 'note' | 'other')}
+          className="flex flex-wrap gap-4"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="email">Email</SelectItem>
-            <SelectItem value="phone">Phone Call</SelectItem>
-            <SelectItem value="note">Note</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="email" id="email" />
+            <Label htmlFor="email">Email</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="phone" id="phone" />
+            <Label htmlFor="phone">Phone Call</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="note" id="note" />
+            <Label htmlFor="note">Note</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="other" id="other" />
+            <Label htmlFor="other">Other</Label>
+          </div>
+        </RadioGroup>
       </div>
-      
+
       <div className="space-y-2">
         <Label htmlFor="message">Message</Label>
         <Textarea
           id="message"
-          placeholder="Enter communication details..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          rows={4}
-          className="resize-none"
+          placeholder="Enter details about your communication with the supplier..."
+          className="h-32"
           required
         />
       </div>
-      
-      <Button 
-        type="submit" 
-        disabled={isSubmitting || !message.trim()} 
-        className="w-full"
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Recording...
-          </>
-        ) : (
-          <>
-            <Send className="mr-2 h-4 w-4" />
-            Record Communication
-          </>
-        )}
+
+      <Button type="submit" disabled={isSubmitting || !message.trim()}>
+        {isSubmitting ? 'Recording...' : 'Record Communication'}
       </Button>
     </form>
   );
