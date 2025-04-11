@@ -31,10 +31,14 @@ export const fetchSupplierCommunications = async (purchaseOrderId: string): Prom
   // Handle the creator field properly by mapping it
   const communications = data?.map(comm => {
     // Safely check if creator exists and has the correct shape
-    const creator = comm.creator && typeof comm.creator === 'object' ? 
+    let creator = undefined;
+    
+    if (comm.creator && typeof comm.creator === 'object') {
       // Make sure email exists before considering it a valid creator object
-      ('email' in comm.creator ? comm.creator : undefined) : 
-      undefined;
+      if ('email' in comm.creator) {
+        creator = comm.creator;
+      }
+    }
     
     return {
       ...comm,

@@ -52,6 +52,10 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><Products /></ProtectedRoute>
       },
       {
+        path: "stock",
+        element: <ProtectedRoute><Stock /></ProtectedRoute>
+      },
+      {
         path: "publishing-program",
         element: <ProtectedRoute><PublishingProgram /></ProtectedRoute>
       },
@@ -146,10 +150,6 @@ const router = createBrowserRouter([
       {
         path: "organizations",
         element: <ProtectedRoute><Organizations /></ProtectedRoute>
-      },
-      {
-        path: "stock",
-        element: <ProtectedRoute><Stock /></ProtectedRoute>
       }
     ]
   },
