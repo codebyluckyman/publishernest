@@ -8,11 +8,8 @@ import { SalesOrderLineItem } from '@/types/salesOrder';
 import { useProducts } from '@/hooks/useProducts';
 import { useFormats } from '@/hooks/useFormatsApi';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PurchaseOrderCostSelector } from './PurchaseOrderCostSelector';
 
-type LineItem = Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'> & {
-  cost_source?: string;
-};
+type LineItem = Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>;
 
 interface EnhancedLineItemsTableProps {
   items: LineItem[];
@@ -57,29 +54,10 @@ export function EnhancedLineItemsTable({ items, onItemsChange, currency }: Enhan
     onItemsChange(updatedItems);
   };
 
-  const updateLineItemWithCost = (index: number, costSourceId: string, unitCost: number) => {
-    const updatedItems = [...items];
-    updatedItems[index] = { 
-      ...updatedItems[index], 
-      cost_source: costSourceId,
-      unit_cost: unitCost,
-      total_cost: updatedItems[index].quantity * unitCost
-    };
-    onItemsChange(updatedItems);
-  };
-
   const removeLineItem = (index: number) => {
     const updatedItems = [...items];
     updatedItems.splice(index, 1);
     onItemsChange(updatedItems);
-  };
-
-  const getProductById = (id: string) => {
-    return products?.find(product => product.id === id);
-  };
-
-  const getFormatById = (id: string) => {
-    return formats?.find(format => format.id === id);
   };
 
   const formatCurrency = (amount: number) => {
@@ -97,7 +75,6 @@ export function EnhancedLineItemsTable({ items, onItemsChange, currency }: Enhan
             <TableHead>Product</TableHead>
             <TableHead>Format</TableHead>
             <TableHead>Quantity</TableHead>
-            <TableHead>Cost Source</TableHead>
             <TableHead>Unit Cost</TableHead>
             <TableHead>Total Cost</TableHead>
             <TableHead>Unit Price</TableHead>
@@ -108,7 +85,7 @@ export function EnhancedLineItemsTable({ items, onItemsChange, currency }: Enhan
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="text-center py-6 text-muted-foreground">
+              <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
                 No items added. Click "Add Item" below to add a line item.
               </TableCell>
             </TableRow>
@@ -135,7 +112,7 @@ export function EnhancedLineItemsTable({ items, onItemsChange, currency }: Enhan
                 </TableCell>
                 <TableCell>
                   <Select
-                    value={item.format_id || undefined}
+                    value={item.format_id || ''}
                     onValueChange={(value) => updateLineItem(index, 'format_id', value || undefined)}
                     disabled={isLoadingFormats}
                   >
@@ -159,15 +136,6 @@ export function EnhancedLineItemsTable({ items, onItemsChange, currency }: Enhan
                     value={item.quantity}
                     onChange={(e) => updateLineItem(index, 'quantity', parseInt(e.target.value) || 0)}
                     className="w-20"
-                  />
-                </TableCell>
-                <TableCell>
-                  <PurchaseOrderCostSelector
-                    productId={item.product_id}
-                    formatId={item.format_id}
-                    value={item.cost_source}
-                    onChange={(sourceId, cost) => updateLineItemWithCost(index, sourceId, cost)}
-                    disabled={!item.product_id}
                   />
                 </TableCell>
                 <TableCell>
