@@ -57,8 +57,12 @@ export function SupplierQuoteInfo({
     const selectedQuote = quotes.find(quote => quote.id === quoteId);
     if (!selectedQuote) return;
     
-    // Find the best price break for this product
-    const bestPriceBreak = selectedQuote.price_breaks?.find(pb => pb.product_id === productId);
+    // Find the best price break for this product and format
+    const bestPriceBreak = selectedQuote.price_breaks?.find(pb => 
+      pb.product_id === productId && 
+      (!formatId || pb.format_id === formatId)
+    );
+    
     const unitCost = bestPriceBreak?.unit_cost || 0;
     
     onChange(quoteId, unitCost, selectedQuote.supplier_id);

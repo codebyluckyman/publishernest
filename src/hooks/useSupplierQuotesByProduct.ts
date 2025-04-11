@@ -20,7 +20,8 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
             id, 
             unit_cost, 
             quantity, 
-            product_id
+            product_id,
+            format_id
           )
         `)
         .eq('status', 'approved')
@@ -29,9 +30,9 @@ export function useSupplierQuotesByProduct(productId?: string, formatId?: string
       // Filter by product in the price breaks
       queryBuilder = queryBuilder.eq('price_breaks.product_id', productId);
         
-      // Add format filter if provided
+      // Add format filter if provided - now using the direct format_id reference
       if (formatId) {
-        queryBuilder = queryBuilder.eq('formats.format_id', formatId);
+        queryBuilder = queryBuilder.eq('price_breaks.format_id', formatId);
       }
       
       // Add supplier filter if provided

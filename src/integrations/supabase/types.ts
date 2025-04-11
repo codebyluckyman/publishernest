@@ -2476,6 +2476,7 @@ export type Database = {
       supplier_quote_price_breaks: {
         Row: {
           created_at: string
+          format_id: string | null
           id: string
           price_break_id: string
           product_id: string | null
@@ -2497,6 +2498,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          format_id?: string | null
           id?: string
           price_break_id: string
           product_id?: string | null
@@ -2518,6 +2520,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          format_id?: string | null
           id?: string
           price_break_id?: string
           product_id?: string | null
@@ -2538,6 +2541,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "supplier_quote_price_breaks_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "formats"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "supplier_quote_price_breaks_price_break_id_fkey"
             columns: ["price_break_id"]

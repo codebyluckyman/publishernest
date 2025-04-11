@@ -203,7 +203,11 @@ export function PurchaseOrderLineItemsTable({
                       disabled={!item.product_id}
                     />
                     {item.supplier_quote_id && item.supplier_quote_id !== 'manual' && (
-                      <SupplierQuoteDetailsDialog quoteId={item.supplier_quote_id} />
+                      <SupplierQuoteDetailsDialog 
+                        quoteId={item.supplier_quote_id} 
+                        formatId={item.format_id}
+                        productId={item.product_id}
+                      />
                     )}
                   </div>
                 </TableCell>

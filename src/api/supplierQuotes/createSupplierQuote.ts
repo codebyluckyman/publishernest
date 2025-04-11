@@ -159,24 +159,38 @@ export async function createSupplierQuote(
 
   // Insert price breaks if any
   if (formData.price_breaks && formData.price_breaks.length > 0) {
-    const priceBreaksToInsert = formData.price_breaks.map(pb => ({
-      supplier_quote_id: supplierQuote.id,
-      quote_request_format_id: pb.quote_request_format_id,
-      price_break_id: pb.price_break_id,
-      product_id: pb.product_id || null, // Ensure product_id is included if available
-      quantity: pb.quantity,
-      unit_cost: pb.unit_cost,
-      unit_cost_1: pb.unit_cost_1,
-      unit_cost_2: pb.unit_cost_2,
-      unit_cost_3: pb.unit_cost_3,
-      unit_cost_4: pb.unit_cost_4,
-      unit_cost_5: pb.unit_cost_5,
-      unit_cost_6: pb.unit_cost_6,
-      unit_cost_7: pb.unit_cost_7,
-      unit_cost_8: pb.unit_cost_8,
-      unit_cost_9: pb.unit_cost_9,
-      unit_cost_10: pb.unit_cost_10
-    }));
+    // Create a map to store format IDs for each quote_request_format_id
+    const formatIdMap = new Map();
+    if (quoteRequestFormats && quoteRequestFormats.length > 0) {
+      quoteRequestFormats.forEach(qrf => {
+        formatIdMap.set(qrf.id, qrf.format_id);
+      });
+    }
+
+    const priceBreaksToInsert = formData.price_breaks.map(pb => {
+      // Get format_id from our map based on the quote_request_format_id
+      const format_id = formatIdMap.get(pb.quote_request_format_id);
+      
+      return {
+        supplier_quote_id: supplierQuote.id,
+        quote_request_format_id: pb.quote_request_format_id,
+        price_break_id: pb.price_break_id,
+        product_id: pb.product_id || null,
+        format_id: format_id || null, // Include the format_id from our mapping
+        quantity: pb.quantity,
+        unit_cost: pb.unit_cost,
+        unit_cost_1: pb.unit_cost_1,
+        unit_cost_2: pb.unit_cost_2,
+        unit_cost_3: pb.unit_cost_3,
+        unit_cost_4: pb.unit_cost_4,
+        unit_cost_5: pb.unit_cost_5,
+        unit_cost_6: pb.unit_cost_6,
+        unit_cost_7: pb.unit_cost_7,
+        unit_cost_8: pb.unit_cost_8,
+        unit_cost_9: pb.unit_cost_9,
+        unit_cost_10: pb.unit_cost_10
+      };
+    });
 
     const { error: priceBreaksError } = await supabase
       .from("supplier_quote_price_breaks")

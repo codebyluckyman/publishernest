@@ -18,9 +18,15 @@ import { formatCurrency } from '@/utils/formatters';
 
 interface SupplierQuoteDetailsDialogProps {
   quoteId: string;
+  formatId?: string;
+  productId?: string;
 }
 
-export function SupplierQuoteDetailsDialog({ quoteId }: SupplierQuoteDetailsDialogProps) {
+export function SupplierQuoteDetailsDialog({ 
+  quoteId,
+  formatId,
+  productId
+}: SupplierQuoteDetailsDialogProps) {
   const [open, setOpen] = useState(false);
 
   if (!quoteId || quoteId === 'manual') {
@@ -42,14 +48,22 @@ export function SupplierQuoteDetailsDialog({ quoteId }: SupplierQuoteDetailsDial
           </DialogDescription>
         </DialogHeader>
 
-        <QuoteDetails quoteId={quoteId} />
+        <QuoteDetails 
+          quoteId={quoteId} 
+          formatId={formatId}
+          productId={productId}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-function QuoteDetails({ quoteId }: { quoteId: string }) {
-  const { quotes, isLoading } = useSupplierQuotesByProduct();
+function QuoteDetails({ quoteId, formatId, productId }: { 
+  quoteId: string;
+  formatId?: string;
+  productId?: string;
+}) {
+  const { quotes, isLoading } = useSupplierQuotesByProduct(productId, formatId);
   
   if (isLoading) {
     return <div>Loading quote details...</div>;
@@ -60,6 +74,20 @@ function QuoteDetails({ quoteId }: { quoteId: string }) {
   if (!quote) {
     return <div>Quote details not found</div>;
   }
+  
+  // Filter price breaks for the specific product and format if provided
+  const filteredPriceBreaks = quote.price_breaks?.filter(pb => {
+    if (productId && formatId) {
+      return pb.product_id === productId && pb.format_id === formatId;
+    }
+    if (productId) {
+      return pb.product_id === productId;
+    }
+    if (formatId) {
+      return pb.format_id === formatId;
+    }
+    return true;
+  });
   
   return (
     <div className="space-y-4">
@@ -107,8 +135,8 @@ function QuoteDetails({ quoteId }: { quoteId: string }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {quote.price_breaks && quote.price_breaks.length > 0 ? (
-              quote.price_breaks.map((priceBreak) => (
+            {filteredPriceBreaks && filteredPriceBreaks.length > 0 ? (
+              filteredPriceBreaks.map((priceBreak) => (
                 <TableRow key={priceBreak.id}>
                   <TableCell>{priceBreak.quantity}</TableCell>
                   <TableCell>{formatCurrency(priceBreak.unit_cost || 0, quote.currency)}</TableCell>
