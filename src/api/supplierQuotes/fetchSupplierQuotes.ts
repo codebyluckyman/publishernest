@@ -75,7 +75,10 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
   if (productId || formatId) {
     // We need to find quote request formats that match our criteria
     let formatsQuery = supabase.from("quote_request_formats")
-      .select("id");
+      .select(`
+        id,
+        products:quote_request_format_products(product_id)
+      `);
     
     if (formatId) {
       // Direct format match
@@ -83,8 +86,8 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     }
     
     if (productId) {
-      // Find formats with this product linked
-      formatsQuery = formatsQuery.eq("quote_request_formats.products.product_id", productId);
+      // Find formats with this product linked - use proper join
+      formatsQuery = formatsQuery.eq("products.product_id", productId);
     }
     
     const { data: matchingFormats, error: formatsError } = await formatsQuery;
