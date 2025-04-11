@@ -50,5 +50,5 @@ export async function fetchPurchaseOrders({
     throw error;
   }
 
-  return data as unknown as PurchaseOrder[];
+  return data as PurchaseOrder[];
 }

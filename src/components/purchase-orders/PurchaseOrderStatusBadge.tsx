@@ -1,16 +1,16 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { PurchaseOrder, PurchaseOrderStatusCode, PURCHASE_ORDER_STATUS_MAP } from '@/types/purchaseOrder';
+import { PurchaseOrderStatusCode, PURCHASE_ORDER_STATUS_MAP } from '@/types/purchaseOrder';
 
 interface PurchaseOrderStatusBadgeProps {
-  status: PurchaseOrderStatus | PurchaseOrderStatusCode;
+  status: string | PurchaseOrderStatusCode;
   className?: string;
 }
 
 export function PurchaseOrderStatusBadge({ status, className = '' }: PurchaseOrderStatusBadgeProps) {
   // Determine if the status is a code or a status string
-  const isStatusCode = status.length === 2 && /^\d+$/.test(status);
+  const isStatusCode = typeof status === 'string' && status.length === 2 && /^\d+$/.test(status);
   
   // Get the appropriate status data
   const statusData = isStatusCode
