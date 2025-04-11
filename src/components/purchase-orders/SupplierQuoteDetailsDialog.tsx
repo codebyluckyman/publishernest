@@ -76,7 +76,7 @@ function QuoteDetails({ quoteId }: { quoteId: string }) {
         
         <div>
           <h3 className="text-sm font-medium">Status</h3>
-          <Badge variant={quote.status === 'approved' ? 'success' : 'default'}>
+          <Badge variant={quote.status === 'approved' ? 'secondary' : 'default'}>
             {quote.status}
           </Badge>
         </div>
