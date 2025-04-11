@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,9 @@ import { useProducts } from '@/hooks/useProducts';
 import { useFormats } from '@/hooks/useFormatsApi';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type LineItem = Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'>;
+type LineItem = Omit<SalesOrderLineItem, 'id' | 'sales_order_id' | 'created_at' | 'updated_at'> & {
+  supplier_quote_id?: string;
+};
 
 interface LineItemsTableProps {
   items: LineItem[];
@@ -38,7 +40,6 @@ export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTabl
     const updatedItems = [...items];
     updatedItems[index] = { ...updatedItems[index], [key]: value };
 
-    // Auto-calculate totals
     if (key === 'quantity' || key === 'unit_price') {
       const qty = key === 'quantity' ? value : items[index].quantity;
       const price = key === 'unit_price' ? value : items[index].unit_price;
@@ -58,14 +59,6 @@ export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTabl
     const updatedItems = [...items];
     updatedItems.splice(index, 1);
     onItemsChange(updatedItems);
-  };
-
-  const getProductById = (id: string) => {
-    return products?.find(product => product.id === id);
-  };
-
-  const getFormatById = (id: string) => {
-    return formats?.find(format => format.id === id);
   };
 
   const formatCurrency = (amount: number) => {
@@ -121,14 +114,14 @@ export function LineItemsTable({ items, onItemsChange, currency }: LineItemsTabl
                 <TableCell>
                   <Select
                     value={item.format_id || ''}
-                    onValueChange={(value) => updateLineItem(index, 'format_id', value || undefined)}
+                    onValueChange={(value) => updateLineItem(index, 'format_id', value === 'none' ? undefined : value)}
                     disabled={isLoadingFormats}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select format" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {formats?.map((format) => (
                         <SelectItem key={format.id} value={format.id}>
                           {format.format_name}

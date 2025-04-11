@@ -11,42 +11,27 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
-import { LineItemsTable } from "./LineItemsTable";
-import { Calendar, Save, Loader2, X } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Save, Loader2, X } from "lucide-react";
+import { PurchaseOrderLineItemsTable } from "./PurchaseOrderLineItemsTable";
+import { NewPurchaseOrderLineItem } from "@/types/purchaseOrderLineItem";
+import { useSuppliers } from "@/hooks/useSuppliers";
 
 const formSchema = z.object({
   printRunId: z.string().uuid({ message: "Please select a print run" }),
   supplierId: z.string().uuid({ message: "Please select a supplier" }).optional(),
-  supplierQuoteId: z.string().uuid().optional(),
   currency: z.string().min(1, { message: "Please enter a currency" }),
   issueDate: z.date().optional(),
   deliveryDate: z.date().optional(),
   notes: z.string().optional(),
   shippingAddress: z.string().optional(),
   shippingMethod: z.string().optional(),
-  lineItems: z.array(
-    z.object({
-      id: z.string().optional(),
-      product_id: z.string().uuid(),
-      format_id: z.string().uuid().optional(),
-      quantity: z.number().min(1),
-      unit_cost: z.number().min(0),
-      total_cost: z.number().min(0),
-      supplier_id: z.string().uuid().optional(),
-      supplier_quote_id: z.string().uuid().optional(),
-      isNew: z.boolean().optional(),
-      isDeleted: z.boolean().optional(),
-    })
-  ).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 interface PurchaseOrderFormProps {
   initialData?: any;
-  onSubmit: (data: FormValues) => void;
+  onSubmit: (data: FormValues & { lineItems: NewPurchaseOrderLineItem[] }) => void;
   onCancel: () => void;
   isSubmitting: boolean;
   mode?: 'create' | 'edit';
@@ -61,59 +46,38 @@ export function PurchaseOrderForm({
 }: PurchaseOrderFormProps) {
   const { currentOrganization } = useOrganization();
   const { printRuns, isLoading: isPrintRunsLoading } = usePrintRuns();
-  const [lineItems, setLineItems] = useState<any[]>([]);
-  const [supplierMismatchError, setSupplierMismatchError] = useState<string | null>(null);
+  const { suppliers, isLoading: isSuppliersLoading } = useSuppliers();
+  const [lineItems, setLineItems] = useState<NewPurchaseOrderLineItem[]>(initialData?.lineItems || []);
+  const [lockSupplier, setLockSupplier] = useState<boolean>(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       currency: "USD",
-      lineItems: [],
+      supplierId: undefined
     },
   });
 
-  const handleFormSubmit = (values: FormValues) => {
-    const formData = {
-      ...values,
-      lineItems: lineItems.filter(item => !item.isDeleted),
-    };
-    onSubmit(formData);
+  // When a supplier is selected from a line item, update the supplier field
+  const handleSupplierChange = (supplierId: string) => {
+    if (!form.getValues('supplierId')) {
+      form.setValue('supplierId', supplierId);
+      setLockSupplier(true);
+    }
   };
 
-  const handleLineItemsChange = (items: any[]) => {
-    setLineItems(items);
-    form.setValue('lineItems', items);
-    
-    // Reset supplier mismatch error when items change
-    setSupplierMismatchError(null);
+  const handleFormSubmit = (values: FormValues) => {
+    onSubmit({ ...values, lineItems });
   };
-  
-  const handleSupplierSelect = (supplierId: string) => {
-    // Check if a different supplier is selected in other line items
-    const otherSuppliers = lineItems
-      .filter(item => item.supplier_id && item.supplier_id !== supplierId)
-      .map(item => item.supplier_id);
-    
-    if (otherSuppliers.length > 0) {
-      setSupplierMismatchError(
-        "Warning: You've selected items from different suppliers. All items should be from the same supplier."
-      );
-    } else {
-      setSupplierMismatchError(null);
-      form.setValue('supplierId', supplierId);
-    }
+
+  // Calculate total cost of all line items
+  const calculateTotalCost = () => {
+    return lineItems.reduce((total, item) => total + (item.total_cost || 0), 0);
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-        {supplierMismatchError && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{supplierMismatchError}</AlertDescription>
-          </Alert>
-        )}
-        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -137,6 +101,38 @@ export function PurchaseOrderForm({
                         {printRun.title}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="supplierId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Supplier</FormLabel>
+                <Select
+                  disabled={isSubmitting || isSuppliersLoading || lockSupplier}
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Supplier" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {suppliers?.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.supplier_name}
+                      </SelectItem>
+                    ))}
+                    {suppliers?.length === 0 && (
+                      <SelectItem value="none" disabled>No suppliers available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -226,18 +222,27 @@ export function PurchaseOrderForm({
           )}
         />
 
-        <div>
-          <h3 className="text-lg font-medium mb-4">Line Items</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Add products to this purchase order. Select a product to automatically associate
-            its format and choose from available supplier quotes.
-          </p>
-          <LineItemsTable 
-            items={lineItems} 
-            onChange={handleLineItemsChange} 
-            onSupplierSelect={handleSupplierSelect}
-            disabled={isSubmitting}
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Line Items</h3>
+          <PurchaseOrderLineItemsTable
+            items={lineItems}
+            onItemsChange={setLineItems}
+            currency={form.watch("currency")}
+            onSupplierChange={handleSupplierChange}
+            supplierId={form.watch("supplierId")}
           />
+        </div>
+
+        <div className="flex justify-between items-center border-t pt-4">
+          <div>
+            <p className="text-sm font-medium">Total Cost</p>
+            <p className="text-xl font-bold">
+              {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: form.watch("currency") || 'USD'
+              }).format(calculateTotalCost())}
+            </p>
+          </div>
         </div>
 
         <FormField
@@ -271,7 +276,7 @@ export function PurchaseOrderForm({
           </Button>
           <Button 
             type="submit" 
-            disabled={isSubmitting || (supplierMismatchError !== null && lineItems.length > 0)}
+            disabled={isSubmitting}
           >
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

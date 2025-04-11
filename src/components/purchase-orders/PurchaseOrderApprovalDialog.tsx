@@ -27,8 +27,8 @@ export function PurchaseOrderApprovalDialog({
   const { updatePurchaseOrderStatus } = usePurchaseOrders();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const isPendingApproval = purchaseOrder.status === 'pending_approval';
-  const isDraft = purchaseOrder.status === 'draft';
+  const isPendingApproval = purchaseOrder.status_code === '00' && purchaseOrder.status !== 'cancelled';
+  const isDraft = purchaseOrder.status_code === '00';
   
   const handleAction = async () => {
     try {
@@ -38,7 +38,7 @@ export function PurchaseOrderApprovalDialog({
       if (isDraft) {
         await updatePurchaseOrderStatus({
           id: purchaseOrder.id,
-          status: 'pending_approval'
+          status: 'draft' // Using a valid status value
         });
       }
       // If pending approval, approve it

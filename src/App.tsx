@@ -20,7 +20,7 @@ import CreateSalesPresentation from "./pages/CreateSalesPresentation";
 import SalesPresentationDetail from "./pages/SalesPresentationDetail";
 import EditSalesPresentation from "./pages/EditSalesPresentation";
 import SharedPresentationView from "./pages/SharedPresentationView";
-import QuoteRequests from "./pages/QuoteRequests"; 
+import QuoteRequests from "./pages/QuoteRequests";
 import Quotes from "./pages/Quotes";
 import QuoteComparison from "./pages/QuoteComparison";
 import PrintRuns from "./pages/PrintRuns";
@@ -31,6 +31,7 @@ import CreateCustomer from "./pages/CreateCustomer";
 import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
 import Organizations from "./pages/Organizations";
 import Stock from "./pages/Stock";
+import EditPurchaseOrder from "./pages/EditPurchaseOrder";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: "products",
         element: <ProtectedRoute><Products /></ProtectedRoute>
+      },
+      {
+        path: "stock",
+        element: <ProtectedRoute><Stock /></ProtectedRoute>
       },
       {
         path: "publishing-program",
@@ -77,6 +82,10 @@ const router = createBrowserRouter([
       {
         path: "purchase-orders/create",
         element: <ProtectedRoute><CreatePurchaseOrder /></ProtectedRoute>
+      },
+      {
+        path: "purchase-orders/edit/:id",
+        element: <ProtectedRoute><EditPurchaseOrder /></ProtectedRoute>
       },
       {
         path: "sales-orders",
@@ -141,10 +150,6 @@ const router = createBrowserRouter([
       {
         path: "organizations",
         element: <ProtectedRoute><Organizations /></ProtectedRoute>
-      },
-      {
-        path: "stock",
-        element: <ProtectedRoute><Stock /></ProtectedRoute>
       }
     ]
   },

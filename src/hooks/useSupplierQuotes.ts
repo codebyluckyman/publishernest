@@ -4,19 +4,19 @@ import { toast } from "sonner";
 import { Organization } from "@/types/organization";
 import { SupplierQuote, SupplierQuoteFormValues, SupplierQuoteStatus } from "@/types/supplierQuote";
 import { useAuth } from "@/context/AuthContext";
-import {
-  fetchSupplierQuotes,
+import { 
+  fetchSupplierQuotes, 
   fetchSupplierQuoteById,
   createSupplierQuote,
   updateSupplierQuote,
   submitSupplierQuote,
-  fetchSupplierQuoteAudit,
+  approveSupplierQuote,
+  rejectSupplierQuote,
+  deleteSupplierQuote,
   acceptSupplierQuote,
   declineSupplierQuote,
-  deleteSupplierQuote
 } from "@/api/supplierQuotes";
-import { approveSupplierQuote } from "@/api/supplierQuotes/approveSupplierQuote";
-import { rejectSupplierQuote } from "@/api/supplierQuotes/rejectSupplierQuote";
+import { api as supplierQuoteApi } from "@/api/supplierQuotes";
 
 /**
  * Custom hook for managing supplier quotes with React Query
@@ -252,7 +252,7 @@ export function useSupplierQuotes() {
       queryKey: ['supplier-quote-audit', supplierQuoteId],
       queryFn: async () => {
         if (!supplierQuoteId) return [];
-        return fetchSupplierQuoteAudit(supplierQuoteId);
+        return supplierQuoteApi.fetchSupplierQuoteAudit(supplierQuoteId) || [];
       },
       enabled: !!supplierQuoteId
     });

@@ -6,29 +6,31 @@ import { Plus, FileText } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { usePagination } from "@/hooks/usePagination";
+import { PurchaseOrderStatusBadge } from "@/components/purchase-orders/PurchaseOrderStatusBadge";
+import { PurchaseOrderStatusFilter } from "@/components/purchase-orders/PurchaseOrderStatusFilter";
 
 const PurchaseOrders = () => {
   const navigate = useNavigate();
-  const { purchaseOrders, isLoading } = usePurchaseOrders();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   
-  // Filter the purchase orders by search query and status
+  // Pass status code filter if not "all"
+  const { purchaseOrders, isLoading } = usePurchaseOrders({
+    statusCode: statusFilter !== "all" ? statusFilter : undefined
+  });
+  
+  // Filter the purchase orders by search query
   const filteredPurchaseOrders = purchaseOrders.filter(po => {
     const matchesSearch = !searchQuery || 
       po.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (po.supplier?.supplier_name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || 
-      po.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
   
   // Set up pagination
@@ -48,30 +50,7 @@ const PurchaseOrders = () => {
   });
   
   const handleCreatePurchaseOrder = () => {
-    toast.info("The Purchase Order creation feature is currently under development.");
-    
-    // Still navigate to the placeholder page
     navigate("/purchase-orders/create");
-  };
-
-  const statusOptions: FilterOption[] = [
-    { value: "all", label: "All Statuses" },
-    { value: "draft", label: "Draft" },
-    { value: "pending_approval", label: "Pending Approval" },
-    { value: "approved", label: "Approved" },
-    { value: "fulfilled", label: "Fulfilled" },
-    { value: "cancelled", label: "Cancelled" }
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft': return "bg-gray-200 text-gray-800";
-      case 'pending_approval': return "bg-yellow-100 text-yellow-800";
-      case 'approved': return "bg-green-100 text-green-800";
-      case 'fulfilled': return "bg-blue-100 text-blue-800";
-      case 'cancelled': return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
   };
 
   const formatDate = (dateStr?: string) => {
@@ -110,12 +89,9 @@ const PurchaseOrders = () => {
             className="max-w-sm"
           />
         </div>
-        <SelectFilter
+        <PurchaseOrderStatusFilter 
           value={statusFilter}
           onValueChange={setStatusFilter}
-          options={statusOptions}
-          placeholder="Filter by status"
-          className="w-full sm:w-[180px]"
         />
       </div>
 
@@ -169,9 +145,7 @@ const PurchaseOrders = () => {
                   <TableCell>{formatDate(po.delivery_date)}</TableCell>
                   <TableCell>{formatCurrency(po.total_amount, po.currency)}</TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(po.status)}>
-                      {po.status?.replace('_', ' ')}
-                    </Badge>
+                    <PurchaseOrderStatusBadge status={po.status_code} />
                   </TableCell>
                   <TableCell>
                     <Button 

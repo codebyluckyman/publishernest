@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
@@ -12,11 +11,14 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, User, Calendar } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SalesOrderRequirementsSection } from '@/components/sales-orders/requirements/SalesOrderRequirementsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DeliveryLocationTab } from '@/components/sales-orders/DeliveryLocationTab';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getSymbolForCurrency } from '@/api/organizations/currencySymbols';
 
 const SalesOrderDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,6 +60,21 @@ const SalesOrderDetail = () => {
       status: newStatus,
       changedBy: '00000000-0000-0000-0000-000000000000' // In a real app, get this from auth context
     });
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+  
+  const getCreatorName = () => {
+    if (!salesOrder?.created_by_user) return 'Unknown User';
+    
+    if (salesOrder.created_by_user.first_name && salesOrder.created_by_user.last_name) {
+      return `${salesOrder.created_by_user.first_name} ${salesOrder.created_by_user.last_name}`;
+    }
+    
+    return salesOrder.created_by_user.email;
   };
 
   if (isLoading) {
@@ -103,7 +120,6 @@ const SalesOrderDetail = () => {
     }).format(amount);
   };
 
-  // Check if the order is editable (only draft orders can be edited)
   const isEditable = salesOrder.status === 'draft';
 
   return (
@@ -144,6 +160,9 @@ const SalesOrderDetail = () => {
         <TabsList>
           <TabsTrigger value="details">Order Details</TabsTrigger>
           <TabsTrigger value="requirements">Customer Requirements</TabsTrigger>
+          {salesOrder.delivery_location_id && (
+            <TabsTrigger value="delivery">Delivery Location</TabsTrigger>
+          )}
         </TabsList>
         
         <TabsContent value="details">
@@ -174,6 +193,13 @@ const SalesOrderDetail = () => {
                 <div className="flex justify-between">
                   <span>Status</span>
                   <span>{getStatusBadge(salesOrder.status)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Currency</span>
+                  <span>
+                    {salesOrder.currency} 
+                    {` (${getSymbolForCurrency(salesOrder.currency)})`}
+                  </span>
                 </div>
                 {salesOrder.payment_terms && (
                   <div className="flex justify-between">
@@ -214,6 +240,33 @@ const SalesOrderDetail = () => {
 
           <Card className="mb-6">
             <CardHeader>
+              <CardTitle>Order Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4 py-2">
+                <div className="flex-shrink-0">
+                  <Avatar>
+                    <AvatarImage src={`https://www.gravatar.com/avatar/${salesOrder.created_by_user?.email}?d=mp`} />
+                    <AvatarFallback>{getInitials(getCreatorName())}</AvatarFallback>
+                  </Avatar>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Created by</p>
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 text-muted-foreground mr-1" />
+                    <p className="text-sm">{getCreatorName()}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-muted-foreground mr-1" />
+                    <p className="text-sm">{format(new Date(salesOrder.created_at), 'MMM d, yyyy HH:mm')}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-6">
+            <CardHeader>
               <CardTitle>Line Items</CardTitle>
             </CardHeader>
             <CardContent>
@@ -231,8 +284,25 @@ const SalesOrderDetail = () => {
                     {salesOrder.line_items?.map((item) => (
                       <tr key={item.id} className="border-b border-gray-200">
                         <td className="p-2">
-                          <div className="font-medium">{item.product?.title}</div>
-                          {item.format && <div className="text-sm text-gray-500">{item.format.format_name}</div>}
+                          <div className="flex items-center space-x-3">
+                            {item.product?.cover_image_url && (
+                              <div className="flex-shrink-0 h-12 w-10 overflow-hidden rounded border">
+                                <img 
+                                  src={item.product.cover_image_url} 
+                                  alt={item.product?.title || 'Product cover'}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/placeholder.svg';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <div>
+                              <div className="font-medium">{item.product?.title}</div>
+                              {item.format && <div className="text-sm text-gray-500">{item.format.format_name}</div>}
+                              {item.product?.isbn13 && <div className="text-xs text-gray-500">ISBN: {item.product.isbn13}</div>}
+                            </div>
+                          </div>
                         </td>
                         <td className="p-2">{item.quantity}</td>
                         <td className="p-2">{formatCurrency(item.unit_price)}</td>
@@ -285,6 +355,13 @@ const SalesOrderDetail = () => {
               readOnly={!isEditable}
             />
           )}
+        </TabsContent>
+
+        <TabsContent value="delivery">
+          <DeliveryLocationTab 
+            deliveryLocation={salesOrder.delivery_location} 
+            isLoading={isLoading} 
+          />
         </TabsContent>
       </Tabs>
     </div>

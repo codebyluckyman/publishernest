@@ -17,7 +17,9 @@ import {
   FileSpreadsheet,
   FileCog,
   Store,
-  BookOpen
+  BookOpen,
+  BoxesIcon,
+  Package
 } from 'lucide-react';
 
 export interface MenuItem {
@@ -58,6 +60,11 @@ export const NavigationMenuItems: MenuItem[] = [
         label: 'Formats',
         path: '/formats',
         icon: ClipboardList,
+      },
+      {
+        label: 'Stock',
+        path: '/stock',
+        icon: Package,
       }
     ]
   },

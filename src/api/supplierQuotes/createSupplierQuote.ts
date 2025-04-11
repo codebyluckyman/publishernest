@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
@@ -95,25 +96,101 @@ export async function createSupplierQuote(
     throw new Error(`Error creating supplier quote: ${error.message}`);
   }
 
+  // Fetch quote request formats to get format IDs
+  const { data: quoteRequestFormats, error: quoteRequestFormatsError } = await supabase
+    .from("quote_request_formats")
+    .select("id, format_id")
+    .eq("quote_request_id", formData.quote_request_id);
+
+  if (quoteRequestFormatsError) {
+    console.error("Error fetching quote request formats:", quoteRequestFormatsError.message);
+    // Continue execution - we don't want to fail the entire operation if this fails
+  } else {
+    console.log("Quote request formats:", quoteRequestFormats);
+    
+    // Extract unique format associations
+    const formatAssociations = new Map();
+    
+    // First, add all format associations from the quote request formats
+    if (quoteRequestFormats && quoteRequestFormats.length > 0) {
+      quoteRequestFormats.forEach(qrf => {
+        if (qrf.format_id && qrf.id) {
+          formatAssociations.set(qrf.id, {
+            supplier_quote_id: supplierQuote.id,
+            format_id: qrf.format_id,
+            quote_request_format_id: qrf.id
+          });
+        }
+      });
+    }
+    
+    // Then, check if we have price breaks that reference specific formats
+    if (formData.price_breaks && formData.price_breaks.length > 0) {
+      formData.price_breaks.forEach(pb => {
+        if (pb.quote_request_format_id) {
+          const qrf = quoteRequestFormats?.find(f => f.id === pb.quote_request_format_id);
+          if (qrf && qrf.format_id) {
+            formatAssociations.set(pb.quote_request_format_id, {
+              supplier_quote_id: supplierQuote.id,
+              format_id: qrf.format_id,
+              quote_request_format_id: pb.quote_request_format_id
+            });
+          }
+        }
+      });
+    }
+    
+    // Insert format associations if we found any
+    if (formatAssociations.size > 0) {
+      const formatsToInsert = Array.from(formatAssociations.values());
+      console.log("Inserting format associations:", formatsToInsert);
+      
+      const { error: formatInsertError } = await supabase
+        .from("supplier_quote_formats")
+        .insert(formatsToInsert);
+      
+      if (formatInsertError) {
+        console.error("Error inserting format associations:", formatInsertError);
+      } else {
+        console.log("Successfully inserted format associations");
+      }
+    }
+  }
+
   // Insert price breaks if any
   if (formData.price_breaks && formData.price_breaks.length > 0) {
-    const priceBreaksToInsert = formData.price_breaks.map(pb => ({
-      supplier_quote_id: supplierQuote.id,
-      quote_request_format_id: pb.quote_request_format_id,
-      price_break_id: pb.price_break_id,
-      quantity: pb.quantity,
-      unit_cost: pb.unit_cost,
-      unit_cost_1: pb.unit_cost_1,
-      unit_cost_2: pb.unit_cost_2,
-      unit_cost_3: pb.unit_cost_3,
-      unit_cost_4: pb.unit_cost_4,
-      unit_cost_5: pb.unit_cost_5,
-      unit_cost_6: pb.unit_cost_6,
-      unit_cost_7: pb.unit_cost_7,
-      unit_cost_8: pb.unit_cost_8,
-      unit_cost_9: pb.unit_cost_9,
-      unit_cost_10: pb.unit_cost_10
-    }));
+    // Create a map to store format IDs for each quote_request_format_id
+    const formatIdMap = new Map();
+    if (quoteRequestFormats && quoteRequestFormats.length > 0) {
+      quoteRequestFormats.forEach(qrf => {
+        formatIdMap.set(qrf.id, qrf.format_id);
+      });
+    }
+
+    const priceBreaksToInsert = formData.price_breaks.map(pb => {
+      // Get format_id from our map based on the quote_request_format_id
+      const format_id = formatIdMap.get(pb.quote_request_format_id);
+      
+      return {
+        supplier_quote_id: supplierQuote.id,
+        quote_request_format_id: pb.quote_request_format_id,
+        price_break_id: pb.price_break_id,
+        product_id: pb.product_id || null,
+        format_id: format_id || null, // Include the format_id from our mapping
+        quantity: pb.quantity,
+        unit_cost: pb.unit_cost,
+        unit_cost_1: pb.unit_cost_1,
+        unit_cost_2: pb.unit_cost_2,
+        unit_cost_3: pb.unit_cost_3,
+        unit_cost_4: pb.unit_cost_4,
+        unit_cost_5: pb.unit_cost_5,
+        unit_cost_6: pb.unit_cost_6,
+        unit_cost_7: pb.unit_cost_7,
+        unit_cost_8: pb.unit_cost_8,
+        unit_cost_9: pb.unit_cost_9,
+        unit_cost_10: pb.unit_cost_10
+      };
+    });
 
     const { error: priceBreaksError } = await supabase
       .from("supplier_quote_price_breaks")

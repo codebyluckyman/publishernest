@@ -1,4 +1,3 @@
-
 export interface SalesOrder {
   id: string;
   organization_id: string;
@@ -26,6 +25,12 @@ export interface SalesOrder {
   created_at: string;
   updated_at: string;
   created_by: string;
+  created_by_user?: {
+    id: string;
+    email: string;
+    first_name?: string;
+    last_name?: string;
+  };
   customer?: {
     id: string;
     customer_name: string;
@@ -42,6 +47,10 @@ export interface SalesOrder {
     state?: string;
     postal_code?: string;
     country?: string;
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    notes?: string;
   };
   line_items?: Array<{
     id: string;
@@ -53,6 +62,8 @@ export interface SalesOrder {
     product?: {
       id: string;
       title: string;
+      isbn13?: string;
+      cover_image_url?: string;
     };
     format?: {
       id: string;

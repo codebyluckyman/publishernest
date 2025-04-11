@@ -8,6 +8,8 @@ import { AlertCircle, ArrowLeft } from "lucide-react";
 import { PurchaseOrderForm } from "@/components/purchase-orders/PurchaseOrderForm";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/components/ui/use-toast";
+import { createPurchaseOrderLineItem } from "@/api/purchaseOrders";
 
 const CreatePurchaseOrder = () => {
   const navigate = useNavigate();
@@ -21,12 +23,42 @@ const CreatePurchaseOrder = () => {
       setIsSubmitting(true);
       setError(null);
       
+      // Extract line items from the form data
+      const { lineItems, ...purchaseOrderData } = formData;
+
       await createPurchaseOrder({
-        ...formData,
+        ...purchaseOrderData,
         status: 'draft',
       }, {
-        onSuccess: (purchaseOrderId) => {
-          navigate(`/purchase-orders/${purchaseOrderId}`);
+        onSuccess: async (purchaseOrderId) => {
+          // Create all line items
+          try {
+            if (lineItems && lineItems.length > 0) {
+              for (const item of lineItems) {
+                if (item.product_id) { // Only create line items with a product selected
+                  await createPurchaseOrderLineItem({
+                    ...item,
+                    purchase_order_id: purchaseOrderId
+                  });
+                }
+              }
+            }
+            
+            toast({
+              title: "Success",
+              description: "Purchase order created successfully",
+              variant: "default"
+            });
+            navigate(`/purchase-orders/${purchaseOrderId}`);
+          } catch (lineItemError) {
+            console.error('Error creating purchase order line items:', lineItemError);
+            toast({
+              title: "Warning",
+              description: "Purchase order created but there was an issue with some line items",
+              variant: "destructive"
+            });
+            navigate(`/purchase-orders/${purchaseOrderId}`);
+          }
         },
         onError: (error) => {
           setError('Failed to create purchase order. Please try again.');
