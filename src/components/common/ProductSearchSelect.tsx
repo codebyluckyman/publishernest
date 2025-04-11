@@ -78,6 +78,7 @@ export function ProductSearchSelect({
           ) : (
             <>
               <CommandEmpty>No products found.</CommandEmpty>
+              <CommandList>
               <CommandGroup className="max-h-[300px] overflow-y-auto">
                 {filteredProducts.map((product) => (
                   <CommandItem
@@ -104,6 +105,7 @@ export function ProductSearchSelect({
                     </div>
                   </CommandItem>
                 ))}
+              <CommandList/>  
               </CommandGroup>
             </>
           )}
