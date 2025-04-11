@@ -1,7 +1,7 @@
 
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote, SupplierQuoteStatus } from "@/types/supplierQuote";
+import { SupplierQuote, SupplierQuoteStatus, SupplierQuoteFormat } from "@/types/supplierQuote";
 
 interface FetchQuotesParams {
   currentOrganization: Organization | null;
@@ -50,7 +50,7 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
         )
       ),
       supplier:suppliers(id, supplier_name),
-      formats:supplier_quote_formats(*),
+      formats:supplier_quote_formats(*, format:formats(id, format_name)),
       price_breaks:supplier_quote_price_breaks(*)
     `)
     .eq("organization_id", currentOrganization.id);
@@ -131,5 +131,23 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
     throw error;
   }
 
-  return data as SupplierQuote[];
+  // Transform the data to match the SupplierQuote type
+  const formattedQuotes = data?.map(quote => {
+    // Format the formats array to ensure it has format_name
+    const formattedFormats: SupplierQuoteFormat[] = quote.formats?.map((format: any) => ({
+      id: format.id,
+      supplier_quote_id: format.supplier_quote_id,
+      format_id: format.format_id,
+      quote_request_format_id: format.quote_request_format_id,
+      format_name: format.format?.format_name || "Unknown Format"
+    })) || [];
+
+    // Return a properly typed SupplierQuote
+    return {
+      ...quote,
+      formats: formattedFormats
+    } as SupplierQuote;
+  }) || [];
+
+  return formattedQuotes;
 }
