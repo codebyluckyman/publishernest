@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Library, Plus } from "lucide-react";
@@ -12,13 +11,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
 
@@ -30,12 +29,12 @@ interface SavingLibraryDialogProps {
   organizationId?: string;
 }
 
-export function SavingLibraryDialog({ 
-  open, 
-  onOpenChange, 
-  onAddFromLibrary, 
+export function SavingLibraryDialog({
+  open,
+  onOpenChange,
+  onAddFromLibrary,
   onOpen = () => {}, // Provide a default empty function
-  organizationId 
+  organizationId,
 }: SavingLibraryDialogProps) {
   const [savingLibrary, setSavingLibrary] = useState<SavingTableItem[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
@@ -43,7 +42,7 @@ export function SavingLibraryDialog({
   // Fetch savings library when dialog opens
   const fetchSavingLibrary = async () => {
     if (!organizationId) return;
-    
+
     setLoadingLibrary(true);
     try {
       const data = await fetchSavings(organizationId);
@@ -64,12 +63,12 @@ export function SavingLibraryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
+      {/* <DialogTrigger asChild>
         <Button variant="outline" size="sm" onClick={onOpen} type="button">
           <Library className="h-4 w-4 mr-2" />
           Add from Library
         </Button>
-      </DialogTrigger>
+      </DialogTrigger> */}
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>Savings Library</DialogTitle>
@@ -77,7 +76,7 @@ export function SavingLibraryDialog({
             Select savings from your library to add to this quote.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="max-h-[400px] overflow-y-auto mt-4">
           <Table>
             <TableHeader>
@@ -105,8 +104,8 @@ export function SavingLibraryDialog({
                 savingLibrary.map((saving) => (
                   <TableRow key={saving.id}>
                     <TableCell>{saving.name}</TableCell>
-                    <TableCell>{saving.description || '-'}</TableCell>
-                    <TableCell>{saving.unit_of_measure_name || '-'}</TableCell>
+                    <TableCell>{saving.description || "-"}</TableCell>
+                    <TableCell>{saving.unit_of_measure_name || "-"}</TableCell>
                     <TableCell>
                       <Button
                         size="sm"

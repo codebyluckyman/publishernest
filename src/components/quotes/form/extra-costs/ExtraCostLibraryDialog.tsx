@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Library, Plus, PlusCircle } from "lucide-react";
@@ -13,13 +12,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
 
@@ -31,21 +30,23 @@ interface ExtraCostLibraryDialogProps {
   organizationId?: string;
 }
 
-export function ExtraCostLibraryDialog({ 
-  open, 
-  onOpenChange, 
-  onAddFromLibrary, 
+export function ExtraCostLibraryDialog({
+  open,
+  onOpenChange,
+  onAddFromLibrary,
   onOpen = () => {}, // Provide a default empty function
-  organizationId 
+  organizationId,
 }: ExtraCostLibraryDialogProps) {
-  const [extraCostLibrary, setExtraCostLibrary] = useState<ExtraCostTableItem[]>([]);
+  const [extraCostLibrary, setExtraCostLibrary] = useState<
+    ExtraCostTableItem[]
+  >([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
 
   // Fetch extra costs library when dialog opens
   const fetchExtraCostLibrary = async () => {
     if (!organizationId) return;
-    
+
     setLoadingLibrary(true);
     try {
       const data = await fetchExtraCosts(organizationId);
@@ -66,25 +67,25 @@ export function ExtraCostLibraryDialog({
 
   // Handle adding a new extra cost to the library
   const handleExtraCostAdded = (newExtraCost: ExtraCostTableItem) => {
-    setExtraCostLibrary(prevLibrary => [...prevLibrary, newExtraCost]);
+    setExtraCostLibrary((prevLibrary) => [...prevLibrary, newExtraCost]);
   };
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogTrigger asChild>
+        {/* <DialogTrigger asChild>
           <Button variant="outline" size="sm" onClick={onOpen} type="button">
             <Library className="h-4 w-4 mr-2" />
             Add from Library
           </Button>
-        </DialogTrigger>
+        </DialogTrigger> */}
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle>Extra Costs Library</DialogTitle>
-              <Button 
-                onClick={() => setIsNewDialogOpen(true)} 
-                size="sm" 
+              <Button
+                onClick={() => setIsNewDialogOpen(true)}
+                size="sm"
                 variant="outline"
                 type="button"
               >
@@ -96,7 +97,7 @@ export function ExtraCostLibraryDialog({
               Select extra costs from your library to add to this quote.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="max-h-[400px] overflow-y-auto mt-4">
             <Table>
               <TableHeader>
@@ -124,8 +125,8 @@ export function ExtraCostLibraryDialog({
                   extraCostLibrary.map((cost) => (
                     <TableRow key={cost.id}>
                       <TableCell>{cost.name}</TableCell>
-                      <TableCell>{cost.description || '-'}</TableCell>
-                      <TableCell>{cost.unit_of_measure_name || '-'}</TableCell>
+                      <TableCell>{cost.description || "-"}</TableCell>
+                      <TableCell>{cost.unit_of_measure_name || "-"}</TableCell>
                       <TableCell>
                         <Button
                           size="sm"
@@ -145,7 +146,7 @@ export function ExtraCostLibraryDialog({
         </DialogContent>
       </Dialog>
 
-      <NewExtraCostDialog 
+      <NewExtraCostDialog
         open={isNewDialogOpen}
         onOpenChange={setIsNewDialogOpen}
         organizationId={organizationId}
