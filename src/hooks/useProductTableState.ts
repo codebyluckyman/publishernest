@@ -12,7 +12,6 @@ interface UseProductTableProps {
   filters: {
     product_form: string | null;
     publisher_name: string | null;
-    status: string | null;
   };
   currentOrganization: Organization | null;
   refreshTrigger?: number;

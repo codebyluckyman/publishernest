@@ -14,7 +14,6 @@ interface ProductTableProps {
   filters: {
     product_form: string | null;
     publisher_name: string | null;
-    status: string | null;
   };
   currentOrganization: Organization | null;
   onViewProduct: (productId: string) => void;

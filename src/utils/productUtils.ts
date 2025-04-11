@@ -43,95 +43,77 @@ export const fetchProducts = async (
   filters: {
     product_form: string | null;
     publisher_name: string | null;
-    status: string | null;
   },
   sortField: SortField,
   sortDirection: SortDirection
-): Promise<Product[]> => {
+) => {
   if (!currentOrganization) {
     return [];
   }
 
-  try {
-    // Basic query setup
-    let queryBuilder = supabase
-      .from("products")
-      .select("*")
-      .eq("organization_id", currentOrganization.id);
+  let queryBuilder = supabase
+    .from("products")
+    .select("*")
+    .eq("organization_id", currentOrganization.id);
 
-    // Apply filters
-    if (searchQuery) {
-      queryBuilder = queryBuilder.ilike("title", `%${searchQuery}%`);
-    }
+  if (searchQuery) {
+    queryBuilder = queryBuilder.ilike("title", `%${searchQuery}%`);
+  }
 
-    if (filters.product_form) {
-      queryBuilder = queryBuilder.eq("product_form", filters.product_form);
-    }
+  if (filters.product_form) {
+    queryBuilder = queryBuilder.eq("product_form", filters.product_form);
+  }
 
-    if (filters.publisher_name) {
-      queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
-    }
+  if (filters.publisher_name) {
+    queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
+  }
 
-    // Apply status filter
-    if (filters.status) {
-      queryBuilder = queryBuilder.eq("status", filters.status);
-    }
+  const { data: productsData, error } = await queryBuilder.order(sortField, { ascending: sortDirection === 'asc' });
 
-    // Execute the query with sorting
-    const { data: productsData, error } = await queryBuilder.order(sortField, { ascending: sortDirection === 'asc' });
+  if (error) {
+    console.error("Error fetching products:", error);
+    throw new Error(error.message);
+  }
 
-    if (error) {
-      console.error("Error fetching products:", error);
-      throw new Error(error.message);
-    }
+  if (productsData && productsData.length > 0) {
+    const productIds = productsData.map(product => product.id);
+    
+    const { data: pricesData, error: pricesError } = await supabase
+      .from("product_prices")
+      .select("product_id, price, currency_code")
+      .in("product_id", productIds)
+      .eq("is_default", true);
 
-    // Fetch default prices if we have products
-    if (productsData && productsData.length > 0) {
-      const productIds = productsData.map(product => product.id);
-      
-      const { data: pricesData, error: pricesError } = await supabase
-        .from("product_prices")
-        .select("product_id, price, currency_code")
-        .in("product_id", productIds)
-        .eq("is_default", true);
-
-      if (pricesError) {
-        console.error("Error fetching product prices:", pricesError);
-        return productsData.map(product => ({
-          ...product,
-          default_price: product.list_price,
-          default_currency: "USD"
-        })) as Product[];
-      }
-
-      // Create a price map for easy lookup
-      const priceMap: Record<string, { price: number; currency: string }> = {};
-      
-      if (pricesData) {
-        pricesData.forEach(priceInfo => {
-          priceMap[priceInfo.product_id] = {
-            price: priceInfo.price,
-            currency: priceInfo.currency_code
-          };
-        });
-      }
-
-      // Add default price information to each product
+    if (pricesError) {
+      console.error("Error fetching product prices:", pricesError);
       return productsData.map(product => ({
         ...product,
-        default_price: priceMap[product.id]?.price ?? product.list_price,
-        default_currency: priceMap[product.id]?.currency ?? "USD"
-      })) as Product[];
+        default_price: product.list_price,
+        default_currency: "USD"
+      })) as unknown as Product[];
     }
 
-    // Return products with default pricing fallback
-    return productsData ? productsData.map(product => ({
+    const priceMap: Record<string, { price: number; currency: string }> = {};
+    
+    if (pricesData) {
+      pricesData.forEach(priceInfo => {
+        priceMap[priceInfo.product_id] = {
+          price: priceInfo.price,
+          currency: priceInfo.currency_code
+        };
+      });
+    }
+
+    return productsData.map(product => ({
       ...product,
-      default_price: product.list_price,
-      default_currency: "USD"
-    })) as Product[] : [];
-  } catch (err) {
-    console.error("Error in fetchProducts:", err);
-    return [];
+      default_price: priceMap[product.id]?.price ?? product.list_price,
+      default_currency: priceMap[product.id]?.currency ?? "USD"
+    })) as unknown as Product[];
   }
+
+  return productsData ? productsData.map(product => ({
+    ...product,
+    default_price: product.list_price,
+    default_currency: "USD"
+  })) as unknown as Product[] : [];
 };

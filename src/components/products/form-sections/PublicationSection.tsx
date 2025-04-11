@@ -123,8 +123,8 @@ export function PublicationSection({ form, readOnly = false }: PublicationSectio
               <FormLabel>Currency</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value || undefined}
-                value={field.value || undefined}
+                defaultValue={field.value}
+                value={field.value}
                 disabled={readOnly}
               >
                 <FormControl>
