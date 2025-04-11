@@ -21,7 +21,7 @@ export const fetchSupplierCommunications = async (purchaseOrderId: string): Prom
     .from('supplier_communications')
     .select(`
       *,
-      creator:profiles!created_by(first_name, last_name, email)
+      creator:profiles(first_name, last_name, email)
     `)
     .eq('purchase_order_id', purchaseOrderId)
     .order('communication_date', { ascending: false });
