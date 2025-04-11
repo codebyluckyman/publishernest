@@ -33,7 +33,7 @@ export function ProductSearchSelect({
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   // Find the currently selected product
-  const selectedProduct = products?.find(product => product.id === value);
+  const selectedProduct = value ? products?.find(product => product.id === value) : undefined;
 
   // Filter products based on search term
   useEffect(() => {
@@ -83,8 +83,6 @@ export function ProductSearchSelect({
                   {filteredProducts.map((product) => (
                     <CommandItem
                       key={product.id}
-                      // The important change: Use the product's searchable properties as the "value"
-                      // but continue to track selection by ID
                       value={`${product.title} ${product.isbn13 || ''}`}
                       onSelect={() => {
                         onChange(product.id, product);
