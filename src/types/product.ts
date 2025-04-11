@@ -21,9 +21,17 @@ export interface Product {
     embossing: boolean;
     die_cut: boolean;
     holographic: boolean;
-  };
+  } | FormatExtra[];
   format_extra_comments?: string | null;
   status: string;
+}
+
+// New interface for dynamic format extras
+export interface FormatExtra {
+  id?: string;
+  name: string;
+  description?: string;
+  unit_of_measure_id?: string;
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';

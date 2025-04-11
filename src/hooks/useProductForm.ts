@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { productSchema, defaultProductValues, ProductFormValues } from "@/schemas/productSchema";
+import { FormatExtra } from "@/types/product";
 
 export function useProductForm(productId: string | undefined, onSuccess: () => void) {
   const { currentOrganization } = useOrganization();
@@ -45,6 +46,16 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
                   ? JSON.parse(data.format_extras) 
                   : data.format_extras)
               : defaultProductValues.format_extras;
+            
+            // Handle format_extras that might be an array of objects
+            let standardFormatExtras = defaultProductValues.format_extras;
+            let formatExtrasArray: FormatExtra[] = [];
+            
+            if (Array.isArray(formatExtras)) {
+              formatExtrasArray = formatExtras as FormatExtra[];
+            } else {
+              standardFormatExtras = formatExtras;
+            }
               
             form.reset({
               ...data,
@@ -57,6 +68,9 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               thickness_measurement: data.thickness_measurement !== null ? Number(data.thickness_measurement) : null,
               weight_measurement: data.weight_measurement !== null ? Number(data.weight_measurement) : null,
               format_id: data.format_id || null,
+              cover_image_url: data.cover_image_url || null,
+              format_extras: standardFormatExtras,
+              format_extras_array: formatExtrasArray,
               // New fields
               internal_images: data.internal_images || [],
               carton_quantity: data.carton_quantity !== null ? Number(data.carton_quantity) : null,
@@ -67,8 +81,9 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               age_range: data.age_range || "",
               synopsis: data.synopsis || "",
               license: data.license || "",
-              format_extras: formatExtras,
               format_extra_comments: data.format_extra_comments || null,
+              status: data.status || "active",
+              currency_code: data.currency_code || "USD",
             });
           }
         } catch (err: any) {
@@ -94,14 +109,26 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       // Clean up the format_id field - if it's an empty string, set it to null
       const cleanedFormatId = values.format_id === "" ? null : values.format_id;
       
+      // Process format extras - handle both the object form and array form
+      let formatExtrasToSave: any = values.format_extras;
+      
+      // If we have array entries, use those instead
+      if (values.format_extras_array && values.format_extras_array.length > 0) {
+        formatExtrasToSave = values.format_extras_array;
+      }
+      
       const formattedValues = {
         ...values,
         title: values.title,
         publication_date: values.publication_date ? formatDateToYYYYMMDD(values.publication_date) : null,
         organization_id: currentOrganization.id,
-        format_id: cleanedFormatId, // Use the cleaned format_id
+        format_id: cleanedFormatId,
+        format_extras: formatExtrasToSave,
       };
 
+      // Remove format_extras_array as it's not in the database schema
+      delete (formattedValues as any).format_extras_array;
+      
       console.log("Submitting product with values:", formattedValues);
       
       let result;

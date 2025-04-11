@@ -13,6 +13,7 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { ExtraCostLibraryDialog } from "@/components/quotes/form/extra-costs/ExtraCostLibraryDialog";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
+import { FormatExtra } from "@/types/product";
 
 interface FormatExtrasSectionProps {
   form: UseFormReturn<ProductFormValues>;
@@ -25,7 +26,7 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
   
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "format_extras"
+    name: "format_extras_array"
   });
 
   const handleLibraryOpen = () => {
@@ -71,7 +72,7 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
                 <div className="col-span-4">
                   <FormField
                     control={form.control}
-                    name={`format_extras.${index}.name`}
+                    name={`format_extras_array.${index}.name`}
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -89,7 +90,7 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
                 <div className="col-span-5">
                   <FormField
                     control={form.control}
-                    name={`format_extras.${index}.description`}
+                    name={`format_extras_array.${index}.description`}
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -108,7 +109,7 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
                 <div className="col-span-2">
                   <FormField
                     control={form.control}
-                    name={`format_extras.${index}.unit_of_measure_id`}
+                    name={`format_extras_array.${index}.unit_of_measure_id`}
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>

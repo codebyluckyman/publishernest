@@ -1,4 +1,13 @@
+
 import { z } from "zod";
+import { FormatExtra } from "@/types/product";
+
+const formatExtraSchema = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  description: z.string().optional(),
+  unit_of_measure_id: z.string().optional()
+});
 
 export const productSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -45,8 +54,11 @@ export const productSchema = z.object({
     die_cut: false,
     holographic: false
   }),
+  format_extras_array: z.array(formatExtraSchema).default([]),
   format_extra_comments: z.string().nullable(),
-  status: z.string().default("active")
+  status: z.string().default("active"),
+  currency_code: z.string().nullable().default("USD"),
+  cover_image_url: z.string().nullable()
 });
 
 export const defaultProductValues = {
@@ -87,8 +99,11 @@ export const defaultProductValues = {
     die_cut: false,
     holographic: false
   },
+  format_extras_array: [],
   format_extra_comments: null,
-  status: "active"
+  status: "active",
+  currency_code: "USD",
+  cover_image_url: null
 };
 
 export type ProductFormValues = z.infer<typeof productSchema>;
