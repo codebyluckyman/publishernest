@@ -2228,6 +2228,44 @@ export type Database = {
           },
         ]
       }
+      supplier_communications: {
+        Row: {
+          communication_date: string
+          communication_type: string
+          created_at: string
+          created_by: string
+          id: string
+          message: string
+          purchase_order_id: string
+        }
+        Insert: {
+          communication_date?: string
+          communication_type: string
+          created_at?: string
+          created_by: string
+          id?: string
+          message: string
+          purchase_order_id: string
+        }
+        Update: {
+          communication_date?: string
+          communication_type?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          message?: string
+          purchase_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_communications_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_quote_attachments: {
         Row: {
           created_at: string
@@ -3063,6 +3101,15 @@ export type Database = {
           p_changed_by: string
           p_action: string
           p_changes: Json
+        }
+        Returns: string
+      }
+      record_supplier_communication: {
+        Args: {
+          p_purchase_order_id: string
+          p_created_by: string
+          p_message: string
+          p_communication_type: string
         }
         Returns: string
       }
