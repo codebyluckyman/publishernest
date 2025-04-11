@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 
 interface ProductSearchSelectProps {
@@ -77,36 +77,36 @@ export function ProductSearchSelect({
             <div className="py-6 text-center text-sm">Loading products...</div>
           ) : (
             <>
-              <CommandEmpty>No products found.</CommandEmpty>
               <CommandList>
-              <CommandGroup className="max-h-[300px] overflow-y-auto">
-                {filteredProducts.map((product) => (
-                  <CommandItem
-                    key={product.id}
-                    value={product.id}
-                    onSelect={() => {
-                      onChange(product.id, product);
-                      setOpen(false);
-                    }}
-                  >
-                    <div className="flex flex-col text-left">
-                      <div className="flex items-center">
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            value === product.id ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <span className="font-medium">{product.title}</span>
+                <CommandEmpty>No products found.</CommandEmpty>
+                <CommandGroup className="max-h-[300px] overflow-y-auto">
+                  {filteredProducts.map((product) => (
+                    <CommandItem
+                      key={product.id}
+                      value={product.id}
+                      onSelect={() => {
+                        onChange(product.id, product);
+                        setOpen(false);
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <div className="flex items-center">
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              value === product.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="font-medium">{product.title}</span>
+                        </div>
+                        {product.isbn13 && (
+                          <span className="text-xs text-gray-500 pl-6">ISBN: {product.isbn13}</span>
+                        )}
                       </div>
-                      {product.isbn13 && (
-                        <span className="text-xs text-gray-500 pl-6">ISBN: {product.isbn13}</span>
-                      )}
-                    </div>
-                  </CommandItem>
-                ))}
-              <CommandList/>  
-              </CommandGroup>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>  
             </>
           )}
         </Command>
