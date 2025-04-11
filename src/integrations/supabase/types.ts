@@ -977,6 +977,7 @@ export type Database = {
           publication_date: string | null
           publisher_name: string | null
           series_name: string | null
+          status: string
           subject_code: string | null
           subtitle: string | null
           synopsis: string | null
@@ -1016,6 +1017,7 @@ export type Database = {
           publication_date?: string | null
           publisher_name?: string | null
           series_name?: string | null
+          status?: string
           subject_code?: string | null
           subtitle?: string | null
           synopsis?: string | null
@@ -1055,6 +1057,7 @@ export type Database = {
           publication_date?: string | null
           publisher_name?: string | null
           series_name?: string | null
+          status?: string
           subject_code?: string | null
           subtitle?: string | null
           synopsis?: string | null

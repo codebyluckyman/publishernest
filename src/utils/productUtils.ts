@@ -43,6 +43,7 @@ export const fetchProducts = async (
   filters: {
     product_form: string | null;
     publisher_name: string | null;
+    status: string | null;
   },
   sortField: SortField,
   sortDirection: SortDirection
@@ -66,6 +67,11 @@ export const fetchProducts = async (
 
   if (filters.publisher_name) {
     queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
+  }
+
+  // Apply status filter
+  if (filters.status) {
+    queryBuilder = queryBuilder.eq("status", filters.status);
   }
 
   const { data: productsData, error } = await queryBuilder.order(sortField, { ascending: sortDirection === 'asc' });

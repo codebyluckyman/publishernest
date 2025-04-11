@@ -23,6 +23,7 @@ export interface Product {
     holographic: boolean;
   };
   format_extra_comments?: string | null;
+  status: string;
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';

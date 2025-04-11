@@ -35,7 +35,7 @@ export const fetchSupplierCommunications = async (purchaseOrderId: string): Prom
     
     if (comm.creator && typeof comm.creator === 'object') {
       // Make sure email exists before considering it a valid creator object
-      if ('email' in comm.creator) {
+      if ('email' in comm.creator && comm.creator.email) {
         creator = comm.creator;
       }
     }

@@ -3,32 +3,32 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { ProductFormValues } from "@/schemas/productSchema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<ProductFormValues>;
-  readOnly?: boolean;
 }
 
-export function BasicInfoSection({ form, readOnly = false }: BasicInfoSectionProps) {
+export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
   return (
-    <div className="space-y-2">
-      <h3 className="text-lg font-medium">Basic Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Product title" disabled={readOnly} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+    <div className="grid gap-6 p-6 border rounded-md">
+      <h2 className="text-xl font-semibold border-b pb-2">Basic Information</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Title <span className="text-red-500">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input placeholder="Title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -37,60 +37,68 @@ export function BasicInfoSection({ form, readOnly = false }: BasicInfoSectionPro
             <FormItem>
               <FormLabel>Subtitle</FormLabel>
               <FormControl>
-                <Input placeholder="Subtitle" disabled={readOnly} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="publisher_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Publisher</FormLabel>
-              <FormControl>
-                <Input placeholder="Publisher name" disabled={readOnly} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="series_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Series</FormLabel>
-              <FormControl>
-                <Input placeholder="Series name" disabled={readOnly} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="edition_number"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Edition</FormLabel>
-              <FormControl>
                 <Input 
-                  type="number" 
-                  placeholder="Edition number" 
-                  disabled={readOnly}
-                  {...field}
-                  value={field.value === null ? '' : field.value}
-                  onChange={(e) => {
-                    const value = e.target.value ? parseInt(e.target.value, 10) : null;
-                    field.onChange(value);
-                  }}
+                  placeholder="Subtitle" 
+                  value={field.value || ""} 
+                  onChange={field.onChange} 
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="product_form"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Product Form</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value || ""}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select product form" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="BA">Book</SelectItem>
+                  <SelectItem value="BB">Hardcover</SelectItem>
+                  <SelectItem value="BC">Paperback</SelectItem>
+                  <SelectItem value="JB">Journal</SelectItem>
+                  <SelectItem value="DG">Electronic</SelectItem>
+                  <SelectItem value="XA">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value || "active"}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -98,4 +106,4 @@ export function BasicInfoSection({ form, readOnly = false }: BasicInfoSectionPro
       </div>
     </div>
   );
-}
+};

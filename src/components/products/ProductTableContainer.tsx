@@ -18,9 +18,11 @@ export function ProductTableContainer() {
   const [filters, setFilters] = useState<{
     product_form: string | null;
     publisher_name: string | null;
+    status: string | null;
   }>({
     product_form: null,
     publisher_name: null,
+    status: "active", // Default to active products
   });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -49,7 +51,8 @@ export function ProductTableContainer() {
 
   const areFiltersActive = () => {
     return filters.product_form !== null || 
-           filters.publisher_name !== null;
+           filters.publisher_name !== null ||
+           filters.status !== "active"; // Consider non-active filter as active
   };
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
