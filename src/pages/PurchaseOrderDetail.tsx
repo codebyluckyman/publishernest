@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { usePurchaseOrderDetails } from "@/hooks/usePurchaseOrders";
@@ -20,7 +19,7 @@ import {
   FileText 
 } from "lucide-react";
 import { PurchaseOrder, PURCHASE_ORDER_STATUS_MAP } from "@/types/purchaseOrder";
-import { DateFormatter } from "@/utils/formatters";
+import { DateFormatter, formatCurrency } from "@/utils/formatters";
 
 const PurchaseOrderDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +59,6 @@ const PurchaseOrderDetail = () => {
   const canCancel = purchaseOrder.status_code !== '90'; // Can cancel if not completed
   const canUpdateStatus = true; // Always allow status updates
   
-  // Format a date with the user's name if both are provided
   const formatDateWithUser = (date: string | undefined, userId: string | undefined) => {
     if (!date) return "—";
     let result = DateFormatter.format(new Date(date));
@@ -164,7 +162,7 @@ const PurchaseOrderDetail = () => {
               
               <div>
                 <h3 className="font-medium">Total Amount</h3>
-                <p>{purchaseOrder.currency} {purchaseOrder.total_amount?.toFixed(2) || "0.00"}</p>
+                <p>{purchaseOrder.currency} {formatCurrency(purchaseOrder.total_amount)}</p>
               </div>
             </div>
             
@@ -330,7 +328,6 @@ const PurchaseOrderDetail = () => {
         </CardContent>
       </Card>
       
-      {/* Dialogs */}
       <PurchaseOrderApprovalDialog 
         purchaseOrder={purchaseOrder}
         open={isApprovalDialogOpen}
