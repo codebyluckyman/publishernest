@@ -8,6 +8,7 @@ import { AlertCircle, ArrowLeft } from "lucide-react";
 import { PurchaseOrderForm } from "@/components/purchase-orders/PurchaseOrderForm";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/components/ui/use-toast";
 
 const CreatePurchaseOrder = () => {
   const navigate = useNavigate();
@@ -26,6 +27,11 @@ const CreatePurchaseOrder = () => {
         status: 'draft',
       }, {
         onSuccess: (purchaseOrderId) => {
+          toast({
+            title: "Success",
+            description: "Purchase order created successfully",
+            variant: "default"
+          });
           navigate(`/purchase-orders/${purchaseOrderId}`);
         },
         onError: (error) => {
