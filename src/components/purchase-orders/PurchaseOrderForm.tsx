@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Save, Loader2, X } from "lucide-react";
+import { PurchaseOrderLineItemsTable } from "./PurchaseOrderLineItemsTable";
+import { NewPurchaseOrderLineItem } from "@/types/purchaseOrderLineItem";
+import { useSuppliers } from "@/hooks/useSuppliers";
 
 const formSchema = z.object({
   printRunId: z.string().uuid({ message: "Please select a print run" }),
@@ -28,7 +31,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface PurchaseOrderFormProps {
   initialData?: any;
-  onSubmit: (data: FormValues) => void;
+  onSubmit: (data: FormValues & { lineItems: NewPurchaseOrderLineItem[] }) => void;
   onCancel: () => void;
   isSubmitting: boolean;
   mode?: 'create' | 'edit';
@@ -43,16 +46,33 @@ export function PurchaseOrderForm({
 }: PurchaseOrderFormProps) {
   const { currentOrganization } = useOrganization();
   const { printRuns, isLoading: isPrintRunsLoading } = usePrintRuns();
+  const { suppliers, isLoading: isSuppliersLoading } = useSuppliers();
+  const [lineItems, setLineItems] = useState<NewPurchaseOrderLineItem[]>(initialData?.lineItems || []);
+  const [lockSupplier, setLockSupplier] = useState<boolean>(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       currency: "USD",
+      supplierId: undefined
     },
   });
 
+  // When a supplier is selected from a line item, update the supplier field
+  const handleSupplierChange = (supplierId: string) => {
+    if (!form.getValues('supplierId')) {
+      form.setValue('supplierId', supplierId);
+      setLockSupplier(true);
+    }
+  };
+
   const handleFormSubmit = (values: FormValues) => {
-    onSubmit(values);
+    onSubmit({ ...values, lineItems });
+  };
+
+  // Calculate total cost of all line items
+  const calculateTotalCost = () => {
+    return lineItems.reduce((total, item) => total + (item.total_cost || 0), 0);
   };
 
   return (
@@ -95,7 +115,7 @@ export function PurchaseOrderForm({
               <FormItem>
                 <FormLabel>Supplier</FormLabel>
                 <Select
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isSuppliersLoading || lockSupplier}
                   onValueChange={field.onChange}
                   value={field.value}
                 >
@@ -105,8 +125,14 @@ export function PurchaseOrderForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {/* Supplier options would go here */}
-                    <SelectItem value="none">None</SelectItem>
+                    {suppliers?.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.supplier_name}
+                      </SelectItem>
+                    ))}
+                    {suppliers?.length === 0 && (
+                      <SelectItem value="none" disabled>No suppliers available</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -195,6 +221,29 @@ export function PurchaseOrderForm({
             </FormItem>
           )}
         />
+
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium">Line Items</h3>
+          <PurchaseOrderLineItemsTable
+            items={lineItems}
+            onItemsChange={setLineItems}
+            currency={form.watch("currency")}
+            onSupplierChange={handleSupplierChange}
+            supplierId={form.watch("supplierId")}
+          />
+        </div>
+
+        <div className="flex justify-between items-center border-t pt-4">
+          <div>
+            <p className="text-sm font-medium">Total Cost</p>
+            <p className="text-xl font-bold">
+              {new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: form.watch("currency") || 'USD'
+              }).format(calculateTotalCost())}
+            </p>
+          </div>
+        </div>
 
         <FormField
           control={form.control}
