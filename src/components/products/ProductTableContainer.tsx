@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -13,7 +12,9 @@ export function ProductTableContainer() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
+  const [selectedProductId, setSelectedProductId] = useState<
+    string | undefined
+  >(undefined);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<{
     product_form: string | null;
@@ -40,24 +41,43 @@ export function ProductTableContainer() {
   };
 
   const handleDialogSuccess = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
 
+  // const areFiltersActive = () => {
+  //   return filters.product_form !== null || filters.publisher_name !== null;
+  // };
+
   const areFiltersActive = () => {
-    return filters.product_form !== null || 
-           filters.publisher_name !== null;
+    const isProductFormActive =
+      filters.product_form !== null && filters.product_form !== "ALL_FORMATS";
+    const isPublisherNameActive =
+      filters.publisher_name !== null &&
+      filters.publisher_name !== "ALL_PUBLISHERS";
+    return isProductFormActive || isPublisherNameActive;
   };
 
-  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+  // const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    if (
+      (key === "product_form" && value === "ALL_FORMATS") ||
+      (key === "publisher_name" && value === "ALL_PUBLISHERS")
+    ) {
+      return false;
+    }
+
+    return Boolean(value);
+  }).length;
 
   return (
     <Card>
       <CardHeader>
-        <ProductTableHeader 
+        <ProductTableHeader
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           showFilters={showFilters}
@@ -77,7 +97,7 @@ export function ProductTableContainer() {
         />
       </CardHeader>
       <CardContent>
-        <ProductTable 
+        <ProductTable
           searchQuery={searchQuery}
           filters={filters}
           currentOrganization={currentOrganization}
