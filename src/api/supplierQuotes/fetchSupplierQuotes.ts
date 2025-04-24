@@ -1,7 +1,10 @@
-
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuote, SupplierQuoteStatus, SupplierQuoteFormat } from "@/types/supplierQuote";
+import {
+  SupplierQuote,
+  SupplierQuoteStatus,
+  SupplierQuoteFormat,
+} from "@/types/supplierQuote";
 
 interface FetchQuotesParams {
   currentOrganization: Organization | null;
@@ -13,15 +16,17 @@ interface FetchQuotesParams {
   formatId?: string;
 }
 
-export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<SupplierQuote[]> {
-  const { 
-    currentOrganization, 
-    status, 
-    supplierId, 
-    quoteRequestId, 
+export async function fetchSupplierQuotes(
+  params: FetchQuotesParams
+): Promise<SupplierQuote[]> {
+  const {
+    currentOrganization,
+    status,
+    supplierId,
+    quoteRequestId,
     searchQuery,
     productId,
-    formatId 
+    formatId,
   } = params;
 
   if (!currentOrganization) {
@@ -30,7 +35,8 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
 
   let query = supabase
     .from("supplier_quotes")
-    .select(`
+    .select(
+      `
       *,
       quote_request:quote_requests(
         id, 
@@ -52,12 +58,13 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
       supplier:suppliers(id, supplier_name),
       formats:supplier_quote_formats(*, format:formats(id, format_name)),
       price_breaks:supplier_quote_price_breaks(*)
-    `)
+    `
+    )
     .eq("organization_id", currentOrganization.id);
 
   // Apply status filter if provided
   if (status) {
-    const statuses = status.split(',');
+    const statuses = status.split(",");
     if (statuses.length > 0) {
       query = query.in("status", statuses);
     }
@@ -76,42 +83,41 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
   // Handle product and format filtering based on relationships
   if (productId || formatId) {
     // We need to find quote request formats that match our criteria
-    let formatsQuery = supabase.from("quote_request_formats")
-      .select(`
+    let formatsQuery = supabase.from("quote_request_formats").select(`
         id,
         products:quote_request_format_products(
           product_id
         )
       `);
-    
+
     if (formatId) {
       // Direct format match
       formatsQuery = formatsQuery.eq("format_id", formatId);
     }
-    
+
     if (productId) {
       // Find formats with this product linked - use proper join
       formatsQuery = formatsQuery.eq("products.product_id", productId);
     }
-    
+
     const { data: matchingFormats, error: formatsError } = await formatsQuery;
-    
+
     if (formatsError) {
       console.error("Error finding matching formats:", formatsError);
       throw formatsError;
     }
-    
+
     if (matchingFormats && matchingFormats.length > 0) {
       // Get the format IDs to filter by
-      const formatIds = matchingFormats.map(f => f.id);
-      
+      const formatIds = matchingFormats.map((f) => f.id);
+
       // Filter supplier quotes where price breaks have one of these format IDs
       query = query.in("price_breaks.quote_request_format_id", formatIds);
     } else {
       // No matching formats found, return empty result
       return [];
     }
-  } else if (searchQuery && searchQuery.trim() !== '') {
+  } else if (searchQuery && searchQuery.trim() !== "") {
     // Apply general search if no specific productId/formatId filters
     const searchTerm = searchQuery.trim().toLowerCase();
     query = query.or(`
@@ -132,22 +138,24 @@ export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<Su
   }
 
   // Transform the data to match the SupplierQuote type
-  const formattedQuotes = data?.map(quote => {
-    // Format the formats array to ensure it has format_name
-    const formattedFormats: SupplierQuoteFormat[] = quote.formats?.map((format: any) => ({
-      id: format.id,
-      supplier_quote_id: format.supplier_quote_id,
-      format_id: format.format_id,
-      quote_request_format_id: format.quote_request_format_id,
-      format_name: format.format?.format_name || "Unknown Format"
-    })) || [];
+  const formattedQuotes =
+    data?.map((quote) => {
+      // Format the formats array to ensure it has format_name
+      const formattedFormats: SupplierQuoteFormat[] =
+        quote.formats?.map((format: any) => ({
+          id: format.id,
+          supplier_quote_id: format.supplier_quote_id,
+          format_id: format.format_id,
+          quote_request_format_id: format.quote_request_format_id,
+          format_name: format.format?.format_name || "Unknown Format",
+        })) || [];
 
-    // Return a properly typed SupplierQuote
-    return {
-      ...quote,
-      formats: formattedFormats
-    } as SupplierQuote;
-  }) || [];
+      // Return a properly typed SupplierQuote
+      return {
+        ...quote,
+        formats: formattedFormats,
+      } as SupplierQuote;
+    }) || [];
 
   return formattedQuotes;
 }

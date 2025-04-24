@@ -1,6 +1,11 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrganization } from "@/context/OrganizationContext";
 import { SupplierQuotesTable } from "@/components/quotes/supplier-quotes/SupplierQuotesTable";
@@ -8,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { SupplierQuoteStatus } from "@/types/supplierQuote";
+
+import _ from "lodash";
 
 const Quotes = () => {
   const { currentOrganization } = useOrganization();
@@ -19,13 +26,24 @@ const Quotes = () => {
   // Check for tab parameter and quoteRequestId in URL query string
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    
+
     // Get and set tab parameter
     const tabParam = queryParams.get("tab");
-    if (tabParam && ["active", "completed", "all", "draft", "submitted", "approved", "rejected"].includes(tabParam)) {
+    if (
+      tabParam &&
+      [
+        "active",
+        "completed",
+        "all",
+        "draft",
+        "submitted",
+        "approved",
+        "rejected",
+      ].includes(tabParam)
+    ) {
       setActiveTab(tabParam);
     }
-    
+
     // Get and set quoteRequestId parameter
     const requestIdParam = queryParams.get("quoteRequestId");
     setQuoteRequestId(requestIdParam);
@@ -49,6 +67,15 @@ const Quotes = () => {
       default:
         return undefined;
     }
+  };
+
+  const debouncedSetSearchQuery = useCallback(
+    _.debounce((query) => setSearchQuery(query), 300), // 300ms debounce delay
+    [] // Ensure this is only created once
+  );
+
+  const handleSearchChange = (event) => {
+    debouncedSetSearchQuery(event.target.value);
   };
 
   return (
@@ -80,8 +107,8 @@ const Quotes = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs 
-              defaultValue="active" 
+            <Tabs
+              defaultValue="active"
               className="space-y-4"
               value={activeTab}
               onValueChange={setActiveTab}
@@ -95,53 +122,53 @@ const Quotes = () => {
                 <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
               <TabsContent value="active" className="space-y-4">
-                <SupplierQuotesTable 
-                  statusFilter={getStatusFilter("active")} 
+                <SupplierQuotesTable
+                  statusFilter={getStatusFilter("active")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
-              <TabsContent value="draft" className="space-y-4">
-                <SupplierQuotesTable 
-                  statusFilter={getStatusFilter("draft")} 
+              {/* <TabsContent value="draft" className="space-y-4">
+                <SupplierQuotesTable
+                  statusFilter={getStatusFilter("draft")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
               <TabsContent value="submitted" className="space-y-4">
-                <SupplierQuotesTable 
-                  statusFilter={getStatusFilter("submitted")} 
+                <SupplierQuotesTable
+                  statusFilter={getStatusFilter("submitted")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
               <TabsContent value="approved" className="space-y-4">
-                <SupplierQuotesTable 
-                  statusFilter={getStatusFilter("approved")} 
+                <SupplierQuotesTable
+                  statusFilter={getStatusFilter("approved")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
               <TabsContent value="rejected" className="space-y-4">
-                <SupplierQuotesTable 
-                  statusFilter={getStatusFilter("rejected")} 
+                <SupplierQuotesTable
+                  statusFilter={getStatusFilter("rejected")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
               <TabsContent value="completed" className="space-y-4">
-                <SupplierQuotesTable 
-                  statusFilter={getStatusFilter("completed")} 
+                <SupplierQuotesTable
+                  statusFilter={getStatusFilter("completed")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />
               </TabsContent>
               <TabsContent value="all" className="space-y-4">
-                <SupplierQuotesTable 
+                <SupplierQuotesTable
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
                 />
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </CardContent>
         </Card>

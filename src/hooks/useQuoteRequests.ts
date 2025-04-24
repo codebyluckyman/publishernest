@@ -31,7 +31,6 @@ export function useQuoteRequests() {
     users?: string,
     supplier?: string
   ) => {
-    console.log("============", users, supplier);
     return useQuery({
       queryKey: ["quoteRequests", currentOrganization?.id, status, searchQuery],
       queryFn: () =>

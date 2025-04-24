@@ -1,11 +1,14 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
-import { SupplierQuote, SupplierQuoteFormValues, SupplierQuoteStatus } from "@/types/supplierQuote";
+import {
+  SupplierQuote,
+  SupplierQuoteFormValues,
+  SupplierQuoteStatus,
+} from "@/types/supplierQuote";
 import { useAuth } from "@/context/AuthContext";
-import { 
-  fetchSupplierQuotes, 
+import {
+  fetchSupplierQuotes,
   fetchSupplierQuoteById,
   createSupplierQuote,
   updateSupplierQuote,
@@ -36,23 +39,41 @@ export function useSupplierQuotes() {
     searchQuery?: string
   ) => {
     return useQuery({
-      queryKey: ["supplierQuotes", currentOrganization?.id, status, supplierId, quoteRequestId, searchQuery],
-      queryFn: () => fetchSupplierQuotes({
+      queryKey: [
+        "supplierQuotes",
         currentOrganization,
         status,
         supplierId,
         quoteRequestId,
-        searchQuery
-      }),
+        searchQuery,
+      ],
+      queryFn: async () => {
+        if (!currentOrganization) {
+          throw new Error("Organization not selected");
+        }
+        try {
+          const data = await fetchSupplierQuotes({
+            currentOrganization,
+            status,
+            supplierId,
+            quoteRequestId,
+            searchQuery: searchQuery || undefined, // Ensure it doesn't send "null"
+          });
+          return data;
+        } catch (error) {
+          console.error("Fetch failed:", error);
+          throw error;
+        }
+      },
       enabled: !!currentOrganization,
+      retry: false, // Optional: Disable retries if needed
       meta: {
         onError: (error: any) => {
           toast.error(error.message || "Failed to load supplier quotes");
-        }
-      }
+        },
+      },
     });
   };
-
   /**
    * Hook to fetch a specific supplier quote by ID
    */
@@ -64,8 +85,8 @@ export function useSupplierQuotes() {
       meta: {
         onError: (error: any) => {
           toast.error(error.message || "Failed to load supplier quote");
-        }
-      }
+        },
+      },
     });
   };
 
@@ -74,7 +95,13 @@ export function useSupplierQuotes() {
    */
   const useCreateSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ formData, organizationId }: { formData: SupplierQuoteFormValues; organizationId: string }) => {
+      mutationFn: ({
+        formData,
+        organizationId,
+      }: {
+        formData: SupplierQuoteFormValues;
+        organizationId: string;
+      }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -87,7 +114,7 @@ export function useSupplierQuotes() {
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to create supplier quote");
-      }
+      },
     });
   };
 
@@ -96,7 +123,15 @@ export function useSupplierQuotes() {
    */
   const useUpdateSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, updates, previousData }: { id: string; updates: Partial<SupplierQuoteFormValues>; previousData?: any }) => {
+      mutationFn: ({
+        id,
+        updates,
+        previousData,
+      }: {
+        id: string;
+        updates: Partial<SupplierQuoteFormValues>;
+        previousData?: any;
+      }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -104,12 +139,14 @@ export function useSupplierQuotes() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        queryClient.invalidateQueries({
+          queryKey: ["supplierQuote", variables.id],
+        });
         toast.success("Supplier quote updated successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to update supplier quote");
-      }
+      },
     });
   };
 
@@ -130,7 +167,7 @@ export function useSupplierQuotes() {
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to delete supplier quote");
-      }
+      },
     });
   };
 
@@ -147,12 +184,14 @@ export function useSupplierQuotes() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        queryClient.invalidateQueries({
+          queryKey: ["supplierQuote", variables.id],
+        });
         toast.success("Supplier quote submitted successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to submit supplier quote");
-      }
+      },
     });
   };
 
@@ -161,7 +200,13 @@ export function useSupplierQuotes() {
    */
   const useAcceptSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, acceptedCost }: { id: string; acceptedCost: number }) => {
+      mutationFn: ({
+        id,
+        acceptedCost,
+      }: {
+        id: string;
+        acceptedCost: number;
+      }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -169,12 +214,14 @@ export function useSupplierQuotes() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        queryClient.invalidateQueries({
+          queryKey: ["supplierQuote", variables.id],
+        });
         toast.success("Supplier quote accepted successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to accept supplier quote");
-      }
+      },
     });
   };
 
@@ -191,12 +238,14 @@ export function useSupplierQuotes() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        queryClient.invalidateQueries({
+          queryKey: ["supplierQuote", variables.id],
+        });
         toast.success("Supplier quote declined successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to decline supplier quote");
-      }
+      },
     });
   };
 
@@ -205,7 +254,13 @@ export function useSupplierQuotes() {
    */
   const useApproveSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, approvedCost }: { id: string; approvedCost: number }) => {
+      mutationFn: ({
+        id,
+        approvedCost,
+      }: {
+        id: string;
+        approvedCost: number;
+      }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -213,12 +268,14 @@ export function useSupplierQuotes() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        queryClient.invalidateQueries({
+          queryKey: ["supplierQuote", variables.id],
+        });
         toast.success("Supplier quote approved successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to approve supplier quote");
-      }
+      },
     });
   };
 
@@ -235,12 +292,14 @@ export function useSupplierQuotes() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({ queryKey: ["supplierQuote", variables.id] });
+        queryClient.invalidateQueries({
+          queryKey: ["supplierQuote", variables.id],
+        });
         toast.success("Supplier quote rejected successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to reject supplier quote");
-      }
+      },
     });
   };
 
@@ -249,12 +308,12 @@ export function useSupplierQuotes() {
    */
   const useSupplierQuoteAudit = (supplierQuoteId: string | null) => {
     return useQuery({
-      queryKey: ['supplier-quote-audit', supplierQuoteId],
+      queryKey: ["supplier-quote-audit", supplierQuoteId],
       queryFn: async () => {
         if (!supplierQuoteId) return [];
         return supplierQuoteApi.fetchSupplierQuoteAudit(supplierQuoteId) || [];
       },
-      enabled: !!supplierQuoteId
+      enabled: !!supplierQuoteId,
     });
   };
 
@@ -269,6 +328,6 @@ export function useSupplierQuotes() {
     useDeclineSupplierQuote,
     useApproveSupplierQuote,
     useRejectSupplierQuote,
-    useSupplierQuoteAudit
+    useSupplierQuoteAudit,
   };
 }
