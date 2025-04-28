@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
@@ -39,9 +38,9 @@ export function ProductSection({
     customDescription?: string;
   } | null>(null);
 
-  // Get format details for the selected product
+  const shouldShowFormatDetails = displaySettings?.displayColumns.includes('format_details');
   const { data: formatDetails, isLoading: isLoadingFormat } = useFormatDetails(
-    selectedProduct?.product.format_id || null
+    shouldShowFormatDetails ? selectedProduct?.product.format_id || null : null
   );
 
   const getDisplayValue = (product: Product, column: string) => {
@@ -136,8 +135,7 @@ export function ProductSection({
                 </div>
               </div>
               
-              {/* Format Details Section */}
-              {selectedProduct.product.format_id && (
+              {shouldShowFormatDetails && selectedProduct.product.format_id && (
                 <div className="mt-6 border rounded-lg p-4 bg-slate-50">
                   <h3 className="text-lg font-medium mb-3">Format Details</h3>
                   {isLoadingFormat ? (
