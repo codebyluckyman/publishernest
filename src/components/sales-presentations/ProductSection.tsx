@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
@@ -5,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from '@/components/ui/img';
+import { useFormatDetails } from '@/hooks/format/useFormatDetails';
 
 interface PresentationDisplaySettings {
   displayColumns: string[];
@@ -36,6 +38,11 @@ export function ProductSection({
     customPrice?: number;
     customDescription?: string;
   } | null>(null);
+
+  // Get format details for the selected product
+  const { data: formatDetails, isLoading: isLoadingFormat } = useFormatDetails(
+    selectedProduct?.product.format_id || null
+  );
 
   const getDisplayValue = (product: Product, column: string) => {
     switch (column) {
@@ -128,6 +135,61 @@ export function ProductSection({
                   ))}
                 </div>
               </div>
+              
+              {/* Format Details Section */}
+              {selectedProduct.product.format_id && (
+                <div className="mt-6 border rounded-lg p-4 bg-slate-50">
+                  <h3 className="text-lg font-medium mb-3">Format Details</h3>
+                  {isLoadingFormat ? (
+                    <p className="text-sm text-muted-foreground">Loading format details...</p>
+                  ) : formatDetails ? (
+                    <div className="grid grid-cols-1 gap-3 text-sm">
+                      {formatDetails.extent && (
+                        <div>
+                          <p className="font-medium">Extent:</p>
+                          <p>{formatDetails.extent}</p>
+                        </div>
+                      )}
+                      
+                      {formatDetails.tps_height_mm && formatDetails.tps_width_mm && (
+                        <div>
+                          <p className="font-medium">TPS Dimensions:</p>
+                          <p>{formatDetails.tps_height_mm}mm × {formatDetails.tps_width_mm}mm
+                            {formatDetails.tps_depth_mm && ` × ${formatDetails.tps_depth_mm}mm`}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <p className="font-medium">PLC Dimensions:</p>
+                        <p>
+                          {formatDetails.tps_plc_height_mm && formatDetails.tps_plc_width_mm 
+                            ? `${formatDetails.tps_plc_height_mm}mm × ${formatDetails.tps_plc_width_mm}mm${formatDetails.tps_plc_depth_mm ? ` × ${formatDetails.tps_plc_depth_mm}mm` : ''}`
+                            : 'N/A'
+                          }
+                        </p>
+                      </div>
+                      
+                      {formatDetails.cover_stock_print && (
+                        <div>
+                          <p className="font-medium">Cover Stock/Print:</p>
+                          <p>{formatDetails.cover_stock_print}</p>
+                        </div>
+                      )}
+                      
+                      {formatDetails.internal_stock_print && (
+                        <div>
+                          <p className="font-medium">Internal Stock/Print:</p>
+                          <p>{formatDetails.internal_stock_print}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No format details available</p>
+                  )}
+                </div>
+              )}
+              
               <div className="flex justify-end mt-4">
                 <Button onClick={() => setSelectedProduct(null)}>Close</Button>
               </div>
