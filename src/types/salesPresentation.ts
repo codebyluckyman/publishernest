@@ -1,3 +1,4 @@
+
 export interface SalesPresentation {
   id: string;
   organization_id: string;
@@ -68,5 +69,6 @@ export interface PresentationShare {
 }
 
 export interface PresentationDisplaySettings {
-  displayColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis'>;
+  cardColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format'>;
+  dialogColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis'>;
 }

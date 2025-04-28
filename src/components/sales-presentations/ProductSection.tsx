@@ -1,16 +1,13 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Product } from '@/types/product'; // Changed from @/components/products/types/ProductTypes
+import { Product } from '@/types/product'; // Import from correct path
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from '@/components/ui/img';
 import { useFormatDetails } from '@/hooks/format/useFormatDetails';
-
-interface PresentationDisplaySettings {
-  displayColumns: string[];
-}
+import { PresentationDisplaySettings } from '@/types/salesPresentation';
 
 interface ProductSectionProps {
   title: string;
@@ -39,7 +36,17 @@ export function ProductSection({
     customDescription?: string;
   } | null>(null);
 
-  const shouldShowFormatDetails = displaySettings?.displayColumns.includes("format");
+  // Use card columns for the card display if available, otherwise fall back to legacy displayColumns
+  const cardColumns = displaySettings?.cardColumns || 
+    (displaySettings?.displayColumns as Array<string>) || 
+    ['price', 'isbn13'];
+
+  // Use dialog columns for the dialog display if available, otherwise fall back to legacy displayColumns
+  const dialogColumns = displaySettings?.dialogColumns || 
+    (displaySettings?.displayColumns as Array<string>) || 
+    ['price', 'isbn13', 'publisher', 'publication_date'];
+    
+  const shouldShowFormatDetails = dialogColumns.includes("format");
   const { data: formatDetails, isLoading: isLoadingFormat } = useFormatDetails(
     shouldShowFormatDetails ? selectedProduct?.product.format_id || null : null
   );
@@ -106,9 +113,9 @@ export function ProductSection({
               <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {displaySettings?.displayColumns.map((column) => (
+              {cardColumns.map((column) => (
                 <div key={column} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1)}:</span>
+                  <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
                   <span>{getDisplayValue(item.product, column)}</span>
                 </div>
               ))}
@@ -135,7 +142,7 @@ export function ProductSection({
                   </div>
                 )}
                 <div className="space-y-4">
-                  {displaySettings?.displayColumns.map((column) => {
+                  {dialogColumns.map((column) => {
                     if (column === 'synopsis') return null; // We'll show synopsis separately below
                     return (
                       <div key={column}>
@@ -149,7 +156,7 @@ export function ProductSection({
                 </div>
               </div>
               
-              {displaySettings?.displayColumns.includes('synopsis') && selectedProduct.product.synopsis && (
+              {dialogColumns.includes('synopsis') && selectedProduct.product.synopsis && (
                 <div className="mt-6 border rounded-lg p-4 bg-slate-50">
                   <h3 className="text-lg font-medium mb-3">Synopsis</h3>
                   <p className="text-sm text-gray-600">{selectedProduct.product.synopsis}</p>

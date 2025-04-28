@@ -18,10 +18,15 @@ const CreateSalesPresentation = () => {
     try {
       setError(null);
       
+      const displaySettings = {
+        cardColumns: formData.cardColumns,
+        dialogColumns: formData.dialogColumns
+      };
+      
       const result = await createPresentation.mutateAsync({
         title: formData.title,
         description: formData.description,
-        displayColumns: formData.displayColumns
+        displaySettings
       });
       
       if (result) {

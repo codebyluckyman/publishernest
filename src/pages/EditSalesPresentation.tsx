@@ -59,6 +59,13 @@ const EditSalesPresentation = () => {
     return <div>Presentation not found</div>;
   }
 
+  // Handle legacy display settings format to ensure backward compatibility
+  const displaySettings = presentation.display_settings || {};
+  if (displaySettings && 'displayColumns' in displaySettings && !displaySettings.cardColumns) {
+    displaySettings.cardColumns = displaySettings.displayColumns;
+    displaySettings.dialogColumns = [...displaySettings.displayColumns, 'synopsis'];
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center">
@@ -115,6 +122,7 @@ const EditSalesPresentation = () => {
             <PresentationSections 
               presentationId={id!}
               isEditable={true}
+              displaySettings={displaySettings}
             />
           </CardContent>
         </Card>

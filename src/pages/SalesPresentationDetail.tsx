@@ -26,6 +26,13 @@ const SalesPresentationDetail = () => {
     }
   };
 
+  // Handle legacy display settings format to ensure backward compatibility
+  const displaySettings = presentation?.display_settings || {};
+  if (displaySettings && 'displayColumns' in displaySettings && !displaySettings.cardColumns) {
+    displaySettings.cardColumns = displaySettings.displayColumns;
+    displaySettings.dialogColumns = [...displaySettings.displayColumns, 'synopsis'];
+  }
+
   if (isLoading) {
     return <div>Loading presentation...</div>;
   }
@@ -100,7 +107,7 @@ const SalesPresentationDetail = () => {
         <PresentationSections
           presentationId={id!}
           isEditable={presentation.status === 'draft'}
-          displaySettings={presentation.display_settings}
+          displaySettings={displaySettings}
         />
       </div>
     </div>
