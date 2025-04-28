@@ -2102,6 +2102,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          display_settings: Json | null
           expires_at: string | null
           id: string
           organization_id: string
@@ -2116,6 +2117,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          display_settings?: Json | null
           expires_at?: string | null
           id?: string
           organization_id: string
@@ -2130,6 +2132,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          display_settings?: Json | null
           expires_at?: string | null
           id?: string
           organization_id?: string

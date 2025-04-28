@@ -15,11 +15,22 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+
+// Available column options
+const displayColumnOptions = [
+  { id: 'price', label: 'Price' },
+  { id: 'isbn13', label: 'ISBN-13' },
+  { id: 'publisher', label: 'Publisher' },
+  { id: 'publication_date', label: 'Publication Date' },
+  { id: 'format', label: 'Format Details' },
+] as const;
 
 // Validation schema
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().optional(),
+  displayColumns: z.array(z.string()).min(1, { message: 'Select at least one column to display' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,11 +46,15 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
     defaultValues: {
       title: '',
       description: '',
+      displayColumns: ['price', 'isbn13', 'publisher', 'publication_date'],
     },
   });
 
   const handleSubmit = async (data: FormValues) => {
-    await onSubmit(data);
+    await onSubmit({
+      ...data,
+      displayColumns: data.displayColumns,
+    });
   };
 
   return (
@@ -75,6 +90,52 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="displayColumns"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Display Columns</FormLabel>
+                    <div className="grid grid-cols-2 gap-4">
+                      {displayColumnOptions.map((option) => (
+                        <FormField
+                          key={option.id}
+                          control={form.control}
+                          name="displayColumns"
+                          render={({ field }) => {
+                            return (
+                              <FormItem
+                                key={option.id}
+                                className="flex flex-row items-start space-x-3 space-y-0"
+                              >
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(option.id)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, option.id])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                              (value) => value !== option.id
+                                            )
+                                          )
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  {option.label}
+                                </FormLabel>
+                              </FormItem>
+                            )
+                          }}
+                        />
+                      ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

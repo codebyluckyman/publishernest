@@ -1,4 +1,3 @@
-
 export interface SalesPresentation {
   id: string;
   organization_id: string;
@@ -12,6 +11,7 @@ export interface SalesPresentation {
   updated_at: string;
   published_at?: string;
   expires_at?: string;
+  display_settings?: PresentationDisplaySettings;
 }
 
 export interface PresentationSection {
@@ -65,4 +65,8 @@ export interface PresentationShare {
   access_count: number;
   last_accessed?: string;
   expires_at?: string;
+}
+
+export interface PresentationDisplaySettings {
+  displayColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format'>;
 }

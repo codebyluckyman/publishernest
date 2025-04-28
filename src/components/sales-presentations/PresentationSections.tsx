@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { PresentationSection, PresentationItem } from '@/types/salesPresentation';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
@@ -28,7 +27,6 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
   
   const { products } = useProducts();
   
-  // Get all section IDs for fetching items
   const sectionIds = sections.data?.map(section => section.id) || [];
   const { data: sectionItemsMap, isLoading: isLoadingItems } = useSectionItems(sectionIds);
   
@@ -43,10 +41,8 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
       customDescription?: string;
     }>;
   }) => {
-    // Calculate new section order
     const sectionOrder = sections.data?.length ? sections.data.length : 0;
     
-    // Create section
     const sectionId = await createSection.mutateAsync({
       title: sectionData.title,
       description: sectionData.description,
@@ -55,9 +51,7 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
       section_order: sectionOrder
     });
     
-    // If products were provided and section creation was successful
     if (sectionId && sectionData.products && sectionData.products.length > 0) {
-      // Add product items to section
       for (let i = 0; i < sectionData.products.length; i++) {
         const product = sectionData.products[i];
         
@@ -80,7 +74,6 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
     setSectionToDelete(null);
   };
   
-  // Map products to their IDs for easier lookup
   const productMap = new Map<string, Product>();
   if (products) {
     products.forEach(product => {
@@ -88,7 +81,6 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
     });
   }
   
-  // Process sections to include product data
   const processedSections = sections.data?.map(section => {
     if (section.section_type === 'products') {
       const sectionItems = sectionItemsMap?.get(section.id) || [];
@@ -144,6 +136,7 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
                   title={section.title}
                   description={section.description}
                   products={section.productsWithData || []}
+                  displaySettings={sections.data?.[0]?.display_settings}
                   isEditable={isEditable}
                   onEdit={() => {/* Edit functionality will be added later */}}
                 />
@@ -151,7 +144,6 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
             );
           }
           
-          // Handle other section types here when implemented
           return null;
         })
       ) : (

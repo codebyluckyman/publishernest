@@ -6,9 +6,14 @@ import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from '@/components/ui/img';
 
+interface PresentationDisplaySettings {
+  displayColumns: string[];
+}
+
 interface ProductSectionProps {
   title: string;
   description?: string;
+  displaySettings?: PresentationDisplaySettings;
   products: Array<{
     product: Product;
     customPrice?: number;
@@ -21,7 +26,8 @@ interface ProductSectionProps {
 export function ProductSection({ 
   title, 
   description, 
-  products, 
+  products,
+  displaySettings,
   isEditable = false,
   onEdit
 }: ProductSectionProps) {
@@ -31,12 +37,21 @@ export function ProductSection({
     customDescription?: string;
   } | null>(null);
 
-  const handleProductClick = (product: {
-    product: Product;
-    customPrice?: number;
-    customDescription?: string;
-  }) => {
-    setSelectedProduct(product);
+  const getDisplayValue = (product: Product, column: string) => {
+    switch (column) {
+      case 'price':
+        return formatPrice(product.list_price, product.default_currency);
+      case 'isbn13':
+        return product.isbn13 || 'N/A';
+      case 'publisher':
+        return product.publisher_name || 'N/A';
+      case 'publication_date':
+        return product.publication_date ? new Date(product.publication_date).toLocaleDateString() : 'N/A';
+      case 'format':
+        return product.format_extra_comments || 'N/A';
+      default:
+        return '';
+    }
   };
 
   return (
@@ -59,7 +74,7 @@ export function ProductSection({
           <Card 
             key={item.product.id} 
             className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => handleProductClick(item)}
+            onClick={() => setSelectedProduct(item)}
           >
             {item.product.cover_image_url && (
               <div className="w-full h-48 overflow-hidden">
@@ -73,19 +88,13 @@ export function ProductSection({
             <CardHeader className="pb-2">
               <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
             </CardHeader>
-            <CardContent className="pb-2">
-              {item.customDescription ? (
-                <p className="text-muted-foreground text-sm line-clamp-3">{item.customDescription}</p>
-              ) : item.product.format_extra_comments ? (
-                <p className="text-muted-foreground text-sm line-clamp-3">{item.product.format_extra_comments}</p>
-              ) : null}
-            </CardContent>
-            <CardContent className="pt-0">
-              <p className="font-medium">
-                {item.customPrice !== undefined 
-                  ? formatPrice(item.customPrice, item.product.default_currency)
-                  : formatPrice(item.product.list_price, item.product.default_currency)}
-              </p>
+            <CardContent className="space-y-2">
+              {displaySettings?.displayColumns.map((column) => (
+                <div key={column} className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1)}:</span>
+                  <span>{getDisplayValue(item.product, column)}</span>
+                </div>
+              ))}
             </CardContent>
           </Card>
         ))}
@@ -109,41 +118,14 @@ export function ProductSection({
                   </div>
                 )}
                 <div className="space-y-4">
-                  {selectedProduct.customDescription ? (
-                    <p>{selectedProduct.customDescription}</p>
-                  ) : selectedProduct.product.format_extra_comments ? (
-                    <p>{selectedProduct.product.format_extra_comments}</p>
-                  ) : null}
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Price</h4>
-                    <p className="text-xl font-bold">
-                      {selectedProduct.customPrice !== undefined 
-                        ? formatPrice(selectedProduct.customPrice, selectedProduct.product.default_currency)
-                        : formatPrice(selectedProduct.product.list_price, selectedProduct.product.default_currency)}
-                    </p>
-                  </div>
-                  
-                  {selectedProduct.product.isbn13 && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">ISBN-13</h4>
-                      <p>{selectedProduct.product.isbn13}</p>
+                  {displaySettings?.displayColumns.map((column) => (
+                    <div key={column}>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                        {column.charAt(0).toUpperCase() + column.slice(1)}
+                      </h4>
+                      <p>{getDisplayValue(selectedProduct.product, column)}</p>
                     </div>
-                  )}
-                  
-                  {selectedProduct.product.publisher_name && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Publisher</h4>
-                      <p>{selectedProduct.product.publisher_name}</p>
-                    </div>
-                  )}
-                  
-                  {selectedProduct.product.publication_date && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Publication Date</h4>
-                      <p>{new Date(selectedProduct.product.publication_date).toLocaleDateString()}</p>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
               <div className="flex justify-end mt-4">
