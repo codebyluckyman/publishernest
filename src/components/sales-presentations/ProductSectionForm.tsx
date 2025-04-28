@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,6 +112,8 @@ export function ProductSectionForm({ onSave, initialData }: ProductSectionFormPr
           <ProductSearchSelect
             onChange={handleAddProduct}
             placeholder="Search for products to add"
+            selectedProductIds={selectedProducts.map(p => p.productId)}
+            multiple={true}
           />
         </div>
         

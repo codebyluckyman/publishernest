@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/utils/productUtils';
@@ -81,13 +80,13 @@ export function ProductSection({
                 <p className="text-muted-foreground text-sm line-clamp-3">{item.product.format_extra_comments}</p>
               ) : null}
             </CardContent>
-            <CardFooter className="pt-0">
+            <CardContent className="pt-0">
               <p className="font-medium">
                 {item.customPrice !== undefined 
                   ? formatPrice(item.customPrice, item.product.default_currency)
                   : formatPrice(item.product.list_price, item.product.default_currency)}
               </p>
-            </CardFooter>
+            </CardContent>
           </Card>
         ))}
       </div>
