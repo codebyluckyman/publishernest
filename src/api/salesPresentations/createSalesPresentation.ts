@@ -22,6 +22,22 @@ export async function createSalesPresentation({
   displaySettings
 }: CreateSalesPresentationParams): Promise<string | null> {
   try {
+    // Convert displaySettings to a plain object for database storage
+    let finalDisplaySettings: Record<string, any>;
+    
+    if (displaySettings) {
+      finalDisplaySettings = {
+        cardColumns: displaySettings.cardColumns,
+        dialogColumns: displaySettings.dialogColumns
+      };
+    } else {
+      // Default settings if none provided
+      finalDisplaySettings = {
+        cardColumns: ["price", "isbn13", "publisher"],
+        dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"]
+      };
+    }
+
     const { data, error } = await supabaseCustom
       .from('sales_presentations')
       .insert({
@@ -31,9 +47,7 @@ export async function createSalesPresentation({
         created_by: userId,
         status: 'draft',
         cover_image_url: coverImageUrl,
-        display_settings: displaySettings || {
-          displayColumns: ["price", "isbn13", "publisher", "publication_date"]
-        }
+        display_settings: finalDisplaySettings
       })
       .select('id')
       .single();

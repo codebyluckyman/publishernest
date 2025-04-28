@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Product } from '@/types/product'; // Import from correct path
+import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -36,12 +35,10 @@ export function ProductSection({
     customDescription?: string;
   } | null>(null);
 
-  // Use card columns for the card display if available, otherwise fall back to legacy displayColumns
   const cardColumns = displaySettings?.cardColumns || 
     (displaySettings?.displayColumns as Array<string>) || 
     ['price', 'isbn13'];
 
-  // Use dialog columns for the dialog display if available, otherwise fall back to legacy displayColumns
   const dialogColumns = displaySettings?.dialogColumns || 
     (displaySettings?.displayColumns as Array<string>) || 
     ['price', 'isbn13', 'publisher', 'publication_date'];
@@ -143,7 +140,7 @@ export function ProductSection({
                 )}
                 <div className="space-y-4">
                   {dialogColumns.map((column) => {
-                    if (column === 'synopsis') return null; // We'll show synopsis separately below
+                    if (column === 'synopsis') return null;
                     return (
                       <div key={column}>
                         <h4 className="text-sm font-medium text-muted-foreground mb-1">

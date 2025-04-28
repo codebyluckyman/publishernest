@@ -7,6 +7,7 @@ import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
+import { PresentationDisplaySettings } from '@/types/salesPresentation';
 
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,12 +27,22 @@ const SalesPresentationDetail = () => {
     }
   };
 
-  // Handle legacy display settings format to ensure backward compatibility
+  // Process display settings for backward compatibility
   const displaySettings = presentation?.display_settings || {};
-  if (displaySettings && 'displayColumns' in displaySettings && !displaySettings.cardColumns) {
-    displaySettings.cardColumns = displaySettings.displayColumns;
-    displaySettings.dialogColumns = [...displaySettings.displayColumns, 'synopsis'];
-  }
+  
+  // Create a properly typed displaySettings object for the component
+  const processedDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: Array.isArray(displaySettings.cardColumns) 
+      ? displaySettings.cardColumns 
+      : (Array.isArray(displaySettings.displayColumns) 
+          ? displaySettings.displayColumns 
+          : ['price', 'isbn13', 'publisher']),
+    dialogColumns: Array.isArray(displaySettings.dialogColumns) 
+      ? displaySettings.dialogColumns 
+      : (Array.isArray(displaySettings.displayColumns) 
+          ? [...displaySettings.displayColumns, 'synopsis'] 
+          : ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'])
+  };
 
   if (isLoading) {
     return <div>Loading presentation...</div>;
@@ -107,7 +118,7 @@ const SalesPresentationDetail = () => {
         <PresentationSections
           presentationId={id!}
           isEditable={presentation.status === 'draft'}
-          displaySettings={displaySettings}
+          displaySettings={processedDisplaySettings}
         />
       </div>
     </div>

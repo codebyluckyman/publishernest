@@ -11,8 +11,8 @@ interface FetchSalesPresentationsParams {
   page?: number;
 }
 
-// Type guard to verify the shape of display_settings
-function isPresentationDisplaySettings(obj: any): obj is PresentationDisplaySettings {
+// Type guard to verify the shape of legacy display_settings
+function hasDisplayColumns(obj: any): obj is { displayColumns: string[] } {
   return (
     obj &&
     typeof obj === 'object' &&
@@ -20,9 +20,20 @@ function isPresentationDisplaySettings(obj: any): obj is PresentationDisplaySett
   );
 }
 
+// Type guard for the new format
+function hasCardAndDialogColumns(obj: any): obj is PresentationDisplaySettings {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    Array.isArray(obj.cardColumns) &&
+    Array.isArray(obj.dialogColumns)
+  );
+}
+
 // Default display settings to use if none found or invalid
 const defaultDisplaySettings: PresentationDisplaySettings = {
-  displayColumns: ["price", "isbn13", "publisher", "publication_date"]
+  cardColumns: ["price", "isbn13", "publisher", "publication_date"],
+  dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"]
 };
 
 export async function fetchSalesPresentations({
@@ -54,13 +65,30 @@ export async function fetchSalesPresentations({
       return [];
     }
 
-    // Map and cast each presentation's display_settings with validation
+    // Map and convert each presentation's display_settings to the updated format
     return data.map(item => {
       let displaySettings: PresentationDisplaySettings;
+      
       try {
-        displaySettings = isPresentationDisplaySettings(item.display_settings) 
-          ? item.display_settings as PresentationDisplaySettings
-          : defaultDisplaySettings;
+        if (item.display_settings) {
+          const settings = item.display_settings;
+          
+          // Check if it's already in the new format
+          if (hasCardAndDialogColumns(settings)) {
+            displaySettings = settings as PresentationDisplaySettings;
+          }
+          // Check if it's in the legacy format and convert
+          else if (hasDisplayColumns(settings)) {
+            displaySettings = {
+              cardColumns: settings.displayColumns,
+              dialogColumns: [...settings.displayColumns, 'synopsis']
+            };
+          } else {
+            displaySettings = defaultDisplaySettings;
+          }
+        } else {
+          displaySettings = defaultDisplaySettings;
+        }
       } catch (e) {
         console.warn('Invalid display_settings format, using defaults', e);
         displaySettings = defaultDisplaySettings;

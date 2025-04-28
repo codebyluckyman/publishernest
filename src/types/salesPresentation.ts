@@ -71,4 +71,6 @@ export interface PresentationShare {
 export interface PresentationDisplaySettings {
   cardColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format'>;
   dialogColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis'>;
+  displayColumns?: Array<string>; // For backward compatibility
+  [key: string]: any; // Add index signature for JSON compatibility
 }
