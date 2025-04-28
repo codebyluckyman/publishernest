@@ -1,6 +1,7 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Product } from '@/types/product';
+import { Product } from '@/types/product'; // Changed from @/components/products/types/ProductTypes
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
