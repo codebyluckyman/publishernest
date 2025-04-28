@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { PresentationSection, PresentationItem } from '@/types/salesPresentation';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
+import { useSectionItems } from '@/hooks/useSectionItems';
 import { Product } from '@/types/product';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductSection } from './ProductSection';
@@ -20,13 +21,16 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
   
   const { 
     sections, 
-    getSectionItems,
     createSection,
     deleteSection,
     addItem
   } = usePresentationSections(presentationId);
   
   const { products } = useProducts();
+  
+  // Get all section IDs for fetching items
+  const sectionIds = sections.data?.map(section => section.id) || [];
+  const { data: sectionItemsMap, isLoading: isLoadingItems } = useSectionItems(sectionIds);
   
   const handleAddSection = async (sectionData: {
     title: string;
@@ -87,9 +91,9 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
   // Process sections to include product data
   const processedSections = sections.data?.map(section => {
     if (section.section_type === 'products') {
-      const { data: sectionItems } = getSectionItems(section.id);
+      const sectionItems = sectionItemsMap?.get(section.id) || [];
       
-      const productsWithData = sectionItems?.map(item => {
+      const productsWithData = sectionItems.map(item => {
         const product = item.item_id ? productMap.get(item.item_id) : undefined;
         
         return {
@@ -108,7 +112,7 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
     return section;
   });
   
-  if (sections.isLoading) {
+  if (sections.isLoading || isLoadingItems) {
     return <div>Loading sections...</div>;
   }
   
@@ -143,7 +147,6 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
                   isEditable={isEditable}
                   onEdit={() => {/* Edit functionality will be added later */}}
                 />
-                
               </div>
             );
           }
