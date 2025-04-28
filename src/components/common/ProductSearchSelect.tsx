@@ -18,8 +18,6 @@ interface ProductSearchSelectProps {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
-  multiple?: boolean;
-  selectedProductIds?: string[];
 }
 
 export function ProductSearchSelect({
@@ -27,9 +25,7 @@ export function ProductSearchSelect({
   onChange,
   disabled = false,
   placeholder = "Select a product",
-  className,
-  multiple = false,
-  selectedProductIds = []
+  className
 }: ProductSearchSelectProps) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,39 +80,31 @@ export function ProductSearchSelect({
               <CommandList>
                 <CommandEmpty>No products found.</CommandEmpty>
                 <CommandGroup className="max-h-[300px] overflow-y-auto">
-                  {filteredProducts.map((product) => {
-                    const isSelected = multiple 
-                      ? selectedProductIds.includes(product.id) 
-                      : value === product.id;
-                      
-                    return (
-                      <CommandItem
-                        key={product.id}
-                        value={`${product.title} ${product.isbn13 || ''}`}
-                        onSelect={() => {
-                          onChange(product.id, product);
-                          if (!multiple) {
-                            setOpen(false);
-                          }
-                        }}
-                      >
-                        <div className="flex flex-col text-left">
-                          <div className="flex items-center">
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                isSelected ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <span className="font-medium">{product.title}</span>
-                          </div>
-                          {product.isbn13 && (
-                            <span className="text-xs text-gray-500 pl-6">ISBN: {product.isbn13}</span>
-                          )}
+                  {filteredProducts.map((product) => (
+                    <CommandItem
+                      key={product.id}
+                      value={`${product.title} ${product.isbn13 || ''}`}
+                      onSelect={() => {
+                        onChange(product.id, product);
+                        setOpen(false);
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <div className="flex items-center">
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              value === product.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="font-medium">{product.title}</span>
                         </div>
-                      </CommandItem>
-                    );
-                  })}
+                        {product.isbn13 && (
+                          <span className="text-xs text-gray-500 pl-6">ISBN: {product.isbn13}</span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
                 </CommandGroup>
               </CommandList>  
             </>
