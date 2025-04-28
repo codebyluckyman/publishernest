@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { PresentationSection, PresentationItem } from '@/types/salesPresentation';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
@@ -6,9 +5,10 @@ import { Product } from '@/types/product';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductSection } from './ProductSection';
 import { AddSectionDialog } from './AddSectionDialog';
+import { EditProductSectionDialog } from './EditProductSectionDialog';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Trash2 } from 'lucide-react';
+import { Trash2, GripVertical } from 'lucide-react';
 
 interface PresentationSectionsProps {
   presentationId: string;
@@ -17,13 +17,24 @@ interface PresentationSectionsProps {
 
 export function PresentationSections({ presentationId, isEditable = false }: PresentationSectionsProps) {
   const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
+  const [sectionToEdit, setSectionToEdit] = useState<{
+    section: PresentationSection;
+    productsWithData: Array<{
+      product: Product;
+      customPrice?: number;
+      customDescription?: string;
+    }>;
+  } | null>(null);
   
   const { 
     sections, 
     getSectionItems,
     createSection,
     deleteSection,
-    addItem
+    addItem,
+    updateSection,
+    updateItem,
+    deleteItem
   } = usePresentationSections(presentationId);
   
   const { products } = useProducts();
@@ -71,6 +82,59 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
     }
   };
   
+  const handleEditSection = async (section: PresentationSection, editData: {
+    title: string;
+    description: string;
+    products: Array<{
+      productId: string;
+      customPrice?: number;
+      customDescription?: string;
+    }>;
+  }) => {
+    try {
+      // Update section details
+      await updateSection.mutateAsync({
+        sectionId: section.id,
+        sectionData: {
+          title: editData.title,
+          description: editData.description
+        }
+      });
+      
+      // Get current items
+      const { data: currentItems } = getSectionItems(section.id);
+      
+      // Delete all current items
+      if (currentItems) {
+        for (const item of currentItems) {
+          await deleteItem.mutateAsync({
+            itemId: item.id,
+            sectionId: section.id
+          });
+        }
+      }
+      
+      // Add new items
+      for (let i = 0; i < editData.products.length; i++) {
+        const product = editData.products[i];
+        await addItem.mutateAsync({
+          sectionId: section.id,
+          itemData: {
+            item_type: 'product',
+            item_id: product.productId,
+            custom_price: product.customPrice,
+            description: product.customDescription,
+            display_order: i
+          }
+        });
+      }
+      
+      setSectionToEdit(null);
+    } catch (error) {
+      console.error('Error updating section:', error);
+    }
+  };
+  
   const handleDeleteSection = async (sectionId: string) => {
     await deleteSection.mutateAsync(sectionId);
     setSectionToDelete(null);
@@ -107,7 +171,7 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
     
     return section;
   });
-  
+
   if (sections.isLoading) {
     return <div>Loading sections...</div>;
   }
@@ -121,36 +185,47 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
       )}
       
       {processedSections && processedSections.length > 0 ? (
-        processedSections.map(section => {
-          if (section.section_type === 'products' && 'productsWithData' in section) {
-            return (
-              <div key={section.id} className="relative">
-                {isEditable && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="absolute right-0 top-0"
-                    onClick={() => setSectionToDelete(section.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-                
-                <ProductSection
-                  title={section.title}
-                  description={section.description}
-                  products={section.productsWithData || []}
-                  isEditable={isEditable}
-                  onEdit={() => {/* Edit functionality will be added later */}}
-                />
-                
-              </div>
-            );
-          }
-          
-          // Handle other section types here when implemented
-          return null;
-        })
+        <div className="space-y-10">
+          {processedSections.map(section => {
+            if (section.section_type === 'products' && 'productsWithData' in section) {
+              return (
+                <div key={section.id} className="relative group">
+                  {isEditable && (
+                    <div className="absolute right-0 top-0 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        className="cursor-grab"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setSectionToDelete(section.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <ProductSection
+                    title={section.title}
+                    description={section.description}
+                    products={section.productsWithData || []}
+                    isEditable={isEditable}
+                    onEdit={() => setSectionToEdit({
+                      section,
+                      productsWithData: section.productsWithData || []
+                    })}
+                  />
+                </div>
+              );
+            }
+            
+            return null;
+          })}
+        </div>
       ) : (
         <div className="text-center py-12">
           <h3 className="text-lg font-medium">No sections found</h3>
@@ -189,6 +264,24 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {sectionToEdit && (
+        <EditProductSectionDialog
+          open={true}
+          onOpenChange={(open) => !open && setSectionToEdit(null)}
+          initialData={{
+            title: sectionToEdit.section.title,
+            description: sectionToEdit.section.description || '',
+            products: sectionToEdit.productsWithData.map(item => ({
+              productId: item.product.id,
+              product: item.product,
+              customPrice: item.customPrice,
+              customDescription: item.customDescription
+            }))
+          }}
+          onSave={(data) => handleEditSection(sectionToEdit.section, data)}
+        />
+      )}
     </div>
   );
 }
