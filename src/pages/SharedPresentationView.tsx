@@ -1,7 +1,8 @@
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation, PresentationSection, PresentationItem } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trackPresentationView } from '@/api/salesPresentations';
