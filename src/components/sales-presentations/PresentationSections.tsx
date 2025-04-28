@@ -22,7 +22,8 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
     sections, 
     getSectionItems,
     createSection,
-    deleteSection
+    deleteSection,
+    addItem
   } = usePresentationSections(presentationId);
   
   const { products } = useProducts();
