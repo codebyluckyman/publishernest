@@ -38,7 +38,7 @@ export function ProductSection({
     customDescription?: string;
   } | null>(null);
 
-  const shouldShowFormatDetails = displaySettings?.displayColumns.includes('format_details');
+  const shouldShowFormatDetails = displaySettings?.displayColumns.includes("format");
   const { data: formatDetails, isLoading: isLoadingFormat } = useFormatDetails(
     shouldShowFormatDetails ? selectedProduct?.product.format_id || null : null
   );
