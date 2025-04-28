@@ -7,6 +7,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { trackPresentationView } from '@/api/salesPresentations';
 import { v4 as uuidv4 } from 'uuid';
 
+// Type guard to verify the shape of display_settings
+function isPresentationDisplaySettings(obj: any): obj is PresentationDisplaySettings {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    Array.isArray(obj.displayColumns)
+  );
+}
+
+// Default display settings to use if none found or invalid
+const defaultDisplaySettings: PresentationDisplaySettings = {
+  displayColumns: ["price", "isbn13", "publisher", "publication_date"]
+};
+
 const SharedPresentationView = () => {
   const { accessCode } = useParams<{ accessCode: string }>();
   const [presentation, setPresentation] = useState<SalesPresentation | null>(null);
@@ -50,9 +64,19 @@ const SharedPresentationView = () => {
           throw new Error('Presentation not found or not published');
         }
         
+        let displaySettings: PresentationDisplaySettings;
+        try {
+          displaySettings = isPresentationDisplaySettings(presentationData.display_settings) 
+            ? presentationData.display_settings as PresentationDisplaySettings
+            : defaultDisplaySettings;
+        } catch (e) {
+          console.warn('Invalid display_settings format, using defaults', e);
+          displaySettings = defaultDisplaySettings;
+        }
+        
         setPresentation({
           ...presentationData,
-          display_settings: presentationData.display_settings as SalesPresentation['display_settings']
+          display_settings: displaySettings
         } as SalesPresentation);
         
         const { data: sectionsData, error: sectionsError } = await supabaseCustom

@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { Organization } from '@/types/organization';
 
 interface FetchSalesPresentationsParams {
@@ -10,6 +10,20 @@ interface FetchSalesPresentationsParams {
   limit?: number;
   page?: number;
 }
+
+// Type guard to verify the shape of display_settings
+function isPresentationDisplaySettings(obj: any): obj is PresentationDisplaySettings {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    Array.isArray(obj.displayColumns)
+  );
+}
+
+// Default display settings to use if none found or invalid
+const defaultDisplaySettings: PresentationDisplaySettings = {
+  displayColumns: ["price", "isbn13", "publisher", "publication_date"]
+};
 
 export async function fetchSalesPresentations({
   currentOrganization,
@@ -40,11 +54,23 @@ export async function fetchSalesPresentations({
       return [];
     }
 
-    // Map and cast each presentation's display_settings to the correct type
-    return data.map(item => ({
-      ...item,
-      display_settings: item.display_settings as SalesPresentation['display_settings']
-    })) as SalesPresentation[];
+    // Map and cast each presentation's display_settings with validation
+    return data.map(item => {
+      let displaySettings: PresentationDisplaySettings;
+      try {
+        displaySettings = isPresentationDisplaySettings(item.display_settings) 
+          ? item.display_settings as PresentationDisplaySettings
+          : defaultDisplaySettings;
+      } catch (e) {
+        console.warn('Invalid display_settings format, using defaults', e);
+        displaySettings = defaultDisplaySettings;
+      }
+
+      return {
+        ...item,
+        display_settings: displaySettings
+      };
+    }) as SalesPresentation[];
   } catch (error) {
     console.error('Failed to fetch sales presentations:', error);
     return [];
