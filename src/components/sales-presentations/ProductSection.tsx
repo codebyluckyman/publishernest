@@ -81,7 +81,7 @@ export function ProductSection({
                   <p className="text-sm text-muted-foreground mb-2">
                     {item.customDescription}
                   </p>
-                ) : item.product.synopsis ? (
+                ) : item.product.synopsis !== undefined ? (
                   <p className="text-sm text-muted-foreground mb-2">
                     {item.product.synopsis}
                   </p>
