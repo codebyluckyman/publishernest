@@ -86,6 +86,7 @@ export const fetchProducts = async (
 
     if (pricesError) {
       console.error("Error fetching product prices:", pricesError);
+      // Convert to Product[] type with type assertion
       return productsData.map(product => ({
         ...product,
         default_price: product.list_price,
@@ -104,6 +105,7 @@ export const fetchProducts = async (
       });
     }
 
+    // Convert to Product[] type with type assertion
     return productsData.map(product => ({
       ...product,
       default_price: priceMap[product.id]?.price ?? product.list_price,
@@ -111,6 +113,7 @@ export const fetchProducts = async (
     })) as unknown as Product[];
   }
 
+  // Convert to Product[] type with type assertion
   return productsData ? productsData.map(product => ({
     ...product,
     default_price: product.list_price,

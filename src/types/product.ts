@@ -1,4 +1,10 @@
 
+export interface FormatExtra {
+  name: string;
+  description?: string;
+  unit_of_measure_id?: string;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -21,7 +27,7 @@ export interface Product {
     embossing: boolean;
     die_cut: boolean;
     holographic: boolean;
-  };
+  } | FormatExtra[];
   format_extra_comments?: string | null;
 }
 

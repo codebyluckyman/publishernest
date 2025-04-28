@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
 
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -85,22 +86,21 @@ const SalesPresentationDetail = () => {
         )}
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">
-            {presentation.description || 'No description provided.'}
-          </p>
-        </CardContent>
-      </Card>
+      {presentation.description && (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">
+              {presentation.description}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Placeholder for presentation content editor */}
-      <div className="bg-gray-50 p-6 rounded-lg border border-dashed border-gray-300 text-center">
-        <h2 className="text-lg font-medium mb-4">Presentation Content Editor</h2>
-        <p className="text-muted-foreground mb-4">
-          This is a placeholder for the presentation content editor. In a full implementation, 
-          you would be able to add sections, products, formats, and other content here.
-        </p>
-        <Button onClick={handleEdit}>Edit Presentation</Button>
+      <div className="mt-8">
+        <PresentationSections
+          presentationId={id!}
+          isEditable={presentation.status === 'draft'}
+        />
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
 
 const EditSalesPresentation = () => {
   const { id } = useParams<{ id: string }>();
@@ -106,14 +107,17 @@ const EditSalesPresentation = () => {
           </CardContent>
         </Card>
 
-        {/* Placeholder for content editor */}
-        <div className="mt-6 bg-gray-50 p-6 rounded-lg border border-dashed border-gray-300 text-center">
-          <h2 className="text-lg font-medium mb-4">Presentation Content Editor</h2>
-          <p className="text-muted-foreground mb-4">
-            This is a placeholder for the presentation content editor. In a full implementation, 
-            you would be able to add sections, products, formats, and other content here.
-          </p>
-        </div>
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Presentation Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PresentationSections 
+              presentationId={id!}
+              isEditable={true}
+            />
+          </CardContent>
+        </Card>
 
         <div className="mt-6 flex justify-end space-x-2">
           <Button
