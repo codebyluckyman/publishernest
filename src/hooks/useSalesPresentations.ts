@@ -46,22 +46,27 @@ export function useSalesPresentations() {
   const createPresentation = async ({ 
     title, 
     description, 
-    coverImageUrl 
+    coverImageUrl,
+    displayColumns
   }: { 
     title: string, 
     description?: string, 
-    coverImageUrl?: string 
+    coverImageUrl?: string,
+    displayColumns?: Array<"price" | "isbn13" | "publisher" | "publication_date" | "format">
   }) => {
     if (!currentOrganization || !user) {
       throw new Error('Missing organization or user information');
     }
+
+    const displaySettings = displayColumns ? { displayColumns } : undefined;
 
     const result = await createSalesPresentation({
       title,
       description,
       currentOrganization,
       userId: user.id,
-      coverImageUrl
+      coverImageUrl,
+      displaySettings
     });
 
     if (!result) {

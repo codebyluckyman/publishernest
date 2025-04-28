@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { Organization } from '@/types/organization';
-import { SalesPresentation } from '@/types/salesPresentation';
+import { PresentationDisplaySettings } from '@/types/salesPresentation';
 
 interface CreateSalesPresentationParams {
   title: string;
@@ -10,6 +10,7 @@ interface CreateSalesPresentationParams {
   currentOrganization: Organization;
   userId: string;
   coverImageUrl?: string;
+  displaySettings?: PresentationDisplaySettings;
 }
 
 export async function createSalesPresentation({
@@ -17,7 +18,8 @@ export async function createSalesPresentation({
   description,
   currentOrganization,
   userId,
-  coverImageUrl
+  coverImageUrl,
+  displaySettings
 }: CreateSalesPresentationParams): Promise<string | null> {
   try {
     const { data, error } = await supabaseCustom
@@ -28,7 +30,10 @@ export async function createSalesPresentation({
         organization_id: currentOrganization.id,
         created_by: userId,
         status: 'draft',
-        cover_image_url: coverImageUrl
+        cover_image_url: coverImageUrl,
+        display_settings: displaySettings || {
+          displayColumns: ["price", "isbn13", "publisher", "publication_date"]
+        }
       })
       .select('id')
       .single();

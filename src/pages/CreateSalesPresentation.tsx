@@ -20,7 +20,8 @@ const CreateSalesPresentation = () => {
       
       const result = await createPresentation.mutateAsync({
         title: formData.title,
-        description: formData.description
+        description: formData.description,
+        displayColumns: formData.displayColumns
       });
       
       if (result) {
