@@ -55,6 +55,16 @@ export function ProductSection({
         return product.publication_date ? new Date(product.publication_date).toLocaleDateString() : 'N/A';
       case 'format':
         return product.format_extra_comments || 'N/A';
+      case 'physical_properties':
+        return `${product.height_measurement || '-'}mm × ${product.width_measurement || '-'}mm × ${product.thickness_measurement || '-'}mm | ${product.weight_measurement || '-'}g`;
+      case 'carton_dimensions':
+        const qty = product.carton_quantity ? `${product.carton_quantity} units` : 'N/A';
+        const dims = product.carton_length_mm && product.carton_width_mm && product.carton_height_mm
+          ? `${product.carton_length_mm}mm × ${product.carton_width_mm}mm × ${product.carton_height_mm}mm`
+          : 'N/A';
+        return `${qty} | ${dims}`;
+      case 'synopsis':
+        return product.synopsis || 'N/A';
       default:
         return '';
     }
@@ -124,16 +134,26 @@ export function ProductSection({
                   </div>
                 )}
                 <div className="space-y-4">
-                  {displaySettings?.displayColumns.map((column) => (
-                    <div key={column}>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                        {column.charAt(0).toUpperCase() + column.slice(1)}
-                      </h4>
-                      <p>{getDisplayValue(selectedProduct.product, column)}</p>
-                    </div>
-                  ))}
+                  {displaySettings?.displayColumns.map((column) => {
+                    if (column === 'synopsis') return null; // We'll show synopsis separately below
+                    return (
+                      <div key={column}>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                          {column.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        </h4>
+                        <p>{getDisplayValue(selectedProduct.product, column)}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
+              
+              {displaySettings?.displayColumns.includes('synopsis') && selectedProduct.product.synopsis && (
+                <div className="mt-6 border rounded-lg p-4 bg-slate-50">
+                  <h3 className="text-lg font-medium mb-3">Synopsis</h3>
+                  <p className="text-sm text-gray-600">{selectedProduct.product.synopsis}</p>
+                </div>
+              )}
               
               {shouldShowFormatDetails && selectedProduct.product.format_id && (
                 <div className="mt-6 border rounded-lg p-4 bg-slate-50">

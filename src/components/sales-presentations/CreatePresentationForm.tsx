@@ -24,6 +24,9 @@ const displayColumnOptions = [
   { id: 'publisher', label: 'Publisher' },
   { id: 'publication_date', label: 'Publication Date' },
   { id: 'format', label: 'Format Details' },
+  { id: 'physical_properties', label: 'Physical Properties' },
+  { id: 'carton_dimensions', label: 'Carton Information' },
+  { id: 'synopsis', label: 'Synopsis' },
 ] as const;
 
 // Validation schema

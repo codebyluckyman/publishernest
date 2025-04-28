@@ -68,5 +68,5 @@ export interface PresentationShare {
 }
 
 export interface PresentationDisplaySettings {
-  displayColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format'>;
+  displayColumns: Array<'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis'>;
 }
