@@ -40,7 +40,11 @@ export async function fetchSalesPresentations({
       return [];
     }
 
-    return data as SalesPresentation[];
+    // Map and cast each presentation's display_settings to the correct type
+    return data.map(item => ({
+      ...item,
+      display_settings: item.display_settings as SalesPresentation['display_settings']
+    })) as SalesPresentation[];
   } catch (error) {
     console.error('Failed to fetch sales presentations:', error);
     return [];

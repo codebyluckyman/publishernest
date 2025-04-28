@@ -100,6 +100,7 @@ const SalesPresentationDetail = () => {
         <PresentationSections
           presentationId={id!}
           isEditable={presentation.status === 'draft'}
+          displaySettings={presentation.display_settings}
         />
       </div>
     </div>

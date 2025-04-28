@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
@@ -26,7 +25,6 @@ const SharedPresentationView = () => {
       try {
         setLoading(true);
         
-        // First check the presentation_shares table to see if this access code is valid
         const { data: shareData, error: shareError } = await supabaseCustom
           .from('presentation_shares')
           .select('presentation_id, expires_at')
@@ -37,12 +35,10 @@ const SharedPresentationView = () => {
           throw new Error('Invalid or expired share link');
         }
         
-        // Check if the share link has expired
         if (shareData.expires_at && new Date(shareData.expires_at) < new Date()) {
           throw new Error('This share link has expired');
         }
         
-        // Now fetch the presentation
         const { data: presentationData, error: presentationError } = await supabaseCustom
           .from('sales_presentations')
           .select('*')
@@ -54,9 +50,11 @@ const SharedPresentationView = () => {
           throw new Error('Presentation not found or not published');
         }
         
-        setPresentation(presentationData as SalesPresentation);
+        setPresentation({
+          ...presentationData,
+          display_settings: presentationData.display_settings as SalesPresentation['display_settings']
+        } as SalesPresentation);
         
-        // Fetch sections
         const { data: sectionsData, error: sectionsError } = await supabaseCustom
           .from('presentation_sections')
           .select('*')
@@ -69,7 +67,6 @@ const SharedPresentationView = () => {
         
         setSections(sectionsData as PresentationSection[]);
         
-        // Fetch items for each section
         const itemsMap: Record<string, PresentationItem[]> = {};
         
         for (const section of sectionsData) {
@@ -89,7 +86,6 @@ const SharedPresentationView = () => {
         
         setItems(itemsMap);
         
-        // Track the view
         const deviceInfo = {
           browser: navigator.userAgent,
           screenWidth: window.innerWidth,
@@ -113,7 +109,6 @@ const SharedPresentationView = () => {
 
     fetchPresentation();
 
-    // Set up heartbeat to track activity duration
     const heartbeatInterval = setInterval(async () => {
       if (presentation?.id) {
         await trackPresentationView({
@@ -121,7 +116,7 @@ const SharedPresentationView = () => {
           viewId: viewSessionId,
         });
       }
-    }, 30000); // Every 30 seconds
+    }, 30000);
 
     return () => {
       clearInterval(heartbeatInterval);
@@ -183,7 +178,6 @@ const SharedPresentationView = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with company logo and presentation title */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
           <div>
@@ -195,7 +189,6 @@ const SharedPresentationView = () => {
         </div>
       </header>
 
-      {/* Main content */}
       <main>
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           {sections.length === 0 ? (
@@ -219,9 +212,7 @@ const SharedPresentationView = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {items[section.id].map((item) => (
                           <div key={item.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                            {/* Placeholder for actual item rendering based on type */}
                             <div className="h-40 bg-gray-100 flex items-center justify-center">
-                              {/* This will be replaced with actual product/format images */}
                               <p className="text-gray-400">{item.item_type} preview</p>
                             </div>
                             
@@ -253,7 +244,6 @@ const SharedPresentationView = () => {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <p className="text-sm text-gray-500 text-center">

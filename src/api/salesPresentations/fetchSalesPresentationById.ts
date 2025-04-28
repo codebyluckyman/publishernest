@@ -16,7 +16,11 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
       return null;
     }
 
-    return data as SalesPresentation;
+    // Cast the raw data to our SalesPresentation type
+    return {
+      ...data,
+      display_settings: data.display_settings as SalesPresentation['display_settings']
+    } as SalesPresentation;
   } catch (error) {
     console.error('Failed to fetch sales presentation:', error);
     return null;

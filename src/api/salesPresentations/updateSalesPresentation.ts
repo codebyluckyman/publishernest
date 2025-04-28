@@ -10,6 +10,7 @@ interface UpdateSalesPresentationParams {
   status?: 'draft' | 'published' | 'archived';
   coverImageUrl?: string;
   expiresAt?: string;
+  displaySettings?: SalesPresentation['display_settings'];
 }
 
 export async function updateSalesPresentation({
@@ -19,15 +20,17 @@ export async function updateSalesPresentation({
   status,
   coverImageUrl,
   expiresAt,
+  displaySettings,
 }: UpdateSalesPresentationParams): Promise<boolean> {
   try {
-    const updates: Partial<SalesPresentation> = {};
+    const updates: Record<string, any> = {};
     
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
     if (status !== undefined) updates.status = status;
     if (coverImageUrl !== undefined) updates.cover_image_url = coverImageUrl;
     if (expiresAt !== undefined) updates.expires_at = expiresAt;
+    if (displaySettings !== undefined) updates.display_settings = displaySettings;
     
     // Add updated_at timestamp
     updates.updated_at = new Date().toISOString();

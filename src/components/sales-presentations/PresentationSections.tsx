@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { PresentationSection, PresentationItem } from '@/types/salesPresentation';
+import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
 import { useSectionItems } from '@/hooks/useSectionItems';
 import { Product } from '@/types/product';
@@ -13,9 +14,14 @@ import { Trash2 } from 'lucide-react';
 interface PresentationSectionsProps {
   presentationId: string;
   isEditable?: boolean;
+  displaySettings?: PresentationDisplaySettings;
 }
 
-export function PresentationSections({ presentationId, isEditable = false }: PresentationSectionsProps) {
+export function PresentationSections({ 
+  presentationId, 
+  isEditable = false,
+  displaySettings 
+}: PresentationSectionsProps) {
   const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
   
   const { 
@@ -136,7 +142,7 @@ export function PresentationSections({ presentationId, isEditable = false }: Pre
                   title={section.title}
                   description={section.description}
                   products={section.productsWithData || []}
-                  displaySettings={sections.data?.[0]?.display_settings}
+                  displaySettings={displaySettings}
                   isEditable={isEditable}
                   onEdit={() => {/* Edit functionality will be added later */}}
                 />
