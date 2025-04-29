@@ -36,7 +36,9 @@ export function useSupplierQuotes() {
     status?: string,
     supplierId?: string,
     quoteRequestId?: string,
-    searchQuery?: string
+    searchQuery?: string,
+    supplier?: string,
+    selectedFormat?: string
   ) => {
     return useQuery({
       queryKey: [
@@ -46,6 +48,8 @@ export function useSupplierQuotes() {
         supplierId,
         quoteRequestId,
         searchQuery,
+        supplier,
+        selectedFormat,
       ],
       queryFn: async () => {
         if (!currentOrganization) {
@@ -58,6 +62,8 @@ export function useSupplierQuotes() {
             supplierId,
             quoteRequestId,
             searchQuery: searchQuery || undefined, // Ensure it doesn't send "null"
+            supplier: supplier || "",
+            selectedFormat: selectedFormat || "",
           });
           return data;
         } catch (error) {

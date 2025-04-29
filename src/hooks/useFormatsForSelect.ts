@@ -1,7 +1,6 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrganization } from './useOrganization';
+import { useOrganization } from "./useOrganization";
 
 export interface FormatOption {
   value: string;
@@ -16,7 +15,7 @@ export interface FormatForSelect {
 export function useFormatsForSelect(currentOrganizationParam?: any) {
   const { currentOrganization: orgFromContext } = useOrganization();
   const currentOrganization = currentOrganizationParam || orgFromContext;
-  
+
   const query = useQuery({
     queryKey: ["formats-for-select", currentOrganization?.id],
     queryFn: async () => {
@@ -35,15 +34,15 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
         }
 
         // Transform data to include both original data and FormatOption format
-        const transformedData = Array.isArray(data) 
-          ? data.map(format => ({ 
-              id: format.id, 
+        const transformedData = Array.isArray(data)
+          ? data.map((format) => ({
+              id: format.id,
               format_name: format.format_name,
-              value: format.id, 
-              label: format.format_name 
+              value: format.id,
+              label: format.format_name,
             }))
           : [];
-          
+
         return transformedData;
       } catch (err) {
         console.error("Exception fetching formats:", err);
@@ -61,6 +60,6 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
-    refetch: query.refetch // Add the refetch method
+    refetch: query.refetch, // Add the refetch method
   };
 }

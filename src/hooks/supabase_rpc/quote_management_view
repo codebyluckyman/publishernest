@@ -1,0 +1,76 @@
+CREATE VIEW quote_management_view AS
+SELECT
+  sq.*,
+  s.supplier_name,
+  qr.title,
+  (
+    SELECT json_build_object(
+      'id', qr2.id,
+      'title', qr2.title,
+      'description', qr2.description,
+      'due_date', qr2.due_date,
+      'formats', (
+        SELECT COALESCE(json_agg(
+          json_build_object(
+            'id', qrf.id,
+            'format_id', qrf.format_id,
+            'format', (
+              SELECT json_build_object(
+                'id', f.id,
+                'format_name', f.format_name
+              )
+              FROM formats f
+              WHERE f.id = qrf.format_id
+            ),
+            'products', (
+              SELECT COALESCE(json_agg(
+                json_build_object(
+                  'id', qrfp.id,
+                  'product_id', qrfp.product_id,
+                  'quantity', qrfp.quantity,
+                  'notes', qrfp.notes
+                )
+              ), '[]'::json)
+              FROM quote_request_format_products qrfp
+              WHERE qrfp.quote_request_format_id = qrf.id
+            )
+          )
+        ), '[]'::json)
+        FROM quote_request_formats qrf
+        WHERE qrf.quote_request_id = qr2.id
+      )
+    )
+    FROM quote_requests qr2
+    WHERE qr2.id = sq.quote_request_id
+  ) AS quote_request,
+  (
+    SELECT json_build_object(
+      'id', s2.id,
+      'supplier_name', s2.supplier_name
+    )
+    FROM suppliers s2
+    WHERE s2.id = sq.supplier_id
+  ) AS supplier,
+  (
+    SELECT COALESCE(json_agg(
+      json_build_object(
+        'id', sqf.id,
+        'supplier_quote_id', sqf.supplier_quote_id,
+        'format_id', sqf.format_id,
+        'format', (
+          SELECT json_build_object(
+            'id', f2.id,
+            'format_name', f2.format_name
+          )
+          FROM formats f2
+          WHERE f2.id = sqf.format_id
+        )
+      )
+    ), '[]'::json)
+    FROM supplier_quote_formats sqf
+    WHERE sqf.supplier_quote_id = sq.id
+  ) AS formats
+FROM supplier_quotes sq
+JOIN suppliers s ON s.id = sq.supplier_id
+JOIN quote_requests qr ON qr.id = sq.quote_request_id
+JOIN supplier_quote_formats sqf ON sqf.supplier_quote_id = sq.id;

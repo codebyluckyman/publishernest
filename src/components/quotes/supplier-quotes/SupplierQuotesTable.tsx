@@ -41,17 +41,22 @@ import { SupplierQuoteDetailsSheet } from "./details/SupplierQuoteDetailsSheet";
 import { Textarea } from "@/components/ui/textarea";
 import { FormatCountButton } from "../table/FormatCountButton";
 import { useQuoteRequestManagement } from "@/hooks/useQuoteRequestManagement";
+import { Badge } from "@/components/ui/badge";
 
 interface SupplierQuotesTableProps {
   statusFilter?: SupplierQuoteStatus[];
   searchQuery?: string;
   quoteRequestId?: string | null;
+  supplier: string | null;
+  selectedFormat: string | null;
 }
 
 export function SupplierQuotesTable({
   statusFilter,
   searchQuery,
   quoteRequestId,
+  supplier,
+  selectedFormat,
 }: SupplierQuotesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(
@@ -81,12 +86,18 @@ export function SupplierQuotesTable({
   const approveMutation = useApproveSupplierQuote();
   const rejectMutation = useRejectSupplierQuote();
 
-  const { data: quotes = [], isLoading } = useSupplierQuotesList(
+  const {
+    data: quotes = [],
+    isLoading,
+    refetch,
+  } = useSupplierQuotesList(
     currentOrganization,
     statusFilter ? statusFilter.join(",") : undefined,
     undefined,
     quoteRequestId || undefined,
-    searchQuery
+    searchQuery,
+    supplier,
+    selectedFormat
   );
 
   const [pagination, setPagination] = useState({
@@ -105,6 +116,10 @@ export function SupplierQuotesTable({
       setSelectedQuote(null);
     }
   }, [showEditDialog]);
+
+  useEffect(() => {
+    refetch;
+  }, [supplier]);
 
   const handleViewDetails = (quote: SupplierQuote) => {
     setSelectedQuote(quote);
@@ -195,14 +210,16 @@ export function SupplierQuotesTable({
     const lowerCaseSearchQuery = searchQuery.toLowerCase();
     return (
       quotes?.filter((quote) => {
-        const supplierName = quote.supplier?.supplier_name?.toLowerCase();
-        const reference = quote.reference?.toLowerCase();
-        const referenceId = quote.reference_id?.toLowerCase();
+        // const supplierName = quote.supplier?.supplier_name?.toLowerCase();
+        // const reference = quote.reference?.toLowerCase();
+        // const referenceId = quote.reference_id?.toLowerCase();
+        const title = quote?.quote_request?.title?.toLocaleLowerCase();
 
         return (
-          supplierName?.includes(lowerCaseSearchQuery) ||
-          reference?.includes(lowerCaseSearchQuery) ||
-          referenceId?.includes(lowerCaseSearchQuery)
+          // supplierName?.includes(lowerCaseSearchQuery) ||
+          title?.includes(lowerCaseSearchQuery)
+          // reference?.includes(lowerCaseSearchQuery) ||
+          // referenceId?.includes(lowerCaseSearchQuery)
         );
       }) ?? []
     );
@@ -451,13 +468,16 @@ export function SupplierQuotesTable({
       header: () => <div className="text-center">Format</div>,
       cell: ({ row }: any) => {
         return (
-          <div className="flex justify-center">
+          <div className="flex justify-center min-w-[200px] ">
             {row.original?.formats?.length > 0 ? (
-              <FormatCountButton
-                formats={row.original?.formats || []}
-                request={row.original?.quote_request}
-                onClick={viewDetails}
-              />
+              <div className="flex flex-wrap gap-1">
+                {row.original?.formats?.map((item: any, index: number) => (
+                  // <span key={index} className="px-2 py-1 rounded-full text-xs break-words font-medium bg-blue-100">
+                  //   {item?.format_name}
+                  // </span>
+                  <Badge>{item?.format_name}</Badge>
+                ))}
+              </div>
             ) : (
               <div className="text-center">No Format</div>
             )}
@@ -516,7 +536,7 @@ export function SupplierQuotesTable({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-auto">
       <div className="rounded-md border">
         <Table>
           <TableHeader>

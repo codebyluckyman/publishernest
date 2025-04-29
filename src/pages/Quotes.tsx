@@ -15,6 +15,11 @@ import { useLocation } from "react-router-dom";
 import { SupplierQuoteStatus } from "@/types/supplierQuote";
 
 import _ from "lodash";
+import QuoteFilters from "@/components/quotes/QuoteFilters";
+import { useSuppliersApi } from "@/hooks/useSuppliersApi";
+import { Combobox } from "@/components/ui/combobox";
+import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
+import { Button } from "@/components/ui/button";
 
 const Quotes = () => {
   const { currentOrganization } = useOrganization();
@@ -22,6 +27,28 @@ const Quotes = () => {
   const [activeTab, setActiveTab] = useState("active");
   const location = useLocation();
   const [quoteRequestId, setQuoteRequestId] = useState<string | null>(null);
+
+  const [selectedFormat, setSelectedFormat] = useState(null);
+  const [supplier, setSupplier] = useState("");
+
+  const { data: suppliers = [], isLoading: isSuppliersLoading } =
+    useSuppliersApi(currentOrganization);
+  const {
+    formats,
+    isLoading: isFormatsLoading,
+    refetch: refetchFormats,
+  } = useFormatsForSelect();
+
+  const formatOptions = Array.isArray(formats)
+    ? formats.map((format) => ({
+        label: format.label,
+        value: format.value,
+      }))
+    : [];
+
+  useEffect(() => {
+    refetchFormats();
+  }, [currentOrganization?.id]);
 
   // Check for tab parameter and quoteRequestId in URL query string
   useEffect(() => {
@@ -86,30 +113,68 @@ const Quotes = () => {
       </div>
 
       <div className="grid gap-6">
-        <Card>
+        <Card className="w-full overflow-auto">
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
+              <div className="w-full">
                 <CardTitle>Quotes</CardTitle>
                 <CardDescription>
                   View and manage quotes from suppliers
                 </CardDescription>
               </div>
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search quotes..."
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+              <div className="flex gap-2 w-full">
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search quotes..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <QuoteFilters
+                  filterOption="supplier"
+                  options={suppliers?.map((supplier) => ({
+                    value: supplier.supplier_name,
+                    label: supplier.supplier_name,
+                  }))}
+                  value={supplier}
+                  isLoading={isSuppliersLoading}
+                  onChange={setSupplier}
                 />
+                <div className="w-64">
+                  <Combobox
+                    items={formatOptions}
+                    value={selectedFormat}
+                    onChange={setSelectedFormat}
+                    placeholder="Select a format"
+                    searchPlaceholder="Search formats..."
+                    emptyMessage="No format found."
+                    disabled={isFormatsLoading}
+                    isLoading={isFormatsLoading}
+                  />
+                </div>
+
+                {(searchQuery || supplier || selectedFormat) && (
+                  <Button
+                    variant="outline"
+                    className="ml-2"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSupplier("");
+                      setSelectedFormat("");
+                    }}
+                  >
+                    Reset Filters
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <Tabs
               defaultValue="active"
-              className="space-y-4"
+              className="space-y-4 w-full overflow-auto"
               value={activeTab}
               onValueChange={setActiveTab}
             >
@@ -121,18 +186,25 @@ const Quotes = () => {
                 <TabsTrigger value="rejected">Rejected</TabsTrigger>
                 <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
-              <TabsContent value="active" className="space-y-4">
+              <TabsContent
+                value="active"
+                className="space-y-4 w-full scroll-auto"
+              >
                 <SupplierQuotesTable
                   statusFilter={getStatusFilter("active")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
+                  supplier={supplier}
+                  selectedFormat={selectedFormat}
                 />
               </TabsContent>
-              {/* <TabsContent value="draft" className="space-y-4">
+              <TabsContent value="draft" className="space-y-4">
                 <SupplierQuotesTable
                   statusFilter={getStatusFilter("draft")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
+                  supplier={supplier}
+                  selectedFormat={selectedFormat}
                 />
               </TabsContent>
               <TabsContent value="submitted" className="space-y-4">
@@ -140,6 +212,8 @@ const Quotes = () => {
                   statusFilter={getStatusFilter("submitted")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
+                  supplier={supplier}
+                  selectedFormat={selectedFormat}
                 />
               </TabsContent>
               <TabsContent value="approved" className="space-y-4">
@@ -147,6 +221,8 @@ const Quotes = () => {
                   statusFilter={getStatusFilter("approved")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
+                  supplier={supplier}
+                  selectedFormat={selectedFormat}
                 />
               </TabsContent>
               <TabsContent value="rejected" className="space-y-4">
@@ -154,6 +230,8 @@ const Quotes = () => {
                   statusFilter={getStatusFilter("rejected")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
+                  supplier={supplier}
+                  selectedFormat={selectedFormat}
                 />
               </TabsContent>
               <TabsContent value="completed" className="space-y-4">
@@ -161,14 +239,18 @@ const Quotes = () => {
                   statusFilter={getStatusFilter("completed")}
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
+                  supplier={supplier}
+                  selectedFormat={selectedFormat}
                 />
               </TabsContent>
               <TabsContent value="all" className="space-y-4">
                 <SupplierQuotesTable
                   searchQuery={searchQuery}
                   quoteRequestId={quoteRequestId}
+                  supplier={supplier}
+                  selectedFormat={selectedFormat}
                 />
-              </TabsContent> */}
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
