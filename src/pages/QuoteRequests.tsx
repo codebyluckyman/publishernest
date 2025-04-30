@@ -1,11 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useQuoteRequests } from "@/hooks/useQuoteRequests";
@@ -16,13 +10,11 @@ import { Input } from "@/components/ui/input";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
-import QuoteFilters, { SelectOption } from "@/components/quotes/QuoteFilters";
+import QuoteFilters from "@/components/quotes/QuoteFilters";
 
 import { supabase } from "@/integrations/supabase/client";
-import { Supplier } from "@/types/supplier";
-import { useQuery } from "@tanstack/react-query";
 import { OrganizationMember } from "@/types/organization";
-import { Users } from "@/types/users";
+import { debounce } from "lodash";
 
 interface FilterState {
   title: string;
@@ -43,6 +35,8 @@ type UserProfile = {
 const QuoteRequests = () => {
   const { currentOrganization, getOrganizationMembers } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
+  const [inputValue, setInputValue] = useState(searchQuery);
+
   const [activeTab, setActiveTab] = useState("pending");
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,6 +47,17 @@ const QuoteRequests = () => {
 
   const [users, setUsers] = useState("");
   const [supplier, setSupplier] = useState("");
+
+  const debouncedSetSearchQuery = useMemo(
+    () => debounce((query: string) => setSearchQuery(query), 500),
+    [setSearchQuery]
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    debouncedSetSearchQuery(value);
+  };
 
   // Check for tab parameter in URL query string when component mounts
   useEffect(() => {
@@ -85,10 +90,6 @@ const QuoteRequests = () => {
     setActiveTab(value);
   }, []);
 
-  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
-
   const handleQuoteRequestSuccess = useCallback(() => {
     refetch();
   }, [refetch]);
@@ -96,14 +97,6 @@ const QuoteRequests = () => {
   const navigateToQuotes = useCallback(() => {
     navigate("/quotes");
   }, [navigate]);
-
-  const [filters, setFilters] = useState<FilterState>({
-    title: "",
-    supplier: "",
-    formats: "",
-    quote_requests: "",
-    users: "",
-  });
 
   useEffect(() => {
     refetch();
@@ -167,8 +160,8 @@ const QuoteRequests = () => {
               <div className="flex items-center w-full">
                 <Input
                   placeholder="Search quote requests..."
-                  value={searchQuery}
-                  onChange={handleSearch}
+                  value={inputValue}
+                  onChange={handleInputChange}
                   className="max-w-sm"
                 />
                 <QuoteFilters
@@ -195,11 +188,6 @@ const QuoteRequests = () => {
                   isLoading={isSuppliersLoading}
                   onChange={(value) => setUsers(value)}
                 />
-                {/* <QuoteFilters filterOption="formats" setFilter={setFilter} />
-              <QuoteFilters
-                filterOption="quote_requests"
-                setFilter={setFilter}
-              /> */}
               </div>
               {(users || supplier) && (
                 <Button

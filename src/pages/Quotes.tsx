@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -14,16 +14,19 @@ import { Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { SupplierQuoteStatus } from "@/types/supplierQuote";
 
-import _ from "lodash";
 import QuoteFilters from "@/components/quotes/QuoteFilters";
 import { useSuppliersApi } from "@/hooks/useSuppliersApi";
 import { Combobox } from "@/components/ui/combobox";
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { Button } from "@/components/ui/button";
 
+import { debounce } from "lodash";
+
 const Quotes = () => {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
+  const [inputValue, setInputValue] = useState("");
+
   const [activeTab, setActiveTab] = useState("active");
   const location = useLocation();
   const [quoteRequestId, setQuoteRequestId] = useState<string | null>(null);
@@ -45,6 +48,21 @@ const Quotes = () => {
         value: format.value,
       }))
     : [];
+
+  const debouncedSetSearchQuery = useMemo(
+    () =>
+      debounce((query) => {
+        setSearchQuery(query);
+        console.log("Search query:", query);
+      }, 500),
+    []
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    debouncedSetSearchQuery(value);
+  };
 
   useEffect(() => {
     refetchFormats();
@@ -96,15 +114,6 @@ const Quotes = () => {
     }
   };
 
-  const debouncedSetSearchQuery = useCallback(
-    _.debounce((query) => setSearchQuery(query), 300), // 300ms debounce delay
-    [] // Ensure this is only created once
-  );
-
-  const handleSearchChange = (event) => {
-    debouncedSetSearchQuery(event.target.value);
-  };
-
   return (
     <div className="space-y-8">
       <div>
@@ -128,8 +137,8 @@ const Quotes = () => {
                   <Input
                     placeholder="Search quotes..."
                     className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={inputValue}
+                    onChange={handleInputChange}
                   />
                 </div>
                 <QuoteFilters
@@ -161,6 +170,7 @@ const Quotes = () => {
                     className="ml-2"
                     onClick={() => {
                       setSearchQuery("");
+                      setInputValue("");
                       setSupplier("");
                       setSelectedFormat("");
                     }}
