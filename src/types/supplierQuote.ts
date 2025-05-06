@@ -30,17 +30,23 @@ export interface SupplierQuoteExtraCost {
   supplier_quote_id?: string;
   extra_cost_id: string;
   unit_cost?: number | null;
-  unit_cost_1?: number | null;
-  unit_cost_2?: number | null;
-  unit_cost_3?: number | null;
-  unit_cost_4?: number | null;
-  unit_cost_5?: number | null;
-  unit_cost_6?: number | null;
-  unit_cost_7?: number | null;
-  unit_cost_8?: number | null;
-  unit_cost_9?: number | null;
-  unit_cost_10?: number | null;
+  // unit_cost_array?: SupplierQuoteExtraCostEachType[]
+  unit_cost_1?: number[] | null;
+  unit_cost_2?: number[] | null;
+  unit_cost_3?: number[] | null;
+  unit_cost_4?: number[] | null;
+  unit_cost_5?: number[] | null;
+  unit_cost_6?: number[] | null;
+  unit_cost_7?: number[] | null;
+  unit_cost_8?: number[] | null;
+  unit_cost_9?: number[] | null;
+  unit_cost_10?: number[] | null;
   unit_of_measure_id?: string | null;
+}
+
+export interface SupplierQuoteExtraCostEachType {
+  quantity: number | null;
+  unit_cost: number | null;
 }
 
 export interface SupplierQuoteSaving {
@@ -174,4 +180,5 @@ export interface SupplierQuoteFormValues {
 
   extra_costs?: SupplierQuoteExtraCost[];
   savings?: SupplierQuoteSaving[];
+  special?: number;
 }
