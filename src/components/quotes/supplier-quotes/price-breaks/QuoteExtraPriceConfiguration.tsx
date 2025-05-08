@@ -103,14 +103,14 @@ export const QuoteExtraProductConfigurator: React.FC<
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+      {/* <div className="flex items-center justify-between mb-4">
         <QuoteExtraColumnControl
           columnCount={columnCount}
           minColumns={MIN_COLUMNS}
           maxColumns={MAX_COLUMNS}
           onColumnCountChange={setColumnCount}
         />
-      </div>
+      </div> */}
 
       <QuoteExtraPriceBreaksGrid
         quantities={quantities}

@@ -44,7 +44,7 @@ export const QuoteExtraPriceInput: React.FC<QuoteExtraPriceInputProps> = ({
       //   control={control}
       name={`extra_costs.${extraCostIndex}.unit_cost_${subIndex}.${quantityIndex}`}
       render={({ field }) => (
-        <FormItem className="w-24">
+        <FormItem className="w-full">
           <FormControl>
             <Input
               {...field}
@@ -56,7 +56,7 @@ export const QuoteExtraPriceInput: React.FC<QuoteExtraPriceInputProps> = ({
                   e.target.value === "" ? null : parseFloat(e.target.value)
                 );
               }}
-              className="text-right"
+              className="text-right "
               placeholder="0.00"
               disabled={disabled}
             />

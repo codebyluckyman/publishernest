@@ -45,7 +45,7 @@ export const QuoteExtraPriceBreaksGrid: React.FC<QuoteExtraPriceGridProps> = ({
         {columnHeaders.map((header) => (
           <div
             key={header}
-            className="font-medium text-muted-foreground text-center"
+            className="font-medium text-muted-foreground text-start"
           >
             {header}
           </div>
@@ -60,7 +60,7 @@ export const QuoteExtraPriceBreaksGrid: React.FC<QuoteExtraPriceGridProps> = ({
             <div
               key={quantity}
               className={cn(
-                "grid gap-4 p-4 transition-all",
+                "grid gap-4 p-4 transition-all w-full",
                 index % 2 === 0 ? "bg-background" : "bg-muted/20"
               )}
               style={{ gridTemplateColumns: `1fr repeat(${columnCount}, 1fr)` }}
@@ -78,7 +78,10 @@ export const QuoteExtraPriceBreaksGrid: React.FC<QuoteExtraPriceGridProps> = ({
                   "";
 
                 return (
-                  <div key={`${quantity}-${titleCount}`} className="px-1">
+                  <div
+                    key={`${quantity}-${titleCount}`}
+                    className="px-1 w-full"
+                  >
                     <QuoteExtraPriceInput
                       id={`price-${quantity}-${titleCount}`}
                       value={value.toString()}

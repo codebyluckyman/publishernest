@@ -56,6 +56,23 @@ async function insertSupplierQuoteExtraCostPriceBreaks(
       }
     }
 
+    const quantities = [
+      "2,000",
+      "2,500",
+      "3,000",
+      "5,000",
+      "7,500",
+      "10,000",
+      "15,000",
+      "20,000",
+      "25,000",
+    ];
+
+    // Convert to number[]
+    const quantityArr = quantities.map((q) =>
+      parseInt(q.replace(/,/g, ""), 10)
+    );
+
     // Process array indices
     if (arrayFields.length > 0) {
       for (let index = 0; index < maxArrayLength; index++) {
@@ -64,6 +81,7 @@ async function insertSupplierQuoteExtraCostPriceBreaks(
           extra_cost_id: extraCost.extra_cost_id,
           unit_cost: null,
           unit_of_measure_id: extraCost.unit_of_measure_id,
+          quantity: quantityArr[index] || null,
           ...Object.fromEntries(
             Array.from({ length: 10 }, (_, i) => [`unit_cost_${i + 1}`, null])
           ),
