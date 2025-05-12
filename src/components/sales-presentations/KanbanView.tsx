@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { KanbanBoard } from 'react-custom-kanban-board';
-import 'react-custom-kanban-board/dist/index.css';
+import KanbanBoard from 'react-custom-kanban-board';
 import { Product } from '@/types/product';
 import { formatPrice } from '@/utils/productUtils';
 
@@ -113,31 +112,39 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
   return (
     <div className="w-full">
       <div className="kanban-wrapper">
-        <style jsx>{`
+        <style dangerouslySetInnerHTML={{
+          __html: `
           .kanban-wrapper {
             margin-top: 20px;
           }
-          :global(.custom-kanban-board) {
+          .custom-kanban-board {
             background-color: #f9fafb;
             padding: 1rem;
             border-radius: 0.5rem;
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            min-height: 400px;
           }
-          :global(.custom-kanban-column) {
+          .custom-kanban-column {
             background-color: #f3f4f6;
             border-radius: 0.5rem;
             padding: 0.75rem;
             width: 300px;
             min-width: 300px;
           }
-          :global(.custom-kanban-column-header) {
+          .custom-kanban-column-header {
             margin-bottom: 0.75rem;
             font-weight: 600;
             padding: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
           }
-          :global(.custom-kanban-card-list) {
+          .custom-kanban-card-list {
+            display: flex;
+            flex-direction: column;
             gap: 0.75rem;
           }
-        `}</style>
+        `}} />
 
         <KanbanBoard 
           data={boardData}
