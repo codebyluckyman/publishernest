@@ -60,23 +60,18 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
     setBoardData(columnsData);
   }, [products]);
   
-  // Handle card click
-  const handleCardClick = (cardId: string, columnId: string) => {
-    const column = boardData.find(col => col.id === columnId);
-    if (column) {
-      const card = column.cards.find((c: any) => c.id === cardId);
+  // Custom card component to render product cards
+  const CustomCard = ({ card }: { card: any }) => {
+    const handleClick = () => {
       if (card && card.metadata && card.metadata.originalItem) {
         onSelectProduct(card.metadata.originalItem);
       }
-    }
-  };
-  
-  // Custom card component to render product cards
-  const CustomCard = ({ card }: { card: any }) => {
+    };
+    
     return (
       <div 
         className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => handleCardClick(card.id, card.columnId)}
+        onClick={handleClick}
       >
         {card.metadata.imageUrl ? (
           <img 
@@ -149,7 +144,6 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
         <KanbanBoard 
           columns={boardData}
           renderCard={(props) => <CustomCard card={props} />}
-          onCardClick={handleCardClick}
           disableDrag={true}
         />
       </div>
