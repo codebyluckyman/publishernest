@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types/product';
 import { Textarea } from '@/components/ui/textarea';
-import { X } from 'lucide-react';
+import { X, FileText, UploadCloud } from 'lucide-react';
+import { BulkProductImportDialog } from './BulkProductImportDialog';
 
 interface ProductSectionFormProps {
   onSave: (sectionData: {
@@ -41,6 +43,7 @@ export function ProductSectionForm({ onSave, initialData }: ProductSectionFormPr
     customPrice?: number;
     customDescription?: string;
   }[]>(initialData?.products || []);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
   
   const { products, isLoading } = useProducts();
   
@@ -78,6 +81,22 @@ export function ProductSectionForm({ onSave, initialData }: ProductSectionFormPr
     });
   };
   
+  const handleBulkImport = (importedProducts: Product[]) => {
+    const newProducts = importedProducts.filter(
+      importedProduct => !selectedProducts.some(p => p.productId === importedProduct.id)
+    );
+    
+    const newSelectedProducts = [
+      ...selectedProducts,
+      ...newProducts.map(product => ({
+        productId: product.id,
+        product
+      }))
+    ];
+    
+    setSelectedProducts(newSelectedProducts);
+  };
+  
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -107,14 +126,28 @@ export function ProductSectionForm({ onSave, initialData }: ProductSectionFormPr
           <Badge variant="outline">{selectedProducts.length} selected</Badge>
         </div>
         
-        <div className="space-y-2">
-          <Label>Add Product</Label>
-          <ProductSearchSelect
-            onChange={handleAddProduct}
-            placeholder="Search for products to add"
-            selectedProductIds={selectedProducts.map(p => p.productId)}
-            multiple={true}
-          />
+        <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+          <div className="flex-1 space-y-2">
+            <Label>Add Product</Label>
+            <ProductSearchSelect
+              onChange={handleAddProduct}
+              placeholder="Search for products to add"
+              selectedProductIds={selectedProducts.map(p => p.productId)}
+              multiple={true}
+            />
+          </div>
+          
+          <div className="flex items-end">
+            <Button 
+              variant="outline"
+              onClick={() => setBulkImportOpen(true)}
+              className="w-full sm:w-auto"
+              type="button"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Import from CSV
+            </Button>
+          </div>
         </div>
         
         {selectedProducts.length > 0 ? (
@@ -164,7 +197,9 @@ export function ProductSectionForm({ onSave, initialData }: ProductSectionFormPr
           </div>
         ) : (
           <div className="text-center py-8 border border-dashed rounded-lg text-muted-foreground">
-            No products selected. Add products using the search above.
+            <UploadCloud className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
+            <p>No products selected.</p>
+            <p className="text-sm">Add products using the search above or import from CSV.</p>
           </div>
         )}
       </div>
@@ -174,6 +209,12 @@ export function ProductSectionForm({ onSave, initialData }: ProductSectionFormPr
           Save Section
         </Button>
       </div>
+
+      <BulkProductImportDialog 
+        open={bulkImportOpen} 
+        onOpenChange={setBulkImportOpen} 
+        onImportComplete={handleBulkImport}
+      />
     </div>
   );
 }

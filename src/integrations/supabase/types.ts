@@ -2379,12 +2379,73 @@ export type Database = {
           },
         ]
       }
+      supplier_quote_extra_cost_price_breaks: {
+        Row: {
+          created_at: string
+          extra_cost_id: string | null
+          id: string
+          quantity: number | null
+          supplier_quote_id: string | null
+          unit_cost: number | null
+          unit_cost_1: number | null
+          unit_cost_10: number | null
+          unit_cost_2: number | null
+          unit_cost_3: number | null
+          unit_cost_4: number | null
+          unit_cost_5: number | null
+          unit_cost_6: number | null
+          unit_cost_7: number | null
+          unit_cost_8: number | null
+          unit_cost_9: number | null
+          unit_of_measure_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          extra_cost_id?: string | null
+          id?: string
+          quantity?: number | null
+          supplier_quote_id?: string | null
+          unit_cost?: number | null
+          unit_cost_1?: number | null
+          unit_cost_10?: number | null
+          unit_cost_2?: number | null
+          unit_cost_3?: number | null
+          unit_cost_4?: number | null
+          unit_cost_5?: number | null
+          unit_cost_6?: number | null
+          unit_cost_7?: number | null
+          unit_cost_8?: number | null
+          unit_cost_9?: number | null
+          unit_of_measure_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          extra_cost_id?: string | null
+          id?: string
+          quantity?: number | null
+          supplier_quote_id?: string | null
+          unit_cost?: number | null
+          unit_cost_1?: number | null
+          unit_cost_10?: number | null
+          unit_cost_2?: number | null
+          unit_cost_3?: number | null
+          unit_cost_4?: number | null
+          unit_cost_5?: number | null
+          unit_cost_6?: number | null
+          unit_cost_7?: number | null
+          unit_cost_8?: number | null
+          unit_cost_9?: number | null
+          unit_of_measure_id?: string | null
+        }
+        Relationships: []
+      }
       supplier_quote_extra_costs: {
         Row: {
           created_at: string
           extra_cost_id: string
           id: string
           price_break_id: string | null
+          quote_price_break_each_id: string | null
           supplier_quote_id: string
           unit_cost: number | null
           unit_cost_1: number | null
@@ -2405,6 +2466,7 @@ export type Database = {
           extra_cost_id: string
           id?: string
           price_break_id?: string | null
+          quote_price_break_each_id?: string | null
           supplier_quote_id: string
           unit_cost?: number | null
           unit_cost_1?: number | null
@@ -2425,6 +2487,7 @@ export type Database = {
           extra_cost_id?: string
           id?: string
           price_break_id?: string | null
+          quote_price_break_each_id?: string | null
           supplier_quote_id?: string
           unit_cost?: number | null
           unit_cost_1?: number | null
@@ -3246,6 +3309,54 @@ export type Database = {
           p_communication_type: string
         }
         Returns: string
+      }
+      search_quotes: {
+        Args: {
+          search_title?: string
+          filter_supplier_name?: string
+          filter_format_id?: string
+        }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          currency: string | null
+          formats: Json | null
+          id: string | null
+          notes: string | null
+          organization_id: string | null
+          packaging_carton_height: number | null
+          packaging_carton_length: number | null
+          packaging_carton_quantity: number | null
+          packaging_carton_volume: number | null
+          packaging_carton_weight: number | null
+          packaging_carton_width: number | null
+          packaging_cartons_per_pallet: number | null
+          packaging_copies_per_20ft_palletized: number | null
+          packaging_copies_per_20ft_unpalletized: number | null
+          packaging_copies_per_40ft_palletized: number | null
+          packaging_copies_per_40ft_unpalletized: number | null
+          production_schedule: Json | null
+          quote_request: Json | null
+          quote_request_id: string | null
+          reference: string | null
+          reference_id: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          remarks: string | null
+          status: string | null
+          submitted_at: string | null
+          supplier: Json | null
+          supplier_id: string | null
+          supplier_name: string | null
+          terms: string | null
+          title: string | null
+          total_cost: number | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }[]
       }
       update_format_price_breaks: {
         Args: { formatid: string; pricebreaks: Json; numproducts?: number }

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
-import { PresentationDisplaySettings } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
 
 // Assuming this is a simplified view of the presentation for shared links
 const SharedPresentationView = () => {
@@ -43,14 +43,14 @@ const SharedPresentationView = () => {
   // Create a properly typed displaySettings object
   const processedDisplaySettings: PresentationDisplaySettings = {
     cardColumns: Array.isArray(displaySettings.cardColumns) 
-      ? displaySettings.cardColumns 
+      ? displaySettings.cardColumns as CardColumn[]
       : (Array.isArray(displaySettings.displayColumns) 
-          ? displaySettings.displayColumns 
+          ? displaySettings.displayColumns as CardColumn[]
           : ['price', 'isbn13', 'publisher']),
     dialogColumns: Array.isArray(displaySettings.dialogColumns) 
-      ? displaySettings.dialogColumns 
+      ? displaySettings.dialogColumns as DialogColumn[]
       : (Array.isArray(displaySettings.displayColumns) 
-          ? [...displaySettings.displayColumns, 'synopsis'] 
+          ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis' as DialogColumn] 
           : ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'])
   };
   

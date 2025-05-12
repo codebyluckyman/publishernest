@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation, PresentationDisplaySettings } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
 
 // Type guard to verify the shape of display_settings for legacy format
 function hasDisplayColumns(obj: any): obj is { displayColumns: string[] } {
@@ -22,11 +22,26 @@ function hasCardAndDialogColumns(obj: any): obj is PresentationDisplaySettings {
   );
 }
 
+// Valid column values that can be used
+const validCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format'];
+const validDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format', 'physical_properties', 'carton_dimensions', 'synopsis'];
+
 // Default display settings to use if none found or invalid
 const defaultDisplaySettings: PresentationDisplaySettings = {
   cardColumns: ["price", "isbn13", "publisher", "publication_date"],
   dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"]
 };
+
+// Function to sanitize and validate column values
+function sanitizeCardColumns(columns: any[]): CardColumn[] {
+  if (!Array.isArray(columns)) return defaultDisplaySettings.cardColumns;
+  return columns.filter(col => validCardColumns.includes(col as CardColumn)) as CardColumn[];
+}
+
+function sanitizeDialogColumns(columns: any[]): DialogColumn[] {
+  if (!Array.isArray(columns)) return defaultDisplaySettings.dialogColumns;
+  return columns.filter(col => validDialogColumns.includes(col as DialogColumn)) as DialogColumn[];
+}
 
 export async function fetchSalesPresentationById(id: string): Promise<SalesPresentation | null> {
   try {
@@ -50,13 +65,25 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
         
         // Check if it's in the new format
         if (hasCardAndDialogColumns(settings)) {
-          displaySettings = settings as PresentationDisplaySettings;
+          displaySettings = {
+            cardColumns: sanitizeCardColumns(settings.cardColumns),
+            dialogColumns: sanitizeDialogColumns(settings.dialogColumns)
+          };
         }
         // Check if it's in the legacy format and convert
         else if (hasDisplayColumns(settings)) {
+          const legacyColumns = settings.displayColumns.filter(
+            col => validCardColumns.includes(col as CardColumn)
+          ) as CardColumn[];
+          
+          const dialogCols = [...legacyColumns];
+          if (!dialogCols.includes('synopsis')) {
+            dialogCols.push('synopsis');
+          }
+          
           displaySettings = {
-            cardColumns: settings.displayColumns,
-            dialogColumns: [...settings.displayColumns, 'synopsis']
+            cardColumns: legacyColumns,
+            dialogColumns: dialogCols as DialogColumn[]
           };
         } else {
           // Unknown format, use defaults
