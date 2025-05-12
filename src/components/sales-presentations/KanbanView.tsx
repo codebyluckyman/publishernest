@@ -107,13 +107,11 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
   // Extract all cards to create initialCards array required by KanbanBoard
   const initialCards = boardData.flatMap(column => column.cards || []);
 
-  // Function for columnForAddCard prop - this determines which column a new card would be added to
+  // String value for columnForAddCard prop - this determines which column a new card would be added to
   // We'll default to the first column, or "Other" if available
-  const columnForAddCard = () => {
-    if (boardData.length === 0) return "";
-    const otherColumn = boardData.find(col => col.id === 'Other');
-    return otherColumn ? otherColumn.id : boardData[0].id;
-  };
+  const columnForAddCard = boardData.length === 0
+    ? ""
+    : boardData.find(col => col.id === 'Other')?.id || boardData[0]?.id || "";
 
   return (
     <div className="w-full">
