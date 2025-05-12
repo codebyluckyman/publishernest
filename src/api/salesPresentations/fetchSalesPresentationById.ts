@@ -4,7 +4,7 @@ import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
 
 // Type guard to verify the shape of display_settings for legacy format
-function hasDisplayColumns(obj: any): obj is { displayColumns: string[] } {
+function hasDisplayColumns(obj: any): obj is { displayColumns: CardColumn[] } {
   return (
     obj &&
     typeof obj === 'object' &&
@@ -23,7 +23,7 @@ function hasCardAndDialogColumns(obj: any): obj is PresentationDisplaySettings {
 }
 
 // Valid column values that can be used
-const validCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format'];
+const validCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format', 'synopsis'];
 const validDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format', 'physical_properties', 'carton_dimensions', 'synopsis'];
 
 // Default display settings to use if none found or invalid
@@ -77,8 +77,8 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
           ) as CardColumn[];
           
           const dialogCols = [...legacyColumns];
-          if (!dialogCols.includes('synopsis')) {
-            dialogCols.push('synopsis');
+          if (!dialogCols.includes('synopsis' as CardColumn)) {
+            dialogCols.push('synopsis' as CardColumn);
           }
           
           displaySettings = {

@@ -27,8 +27,14 @@ const SalesPresentationDetail = () => {
     }
   };
 
+  // Default display settings to ensure type safety
+  const defaultDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
+    dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[]
+  };
+
   // Process display settings for backward compatibility
-  const displaySettings = presentation?.display_settings || {};
+  const displaySettings = presentation?.display_settings || defaultDisplaySettings;
   
   // Create a properly typed displaySettings object for the component
   const processedDisplaySettings: PresentationDisplaySettings = {
@@ -36,12 +42,12 @@ const SalesPresentationDetail = () => {
       ? displaySettings.cardColumns as CardColumn[]
       : (Array.isArray(displaySettings.displayColumns) 
           ? displaySettings.displayColumns as CardColumn[]
-          : ['price', 'isbn13', 'publisher']),
+          : defaultDisplaySettings.cardColumns),
     dialogColumns: Array.isArray(displaySettings.dialogColumns) 
       ? displaySettings.dialogColumns as DialogColumn[]
       : (Array.isArray(displaySettings.displayColumns) 
           ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis' as DialogColumn] 
-          : ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'])
+          : defaultDisplaySettings.dialogColumns)
   };
 
   if (isLoading) {

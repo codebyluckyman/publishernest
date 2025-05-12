@@ -30,7 +30,12 @@ export async function fetchProductsByISBN(
       return [];
     }
     
-    return data as Product[];
+    // Map the database results to the Product type, filling in missing properties
+    return (data || []).map(item => ({
+      ...item,
+      default_price: item.list_price,  // Use list_price as default_price
+      default_currency: item.currency_code || 'USD' // Use currency_code or fallback to USD
+    })) as Product[];
   } catch (error) {
     console.error('Failed to fetch products by ISBN:', error);
     return [];

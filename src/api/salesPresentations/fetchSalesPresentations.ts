@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation, PresentationDisplaySettings } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
 import { Organization } from '@/types/organization';
 
 interface FetchSalesPresentationsParams {
@@ -12,7 +12,7 @@ interface FetchSalesPresentationsParams {
 }
 
 // Type guard to verify the shape of legacy display_settings
-function hasDisplayColumns(obj: any): obj is { displayColumns: string[] } {
+function hasDisplayColumns(obj: any): obj is { displayColumns: CardColumn[] } {
   return (
     obj &&
     typeof obj === 'object' &&
@@ -80,8 +80,8 @@ export async function fetchSalesPresentations({
           // Check if it's in the legacy format and convert
           else if (hasDisplayColumns(settings)) {
             displaySettings = {
-              cardColumns: settings.displayColumns,
-              dialogColumns: [...settings.displayColumns, 'synopsis']
+              cardColumns: settings.displayColumns as CardColumn[],
+              dialogColumns: [...settings.displayColumns, 'synopsis'] as DialogColumn[]
             };
           } else {
             displaySettings = defaultDisplaySettings;
