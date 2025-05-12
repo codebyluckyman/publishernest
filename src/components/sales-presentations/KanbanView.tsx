@@ -1,13 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { 
-  KanbanComponent, 
-  ColumnsDirective, 
-  ColumnDirective,
-  CardSettingsModel
-} from '@syncfusion/ej2-react-kanban';
-import '@syncfusion/ej2-base/styles/material.css';
-import '@syncfusion/ej2-react-kanban/styles/material.css';
+import { KanbanBoard } from 'react-custom-kanban-board';
+import 'react-custom-kanban-board/dist/index.css';
 import { Product } from '@/types/product';
 import { formatPrice } from '@/utils/productUtils';
 
@@ -24,138 +18,140 @@ interface KanbanViewProps {
   }) => void;
 }
 
-interface KanbanProduct {
-  Id: string;
-  Title: string;
-  Price: string;
-  ISBN: string;
-  Publisher: string;
-  PublicationDate: string;
-  ImageUrl?: string;
-  Category: string;
-  Summary?: string;
-  _original: {
-    product: Product;
-    customPrice?: number;
-    customDescription?: string;
-  };
-}
-
 export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
-  const [kanbanData, setKanbanData] = useState<KanbanProduct[]>([]);
+  const [boardData, setBoardData] = useState<any[]>([]);
   
   useEffect(() => {
     // Transform products into kanban-compatible data
-    const transformedData = products.map(item => {
-      const publisherCategory = item.product.publisher_name || 'Other';
+    const publishers = new Map<string, any[]>();
+    
+    // Group products by publisher
+    products.forEach(item => {
+      const publisherName = item.product.publisher_name || 'Other';
       
-      return {
-        Id: item.product.id,
-        Title: item.product.title,
-        Price: formatPrice(item.product.list_price, item.product.default_currency),
-        ISBN: item.product.isbn13 || 'N/A',
-        Publisher: item.product.publisher_name || 'N/A',
-        PublicationDate: item.product.publication_date 
-          ? new Date(item.product.publication_date).toLocaleDateString() 
-          : 'N/A',
-        ImageUrl: item.product.cover_image_url,
-        Category: publisherCategory,
-        Summary: item.product.synopsis?.substring(0, 100) + '...',
-        _original: item
-      };
+      if (!publishers.has(publisherName)) {
+        publishers.set(publisherName, []);
+      }
+      
+      publishers.get(publisherName)?.push({
+        id: item.product.id,
+        title: item.product.title,
+        description: item.product.synopsis 
+          ? item.product.synopsis.substring(0, 100) + '...' 
+          : '',
+        metadata: {
+          isbn: item.product.isbn13 || 'N/A',
+          price: formatPrice(item.product.list_price, item.product.default_currency),
+          imageUrl: item.product.cover_image_url,
+          publicationDate: item.product.publication_date 
+            ? new Date(item.product.publication_date).toLocaleDateString() 
+            : 'N/A',
+          originalItem: item
+        }
+      });
     });
     
-    setKanbanData(transformedData);
+    // Convert to the structure required by the kanban board
+    const columnsData = Array.from(publishers.entries()).map(([publisherName, items]) => ({
+      id: publisherName,
+      title: publisherName,
+      cards: items
+    }));
     
+    setBoardData(columnsData);
   }, [products]);
   
-  // Group products by publisher
-  const getUniquePublishers = () => {
-    const publishers = products
-      .map(item => item.product.publisher_name || 'Other')
-      .filter((v, i, a) => a.indexOf(v) === i);
-    
-    return publishers.length > 0 ? publishers : ['Other'];
-  };
-  
-  const cardSettings: CardSettingsModel = {
-    contentField: 'Title',
-    headerField: 'Title',
-    template: '#kanbanCardTemplate'
-  };
-  
-  const publishers = getUniquePublishers();
-
-  const handleCardClick = (args: any) => {
-    if (args.data && args.data._original) {
-      onSelectProduct(args.data._original);
+  // Handle card click
+  const handleCardClick = (cardId: string, columnId: string) => {
+    const column = boardData.find(col => col.id === columnId);
+    if (column) {
+      const card = column.cards.find((c: any) => c.id === cardId);
+      if (card && card.metadata && card.metadata.originalItem) {
+        onSelectProduct(card.metadata.originalItem);
+      }
     }
   };
   
-  // Define the template as a string (not JSX)
-  const cardTemplate = `
-    <div class="e-card-content">
-      \${if(ImageUrl)}
-        <img class="e-card-image" src="\${ImageUrl}" alt="\${Title}" />
-      \${else}
-        <div style="height: 120px; background-color: #f2f2f2; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-          No Image
+  // Custom card component to render product cards
+  const CustomCard = ({ card }: { card: any }) => {
+    return (
+      <div 
+        className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
+        onClick={() => handleCardClick(card.id, card.columnId)}
+      >
+        {card.metadata.imageUrl ? (
+          <img 
+            src={card.metadata.imageUrl} 
+            alt={card.title} 
+            className="w-full h-32 object-cover mb-3 rounded"
+          />
+        ) : (
+          <div className="w-full h-32 bg-gray-100 flex items-center justify-center mb-3 rounded">
+            <span className="text-gray-400">No Image</span>
+          </div>
+        )}
+        
+        <h3 className="font-medium text-sm line-clamp-2 mb-1">{card.title}</h3>
+        
+        <div className="text-xs text-gray-500 mb-1">
+          <span className="font-medium">ISBN:</span> {card.metadata.isbn}
         </div>
-      \${/if}
-      <div class="e-card-title">\${Title}</div>
-      <div class="e-card-isbn">ISBN: \${ISBN}</div>
-      <div class="e-card-price">\${Price}</div>
-      \${if(Summary)}
-        <div class="e-card-summary" style="margin-top: 8px; font-size: 12px; color: #666;">\${Summary}</div>
-      \${/if}
-    </div>
-  `;
-  
+        
+        <div className="text-xs text-gray-500 mb-1">
+          <span className="font-medium">Price:</span> {card.metadata.price}
+        </div>
+        
+        {card.description && (
+          <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+            {card.description}
+          </p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="w-full">
-      <style>
-        {`
-          .e-kanban .e-card-wrapper {
-            cursor: pointer;
+      <div className="kanban-wrapper">
+        <style jsx>{`
+          .kanban-wrapper {
+            margin-top: 20px;
           }
-          .e-kanban .e-card .e-card-image {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            margin-bottom: 8px;
+          :global(.custom-kanban-board) {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
           }
-          .e-kanban .e-card .e-card-isbn,
-          .e-kanban .e-card .e-card-price {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
+          :global(.custom-kanban-column) {
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            width: 300px;
+            min-width: 300px;
           }
-        `}
-      </style>
-      
-      {/* Render the template in a hidden div */}
-      <script id="kanbanCardTemplate" type="text/x-jsrender">
-        {cardTemplate}
-      </script>
-      
-      <KanbanComponent
-        id="kanbanProducts"
-        keyField="Category"
-        dataSource={kanbanData}
-        cardSettings={cardSettings}
-        cardClick={handleCardClick}
-        height="600px"
-      >
-        <ColumnsDirective>
-          {publishers.map(publisher => (
-            <ColumnDirective 
-              key={publisher} 
-              headerText={publisher} 
-              keyField={publisher} 
-            />
-          ))}
-        </ColumnsDirective>
-      </KanbanComponent>
+          :global(.custom-kanban-column-header) {
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            padding: 0.5rem;
+          }
+          :global(.custom-kanban-card-list) {
+            gap: 0.75rem;
+          }
+        `}</style>
+
+        <KanbanBoard 
+          data={boardData}
+          renderCard={(props) => <CustomCard card={props} />}
+          classNames={{
+            board: "custom-kanban-board",
+            column: "custom-kanban-column",
+            columnHeader: "custom-kanban-column-header",
+            cardList: "custom-kanban-card-list"
+          }}
+          onCardClick={handleCardClick}
+          disableDrag={true}
+        />
+      </div>
     </div>
   );
 }

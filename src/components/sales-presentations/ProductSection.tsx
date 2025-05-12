@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
@@ -12,6 +11,7 @@ import { ViewToggle } from './ViewToggle';
 import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
+import './KanbanStyles.css'; // Import the kanban styles
 
 interface ProductSectionProps {
   title: string;
