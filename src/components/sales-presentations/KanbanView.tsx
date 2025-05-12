@@ -149,10 +149,6 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
         <KanbanBoard 
           columns={boardData}
           renderCard={(props) => <CustomCard card={props} />}
-          className="custom-kanban-board"
-          columnClassName="custom-kanban-column"
-          columnHeaderClassName="custom-kanban-column-header"
-          cardListClassName="custom-kanban-card-list"
           onCardClick={handleCardClick}
           disableDrag={true}
         />
