@@ -1,4 +1,10 @@
 
+export interface FormatExtra {
+  name: string;
+  description?: string;
+  unit_of_measure_id?: string;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -21,8 +27,23 @@ export interface Product {
     embossing: boolean;
     die_cut: boolean;
     holographic: boolean;
-  };
+  } | FormatExtra[];
   format_extra_comments?: string | null;
+  
+  // Physical properties
+  height_measurement?: number | null;
+  width_measurement?: number | null;
+  thickness_measurement?: number | null;
+  weight_measurement?: number | null;
+  
+  // Carton information
+  carton_quantity?: number | null;
+  carton_length_mm?: number | null;
+  carton_width_mm?: number | null;
+  carton_height_mm?: number | null;
+  
+  // Additional properties
+  synopsis?: string | null;
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';

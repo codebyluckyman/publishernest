@@ -12,6 +12,7 @@ import {
   publishSalesPresentation,
   createPresentationShare
 } from '@/api/salesPresentations';
+import { PresentationDisplaySettings } from '@/types/salesPresentation';
 
 export function useSalesPresentations() {
   const { currentOrganization } = useOrganization();
@@ -46,22 +47,31 @@ export function useSalesPresentations() {
   const createPresentation = async ({ 
     title, 
     description, 
-    coverImageUrl 
+    coverImageUrl,
+    displaySettings
   }: { 
     title: string, 
     description?: string, 
-    coverImageUrl?: string 
+    coverImageUrl?: string,
+    displaySettings?: PresentationDisplaySettings
   }) => {
     if (!currentOrganization || !user) {
       throw new Error('Missing organization or user information');
     }
+
+    // Ensure backward compatibility with legacy displayColumns
+    const finalDisplaySettings = displaySettings || {
+      cardColumns: ['price', 'isbn13', 'publisher'],
+      dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis']
+    };
 
     const result = await createSalesPresentation({
       title,
       description,
       currentOrganization,
       userId: user.id,
-      coverImageUrl
+      coverImageUrl,
+      displaySettings: finalDisplaySettings
     });
 
     if (!result) {
@@ -98,7 +108,8 @@ export function useSalesPresentations() {
     description?: string, 
     status?: 'draft' | 'published' | 'archived',
     coverImageUrl?: string,
-    expiresAt?: string
+    expiresAt?: string,
+    displaySettings?: PresentationDisplaySettings
   }) => {
     const result = await updateSalesPresentation({
       id,

@@ -10,6 +10,16 @@ import { ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const viewModeOptions = [
+  { value: 'card', label: 'Card View' },
+  { value: 'table', label: 'Table View' },
+  { value: 'carousel', label: 'Carousel View' },
+  { value: 'kanban', label: 'Kanban View' },
+];
 
 const EditSalesPresentation = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,12 +31,14 @@ const EditSalesPresentation = () => {
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [defaultView, setDefaultView] = useState<PresentationViewMode>('card');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (presentation) {
       setTitle(presentation.title);
       setDescription(presentation.description || '');
+      setDefaultView(presentation.display_settings?.defaultView || 'card');
     }
   }, [presentation]);
 
@@ -37,10 +49,17 @@ const EditSalesPresentation = () => {
     
     try {
       setError(null);
+      
+      const displaySettings: PresentationDisplaySettings = {
+        ...presentation?.display_settings,
+        defaultView
+      };
+      
       await updateMutation.mutateAsync({
         id,
         title,
-        description
+        description,
+        displaySettings
       });
       
       navigate(`/sales-presentations/${id}`);
@@ -57,6 +76,31 @@ const EditSalesPresentation = () => {
   if (!presentation) {
     return <div>Presentation not found</div>;
   }
+
+  // Default display settings to ensure type safety
+  const defaultDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
+    dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
+    defaultView: 'card'
+  };
+
+  // Process display settings for backward compatibility
+  const displaySettings = presentation.display_settings || defaultDisplaySettings;
+  
+  // Create a properly typed displaySettings object
+  const processedDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: Array.isArray(displaySettings.cardColumns) 
+      ? displaySettings.cardColumns 
+      : (Array.isArray(displaySettings.displayColumns) 
+          ? displaySettings.displayColumns 
+          : defaultDisplaySettings.cardColumns),
+    dialogColumns: Array.isArray(displaySettings.dialogColumns) 
+      ? displaySettings.dialogColumns 
+      : (Array.isArray(displaySettings.displayColumns) 
+          ? [...displaySettings.displayColumns, 'synopsis'] 
+          : defaultDisplaySettings.dialogColumns),
+    defaultView: displaySettings.defaultView || 'card'
+  };
 
   return (
     <div className="space-y-6">
@@ -103,17 +147,42 @@ const EditSalesPresentation = () => {
                 className="min-h-32"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="defaultView">Default View</Label>
+              <Select 
+                value={defaultView} 
+                onValueChange={(value) => setDefaultView(value as PresentationViewMode)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select default view" />
+                </SelectTrigger>
+                <SelectContent>
+                  {viewModeOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                Choose how products will be displayed by default in the presentation
+              </p>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Placeholder for content editor */}
-        <div className="mt-6 bg-gray-50 p-6 rounded-lg border border-dashed border-gray-300 text-center">
-          <h2 className="text-lg font-medium mb-4">Presentation Content Editor</h2>
-          <p className="text-muted-foreground mb-4">
-            This is a placeholder for the presentation content editor. In a full implementation, 
-            you would be able to add sections, products, formats, and other content here.
-          </p>
-        </div>
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Presentation Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PresentationSections 
+              presentationId={id!}
+              isEditable={true}
+              displaySettings={processedDisplaySettings}
+            />
+          </CardContent>
+        </Card>
 
         <div className="mt-6 flex justify-end space-x-2">
           <Button

@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { Organization } from '@/types/organization';
-import { SalesPresentation } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
 
 interface CreateSalesPresentationParams {
   title: string;
@@ -10,6 +10,7 @@ interface CreateSalesPresentationParams {
   currentOrganization: Organization;
   userId: string;
   coverImageUrl?: string;
+  displaySettings?: PresentationDisplaySettings;
 }
 
 export async function createSalesPresentation({
@@ -17,9 +18,28 @@ export async function createSalesPresentation({
   description,
   currentOrganization,
   userId,
-  coverImageUrl
+  coverImageUrl,
+  displaySettings
 }: CreateSalesPresentationParams): Promise<string | null> {
   try {
+    // Convert displaySettings to a plain object for database storage
+    let finalDisplaySettings: Record<string, any>;
+    
+    if (displaySettings) {
+      finalDisplaySettings = {
+        cardColumns: displaySettings.cardColumns,
+        dialogColumns: displaySettings.dialogColumns,
+        defaultView: displaySettings.defaultView || 'card'
+      };
+    } else {
+      // Default settings if none provided
+      finalDisplaySettings = {
+        cardColumns: ["price", "isbn13", "publisher"] as CardColumn[],
+        dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"] as DialogColumn[],
+        defaultView: 'card' as PresentationViewMode
+      };
+    }
+
     const { data, error } = await supabaseCustom
       .from('sales_presentations')
       .insert({
@@ -28,7 +48,8 @@ export async function createSalesPresentation({
         organization_id: currentOrganization.id,
         created_by: userId,
         status: 'draft',
-        cover_image_url: coverImageUrl
+        cover_image_url: coverImageUrl,
+        display_settings: finalDisplaySettings
       })
       .select('id')
       .single();

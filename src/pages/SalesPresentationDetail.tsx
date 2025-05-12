@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
 
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +25,31 @@ const SalesPresentationDetail = () => {
     if (id) {
       await publishMutation.mutateAsync({ id });
     }
+  };
+
+  // Default display settings to ensure type safety
+  const defaultDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
+    dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
+    defaultView: 'card' as PresentationViewMode
+  };
+
+  // Process display settings for backward compatibility
+  const displaySettings = presentation?.display_settings || defaultDisplaySettings;
+  
+  // Create a properly typed displaySettings object for the component
+  const processedDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: Array.isArray(displaySettings.cardColumns) 
+      ? displaySettings.cardColumns
+      : (Array.isArray(displaySettings.displayColumns) 
+          ? displaySettings.displayColumns
+          : defaultDisplaySettings.cardColumns),
+    dialogColumns: Array.isArray(displaySettings.dialogColumns) 
+      ? displaySettings.dialogColumns
+      : (Array.isArray(displaySettings.displayColumns) 
+          ? [...displaySettings.displayColumns, 'synopsis'] 
+          : defaultDisplaySettings.dialogColumns),
+    defaultView: displaySettings.defaultView || 'card'
   };
 
   if (isLoading) {
@@ -85,22 +112,22 @@ const SalesPresentationDetail = () => {
         )}
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">
-            {presentation.description || 'No description provided.'}
-          </p>
-        </CardContent>
-      </Card>
+      {presentation.description && (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">
+              {presentation.description}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Placeholder for presentation content editor */}
-      <div className="bg-gray-50 p-6 rounded-lg border border-dashed border-gray-300 text-center">
-        <h2 className="text-lg font-medium mb-4">Presentation Content Editor</h2>
-        <p className="text-muted-foreground mb-4">
-          This is a placeholder for the presentation content editor. In a full implementation, 
-          you would be able to add sections, products, formats, and other content here.
-        </p>
-        <Button onClick={handleEdit}>Edit Presentation</Button>
+      <div className="mt-8">
+        <PresentationSections
+          presentationId={id!}
+          isEditable={presentation.status === 'draft'}
+          displaySettings={processedDisplaySettings}
+        />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { CreatePresentationForm } from '@/components/sales-presentations/CreatePresentationForm';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
+import { PresentationViewMode } from '@/types/salesPresentation';
 
 const CreateSalesPresentation = () => {
   const navigate = useNavigate();
@@ -18,9 +19,16 @@ const CreateSalesPresentation = () => {
     try {
       setError(null);
       
+      const displaySettings = {
+        cardColumns: formData.cardColumns,
+        dialogColumns: formData.dialogColumns,
+        defaultView: formData.defaultView as PresentationViewMode
+      };
+      
       const result = await createPresentation.mutateAsync({
         title: formData.title,
-        description: formData.description
+        description: formData.description,
+        displaySettings
       });
       
       if (result) {
@@ -68,6 +76,6 @@ const CreateSalesPresentation = () => {
       </Card>
     </div>
   );
-};
+}
 
 export default CreateSalesPresentation;
