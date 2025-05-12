@@ -7,7 +7,7 @@ import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
-import { PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
 
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +30,8 @@ const SalesPresentationDetail = () => {
   // Default display settings to ensure type safety
   const defaultDisplaySettings: PresentationDisplaySettings = {
     cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
-    dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[]
+    dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
+    defaultView: 'card' as PresentationViewMode
   };
 
   // Process display settings for backward compatibility
@@ -39,15 +40,16 @@ const SalesPresentationDetail = () => {
   // Create a properly typed displaySettings object for the component
   const processedDisplaySettings: PresentationDisplaySettings = {
     cardColumns: Array.isArray(displaySettings.cardColumns) 
-      ? displaySettings.cardColumns as CardColumn[]
+      ? displaySettings.cardColumns
       : (Array.isArray(displaySettings.displayColumns) 
-          ? displaySettings.displayColumns as CardColumn[]
+          ? displaySettings.displayColumns
           : defaultDisplaySettings.cardColumns),
     dialogColumns: Array.isArray(displaySettings.dialogColumns) 
-      ? displaySettings.dialogColumns as DialogColumn[]
+      ? displaySettings.dialogColumns
       : (Array.isArray(displaySettings.displayColumns) 
-          ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis' as DialogColumn] 
-          : defaultDisplaySettings.dialogColumns)
+          ? [...displaySettings.displayColumns, 'synopsis'] 
+          : defaultDisplaySettings.dialogColumns),
+    defaultView: displaySettings.defaultView || 'card'
   };
 
   if (isLoading) {

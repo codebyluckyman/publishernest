@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
@@ -6,7 +7,11 @@ import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from '@/components/ui/img';
 import { useFormatDetails } from '@/hooks/format/useFormatDetails';
-import { PresentationDisplaySettings } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
+import { ViewToggle } from './ViewToggle';
+import { TableView } from './TableView';
+import { CarouselView } from './CarouselView';
+import { KanbanView } from './KanbanView';
 
 interface ProductSectionProps {
   title: string;
@@ -34,6 +39,10 @@ export function ProductSection({
     customPrice?: number;
     customDescription?: string;
   } | null>(null);
+  
+  // Use the defaultView from displaySettings, falling back to 'card' if not specified
+  const initialView = displaySettings?.defaultView || 'card';
+  const [viewMode, setViewMode] = useState<PresentationViewMode>(initialView);
 
   const cardColumns = displaySettings?.cardColumns || 
     (displaySettings?.displayColumns as Array<string>) || 
@@ -75,6 +84,40 @@ export function ProductSection({
     }
   };
 
+  // Render the card view (default)
+  const renderCardView = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {products.map((item) => (
+        <Card 
+          key={item.product.id} 
+          className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+          onClick={() => setSelectedProduct(item)}
+        >
+          {item.product.cover_image_url && (
+            <div className="w-full h-48 overflow-hidden">
+              <Image
+                src={item.product.cover_image_url}
+                alt={item.product.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {cardColumns.map((column) => (
+              <div key={column} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
+                <span>{getDisplayValue(item.product, column)}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -83,43 +126,49 @@ export function ProductSection({
           {description && <p className="text-muted-foreground mt-1">{description}</p>}
         </div>
         
-        {isEditable && onEdit && (
-          <Button variant="outline" onClick={onEdit}>
-            Edit Section
-          </Button>
-        )}
+        <div className="flex items-center space-x-4">
+          <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+          
+          {isEditable && onEdit && (
+            <Button variant="outline" onClick={onEdit}>
+              Edit Section
+            </Button>
+          )}
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((item) => (
-          <Card 
-            key={item.product.id} 
-            className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => setSelectedProduct(item)}
-          >
-            {item.product.cover_image_url && (
-              <div className="w-full h-48 overflow-hidden">
-                <Image
-                  src={item.product.cover_image_url}
-                  alt={item.product.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {cardColumns.map((column) => (
-                <div key={column} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
-                  <span>{getDisplayValue(item.product, column)}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {products.length > 0 ? (
+        <div>
+          {viewMode === 'card' && renderCardView()}
+          
+          {viewMode === 'table' && (
+            <TableView 
+              products={products} 
+              displaySettings={displaySettings}
+              onSelectProduct={setSelectedProduct}
+            />
+          )}
+          
+          {viewMode === 'carousel' && (
+            <CarouselView 
+              products={products} 
+              displaySettings={displaySettings}
+              onSelectProduct={setSelectedProduct}
+            />
+          )}
+          
+          {viewMode === 'kanban' && (
+            <KanbanView 
+              products={products}
+              onSelectProduct={setSelectedProduct}
+            />
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-muted/20 rounded-lg">
+          <p className="text-muted-foreground">No products in this section</p>
+        </div>
+      )}
       
       <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
         <DialogContent className="max-w-3xl">

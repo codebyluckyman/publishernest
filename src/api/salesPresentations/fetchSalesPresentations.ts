@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
 import { Organization } from '@/types/organization';
 
 interface FetchSalesPresentationsParams {
@@ -33,7 +33,8 @@ function hasCardAndDialogColumns(obj: any): obj is PresentationDisplaySettings {
 // Default display settings to use if none found or invalid
 const defaultDisplaySettings: PresentationDisplaySettings = {
   cardColumns: ["price", "isbn13", "publisher", "publication_date"],
-  dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"]
+  dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"],
+  defaultView: 'card'
 };
 
 export async function fetchSalesPresentations({
@@ -75,13 +76,18 @@ export async function fetchSalesPresentations({
           
           // Check if it's already in the new format
           if (hasCardAndDialogColumns(settings)) {
-            displaySettings = settings as PresentationDisplaySettings;
+            displaySettings = {
+              cardColumns: settings.cardColumns as CardColumn[],
+              dialogColumns: settings.dialogColumns as DialogColumn[],
+              defaultView: settings.defaultView as PresentationViewMode || 'card'
+            };
           }
           // Check if it's in the legacy format and convert
           else if (hasDisplayColumns(settings)) {
             displaySettings = {
               cardColumns: settings.displayColumns as CardColumn[],
-              dialogColumns: [...settings.displayColumns, 'synopsis'] as DialogColumn[]
+              dialogColumns: [...settings.displayColumns, 'synopsis'] as DialogColumn[],
+              defaultView: 'card'
             };
           } else {
             displaySettings = defaultDisplaySettings;

@@ -13,10 +13,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { PresentationViewMode } from '@/types/salesPresentation';
 
 // Available column options
 const cardColumnOptions = [
@@ -38,12 +47,20 @@ const dialogColumnOptions = [
   { id: 'synopsis', label: 'Synopsis' },
 ] as const;
 
+const viewModeOptions = [
+  { value: 'card', label: 'Card View' },
+  { value: 'table', label: 'Table View' },
+  { value: 'carousel', label: 'Carousel View' },
+  { value: 'kanban', label: 'Kanban View' },
+];
+
 // Validation schema
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().optional(),
   cardColumns: z.array(z.string()).min(1, { message: 'Select at least one column to display on cards' }),
   dialogColumns: z.array(z.string()).min(1, { message: 'Select at least one column to display in details' }),
+  defaultView: z.enum(['card', 'table', 'carousel', 'kanban']).default('card'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -63,6 +80,7 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
       description: '',
       cardColumns: ['price', 'isbn13', 'publisher'],
       dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'],
+      defaultView: 'card',
     },
   });
 
@@ -70,12 +88,14 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
     const displaySettings = {
       cardColumns: data.cardColumns,
       dialogColumns: data.dialogColumns,
+      defaultView: data.defaultView,
     };
     
     await onSubmit({
       ...data,
       cardColumns: data.cardColumns,
-      dialogColumns: data.dialogColumns
+      dialogColumns: data.dialogColumns,
+      defaultView: data.defaultView,
     });
   };
 
@@ -112,6 +132,34 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="defaultView"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Default View</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select default view" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {viewModeOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Select how products will be displayed by default in the presentation
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

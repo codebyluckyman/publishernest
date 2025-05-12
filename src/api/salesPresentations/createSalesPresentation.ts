@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { Organization } from '@/types/organization';
-import { PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
 
 interface CreateSalesPresentationParams {
   title: string;
@@ -28,13 +28,15 @@ export async function createSalesPresentation({
     if (displaySettings) {
       finalDisplaySettings = {
         cardColumns: displaySettings.cardColumns,
-        dialogColumns: displaySettings.dialogColumns
+        dialogColumns: displaySettings.dialogColumns,
+        defaultView: displaySettings.defaultView || 'card'
       };
     } else {
       // Default settings if none provided
       finalDisplaySettings = {
         cardColumns: ["price", "isbn13", "publisher"] as CardColumn[],
-        dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"] as DialogColumn[]
+        dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"] as DialogColumn[],
+        defaultView: 'card' as PresentationViewMode
       };
     }
 
