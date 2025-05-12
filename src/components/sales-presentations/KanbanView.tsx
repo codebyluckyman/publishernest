@@ -144,7 +144,6 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
         <KanbanBoard 
           columns={boardData}
           renderCard={(props) => <CustomCard card={props} />}
-          disableDrag={true}
         />
       </div>
     </div>
