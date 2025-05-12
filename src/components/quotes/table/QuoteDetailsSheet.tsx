@@ -1,6 +1,10 @@
-
 import React, { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { QuoteAuditHistory } from "./QuoteAuditHistory";
@@ -11,7 +15,11 @@ interface QuoteDetailsSheetProps {
   onOpenChange: (open: boolean) => void;
   selectedRequest: QuoteRequest | null;
   onEdit?: (request: QuoteRequest) => void;
-  onStatusChange?: (id: string, status: 'approved' | 'declined' | 'pending') => void;
+  onStatusChange?: (
+    id: string,
+    status: "approved" | "declined" | "pending"
+  ) => void;
+  isSubmitting: boolean;
 }
 
 export function QuoteDetailsSheet({
@@ -20,6 +28,7 @@ export function QuoteDetailsSheet({
   selectedRequest,
   onEdit,
   onStatusChange,
+  isSubmitting,
 }: QuoteDetailsSheetProps) {
   const [showAuditHistory, setShowAuditHistory] = useState(false);
 
@@ -42,10 +51,10 @@ export function QuoteDetailsSheet({
 
         <ScrollArea className="h-[calc(100vh-5rem)] pr-4">
           {showAuditHistory ? (
-            <QuoteAuditHistory 
-              quoteRequest={selectedRequest} 
+            <QuoteAuditHistory
+              quoteRequest={selectedRequest}
               isOpen={showAuditHistory}
-              onOpenChange={(open) => setShowAuditHistory(open)} 
+              onOpenChange={(open) => setShowAuditHistory(open)}
             />
           ) : (
             <QuoteDetails
@@ -53,6 +62,7 @@ export function QuoteDetailsSheet({
               onEdit={onEdit}
               onStatusChange={onStatusChange}
               onShowHistory={() => setShowAuditHistory(true)}
+              isSubmitting={isSubmitting}
             />
           )}
         </ScrollArea>

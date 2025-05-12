@@ -1,5 +1,9 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import FormatReadOnlyForm from "./FormatReadOnlyForm";
 import { LinkedProductsGallery } from "./format/LinkedProductsGallery";
@@ -10,7 +14,11 @@ type FormatViewDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-const FormatViewDialog = ({ open, formatId, onOpenChange }: FormatViewDialogProps) => {
+const FormatViewDialog = ({
+  open,
+  formatId,
+  onOpenChange,
+}: FormatViewDialogProps) => {
   if (!formatId) return null;
 
   return (
@@ -19,9 +27,9 @@ const FormatViewDialog = ({ open, formatId, onOpenChange }: FormatViewDialogProp
         <DialogHeader>
           <DialogTitle>Format Details</DialogTitle>
         </DialogHeader>
-        
+
         <FormatReadOnlyForm formatId={formatId} />
-        
+
         <Separator className="my-4" />
         <LinkedProductsGallery formatId={formatId} />
       </DialogContent>

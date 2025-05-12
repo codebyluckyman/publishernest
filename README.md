@@ -1,3 +1,4 @@
+# Vasil's branch 2024-05-08
 # Welcome to your Lovable project
 
 ## Project info
@@ -59,6 +60,7 @@ This project is built with .
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase as backend as a service
 
 ## How can I deploy this project?
 

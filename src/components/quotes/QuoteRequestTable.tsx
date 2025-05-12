@@ -1,9 +1,5 @@
-
 import { QuoteRequest } from "@/types/quoteRequest";
-import {
-  Table,
-  TableBody,
-} from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import { useSuppliersApi } from "@/hooks/useSuppliersApi";
 import { useOrganization } from "@/hooks/useOrganization";
 import { QuoteRequestRow } from "./table/QuoteRequestRow";
@@ -25,14 +21,18 @@ interface QuoteRequestTableProps {
   isLoading: boolean;
 }
 
-export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTableProps) {
+export function QuoteRequestTable({
+  quoteRequests,
+  isLoading,
+}: QuoteRequestTableProps) {
   const { currentOrganization } = useOrganization();
   const { data: suppliers = [] } = useSuppliersApi(currentOrganization);
   const navigate = useNavigate();
-  
+
   // Sort functionality
-  const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
-  
+  const { sortField, sortDirection, handleSort, sortedQuoteRequests } =
+    useQuoteRequestSort(quoteRequests);
+
   // Pagination functionality
   const {
     currentData: paginatedQuoteRequests,
@@ -48,10 +48,13 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     data: sortedQuoteRequests,
     initialPageSize: 10,
   });
-  
+
   // Get all quote request IDs for bulk operations
-  const allQuoteRequestIds = useMemo(() => quoteRequests.map(req => req.id), [quoteRequests]);
-  
+  const allQuoteRequestIds = useMemo(
+    () => quoteRequests.map((req) => req.id),
+    [quoteRequests]
+  );
+
   // Request management (view, edit, delete, etc.)
   const {
     selectedRequest,
@@ -61,6 +64,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     selectedRows,
     dueDateDialogOpen,
     setDueDateDialogOpen,
+    isSubmitting,
     handleSelectRow,
     handleSelectAll,
     clearSelection,
@@ -74,7 +78,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
     handleBulkStatusChange,
     handleBulkDelete,
     openDueDateDialog,
-    handleBulkUpdateDueDate
+    handleBulkUpdateDueDate,
   } = useQuoteRequestManagement();
 
   // Function to navigate to supplier quotes for a specific quote request
@@ -88,11 +92,11 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
 
   return (
     <>
-      <BulkActions 
+      <BulkActions
         selectedCount={selectedRows.length}
-        onApprove={() => handleBulkStatusChange('approved')}
-        onDecline={() => handleBulkStatusChange('declined')}
-        onMarkPending={() => handleBulkStatusChange('pending')}
+        onApprove={() => handleBulkStatusChange("approved")}
+        onDecline={() => handleBulkStatusChange("declined")}
+        onMarkPending={() => handleBulkStatusChange("pending")}
         onDelete={handleBulkDelete}
         onUpdateDueDate={openDueDateDialog}
         onClearSelection={clearSelection}
@@ -105,7 +109,9 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
           handleSort={handleSort}
           selectedRows={selectedRows}
           allRowIds={allQuoteRequestIds}
-          onSelectAll={(selected) => handleSelectAll(selected, allQuoteRequestIds)}
+          onSelectAll={(selected) =>
+            handleSelectAll(selected, allQuoteRequestIds)
+          }
         />
         <TableBody>
           {paginatedQuoteRequests.map((request) => (
@@ -141,6 +147,7 @@ export function QuoteRequestTable({ quoteRequests, isLoading }: QuoteRequestTabl
         selectedRequest={selectedRequest}
         onEdit={editRequest}
         onStatusChange={handleStatusChange}
+        isSubmitting={isSubmitting}
       />
 
       <EditQuoteRequestDialog

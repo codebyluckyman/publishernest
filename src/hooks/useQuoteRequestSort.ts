@@ -1,22 +1,28 @@
-
 import { useState, useCallback, useMemo } from "react";
-import { QuoteRequest, SortQuoteRequestField, SortDirection } from "@/types/quoteRequest";
+import {
+  QuoteRequest,
+  SortQuoteRequestField,
+  SortDirection,
+} from "@/types/quoteRequest";
 
 export function useQuoteRequestSort(quoteRequests: QuoteRequest[]) {
   const [sortField, setSortField] = useState<SortQuoteRequestField>("due_date");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   // Handle sorting
-  const handleSort = useCallback((field: SortQuoteRequestField) => {
-    if (sortField === field) {
-      // Toggle direction if clicking the same field
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      // Set new field and default to ascending
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  }, [sortField, sortDirection]);
+  const handleSort = useCallback(
+    (field: SortQuoteRequestField) => {
+      if (sortField === field) {
+        // Toggle direction if clicking the same field
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      } else {
+        // Set new field and default to ascending
+        setSortField(field);
+        setSortDirection("asc");
+      }
+    },
+    [sortField, sortDirection]
+  );
 
   // Sort the quote requests
   const sortedQuoteRequests = useMemo(() => {
@@ -28,7 +34,9 @@ export function useQuoteRequestSort(quoteRequests: QuoteRequest[]) {
           comparison = a.title.localeCompare(b.title);
           break;
         case "requested_at":
-          comparison = new Date(a.requested_at).getTime() - new Date(b.requested_at).getTime();
+          comparison =
+            new Date(a.requested_at).getTime() -
+            new Date(b.requested_at).getTime();
           break;
         case "status":
           comparison = a.status.localeCompare(b.status);
@@ -37,6 +45,11 @@ export function useQuoteRequestSort(quoteRequests: QuoteRequest[]) {
           const supplierNameA = a.supplier_name || "";
           const supplierNameB = b.supplier_name || "";
           comparison = supplierNameA.localeCompare(supplierNameB);
+          break;
+        case "users":
+          const userA = a.users.first_name || "";
+          const userB = b.users.first_name || "";
+          comparison = userA.localeCompare(userB);
           break;
         case "due_date":
           // Handle null due dates by placing them at the end
@@ -47,7 +60,8 @@ export function useQuoteRequestSort(quoteRequests: QuoteRequest[]) {
           } else if (!b.due_date) {
             comparison = -1; // a goes before b
           } else {
-            comparison = new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+            comparison =
+              new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
           }
           break;
         default:
@@ -62,6 +76,6 @@ export function useQuoteRequestSort(quoteRequests: QuoteRequest[]) {
     sortField,
     sortDirection,
     handleSort,
-    sortedQuoteRequests
+    sortedQuoteRequests,
   };
 }

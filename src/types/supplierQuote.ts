@@ -1,5 +1,8 @@
-
-export type SupplierQuoteStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+export type SupplierQuoteStatus =
+  | "draft"
+  | "submitted"
+  | "approved"
+  | "rejected";
 
 export interface SupplierQuotePriceBreak {
   id: string;
@@ -27,24 +30,30 @@ export interface SupplierQuoteExtraCost {
   supplier_quote_id?: string;
   extra_cost_id: string;
   unit_cost?: number | null;
-  unit_cost_1?: number | null;
-  unit_cost_2?: number | null;
-  unit_cost_3?: number | null;
-  unit_cost_4?: number | null;
-  unit_cost_5?: number | null;
-  unit_cost_6?: number | null;
-  unit_cost_7?: number | null;
-  unit_cost_8?: number | null;
-  unit_cost_9?: number | null;
-  unit_cost_10?: number | null;
+  // unit_cost_array?: SupplierQuoteExtraCostEachType[]
+  unit_cost_1?: number[] | null;
+  unit_cost_2?: number[] | null;
+  unit_cost_3?: number[] | null;
+  unit_cost_4?: number[] | null;
+  unit_cost_5?: number[] | null;
+  unit_cost_6?: number[] | null;
+  unit_cost_7?: number[] | null;
+  unit_cost_8?: number[] | null;
+  unit_cost_9?: number[] | null;
+  unit_cost_10?: number[] | null;
   unit_of_measure_id?: string | null;
+}
+
+export interface SupplierQuoteExtraCostEachType {
+  quantity: number | null;
+  unit_cost: number | null;
 }
 
 export interface SupplierQuoteSaving {
   id?: string;
   supplier_quote_id?: string;
   saving_id: string;
-  price_break_id?: string | null;  // Reference to specific price break for inventory items
+  price_break_id?: string | null; // Reference to specific price break for inventory items
   unit_cost?: number | null;
   unit_cost_1?: number | null;
   unit_cost_2?: number | null;
@@ -57,13 +66,13 @@ export interface SupplierQuoteSaving {
   unit_cost_9?: number | null;
   unit_cost_10?: number | null;
   unit_of_measure_id?: string | null;
-  
+
   // Additional properties for mapping in the UI
   saving_name?: string;
   saving_description?: string | null;
   unit_of_measure_name?: string | null;
   is_inventory_unit?: boolean;
-  
+
   // Generic key-value for any additional properties
   [key: string]: any;
 }
@@ -82,19 +91,22 @@ export interface SupplierQuote {
   updated_at: string;
   reference_id: string | null;
   reference: string | null;
-  
+
+  supplier_name: string | null;
+  title: string | null;
+
   valid_from: string | null;
   valid_to: string | null;
   terms: string | null;
   remarks: string | null;
   production_schedule?: Record<string, string | null> | null;
-  
+
   approved_at?: string | null;
   approved_by?: string | null;
   rejected_at?: string | null;
   rejected_by?: string | null;
   rejection_reason?: string | null;
-  
+
   packaging_carton_quantity?: number | null;
   packaging_carton_weight?: number | null;
   packaging_carton_length?: number | null;
@@ -106,9 +118,9 @@ export interface SupplierQuote {
   packaging_copies_per_40ft_palletized?: number | null;
   packaging_copies_per_20ft_unpalletized?: number | null;
   packaging_copies_per_40ft_unpalletized?: number | null;
-  
+
   quote_request?: any;
-  supplier?: { supplier_name: string }; 
+  supplier?: { supplier_name: string };
   attachments?: SupplierQuoteAttachment[];
   formats?: SupplierQuoteFormat[];
   price_breaks?: SupplierQuotePriceBreak[];
@@ -145,15 +157,15 @@ export interface SupplierQuoteFormValues {
   notes?: string;
   currency: string;
   reference?: string;
-  
+
   valid_from?: string;
   valid_to?: string;
   terms?: string;
   remarks?: string;
   production_schedule?: Record<string, string | null>;
-  
+
   price_breaks?: SupplierQuotePriceBreak[];
-  
+
   packaging_carton_quantity?: number | null;
   packaging_carton_weight?: number | null;
   packaging_carton_length?: number | null;
@@ -165,7 +177,8 @@ export interface SupplierQuoteFormValues {
   packaging_copies_per_40ft_palletized?: number | null;
   packaging_copies_per_20ft_unpalletized?: number | null;
   packaging_copies_per_40ft_unpalletized?: number | null;
-  
+
   extra_costs?: SupplierQuoteExtraCost[];
   savings?: SupplierQuoteSaving[];
+  special?: number;
 }

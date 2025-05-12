@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -10,7 +9,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 type QuoteRequestRowProps = {
   request: QuoteRequest;
-  onStatusChange: (id: string, status: 'approved' | 'declined' | 'pending') => void;
+  onStatusChange: (
+    id: string,
+    status: "approved" | "declined" | "pending"
+  ) => void;
   onDelete: (id: string) => void;
   onViewDetails: (request: QuoteRequest) => void;
   onEdit: (request: QuoteRequest) => void;
@@ -27,55 +29,62 @@ export const QuoteRequestRow = ({
   onEdit,
   onViewSupplierQuotes,
   isSelected,
-  onSelectRow
+  onSelectRow,
 }: QuoteRequestRowProps) => {
   return (
-    <TableRow 
+    <TableRow
       key={request.id}
       className="cursor-pointer hover:bg-gray-50"
       onClick={() => onViewDetails(request)}
     >
       <TableCell className="w-12" onClick={(e) => e.stopPropagation()}>
-        <Checkbox 
+        <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => onSelectRow(request.id, !!checked)}
           className="mr-2"
         />
       </TableCell>
-      <TableCell 
-        className="font-medium"
-      >
+      <TableCell className="font-medium">
         <div className="flex flex-col">
           <span>{request.title}</span>
-          <span className="text-xs text-muted-foreground font-mono">{request.reference_id || "No reference"}</span>
+          <span className="text-xs text-muted-foreground font-mono">
+            {request.reference_id || "No reference"}
+          </span>
         </div>
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
-        <SupplierDisplay 
-          supplierName={request.supplier_name || ''} 
-          supplierNames={request.supplier_names || []} 
+        <SupplierDisplay
+          supplierName={request.supplier_name || ""}
+          supplierNames={request.supplier_names || []}
         />
       </TableCell>
       <TableCell>
         {format(new Date(request.requested_at), "MMM d, yyyy")}
       </TableCell>
       <TableCell>
-        {request.due_date 
-          ? format(new Date(request.due_date), "MMM d, yyyy") 
+        {request.due_date
+          ? format(new Date(request.due_date), "MMM d, yyyy")
           : "Not set"}
       </TableCell>
       <TableCell>
         <StatusBadge status={request.status} />
       </TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
-        <FormatCountButton 
-          formats={request.formats || []} 
+        <FormatCountButton
+          formats={request.formats || []}
           request={request}
-          onClick={onViewDetails} 
+          onClick={onViewDetails}
         />
       </TableCell>
+      <TableCell className="font-medium w-30">
+        <div className="flex flex-col">
+          <span>
+            {request.users?.first_name + " " + request.users?.last_name}
+          </span>
+        </div>
+      </TableCell>
       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-        <QuoteRequestActions 
+        <QuoteRequestActions
           request={request}
           onStatusChange={onStatusChange}
           onDelete={onDelete}
@@ -86,4 +95,4 @@ export const QuoteRequestRow = ({
       </TableCell>
     </TableRow>
   );
-}
+};

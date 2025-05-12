@@ -1,4 +1,3 @@
-
 import { FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
@@ -9,7 +8,7 @@ import { useOrganization } from "@/context/OrganizationContext";
 // Constants for filter values
 export const FILTER_VALUES = {
   ALL_FORMATS: "ALL_FORMATS",
-  ALL_PUBLISHERS: "ALL_PUBLISHERS"
+  ALL_PUBLISHERS: "ALL_PUBLISHERS",
 };
 
 type FilterOptions = {
@@ -32,59 +31,75 @@ const ProductFilters = ({
   showFilters,
 }: ProductFiltersProps) => {
   const { currentOrganization } = useOrganization();
-  
-  const { data: filterOptions = { product_form: [], publisher_name: [] } } = useQuery({
-    queryKey: ["productFilterOptions", currentOrganization?.id],
-    queryFn: async () => {
-      if (!currentOrganization) return { product_form: [], publisher_name: [] };
 
-      const { data: productForms } = await supabase
-        .from("products")
-        .select("product_form")
-        .eq("organization_id", currentOrganization.id)
-        .not("product_form", "is", null);
+  console.log("currentOrganization", currentOrganization);
 
-      const { data: publishers } = await supabase
-        .from("products")
-        .select("publisher_name")
-        .eq("organization_id", currentOrganization.id)
-        .not("publisher_name", "is", null);
+  const { data: filterOptions = { product_form: [], publisher_name: [] } } =
+    useQuery({
+      queryKey: ["productFilterOptions", currentOrganization?.id],
+      queryFn: async () => {
+        if (!currentOrganization)
+          return { product_form: [], publisher_name: [] };
 
-      const formOptions = Array.from(
-        new Set(productForms?.map(p => p.product_form).filter(Boolean) || [])
-      ) as string[];
-      
-      const publisherOptions = Array.from(
-        new Set(publishers?.map(p => p.publisher_name).filter(Boolean) || [])
-      ) as string[];
+        const { data: productForms } = await supabase
+          .from("products")
+          .select("product_form")
+          .eq("organization_id", currentOrganization.id)
+          .not("product_form", "is", null);
 
-      return {
-        product_form: formOptions,
-        publisher_name: publisherOptions
-      };
-    },
-    enabled: !!currentOrganization
-  });
+        const { data: publishers } = await supabase
+          .from("products")
+          .select("publisher_name")
+          .eq("organization_id", currentOrganization.id)
+          .not("publisher_name", "is", null);
+
+        const formOptions = Array.from(
+          new Set(
+            productForms?.map((p) => p.product_form).filter(Boolean) || []
+          )
+        ) as string[];
+
+        const publisherOptions = Array.from(
+          new Set(
+            publishers?.map((p) => p.publisher_name).filter(Boolean) || []
+          )
+        ) as string[];
+
+        return {
+          product_form: formOptions,
+          publisher_name: publisherOptions,
+        };
+      },
+      enabled: !!currentOrganization,
+    });
 
   const handleFilterChange = (field: keyof FilterOptions, value: string) => {
     setFilters({
       ...filters,
-      [field]: value === (field === "product_form" ? FILTER_VALUES.ALL_FORMATS : FILTER_VALUES.ALL_PUBLISHERS) 
-        ? (field === "product_form" ? FILTER_VALUES.ALL_FORMATS : FILTER_VALUES.ALL_PUBLISHERS) 
-        : value
+      [field]:
+        value ===
+        (field === "product_form"
+          ? FILTER_VALUES.ALL_FORMATS
+          : FILTER_VALUES.ALL_PUBLISHERS)
+          ? field === "product_form"
+            ? FILTER_VALUES.ALL_FORMATS
+            : FILTER_VALUES.ALL_PUBLISHERS
+          : value,
     });
   };
 
   const resetFilters = () => {
     setFilters({
       product_form: FILTER_VALUES.ALL_FORMATS,
-      publisher_name: FILTER_VALUES.ALL_PUBLISHERS
+      publisher_name: FILTER_VALUES.ALL_PUBLISHERS,
     });
   };
 
   const areFiltersActive = () => {
-    return filters.product_form !== FILTER_VALUES.ALL_FORMATS || 
-           filters.publisher_name !== FILTER_VALUES.ALL_PUBLISHERS;
+    return (
+      filters.product_form !== FILTER_VALUES.ALL_FORMATS ||
+      filters.publisher_name !== FILTER_VALUES.ALL_PUBLISHERS
+    );
   };
 
   if (!showFilters) return null;
@@ -92,12 +107,18 @@ const ProductFilters = ({
   // Create options arrays for select filters
   const productFormOptions: FilterOption[] = [
     { value: FILTER_VALUES.ALL_FORMATS, label: "All Formats" },
-    ...filterOptions.product_form.map(option => ({ value: option, label: option }))
+    ...filterOptions.product_form.map((option) => ({
+      value: option,
+      label: option,
+    })),
   ];
 
   const publisherOptions: FilterOption[] = [
     { value: FILTER_VALUES.ALL_PUBLISHERS, label: "All Publishers" },
-    ...filterOptions.publisher_name.map(option => ({ value: option, label: option }))
+    ...filterOptions.publisher_name.map((option) => ({
+      value: option,
+      label: option,
+    })),
   ];
 
   return (
@@ -117,7 +138,9 @@ const ProductFilters = ({
           <SelectFilter
             label="Publisher"
             value={filters.publisher_name}
-            onValueChange={(value) => handleFilterChange("publisher_name", value)}
+            onValueChange={(value) =>
+              handleFilterChange("publisher_name", value)
+            }
             options={publisherOptions}
             placeholder="Select Publisher"
           />
@@ -126,10 +149,10 @@ const ProductFilters = ({
 
       {areFiltersActive() && (
         <div className="flex justify-end">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={resetFilters}
-            size="sm" 
+            size="sm"
             className="gap-1"
           >
             <FilterX className="h-4 w-4" />

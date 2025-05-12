@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import {
   Select,
@@ -31,12 +30,12 @@ export function SelectFilter({
   className,
 }: SelectFilterProps) {
   return (
-    <div className={className}>
+    <div className="flex items-center gap-2">
       {label && (
-        <label className="text-sm font-medium mb-1 block">{label}</label>
+        <label className="text-sm font-medium mb-1 block ">{label}</label>
       )}
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger>
+        <SelectTrigger className="min-w-[200px] w-full flex-1">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

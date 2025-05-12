@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -9,7 +8,10 @@ export const formatDate = (dateString: string | null) => {
   return new Date(dateString).toLocaleDateString();
 };
 
-export const formatPrice = (price: number | null, currencyCode: string | null = "USD") => {
+export const formatPrice = (
+  price: number | null,
+  currencyCode: string | null = "USD"
+) => {
   if (price === null) return "N/A";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -24,16 +26,16 @@ export const formatNumber = (num: number | null) => {
 
 export const getProductFormLabel = (form: string | null) => {
   if (!form) return "N/A";
-  
+
   const formMap: Record<string, string> = {
-    "BA": "Book",
-    "BB": "Hardcover",
-    "BC": "Paperback",
-    "JB": "Journal",
-    "DG": "Electronic",
-    "XA": "Custom",
+    BA: "Book",
+    BB: "Hardcover",
+    BC: "Paperback",
+    JB: "Journal",
+    DG: "Electronic",
+    XA: "Custom",
   };
-  
+
   return formMap[form] || form;
 };
 
@@ -59,16 +61,17 @@ export const fetchProducts = async (
   if (searchQuery) {
     queryBuilder = queryBuilder.ilike("title", `%${searchQuery}%`);
   }
-
-  if (filters.product_form) {
+  if (filters.product_form && filters.product_form !== "ALL_FORMATS") {
     queryBuilder = queryBuilder.eq("product_form", filters.product_form);
   }
 
-  if (filters.publisher_name) {
+  if (filters.publisher_name && filters.publisher_name !== "ALL_PUBLISHERS") {
     queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
   }
 
-  const { data: productsData, error } = await queryBuilder.order(sortField, { ascending: sortDirection === 'asc' });
+  const { data: productsData, error } = await queryBuilder.order(sortField, {
+    ascending: sortDirection === "asc",
+  });
 
   if (error) {
     console.error("Error fetching products:", error);
@@ -76,8 +79,8 @@ export const fetchProducts = async (
   }
 
   if (productsData && productsData.length > 0) {
-    const productIds = productsData.map(product => product.id);
-    
+    const productIds = productsData.map((product) => product.id);
+
     const { data: pricesData, error: pricesError } = await supabase
       .from("product_prices")
       .select("product_id, price, currency_code")
@@ -86,37 +89,36 @@ export const fetchProducts = async (
 
     if (pricesError) {
       console.error("Error fetching product prices:", pricesError);
-      // Convert to Product[] type with type assertion
-      return productsData.map(product => ({
+      return productsData.map((product) => ({
         ...product,
         default_price: product.list_price,
-        default_currency: "USD"
+        default_currency: "USD",
       })) as unknown as Product[];
     }
 
     const priceMap: Record<string, { price: number; currency: string }> = {};
-    
+
     if (pricesData) {
-      pricesData.forEach(priceInfo => {
+      pricesData.forEach((priceInfo) => {
         priceMap[priceInfo.product_id] = {
           price: priceInfo.price,
-          currency: priceInfo.currency_code
+          currency: priceInfo.currency_code,
         };
       });
     }
 
-    // Convert to Product[] type with type assertion
-    return productsData.map(product => ({
+    return productsData.map((product) => ({
       ...product,
       default_price: priceMap[product.id]?.price ?? product.list_price,
-      default_currency: priceMap[product.id]?.currency ?? "USD"
+      default_currency: priceMap[product.id]?.currency ?? "USD",
     })) as unknown as Product[];
   }
 
-  // Convert to Product[] type with type assertion
-  return productsData ? productsData.map(product => ({
-    ...product,
-    default_price: product.list_price,
-    default_currency: "USD"
-  })) as unknown as Product[] : [];
+  return productsData
+    ? (productsData.map((product) => ({
+        ...product,
+        default_price: product.list_price,
+        default_currency: "USD",
+      })) as unknown as Product[])
+    : [];
 };
