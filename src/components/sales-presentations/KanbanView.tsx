@@ -92,6 +92,25 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
     }
   };
   
+  // Define the template as a string (not JSX)
+  const cardTemplate = `
+    <div class="e-card-content">
+      \${if(ImageUrl)}
+        <img class="e-card-image" src="\${ImageUrl}" alt="\${Title}" />
+      \${else}
+        <div style="height: 120px; background-color: #f2f2f2; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+          No Image
+        </div>
+      \${/if}
+      <div class="e-card-title">\${Title}</div>
+      <div class="e-card-isbn">ISBN: \${ISBN}</div>
+      <div class="e-card-price">\${Price}</div>
+      \${if(Summary)}
+        <div class="e-card-summary" style="margin-top: 8px; font-size: 12px; color: #666;">\${Summary}</div>
+      \${/if}
+    </div>
+  `;
+  
   return (
     <div className="w-full">
       <style>
@@ -114,23 +133,10 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
         `}
       </style>
       
-      <div id="kanbanCardTemplate" style={{ display: 'none' }}>
-        <div className="e-card-content">
-          ${if(ImageUrl)}$
-          <img className="e-card-image" src="${ImageUrl}" alt="${Title}" />
-          ${else}$
-          <div style="height: 120px; background-color: #f2f2f2; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-            No Image
-          </div>
-          ${/if}$
-          <div className="e-card-title">${Title}</div>
-          <div className="e-card-isbn">ISBN: ${ISBN}</div>
-          <div className="e-card-price">${Price}</div>
-          ${if(Summary)}$
-          <div className="e-card-summary" style="margin-top: 8px; font-size: 12px; color: #666;">${Summary}</div>
-          ${/if}$
-        </div>
-      </div>
+      {/* Render the template in a hidden div */}
+      <script id="kanbanCardTemplate" type="text/x-jsrender">
+        {cardTemplate}
+      </script>
       
       <KanbanComponent
         id="kanbanProducts"
