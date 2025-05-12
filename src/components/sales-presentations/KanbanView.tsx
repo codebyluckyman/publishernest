@@ -147,7 +147,7 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
         `}} />
 
         <KanbanBoard 
-          data={boardData}
+          columns={boardData}
           renderCard={(props) => <CustomCard card={props} />}
           classNames={{
             board: "custom-kanban-board",
