@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import {
   ColumnDef,
@@ -210,16 +211,17 @@ export function SupplierQuotesTable({
     const lowerCaseSearchQuery = searchQuery.toLowerCase();
     return (
       quotes?.filter((quote) => {
-        // const supplierName = quote.supplier?.supplier_name?.toLowerCase();
-        // const reference = quote.reference?.toLowerCase();
-        // const referenceId = quote.reference_id?.toLowerCase();
-        const title = quote?.quote_request?.title?.toLocaleLowerCase();
+        // Include the reference in the search
+        const supplierName = quote.supplier?.supplier_name?.toLowerCase();
+        const reference = quote.reference?.toLowerCase();
+        const referenceId = quote.reference_id?.toLowerCase();
+        const title = quote?.quote_request?.title?.toLowerCase();
 
         return (
-          // supplierName?.includes(lowerCaseSearchQuery) ||
-          title?.includes(lowerCaseSearchQuery)
-          // reference?.includes(lowerCaseSearchQuery) ||
-          // referenceId?.includes(lowerCaseSearchQuery)
+          (supplierName && supplierName.includes(lowerCaseSearchQuery)) ||
+          (title && title.includes(lowerCaseSearchQuery)) ||
+          (reference && reference.includes(lowerCaseSearchQuery)) ||
+          (referenceId && referenceId.includes(lowerCaseSearchQuery))
         );
       }) ?? []
     );
@@ -241,6 +243,35 @@ export function SupplierQuotesTable({
           )}
         </Button>
       ),
+    },
+    {
+      accessorKey: "reference",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Reference
+          {column.getIsSorted() === "desc" ? (
+            <ArrowDown className="ml-2 h-4 w-4" />
+          ) : (
+            <ArrowUp className="ml-2 h-4 w-4" />
+          )}
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const reference = row.getValue("reference");
+        const referenceId = row.original.reference_id;
+        return (
+          <div>
+            {reference ? (
+              <span>{reference as string}</span>
+            ) : (
+              <span className="text-muted-foreground font-mono text-sm">{referenceId || "N/A"}</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "status",
