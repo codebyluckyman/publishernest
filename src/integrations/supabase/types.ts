@@ -2458,7 +2458,29 @@ export type Database = {
           unit_cost_9?: number | null
           unit_of_measure_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quote_extra_cost_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quote_management_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_extra_cost_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_extra_cost_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supplier_quote_extra_costs: {
         Row: {
@@ -3270,6 +3292,7 @@ export type Database = {
           currency: string | null
           description: string | null
           due_date: string | null
+          extra_cost_price_breaks: Json | null
           extra_costs: Json | null
           formats: Json | null
           id: string | null
@@ -3503,6 +3526,7 @@ export type Database = {
           currency: string | null
           description: string | null
           due_date: string | null
+          extra_cost_price_breaks: Json | null
           extra_costs: Json | null
           formats: Json | null
           id: string | null

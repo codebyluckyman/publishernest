@@ -25,7 +25,7 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
   const showPricing = features?.showPricing !== false;
   const showProductDetails = features?.showProductDetails !== false;
   
-  const getDisplayValue = (product: Product, column: string) => {
+  const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
       return 'Contact for pricing';
@@ -33,6 +33,10 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
     
     switch (column) {
       case 'price':
+        // First check if there's a custom price set
+        if (customPrice !== undefined) {
+          return formatPrice(customPrice, product.default_currency);
+        }
         return formatPrice(product.list_price, product.default_currency);
       case 'isbn13':
         return product.isbn13 || 'N/A';
@@ -87,7 +91,7 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
             <TableCell className="font-medium">{item.product.title}</TableCell>
             {cardColumns.map((column) => (
               <TableCell key={column}>
-                {getDisplayValue(item.product, column)}
+                {getDisplayValue(item.product, column, item.customPrice)}
               </TableCell>
             ))}
           </TableRow>

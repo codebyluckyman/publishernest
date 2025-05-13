@@ -26,7 +26,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
   const showPricing = features?.showPricing !== false;
   const showProductDetails = features?.showProductDetails !== false;
   
-  const getDisplayValue = (product: Product, column: string) => {
+  const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
       return 'Contact for pricing';
@@ -34,6 +34,10 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
     
     switch (column) {
       case 'price':
+        // First check if there's a custom price set
+        if (customPrice !== undefined) {
+          return formatPrice(customPrice, product.default_currency);
+        }
         return formatPrice(product.list_price, product.default_currency);
       case 'isbn13':
         return product.isbn13 || 'N/A';
@@ -75,7 +79,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                 {cardColumns.map((column) => (
                   <div key={column} className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
-                    <span>{getDisplayValue(item.product, column)}</span>
+                    <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
                   </div>
                 ))}
               </CardContent>

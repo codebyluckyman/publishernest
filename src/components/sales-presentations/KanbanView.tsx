@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Product } from "@/types/product";
 import Image from "@/components/ui/img";
+import { formatPrice } from "@/utils/productUtils";
 
 interface KanbanViewProps {
   products: Array<{
@@ -55,7 +56,12 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
                   )}
                   <div>
                     <h4 className="font-medium line-clamp-2 text-sm">{item.product.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">{item.product.isbn13 || 'No ISBN'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {item.product.isbn13 || 'No ISBN'} 
+                      {item.customPrice !== undefined ? 
+                        ` • ${formatPrice(item.customPrice, item.product.default_currency)}` : 
+                        item.product.list_price ? ` • ${formatPrice(item.product.list_price, item.product.default_currency)}` : ''}
+                    </p>
                   </div>
                 </div>
               </Card>

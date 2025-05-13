@@ -92,16 +92,19 @@ const EditSalesPresentation = () => {
       const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher']; 
       const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis']; 
       
-      const cardColumns = Array.isArray(currentDisplaySettings.cardColumns) 
-        ? currentDisplaySettings.cardColumns 
+      // Use type safe access with fallbacks
+      const displaySettings = currentDisplaySettings || {};
+      
+      const cardColumns = Array.isArray(displaySettings.cardColumns) 
+        ? displaySettings.cardColumns 
         : defaultCardColumns;
       
-      const dialogColumns = Array.isArray(currentDisplaySettings.dialogColumns) 
-        ? currentDisplaySettings.dialogColumns 
+      const dialogColumns = Array.isArray(displaySettings.dialogColumns) 
+        ? displaySettings.dialogColumns 
         : defaultDialogColumns;
       
       // Construct display settings object with required properties
-      const displaySettings: PresentationDisplaySettings = {
+      const updatedDisplaySettings: PresentationDisplaySettings = {
         cardColumns,
         dialogColumns,
         defaultView: finalDefaultView,
@@ -109,13 +112,13 @@ const EditSalesPresentation = () => {
       };
       
       // Log what we're about to save
-      console.log("Saving display settings:", displaySettings);
+      console.log("Saving display settings:", updatedDisplaySettings);
       
       await updateMutation.mutateAsync({
         id,
         title,
         description,
-        displaySettings
+        displaySettings: updatedDisplaySettings
       });
       
       navigate(`/sales-presentations/${id}`);
