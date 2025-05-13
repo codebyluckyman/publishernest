@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { CreatePresentationForm } from '@/components/sales-presentations/CreatePresentationForm';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
-import { PresentationViewMode } from '@/types/salesPresentation';
+import { CardGridLayout, PresentationViewMode } from '@/types/salesPresentation';
 
 const CreateSalesPresentation = () => {
   const navigate = useNavigate();
@@ -19,6 +19,19 @@ const CreateSalesPresentation = () => {
     try {
       setError(null);
       
+      // Process cardGridLayout if exists (convert from string values to numbers)
+      let processedCardGridLayout: CardGridLayout | undefined = undefined;
+      
+      if (formData.cardGridLayout) {
+        processedCardGridLayout = {
+          sm: formData.cardGridLayout.sm !== undefined ? Number(formData.cardGridLayout.sm) : 1,
+          md: formData.cardGridLayout.md !== undefined ? Number(formData.cardGridLayout.md) : 2,
+          lg: formData.cardGridLayout.lg !== undefined ? Number(formData.cardGridLayout.lg) : 3,
+          xl: formData.cardGridLayout.xl !== undefined ? Number(formData.cardGridLayout.xl) : 4,
+          xxl: formData.cardGridLayout.xxl !== undefined ? Number(formData.cardGridLayout.xxl) : 5
+        };
+      }
+      
       const displaySettings = {
         cardColumns: formData.cardColumns,
         dialogColumns: formData.dialogColumns,
@@ -28,7 +41,8 @@ const CreateSalesPresentation = () => {
           allowViewToggle: formData.allowViewToggle,
           showProductDetails: formData.showProductDetails,
           allowDownload: formData.allowDownload,
-          showPricing: formData.showPricing
+          showPricing: formData.showPricing,
+          ...(processedCardGridLayout && { cardGridLayout: processedCardGridLayout })
         }
       };
       

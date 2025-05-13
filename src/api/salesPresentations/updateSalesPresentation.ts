@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
+import { CardGridLayout, PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
 
 interface UpdateSalesPresentationParams {
   id: string;
@@ -62,6 +62,20 @@ export async function updateSalesPresentation({
           allowDownload: updatedSettings.features.allowDownload || false,
           ...updatedSettings.features
         };
+        
+        // Ensure cardGridLayout has proper values if provided
+        if (updatedSettings.features.cardGridLayout) {
+          const gridLayout = updatedSettings.features.cardGridLayout as CardGridLayout;
+          
+          // Apply default values for any missing breakpoints
+          updatedSettings.features.cardGridLayout = {
+            sm: gridLayout.sm || 1,
+            md: gridLayout.md || 2,
+            lg: gridLayout.lg || 3,
+            xl: gridLayout.xl || 4,
+            xxl: gridLayout.xxl || 5,
+          };
+        }
       }
       
       updates.display_settings = updatedSettings;

@@ -73,6 +73,15 @@ export type CardColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' |
 export type DialogColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis';
 export type PresentationViewMode = 'card' | 'table' | 'carousel' | 'kanban';
 
+// Define grid layout configuration type
+export interface CardGridLayout {
+  sm?: 1 | 2;
+  md?: 1 | 2 | 3;
+  lg?: 2 | 3 | 4;
+  xl?: 3 | 4 | 5;
+  xxl?: 4 | 5 | 6;
+}
+
 export interface PresentationFeatures {
   enabledViews: PresentationViewMode[];
   allowViewToggle: boolean;
@@ -80,6 +89,7 @@ export interface PresentationFeatures {
   showPricing?: boolean;
   allowDownload?: boolean;
   customCss?: string;
+  cardGridLayout?: CardGridLayout;
   [key: string]: any; // Allow for future feature flags
 }
 

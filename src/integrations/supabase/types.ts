@@ -3292,7 +3292,6 @@ export type Database = {
           currency: string | null
           description: string | null
           due_date: string | null
-          extra_cost_price_breaks: Json | null
           extra_costs: Json | null
           formats: Json | null
           id: string | null
@@ -3309,6 +3308,7 @@ export type Database = {
           packaging_copies_per_20ft_unpalletized: number | null
           packaging_copies_per_40ft_palletized: number | null
           packaging_copies_per_40ft_unpalletized: number | null
+          price_breaks: Json | null
           production_schedule: Json | null
           production_schedule_requested: boolean | null
           products: Json | null
@@ -3526,7 +3526,6 @@ export type Database = {
           currency: string | null
           description: string | null
           due_date: string | null
-          extra_cost_price_breaks: Json | null
           extra_costs: Json | null
           formats: Json | null
           id: string | null
@@ -3543,6 +3542,7 @@ export type Database = {
           packaging_copies_per_20ft_unpalletized: number | null
           packaging_copies_per_40ft_palletized: number | null
           packaging_copies_per_40ft_unpalletized: number | null
+          price_breaks: Json | null
           production_schedule: Json | null
           production_schedule_requested: boolean | null
           products: Json | null

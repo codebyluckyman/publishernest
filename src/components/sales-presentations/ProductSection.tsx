@@ -7,11 +7,12 @@ import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from '@/components/ui/img';
 import { useFormatDetails } from '@/hooks/format/useFormatDetails';
-import { PresentationDisplaySettings, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, PresentationViewMode, PresentationFeatures, CardGridLayout } from '@/types/salesPresentation';
 import { ViewToggle } from './ViewToggle';
 import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
+import { cn } from '@/lib/utils';
 
 interface ProductSectionProps {
   title: string;
@@ -46,11 +47,13 @@ export function ProductSection({
   const allowViewToggle = features?.allowViewToggle !== false;
   const showProductDetails = features?.showProductDetails !== false;
   const showPricing = features?.showPricing !== false;
-  
-  // Log for debugging
-  console.log("ProductSection - displaySettings:", displaySettings);
-  console.log("ProductSection - features:", features);
-  console.log("ProductSection - enabledViews:", enabledViews);
+  const cardGridLayout = features?.cardGridLayout || {
+    sm: 1,
+    md: 2,
+    lg: 3,
+    xl: 4,
+    xxl: 5
+  };
   
   // Use the defaultView from displaySettings, falling back to 'card' if not specified
   // But ensure it's one of the enabled views
@@ -79,6 +82,28 @@ export function ProductSection({
   const { data: formatDetails, isLoading: isLoadingFormat } = useFormatDetails(
     shouldShowFormatDetails && showProductDetails ? selectedProduct?.product.format_id || null : null
   );
+
+  // Generate grid classes based on card grid layout configuration
+  const generateGridClasses = (gridLayout: CardGridLayout) => {
+    const classes = ["grid", "gap-6"];
+    
+    // Small screens (default)
+    classes.push(`grid-cols-${gridLayout.sm || 1}`);
+    
+    // Medium screens (md: ≥768px)
+    if (gridLayout.md) classes.push(`md:grid-cols-${gridLayout.md}`);
+    
+    // Large screens (lg: ≥1024px)
+    if (gridLayout.lg) classes.push(`lg:grid-cols-${gridLayout.lg}`);
+    
+    // Extra large screens (xl: ≥1280px)
+    if (gridLayout.xl) classes.push(`xl:grid-cols-${gridLayout.xl}`);
+    
+    // 2XL screens (2xl: ≥1536px)
+    if (gridLayout.xxl) classes.push(`2xl:grid-cols-${gridLayout.xxl}`);
+    
+    return classes.join(" ");
+  };
 
   const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
@@ -129,7 +154,7 @@ export function ProductSection({
 
   // Render the card view (default)
   const renderCardView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className={generateGridClasses(cardGridLayout)}>
       {products.map((item) => (
         <Card 
           key={item.product.id} 

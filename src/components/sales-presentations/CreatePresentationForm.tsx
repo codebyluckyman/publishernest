@@ -25,7 +25,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { PresentationViewMode } from '@/types/salesPresentation';
+import { CardGridLayout, PresentationViewMode } from '@/types/salesPresentation';
 
 // Available column options
 const cardColumnOptions = [
@@ -54,7 +54,7 @@ const viewModeOptions = [
   { value: 'kanban', label: 'Kanban View' },
 ];
 
-// Validation schema
+// Validation schema with card grid layout
 const formSchema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
   description: z.string().optional(),
@@ -65,7 +65,14 @@ const formSchema = z.object({
   allowViewToggle: z.boolean().default(true),
   showProductDetails: z.boolean().default(true),
   allowDownload: z.boolean().default(false),
-  showPricing: z.boolean().default(true)
+  showPricing: z.boolean().default(true),
+  cardGridLayout: z.object({
+    sm: z.enum(['1', '2']).optional(),
+    md: z.enum(['1', '2', '3']).optional(),
+    lg: z.enum(['2', '3', '4']).optional(),
+    xl: z.enum(['3', '4', '5']).optional(),
+    xxl: z.enum(['4', '5', '6']).optional(),
+  }).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -90,27 +97,31 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
       allowViewToggle: true,
       showProductDetails: true,
       allowDownload: false,
-      showPricing: true
+      showPricing: true,
+      cardGridLayout: {
+        sm: '1',
+        md: '2',
+        lg: '3',
+        xl: '4',
+        xxl: '5'
+      }
     },
   });
 
   const handleSubmit = async (data: FormValues) => {
-    const displaySettings = {
-      cardColumns: data.cardColumns,
-      dialogColumns: data.dialogColumns,
-      defaultView: data.defaultView,
-      features: {
-        enabledViews: data.enabledViews,
-        allowViewToggle: data.allowViewToggle,
-        showProductDetails: data.showProductDetails,
-        allowDownload: data.allowDownload,
-        showPricing: data.showPricing
-      }
+    // Convert string values to numbers for cardGridLayout
+    const processedData = {
+      ...data,
+      cardGridLayout: data.cardGridLayout ? {
+        sm: data.cardGridLayout.sm ? Number(data.cardGridLayout.sm) : undefined,
+        md: data.cardGridLayout.md ? Number(data.cardGridLayout.md) : undefined,
+        lg: data.cardGridLayout.lg ? Number(data.cardGridLayout.lg) : undefined,
+        xl: data.cardGridLayout.xl ? Number(data.cardGridLayout.xl) : undefined,
+        xxl: data.cardGridLayout.xxl ? Number(data.cardGridLayout.xxl) : undefined,
+      } : undefined,
     };
     
-    await onSubmit({
-      ...data
-    });
+    await onSubmit(processedData as any);
   };
 
   return (
@@ -182,8 +193,9 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
               <div className="space-y-4">
                 <FormLabel>Display Settings</FormLabel>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid grid-cols-3">
-                    <TabsTrigger value="card-columns">Card View</TabsTrigger>
+                  <TabsList className="grid grid-cols-4">
+                    <TabsTrigger value="card-columns">Card Content</TabsTrigger>
+                    <TabsTrigger value="card-layout">Card Layout</TabsTrigger>
                     <TabsTrigger value="dialog-columns">Detail View</TabsTrigger>
                     <TabsTrigger value="features">Features</TabsTrigger>
                   </TabsList>
@@ -236,6 +248,145 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
                         </FormItem>
                       )}
                     />
+                  </TabsContent>
+
+                  <TabsContent value="card-layout" className="pt-4">
+                    <div className="space-y-6">
+                      <div className="text-sm mb-4 text-muted-foreground">
+                        Configure how many cards appear per row at different screen sizes
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="cardGridLayout.sm"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Small screens</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Number of columns" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="1">1 column</SelectItem>
+                                  <SelectItem value="2">2 columns</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>Mobile (≤640px)</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="cardGridLayout.md"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Medium screens</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Number of columns" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="1">1 column</SelectItem>
+                                  <SelectItem value="2">2 columns</SelectItem>
+                                  <SelectItem value="3">3 columns</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>Tablet (≥768px)</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="cardGridLayout.lg"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Large screens</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Number of columns" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="2">2 columns</SelectItem>
+                                  <SelectItem value="3">3 columns</SelectItem>
+                                  <SelectItem value="4">4 columns</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>Laptop (≥1024px)</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="cardGridLayout.xl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>X-Large screens</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Number of columns" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="3">3 columns</SelectItem>
+                                  <SelectItem value="4">4 columns</SelectItem>
+                                  <SelectItem value="5">5 columns</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>Desktop (≥1280px)</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="cardGridLayout.xxl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>XX-Large screens</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Number of columns" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="4">4 columns</SelectItem>
+                                  <SelectItem value="5">5 columns</SelectItem>
+                                  <SelectItem value="6">6 columns</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>Large Desktop (≥1536px)</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </TabsContent>
                   
                   <TabsContent value="dialog-columns" className="pt-4">
