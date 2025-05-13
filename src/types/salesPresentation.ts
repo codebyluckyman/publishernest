@@ -77,8 +77,8 @@ export interface PresentationFeatures {
   enabledViews: PresentationViewMode[];
   allowViewToggle: boolean;
   showProductDetails: boolean;
-  allowDownload?: boolean;
   showPricing?: boolean;
+  allowDownload?: boolean;
   customCss?: string;
   [key: string]: any; // Allow for future feature flags
 }

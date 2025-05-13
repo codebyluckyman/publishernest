@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
 
 // Type guard to verify the shape of display_settings for legacy format
 function hasDisplayColumns(obj: any): obj is { displayColumns: CardColumn[] } {
@@ -22,6 +22,16 @@ function hasCardAndDialogColumns(obj: any): obj is PresentationDisplaySettings {
   );
 }
 
+// Type guard for features object
+function hasFeatures(obj: any): obj is { features: PresentationFeatures } {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    obj.features &&
+    typeof obj.features === 'object'
+  );
+}
+
 // Valid column values that can be used
 const validCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format', 'synopsis'];
 const validDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format', 'physical_properties', 'carton_dimensions', 'synopsis'];
@@ -31,7 +41,14 @@ const validViewModes: PresentationViewMode[] = ['card', 'table', 'carousel', 'ka
 const defaultDisplaySettings: PresentationDisplaySettings = {
   cardColumns: ["price", "isbn13", "publisher", "publication_date"],
   dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"],
-  defaultView: 'card'
+  defaultView: 'card',
+  features: {
+    enabledViews: ['card', 'table', 'carousel'],
+    allowViewToggle: true,
+    showProductDetails: true,
+    showPricing: true,
+    allowDownload: false
+  }
 };
 
 // Function to sanitize and validate column values
@@ -53,6 +70,34 @@ function sanitizeViewMode(viewMode: any): PresentationViewMode {
   return viewMode as PresentationViewMode;
 }
 
+// Function to merge features with defaults
+function mergeFeatures(features: any): PresentationFeatures {
+  const defaultFeatures = defaultDisplaySettings.features!;
+  
+  if (!features || typeof features !== 'object') {
+    return defaultFeatures;
+  }
+  
+  return {
+    enabledViews: Array.isArray(features.enabledViews) 
+      ? features.enabledViews.filter(view => validViewModes.includes(view as PresentationViewMode)) 
+      : defaultFeatures.enabledViews,
+    allowViewToggle: typeof features.allowViewToggle === 'boolean' 
+      ? features.allowViewToggle 
+      : defaultFeatures.allowViewToggle,
+    showProductDetails: typeof features.showProductDetails === 'boolean' 
+      ? features.showProductDetails 
+      : defaultFeatures.showProductDetails,
+    showPricing: typeof features.showPricing === 'boolean' 
+      ? features.showPricing 
+      : defaultFeatures.showPricing,
+    allowDownload: typeof features.allowDownload === 'boolean' 
+      ? features.allowDownload 
+      : defaultFeatures.allowDownload,
+    ...(features.customCss ? { customCss: features.customCss } : {})
+  };
+}
+
 export async function fetchSalesPresentationById(id: string): Promise<SalesPresentation | null> {
   try {
     const { data, error } = await supabaseCustom
@@ -66,6 +111,8 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
       return null;
     }
 
+    console.log("Raw data from Supabase:", data.display_settings);
+    
     // Process display settings to ensure compatibility
     let displaySettings: PresentationDisplaySettings;
     
@@ -78,7 +125,8 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
           displaySettings = {
             cardColumns: sanitizeCardColumns(settings.cardColumns),
             dialogColumns: sanitizeDialogColumns(settings.dialogColumns),
-            defaultView: sanitizeViewMode(settings.defaultView)
+            defaultView: sanitizeViewMode(settings.defaultView),
+            features: hasFeatures(settings) ? mergeFeatures(settings.features) : defaultDisplaySettings.features
           };
         }
         // Check if it's in the legacy format and convert
@@ -95,11 +143,19 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
           displaySettings = {
             cardColumns: legacyColumns,
             dialogColumns: dialogCols as DialogColumn[],
-            defaultView: 'card'
+            defaultView: 'card',
+            features: hasFeatures(settings) ? mergeFeatures(settings.features) : defaultDisplaySettings.features
           };
         } else {
           // Unknown format, use defaults
           displaySettings = defaultDisplaySettings;
+        }
+        
+        // Add any missing feature properties
+        if (!displaySettings.features) {
+          displaySettings.features = defaultDisplaySettings.features;
+        } else {
+          displaySettings.features = mergeFeatures(displaySettings.features);
         }
       } catch (e) {
         console.warn('Invalid display_settings format, using defaults', e);
@@ -108,6 +164,8 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
     } else {
       displaySettings = defaultDisplaySettings;
     }
+    
+    console.log("Processed display settings:", displaySettings);
 
     // Cast the raw data to our SalesPresentation type with validated display settings
     return {

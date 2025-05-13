@@ -11,8 +11,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
-import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 const viewModeOptions = [
   { value: 'card', label: 'Card View' },
@@ -32,13 +33,31 @@ const EditSalesPresentation = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [defaultView, setDefaultView] = useState<PresentationViewMode>('card');
+  const [enabledViews, setEnabledViews] = useState<PresentationViewMode[]>(['card', 'table']);
+  const [allowViewToggle, setAllowViewToggle] = useState(true);
+  const [showProductDetails, setShowProductDetails] = useState(true);
+  const [showPricing, setShowPricing] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (presentation) {
       setTitle(presentation.title);
       setDescription(presentation.description || '');
+      
+      const features = presentation.display_settings?.features;
       setDefaultView(presentation.display_settings?.defaultView || 'card');
+      
+      if (features) {
+        // Set enabled views if available
+        if (Array.isArray(features.enabledViews) && features.enabledViews.length > 0) {
+          setEnabledViews(features.enabledViews);
+        }
+        
+        // Set feature flags if available
+        setAllowViewToggle(features.allowViewToggle !== false);
+        setShowProductDetails(features.showProductDetails !== false);
+        setShowPricing(features.showPricing !== false);
+      }
     }
   }, [presentation]);
 
@@ -50,10 +69,33 @@ const EditSalesPresentation = () => {
     try {
       setError(null);
       
-      const displaySettings: PresentationDisplaySettings = {
-        ...presentation?.display_settings,
-        defaultView
+      // Make sure defaultView is in enabledViews
+      const finalDefaultView = enabledViews.includes(defaultView) ? defaultView : enabledViews[0];
+      
+      // Construct features object
+      const features: PresentationFeatures = {
+        enabledViews,
+        allowViewToggle,
+        showProductDetails,
+        showPricing,
+        // Include existing features we don't explicitly manage
+        ...(presentation?.display_settings?.features?.allowDownload !== undefined && {
+          allowDownload: presentation?.display_settings?.features?.allowDownload
+        }),
+        ...(presentation?.display_settings?.features?.customCss && {
+          customCss: presentation?.display_settings?.features?.customCss
+        })
       };
+      
+      // Construct display settings object, preserving existing properties
+      const displaySettings: PresentationDisplaySettings = {
+        ...(presentation?.display_settings || {}),
+        defaultView: finalDefaultView,
+        features
+      };
+      
+      // Log what we're about to save
+      console.log("Saving display settings:", displaySettings);
       
       await updateMutation.mutateAsync({
         id,
@@ -69,6 +111,17 @@ const EditSalesPresentation = () => {
     }
   };
 
+  const toggleEnabledView = (view: PresentationViewMode) => {
+    if (enabledViews.includes(view)) {
+      // Don't allow removing the last enabled view
+      if (enabledViews.length > 1) {
+        setEnabledViews(enabledViews.filter(v => v !== view));
+      }
+    } else {
+      setEnabledViews([...enabledViews, view]);
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -81,7 +134,13 @@ const EditSalesPresentation = () => {
   const defaultDisplaySettings: PresentationDisplaySettings = {
     cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
     dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
-    defaultView: 'card'
+    defaultView: 'card',
+    features: {
+      enabledViews: ['card', 'table'],
+      allowViewToggle: true,
+      showProductDetails: true,
+      showPricing: true
+    }
   };
 
   // Process display settings for backward compatibility
@@ -99,7 +158,11 @@ const EditSalesPresentation = () => {
       : (Array.isArray(displaySettings.displayColumns) 
           ? [...displaySettings.displayColumns, 'synopsis'] 
           : defaultDisplaySettings.dialogColumns),
-    defaultView: displaySettings.defaultView || 'card'
+    defaultView: displaySettings.defaultView || defaultDisplaySettings.defaultView,
+    features: {
+      ...defaultDisplaySettings.features,
+      ...(displaySettings.features || {})
+    }
   };
 
   return (
@@ -157,16 +220,84 @@ const EditSalesPresentation = () => {
                   <SelectValue placeholder="Select default view" />
                 </SelectTrigger>
                 <SelectContent>
-                  {viewModeOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  {viewModeOptions
+                    .filter(option => enabledViews.includes(option.value as PresentationViewMode))
+                    .map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground">
                 Choose how products will be displayed by default in the presentation
               </p>
+            </div>
+            
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-lg font-medium">View Options</h3>
+              
+              <div className="space-y-4">
+                <div className="text-sm font-medium mb-2">Enabled Views:</div>
+                <div className="flex flex-wrap gap-2">
+                  {viewModeOptions.map(option => (
+                    <Button
+                      key={option.value}
+                      type="button"
+                      variant={enabledViews.includes(option.value as PresentationViewMode) ? "default" : "outline"}
+                      className="text-sm"
+                      onClick={() => toggleEnabledView(option.value as PresentationViewMode)}
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Select which view options will be available in the presentation
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="allowViewToggle">Allow View Switching</Label>
+                  <Switch 
+                    id="allowViewToggle"
+                    checked={allowViewToggle}
+                    onCheckedChange={setAllowViewToggle}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  If enabled, users can switch between available views
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="showProductDetails">Show Product Details</Label>
+                  <Switch 
+                    id="showProductDetails"
+                    checked={showProductDetails}
+                    onCheckedChange={setShowProductDetails}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Allow users to click on products to see details
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="showPricing">Show Pricing</Label>
+                  <Switch 
+                    id="showPricing"
+                    checked={showPricing}
+                    onCheckedChange={setShowPricing}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Display product pricing information
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

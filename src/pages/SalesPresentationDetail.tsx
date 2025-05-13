@@ -7,7 +7,7 @@ import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
-import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
 
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,34 +33,45 @@ const SalesPresentationDetail = () => {
     dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
     defaultView: 'card' as PresentationViewMode,
     features: {
-      enabledViews: ['card', 'table', 'carousel', 'kanban'],
+      enabledViews: ['card', 'table'],
       allowViewToggle: true,
       showProductDetails: true,
       showPricing: true,
       allowDownload: false
     }
   };
-
-  // Process display settings for backward compatibility
-  const displaySettings = presentation?.display_settings || defaultDisplaySettings;
   
-  // Create a properly typed displaySettings object for the component
+  // Log what we got from the API for debugging
+  console.log("SalesPresentationDetail - raw presentation data:", presentation?.display_settings);
+
+  // If presentation is loaded, use its display settings or fall back to defaults
+  const displaySettings = presentation?.display_settings;
+  
+  // Process display settings to ensure all required properties are present
   const processedDisplaySettings: PresentationDisplaySettings = {
-    cardColumns: Array.isArray(displaySettings.cardColumns) 
+    cardColumns: Array.isArray(displaySettings?.cardColumns) 
       ? displaySettings.cardColumns
-      : (Array.isArray(displaySettings.displayColumns) 
+      : (Array.isArray(displaySettings?.displayColumns) 
           ? displaySettings.displayColumns
           : defaultDisplaySettings.cardColumns),
-    dialogColumns: Array.isArray(displaySettings.dialogColumns) 
+    
+    dialogColumns: Array.isArray(displaySettings?.dialogColumns) 
       ? displaySettings.dialogColumns
-      : (Array.isArray(displaySettings.displayColumns) 
+      : (Array.isArray(displaySettings?.displayColumns) 
           ? [...displaySettings.displayColumns, 'synopsis'] 
           : defaultDisplaySettings.dialogColumns),
-    defaultView: displaySettings.defaultView || 'card',
-    features: displaySettings.features || defaultDisplaySettings.features
+    
+    defaultView: displaySettings?.defaultView || defaultDisplaySettings.defaultView,
+    
+    features: displaySettings?.features ? {
+      // Start with default features
+      ...defaultDisplaySettings.features,
+      // Override with any features from the presentation
+      ...displaySettings.features
+    } : defaultDisplaySettings.features
   };
 
-  // Log display settings for debugging
+  // Log processed display settings for debugging
   console.log("SalesPresentationDetail - processed display settings:", processedDisplaySettings);
 
   if (isLoading) {
