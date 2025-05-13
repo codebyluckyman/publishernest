@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
@@ -12,7 +11,6 @@ import { ViewToggle } from './ViewToggle';
 import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
-// Remove the non-existent CSS import
 
 interface ProductSectionProps {
   title: string;
@@ -99,7 +97,7 @@ export function ProductSection({
               <Image
                 src={item.product.cover_image_url}
                 alt={item.product.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
           )}
@@ -184,7 +182,7 @@ export function ProductSection({
                     <Image
                       src={selectedProduct.product.cover_image_url}
                       alt={selectedProduct.product.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                 )}

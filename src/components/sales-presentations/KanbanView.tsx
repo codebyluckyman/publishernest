@@ -77,7 +77,7 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
           <img 
             src={card.metadata.imageUrl} 
             alt={card.title} 
-            className="w-full h-32 object-cover mb-3 rounded"
+            className="w-full h-32 object-contain mb-3 rounded"
           />
         ) : (
           <div className="w-full h-32 bg-gray-100 flex items-center justify-center mb-3 rounded">

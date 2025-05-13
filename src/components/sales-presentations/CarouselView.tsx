@@ -56,7 +56,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                   <Image
                     src={item.product.cover_image_url}
                     alt={item.product.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
               )}

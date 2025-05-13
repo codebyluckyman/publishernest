@@ -1390,6 +1390,13 @@ export type Database = {
             referencedRelation: "supplier_quotes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "purchase_orders_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       quote_request_attachments: {
@@ -2335,6 +2342,13 @@ export type Database = {
             referencedRelation: "supplier_quotes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "supplier_quote_attachments_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       supplier_quote_audit: {
@@ -2375,6 +2389,13 @@ export type Database = {
             columns: ["supplier_quote_id"]
             isOneToOne: false
             referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_audit_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2533,6 +2554,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "supplier_quote_extra_costs_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "supplier_quote_extra_costs_unit_of_measure_id_fkey"
             columns: ["unit_of_measure_id"]
             isOneToOne: false
@@ -2628,6 +2656,13 @@ export type Database = {
             referencedRelation: "supplier_quotes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "supplier_quote_extra_costs_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       supplier_quote_formats: {
@@ -2682,6 +2717,13 @@ export type Database = {
             columns: ["supplier_quote_id"]
             isOneToOne: false
             referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_formats_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2796,6 +2838,13 @@ export type Database = {
             referencedRelation: "supplier_quotes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "supplier_quote_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       supplier_quote_savings: {
@@ -2886,6 +2935,13 @@ export type Database = {
             columns: ["supplier_quote_id"]
             isOneToOne: false
             referencedRelation: "supplier_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_savings_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "test_quote_management_view"
             referencedColumns: ["id"]
           },
           {
@@ -3208,6 +3264,84 @@ export type Database = {
           },
         ]
       }
+      test_quote_management_view: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          due_date: string | null
+          extra_costs: Json | null
+          formats: Json | null
+          id: string | null
+          notes: string | null
+          organization_id: string | null
+          packaging_carton_height: number | null
+          packaging_carton_length: number | null
+          packaging_carton_quantity: number | null
+          packaging_carton_volume: number | null
+          packaging_carton_weight: number | null
+          packaging_carton_width: number | null
+          packaging_cartons_per_pallet: number | null
+          packaging_copies_per_20ft_palletized: number | null
+          packaging_copies_per_20ft_unpalletized: number | null
+          packaging_copies_per_40ft_palletized: number | null
+          packaging_copies_per_40ft_unpalletized: number | null
+          production_schedule: Json | null
+          production_schedule_requested: boolean | null
+          products: Json | null
+          quantities: Json | null
+          quote_request: Json | null
+          reference: string | null
+          reference_id: string | null
+          remarks: string | null
+          requested_at: string | null
+          requested_by: string | null
+          required_step: Json | null
+          required_step_date: string | null
+          required_step_id: string | null
+          savings: Json | null
+          status: string | null
+          supplier_id: string | null
+          supplier_ids: string[] | null
+          supplier_name: string | null
+          supplier_names: Json | null
+          terms: string | null
+          title: string | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_requests_required_step_id_fkey"
+            columns: ["required_step_id"]
+            isOneToOne: false
+            referencedRelation: "organization_production_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_quote_attachment: {
@@ -3353,6 +3487,59 @@ export type Database = {
           terms: string | null
           title: string | null
           total_cost: number | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }[]
+      }
+      test_search_quotes: {
+        Args: {
+          search_title?: string
+          filter_supplier_name?: string
+          filter_format_id?: string
+        }
+        Returns: {
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          due_date: string | null
+          extra_costs: Json | null
+          formats: Json | null
+          id: string | null
+          notes: string | null
+          organization_id: string | null
+          packaging_carton_height: number | null
+          packaging_carton_length: number | null
+          packaging_carton_quantity: number | null
+          packaging_carton_volume: number | null
+          packaging_carton_weight: number | null
+          packaging_carton_width: number | null
+          packaging_cartons_per_pallet: number | null
+          packaging_copies_per_20ft_palletized: number | null
+          packaging_copies_per_20ft_unpalletized: number | null
+          packaging_copies_per_40ft_palletized: number | null
+          packaging_copies_per_40ft_unpalletized: number | null
+          production_schedule: Json | null
+          production_schedule_requested: boolean | null
+          products: Json | null
+          quantities: Json | null
+          quote_request: Json | null
+          reference: string | null
+          reference_id: string | null
+          remarks: string | null
+          requested_at: string | null
+          requested_by: string | null
+          required_step: Json | null
+          required_step_date: string | null
+          required_step_id: string | null
+          savings: Json | null
+          status: string | null
+          supplier_id: string | null
+          supplier_ids: string[] | null
+          supplier_name: string | null
+          supplier_names: Json | null
+          terms: string | null
+          title: string | null
           updated_at: string | null
           valid_from: string | null
           valid_to: string | null
