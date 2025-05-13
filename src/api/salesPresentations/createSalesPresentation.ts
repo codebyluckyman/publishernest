@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { Organization } from '@/types/organization';
-import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
 
 interface CreateSalesPresentationParams {
   title: string;
@@ -29,14 +29,30 @@ export async function createSalesPresentation({
       finalDisplaySettings = {
         cardColumns: displaySettings.cardColumns,
         dialogColumns: displaySettings.dialogColumns,
-        defaultView: displaySettings.defaultView || 'card'
+        defaultView: displaySettings.defaultView || 'card',
+        features: {
+          // Default values for feature flags if not provided
+          enabledViews: displaySettings.features?.enabledViews || ['card', 'table', 'carousel', 'kanban'],
+          allowViewToggle: displaySettings.features?.allowViewToggle !== false,
+          showProductDetails: displaySettings.features?.showProductDetails !== false,
+          showPricing: displaySettings.features?.showPricing !== false,
+          allowDownload: displaySettings.features?.allowDownload || false,
+          ...(displaySettings.features || {})
+        }
       };
     } else {
       // Default settings if none provided
       finalDisplaySettings = {
         cardColumns: ["price", "isbn13", "publisher"] as CardColumn[],
         dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"] as DialogColumn[],
-        defaultView: 'card' as PresentationViewMode
+        defaultView: 'card' as PresentationViewMode,
+        features: {
+          enabledViews: ['card', 'table', 'carousel', 'kanban'],
+          allowViewToggle: true,
+          showProductDetails: true,
+          showPricing: true,
+          allowDownload: false
+        }
       };
     }
 

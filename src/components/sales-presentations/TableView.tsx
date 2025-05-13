@@ -21,8 +21,16 @@ interface TableViewProps {
 
 export function TableView({ products, displaySettings, onSelectProduct }: TableViewProps) {
   const cardColumns = displaySettings?.cardColumns || ['price', 'isbn13', 'publisher'];
+  const features = displaySettings?.features;
+  const showPricing = features?.showPricing !== false;
+  const showProductDetails = features?.showProductDetails !== false;
   
   const getDisplayValue = (product: Product, column: string) => {
+    // Don't show price if pricing is disabled
+    if (column === 'price' && !showPricing) {
+      return 'Contact for pricing';
+    }
+    
     switch (column) {
       case 'price':
         return formatPrice(product.list_price, product.default_currency);
@@ -58,7 +66,7 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
         {products.map((item) => (
           <TableRow 
             key={item.product.id}
-            className="cursor-pointer hover:bg-muted/50"
+            className={`${showProductDetails ? 'cursor-pointer hover:bg-muted/50' : ''}`}
             onClick={() => onSelectProduct(item)}
           >
             <TableCell>

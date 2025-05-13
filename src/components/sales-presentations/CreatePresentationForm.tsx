@@ -61,6 +61,11 @@ const formSchema = z.object({
   cardColumns: z.array(z.string()).min(1, { message: 'Select at least one column to display on cards' }),
   dialogColumns: z.array(z.string()).min(1, { message: 'Select at least one column to display in details' }),
   defaultView: z.enum(['card', 'table', 'carousel', 'kanban']).default('card'),
+  enabledViews: z.array(z.enum(['card', 'table', 'carousel', 'kanban'])).min(1, { message: 'Select at least one view mode' }),
+  allowViewToggle: z.boolean().default(true),
+  showProductDetails: z.boolean().default(true),
+  allowDownload: z.boolean().default(false),
+  showPricing: z.boolean().default(true)
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -81,6 +86,11 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
       cardColumns: ['price', 'isbn13', 'publisher'],
       dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'],
       defaultView: 'card',
+      enabledViews: ['card', 'table'],
+      allowViewToggle: true,
+      showProductDetails: true,
+      allowDownload: false,
+      showPricing: true
     },
   });
 
@@ -89,13 +99,17 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
       cardColumns: data.cardColumns,
       dialogColumns: data.dialogColumns,
       defaultView: data.defaultView,
+      features: {
+        enabledViews: data.enabledViews,
+        allowViewToggle: data.allowViewToggle,
+        showProductDetails: data.showProductDetails,
+        allowDownload: data.allowDownload,
+        showPricing: data.showPricing
+      }
     };
     
     await onSubmit({
-      ...data,
-      cardColumns: data.cardColumns,
-      dialogColumns: data.dialogColumns,
-      defaultView: data.defaultView,
+      ...data
     });
   };
 
@@ -168,9 +182,10 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
               <div className="space-y-4">
                 <FormLabel>Display Settings</FormLabel>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid grid-cols-2">
+                  <TabsList className="grid grid-cols-3">
                     <TabsTrigger value="card-columns">Card View</TabsTrigger>
                     <TabsTrigger value="dialog-columns">Detail View</TabsTrigger>
+                    <TabsTrigger value="features">Features</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="card-columns" className="pt-4">
@@ -271,6 +286,145 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
                         </FormItem>
                       )}
                     />
+                  </TabsContent>
+                  
+                  <TabsContent value="features" className="pt-4 space-y-6">
+                    <div>
+                      <FormLabel>Available Views</FormLabel>
+                      <div className="text-sm mb-2 mt-1 text-muted-foreground">
+                        Select which view modes will be available in this presentation
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="enabledViews"
+                        render={() => (
+                          <FormItem>
+                            <div className="grid grid-cols-2 gap-4">
+                              {viewModeOptions.map((option) => (
+                                <FormField
+                                  key={option.value}
+                                  control={form.control}
+                                  name="enabledViews"
+                                  render={({ field }) => {
+                                    return (
+                                      <FormItem
+                                        key={option.value}
+                                        className="flex flex-row items-start space-x-3 space-y-0"
+                                      >
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(option.value as PresentationViewMode)}
+                                            onCheckedChange={(checked) => {
+                                              return checked
+                                                ? field.onChange([...field.value, option.value as PresentationViewMode])
+                                                : field.onChange(
+                                                    field.value?.filter(
+                                                      (value) => value !== option.value
+                                                    )
+                                                  )
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">
+                                          {option.label}
+                                        </FormLabel>
+                                      </FormItem>
+                                    )
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="allowViewToggle"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>Allow View Switching</FormLabel>
+                              <FormDescription>
+                                Allow viewers to switch between available view modes
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="showProductDetails"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>Show Product Details</FormLabel>
+                              <FormDescription>
+                                Allow viewers to open detailed product information
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="showPricing"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>Show Prices</FormLabel>
+                              <FormDescription>
+                                Show product prices in the presentation
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="allowDownload"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>Allow Download</FormLabel>
+                              <FormDescription>
+                                Allow viewers to download the presentation as PDF
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>

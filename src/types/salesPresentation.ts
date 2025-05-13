@@ -73,10 +73,21 @@ export type CardColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' |
 export type DialogColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis';
 export type PresentationViewMode = 'card' | 'table' | 'carousel' | 'kanban';
 
+export interface PresentationFeatures {
+  enabledViews: PresentationViewMode[];
+  allowViewToggle: boolean;
+  showProductDetails: boolean;
+  allowDownload?: boolean;
+  showPricing?: boolean;
+  customCss?: string;
+  [key: string]: any; // Allow for future feature flags
+}
+
 export interface PresentationDisplaySettings {
   cardColumns: CardColumn[];
   dialogColumns: DialogColumn[];
   defaultView?: PresentationViewMode;
   displayColumns?: CardColumn[]; // For backward compatibility
+  features?: PresentationFeatures;
   [key: string]: any; // Add index signature for JSON compatibility
 }

@@ -22,8 +22,16 @@ interface CarouselViewProps {
 
 export function CarouselView({ products, displaySettings, onSelectProduct }: CarouselViewProps) {
   const cardColumns = displaySettings?.cardColumns || ['price', 'isbn13', 'publisher'];
+  const features = displaySettings?.features;
+  const showPricing = features?.showPricing !== false;
+  const showProductDetails = features?.showProductDetails !== false;
   
   const getDisplayValue = (product: Product, column: string) => {
+    // Don't show price if pricing is disabled
+    if (column === 'price' && !showPricing) {
+      return 'Contact for pricing';
+    }
+    
     switch (column) {
       case 'price':
         return formatPrice(product.list_price, product.default_currency);
@@ -48,7 +56,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
         {products.map((item) => (
           <CarouselItem key={item.product.id} className="md:basis-1/2 lg:basis-1/3">
             <Card 
-              className="h-full overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              className={`h-full overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
               onClick={() => onSelectProduct(item)}
             >
               {item.product.cover_image_url && (

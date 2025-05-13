@@ -22,7 +22,14 @@ const CreateSalesPresentation = () => {
       const displaySettings = {
         cardColumns: formData.cardColumns,
         dialogColumns: formData.dialogColumns,
-        defaultView: formData.defaultView as PresentationViewMode
+        defaultView: formData.defaultView as PresentationViewMode,
+        features: {
+          enabledViews: formData.enabledViews,
+          allowViewToggle: formData.allowViewToggle,
+          showProductDetails: formData.showProductDetails,
+          allowDownload: formData.allowDownload,
+          showPricing: formData.showPricing
+        }
       };
       
       const result = await createPresentation.mutateAsync({

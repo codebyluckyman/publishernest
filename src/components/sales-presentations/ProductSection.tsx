@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from '@/components/ui/img';
 import { useFormatDetails } from '@/hooks/format/useFormatDetails';
-import { PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
 import { ViewToggle } from './ViewToggle';
 import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
@@ -39,9 +40,27 @@ export function ProductSection({
     customDescription?: string;
   } | null>(null);
   
+  // Extract features from displaySettings
+  const features = displaySettings?.features;
+  const enabledViews = features?.enabledViews || ['card', 'table', 'carousel', 'kanban'];
+  const allowViewToggle = features?.allowViewToggle !== false;
+  const showProductDetails = features?.showProductDetails !== false;
+  const showPricing = features?.showPricing !== false;
+  
   // Use the defaultView from displaySettings, falling back to 'card' if not specified
-  const initialView = displaySettings?.defaultView || 'card';
-  const [viewMode, setViewMode] = useState<PresentationViewMode>(initialView);
+  // But ensure it's one of the enabled views
+  const defaultView = displaySettings?.defaultView && enabledViews.includes(displaySettings.defaultView)
+    ? displaySettings.defaultView
+    : (enabledViews.length > 0 ? enabledViews[0] : 'card');
+    
+  const [viewMode, setViewMode] = useState<PresentationViewMode>(defaultView);
+  
+  // If current viewMode becomes disabled, switch to first available view
+  useEffect(() => {
+    if (!enabledViews.includes(viewMode) && enabledViews.length > 0) {
+      setViewMode(enabledViews[0]);
+    }
+  }, [enabledViews, viewMode]);
 
   const cardColumns = displaySettings?.cardColumns || 
     (displaySettings?.displayColumns as Array<string>) || 
@@ -53,10 +72,15 @@ export function ProductSection({
     
   const shouldShowFormatDetails = dialogColumns.includes("format");
   const { data: formatDetails, isLoading: isLoadingFormat } = useFormatDetails(
-    shouldShowFormatDetails ? selectedProduct?.product.format_id || null : null
+    shouldShowFormatDetails && showProductDetails ? selectedProduct?.product.format_id || null : null
   );
 
   const getDisplayValue = (product: Product, column: string) => {
+    // Don't show price if pricing is disabled
+    if (column === 'price' && !showPricing) {
+      return 'Contact for pricing';
+    }
+    
     switch (column) {
       case 'price':
         return formatPrice(product.list_price, product.default_currency);
@@ -83,14 +107,25 @@ export function ProductSection({
     }
   };
 
+  // Handle product selection based on showProductDetails setting
+  const handleProductSelection = (product: {
+    product: Product;
+    customPrice?: number;
+    customDescription?: string;
+  }) => {
+    if (showProductDetails) {
+      setSelectedProduct(product);
+    }
+  };
+
   // Render the card view (default)
   const renderCardView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((item) => (
         <Card 
           key={item.product.id} 
-          className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => setSelectedProduct(item)}
+          className={`overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
+          onClick={() => handleProductSelection(item)}
         >
           {item.product.cover_image_url && (
             <div className="w-full h-48 overflow-hidden">
@@ -126,7 +161,13 @@ export function ProductSection({
         </div>
         
         <div className="flex items-center space-x-4">
-          <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+          {allowViewToggle && enabledViews.length > 1 && (
+            <ViewToggle 
+              viewMode={viewMode} 
+              setViewMode={setViewMode} 
+              features={displaySettings?.features}
+            />
+          )}
           
           {isEditable && onEdit && (
             <Button variant="outline" onClick={onEdit}>
@@ -138,28 +179,28 @@ export function ProductSection({
       
       {products.length > 0 ? (
         <div>
-          {viewMode === 'card' && renderCardView()}
+          {viewMode === 'card' && enabledViews.includes('card') && renderCardView()}
           
-          {viewMode === 'table' && (
+          {viewMode === 'table' && enabledViews.includes('table') && (
             <TableView 
               products={products} 
               displaySettings={displaySettings}
-              onSelectProduct={setSelectedProduct}
+              onSelectProduct={handleProductSelection}
             />
           )}
           
-          {viewMode === 'carousel' && (
+          {viewMode === 'carousel' && enabledViews.includes('carousel') && (
             <CarouselView 
               products={products} 
               displaySettings={displaySettings}
-              onSelectProduct={setSelectedProduct}
+              onSelectProduct={handleProductSelection}
             />
           )}
           
-          {viewMode === 'kanban' && (
+          {viewMode === 'kanban' && enabledViews.includes('kanban') && (
             <KanbanView 
               products={products}
-              onSelectProduct={setSelectedProduct}
+              onSelectProduct={handleProductSelection}
             />
           )}
         </div>
@@ -169,9 +210,9 @@ export function ProductSection({
         </div>
       )}
       
-      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+      <Dialog open={!!selectedProduct && showProductDetails} onOpenChange={(open) => !open && setSelectedProduct(null)}>
         <DialogContent className="max-w-3xl">
-          {selectedProduct && (
+          {selectedProduct && showProductDetails && (
             <>
               <DialogHeader>
                 <DialogTitle>{selectedProduct.product.title}</DialogTitle>

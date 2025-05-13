@@ -40,6 +40,27 @@ export async function updateSalesPresentation({
         updatedSettings.defaultView = 'card' as PresentationViewMode;
       }
       
+      // Ensure features object exists with defaults
+      if (!updatedSettings.features) {
+        updatedSettings.features = {
+          enabledViews: ['card', 'table', 'carousel', 'kanban'],
+          allowViewToggle: true,
+          showProductDetails: true,
+          showPricing: true,
+          allowDownload: false
+        };
+      } else {
+        // Ensure required feature flags exist with defaults
+        updatedSettings.features = {
+          enabledViews: updatedSettings.features.enabledViews || ['card', 'table', 'carousel', 'kanban'],
+          allowViewToggle: updatedSettings.features.allowViewToggle !== false,
+          showProductDetails: updatedSettings.features.showProductDetails !== false,
+          showPricing: updatedSettings.features.showPricing !== false,
+          allowDownload: updatedSettings.features.allowDownload || false,
+          ...updatedSettings.features
+        };
+      }
+      
       updates.display_settings = updatedSettings;
     }
     
