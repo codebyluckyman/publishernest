@@ -26,13 +26,17 @@ export async function createSalesPresentation({
     let finalDisplaySettings: Record<string, any>;
     
     if (displaySettings) {
+      // Preserve the explicitly provided values from the form
       finalDisplaySettings = {
         cardColumns: displaySettings.cardColumns,
         dialogColumns: displaySettings.dialogColumns,
         defaultView: displaySettings.defaultView || 'card',
         features: {
-          // Default values for feature flags if not provided
-          enabledViews: displaySettings.features?.enabledViews || ['card', 'table', 'carousel', 'kanban'],
+          // Only use default values when the property is undefined
+          // This preserves empty arrays if the user explicitly selected no views
+          enabledViews: displaySettings.features?.enabledViews !== undefined 
+            ? displaySettings.features.enabledViews 
+            : ['card', 'table', 'carousel', 'kanban'],
           allowViewToggle: displaySettings.features?.allowViewToggle !== false,
           showProductDetails: displaySettings.features?.showProductDetails !== false,
           showPricing: displaySettings.features?.showPricing !== false,

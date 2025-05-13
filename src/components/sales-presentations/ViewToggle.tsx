@@ -14,6 +14,9 @@ export function ViewToggle({ viewMode, setViewMode, features }: ViewToggleProps)
   const enabledViews = features?.enabledViews || ['card', 'table', 'carousel', 'kanban'];
   const allowViewToggle = features?.allowViewToggle !== false;
 
+  // Log to help with debugging
+  console.log("ViewToggle - enabledViews:", enabledViews);
+  
   // If view toggling is disabled or there's only one view, don't render the toggle
   if (!allowViewToggle || enabledViews.length <= 1) {
     return null;

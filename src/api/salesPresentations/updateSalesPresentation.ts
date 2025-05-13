@@ -51,8 +51,11 @@ export async function updateSalesPresentation({
         };
       } else {
         // Ensure required feature flags exist with defaults
+        // Only use defaults if the property is undefined (not when it's an empty array)
         updatedSettings.features = {
-          enabledViews: updatedSettings.features.enabledViews || ['card', 'table', 'carousel', 'kanban'],
+          enabledViews: updatedSettings.features.enabledViews !== undefined 
+            ? updatedSettings.features.enabledViews 
+            : ['card', 'table', 'carousel', 'kanban'],
           allowViewToggle: updatedSettings.features.allowViewToggle !== false,
           showProductDetails: updatedSettings.features.showProductDetails !== false,
           showPricing: updatedSettings.features.showPricing !== false,
