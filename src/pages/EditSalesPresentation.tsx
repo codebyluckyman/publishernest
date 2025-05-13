@@ -89,13 +89,16 @@ const EditSalesPresentation = () => {
       
       // Get current cardColumns and dialogColumns or use defaults
       const currentDisplaySettings = presentation?.display_settings || {};
+      const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher']; 
+      const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis']; 
+      
       const cardColumns = Array.isArray(currentDisplaySettings.cardColumns) 
         ? currentDisplaySettings.cardColumns 
-        : ['price', 'isbn13', 'publisher'] as CardColumn[];
+        : defaultCardColumns;
       
       const dialogColumns = Array.isArray(currentDisplaySettings.dialogColumns) 
         ? currentDisplaySettings.dialogColumns 
-        : ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[];
+        : defaultDialogColumns;
       
       // Construct display settings object with required properties
       const displaySettings: PresentationDisplaySettings = {
@@ -161,14 +164,10 @@ const EditSalesPresentation = () => {
   const processedDisplaySettings: PresentationDisplaySettings = {
     cardColumns: Array.isArray(displaySettings.cardColumns) 
       ? displaySettings.cardColumns 
-      : (Array.isArray(displaySettings.displayColumns) 
-          ? displaySettings.displayColumns 
-          : defaultDisplaySettings.cardColumns),
+      : defaultDisplaySettings.cardColumns,
     dialogColumns: Array.isArray(displaySettings.dialogColumns) 
       ? displaySettings.dialogColumns 
-      : (Array.isArray(displaySettings.displayColumns) 
-          ? [...displaySettings.displayColumns, 'synopsis'] 
-          : defaultDisplaySettings.dialogColumns),
+      : defaultDisplaySettings.dialogColumns,
     defaultView: displaySettings.defaultView || defaultDisplaySettings.defaultView,
     features: {
       ...defaultDisplaySettings.features,
