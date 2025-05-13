@@ -87,7 +87,6 @@ export interface PresentationDisplaySettings {
   cardColumns: CardColumn[];
   dialogColumns: DialogColumn[];
   defaultView?: PresentationViewMode;
-  displayColumns?: CardColumn[]; // For backward compatibility
   features?: PresentationFeatures;
   [key: string]: any; // Add index signature for JSON compatibility
 }

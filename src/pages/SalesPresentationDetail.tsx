@@ -44,36 +44,6 @@ const SalesPresentationDetail = () => {
   // Log what we got from the API for debugging
   console.log("SalesPresentationDetail - raw presentation data:", presentation?.display_settings);
 
-  // If presentation is loaded, use its display settings or fall back to defaults
-  const displaySettings = presentation?.display_settings;
-  
-  // Process display settings to ensure all required properties are present
-  const processedDisplaySettings: PresentationDisplaySettings = {
-    cardColumns: Array.isArray(displaySettings?.cardColumns) 
-      ? displaySettings.cardColumns
-      : (Array.isArray(displaySettings?.displayColumns) 
-          ? displaySettings.displayColumns
-          : defaultDisplaySettings.cardColumns),
-    
-    dialogColumns: Array.isArray(displaySettings?.dialogColumns) 
-      ? displaySettings.dialogColumns
-      : (Array.isArray(displaySettings?.displayColumns) 
-          ? [...displaySettings.displayColumns, 'synopsis'] 
-          : defaultDisplaySettings.dialogColumns),
-    
-    defaultView: displaySettings?.defaultView || defaultDisplaySettings.defaultView,
-    
-    features: displaySettings?.features ? {
-      // Start with default features
-      ...defaultDisplaySettings.features,
-      // Override with any features from the presentation
-      ...displaySettings.features
-    } : defaultDisplaySettings.features
-  };
-
-  // Log processed display settings for debugging
-  console.log("SalesPresentationDetail - processed display settings:", processedDisplaySettings);
-
   if (isLoading) {
     return <div>Loading presentation...</div>;
   }
@@ -81,6 +51,32 @@ const SalesPresentationDetail = () => {
   if (isError || !presentation) {
     return <div>Error loading presentation</div>;
   }
+
+  // If presentation is loaded, use its display settings or fall back to defaults
+  const displaySettings = presentation.display_settings || defaultDisplaySettings;
+  
+  // Process display settings to ensure all required properties are present
+  const processedDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: Array.isArray(displaySettings.cardColumns) 
+      ? displaySettings.cardColumns
+      : defaultDisplaySettings.cardColumns,
+    
+    dialogColumns: Array.isArray(displaySettings.dialogColumns) 
+      ? displaySettings.dialogColumns
+      : defaultDisplaySettings.dialogColumns,
+    
+    defaultView: displaySettings.defaultView || defaultDisplaySettings.defaultView,
+    
+    features: {
+      // Start with default features
+      ...defaultDisplaySettings.features,
+      // Override with any features from the presentation
+      ...(displaySettings.features || {})
+    }
+  };
+
+  // Log processed display settings for debugging
+  console.log("SalesPresentationDetail - processed display settings:", processedDisplaySettings);
 
   return (
     <div className="space-y-6">

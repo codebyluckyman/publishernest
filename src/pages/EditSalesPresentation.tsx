@@ -87,9 +87,20 @@ const EditSalesPresentation = () => {
         })
       };
       
-      // Construct display settings object, preserving existing properties
+      // Get current cardColumns and dialogColumns or use defaults
+      const currentDisplaySettings = presentation?.display_settings || {};
+      const cardColumns = Array.isArray(currentDisplaySettings.cardColumns) 
+        ? currentDisplaySettings.cardColumns 
+        : ['price', 'isbn13', 'publisher'] as CardColumn[];
+      
+      const dialogColumns = Array.isArray(currentDisplaySettings.dialogColumns) 
+        ? currentDisplaySettings.dialogColumns 
+        : ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[];
+      
+      // Construct display settings object with required properties
       const displaySettings: PresentationDisplaySettings = {
-        ...(presentation?.display_settings || {}),
+        cardColumns,
+        dialogColumns,
         defaultView: finalDefaultView,
         features
       };

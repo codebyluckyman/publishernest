@@ -150,13 +150,6 @@ export async function fetchSalesPresentationById(id: string): Promise<SalesPrese
           // Unknown format, use defaults
           displaySettings = defaultDisplaySettings;
         }
-        
-        // Add any missing feature properties
-        if (!displaySettings.features) {
-          displaySettings.features = defaultDisplaySettings.features;
-        } else {
-          displaySettings.features = mergeFeatures(displaySettings.features);
-        }
       } catch (e) {
         console.warn('Invalid display_settings format, using defaults', e);
         displaySettings = defaultDisplaySettings;
