@@ -31,7 +31,14 @@ const SalesPresentationDetail = () => {
   const defaultDisplaySettings: PresentationDisplaySettings = {
     cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
     dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
-    defaultView: 'card' as PresentationViewMode
+    defaultView: 'card' as PresentationViewMode,
+    features: {
+      enabledViews: ['card', 'table', 'carousel', 'kanban'],
+      allowViewToggle: true,
+      showProductDetails: true,
+      showPricing: true,
+      allowDownload: false
+    }
   };
 
   // Process display settings for backward compatibility
@@ -49,8 +56,12 @@ const SalesPresentationDetail = () => {
       : (Array.isArray(displaySettings.displayColumns) 
           ? [...displaySettings.displayColumns, 'synopsis'] 
           : defaultDisplaySettings.dialogColumns),
-    defaultView: displaySettings.defaultView || 'card'
+    defaultView: displaySettings.defaultView || 'card',
+    features: displaySettings.features || defaultDisplaySettings.features
   };
+
+  // Log display settings for debugging
+  console.log("SalesPresentationDetail - processed display settings:", processedDisplaySettings);
 
   if (isLoading) {
     return <div>Loading presentation...</div>;

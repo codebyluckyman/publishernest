@@ -16,6 +16,7 @@ export function ViewToggle({ viewMode, setViewMode, features }: ViewToggleProps)
 
   // Log to help with debugging
   console.log("ViewToggle - enabledViews:", enabledViews);
+  console.log("ViewToggle - current viewMode:", viewMode);
   
   // If view toggling is disabled or there's only one view, don't render the toggle
   if (!allowViewToggle || enabledViews.length <= 1) {
@@ -45,6 +46,7 @@ export function ViewToggle({ viewMode, setViewMode, features }: ViewToggleProps)
     }
   ];
 
+  // Only show buttons for enabled views
   return (
     <div className="flex space-x-2">
       {viewButtons

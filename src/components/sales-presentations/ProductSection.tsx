@@ -47,6 +47,11 @@ export function ProductSection({
   const showProductDetails = features?.showProductDetails !== false;
   const showPricing = features?.showPricing !== false;
   
+  // Log for debugging
+  console.log("ProductSection - displaySettings:", displaySettings);
+  console.log("ProductSection - features:", features);
+  console.log("ProductSection - enabledViews:", enabledViews);
+  
   // Use the defaultView from displaySettings, falling back to 'card' if not specified
   // But ensure it's one of the enabled views
   const defaultView = displaySettings?.defaultView && enabledViews.includes(displaySettings.defaultView)
