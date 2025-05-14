@@ -18,6 +18,8 @@ interface Format {
   cover_stock_print: string | null;
   internal_stock_print: string | null;
   orientation: string | null;
+  created_at: string;  // Added missing property
+  updated_at: string;  // Added missing property
 }
 
 export function useFormatDetails(formatId: string | null) {
@@ -43,7 +45,9 @@ export function useFormatDetails(formatId: string | null) {
           internal_material,
           cover_stock_print,
           internal_stock_print,
-          orientation
+          orientation,
+          created_at,
+          updated_at
         `)
         .eq("id", formatId)
         .single();
