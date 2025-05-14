@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -23,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { EditProductFieldsTab } from '@/components/sales-presentations/EditProductFieldsTab';
 
 const viewModeOptions = [
   { value: 'card', label: 'Card View' },
@@ -81,6 +83,10 @@ const EditSalesPresentation = () => {
 
   // Card grid layout state
   const [cardGridLayout, setCardGridLayout] = useState<CardGridLayout>(defaultCardGridLayout);
+  
+  // Product fields state
+  const [cardColumns, setCardColumns] = useState<CardColumn[]>(defaultCardColumns);
+  const [dialogColumns, setDialogColumns] = useState<DialogColumn[]>(defaultDialogColumns);
 
   useEffect(() => {
     if (presentation) {
@@ -96,6 +102,19 @@ const EditSalesPresentation = () => {
       
       // Set default view
       setDefaultView(displaySettings.defaultView || defaultViewMode);
+      
+      // Set product columns
+      setCardColumns(
+        Array.isArray(displaySettings.cardColumns) && displaySettings.cardColumns.length > 0
+          ? displaySettings.cardColumns
+          : defaultCardColumns
+      );
+      
+      setDialogColumns(
+        Array.isArray(displaySettings.dialogColumns) && displaySettings.dialogColumns.length > 0
+          ? displaySettings.dialogColumns
+          : defaultDialogColumns
+      );
       
       // Initialize features with defaults
       const features = displaySettings.features || { ...defaultFeatures };
@@ -171,17 +190,6 @@ const EditSalesPresentation = () => {
       if (cardWidthType === 'fixed') {
         features.fixedCardWidth = fixedCardWidth;
       }
-      
-      // Get current cardColumns and dialogColumns or use defaults
-      const currentDisplaySettings = presentation?.display_settings || { ...defaultDisplaySettings };
-      
-      const cardColumns = Array.isArray(currentDisplaySettings.cardColumns) 
-        ? currentDisplaySettings.cardColumns 
-        : defaultCardColumns;
-      
-      const dialogColumns = Array.isArray(currentDisplaySettings.dialogColumns) 
-        ? currentDisplaySettings.dialogColumns 
-        : defaultDialogColumns;
       
       // Construct display settings object with required properties
       const updatedDisplaySettings: PresentationDisplaySettings = {
@@ -338,8 +346,9 @@ const EditSalesPresentation = () => {
               <h3 className="text-lg font-medium">Display Options</h3>
               
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-2">
+                <TabsList className="grid grid-cols-3">
                   <TabsTrigger value="view-options">View Options</TabsTrigger>
+                  <TabsTrigger value="product-fields">Product Fields</TabsTrigger>
                   <TabsTrigger value="card-layout">Card Layout</TabsTrigger>
                 </TabsList>
                 
@@ -405,6 +414,15 @@ const EditSalesPresentation = () => {
                       Display product pricing information
                     </p>
                   </div>
+                </TabsContent>
+                
+                <TabsContent value="product-fields">
+                  <EditProductFieldsTab
+                    cardColumns={cardColumns}
+                    setCardColumns={setCardColumns}
+                    dialogColumns={dialogColumns}
+                    setDialogColumns={setDialogColumns}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="card-layout" className="space-y-6 pt-4">

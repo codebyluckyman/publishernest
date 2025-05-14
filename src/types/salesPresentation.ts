@@ -1,3 +1,4 @@
+
 export interface SalesPresentation {
   id: string;
   organization_id: string;
@@ -68,8 +69,48 @@ export interface PresentationShare {
 }
 
 // Define the allowed column types for type safety
-export type CardColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'synopsis';
-export type DialogColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis';
+export type CardColumn = 
+  // Basic info
+  'title' | 'isbn13' | 'isbn10' | 'price' | 
+  // Product details
+  'product_form' | 'product_form_detail' | 'publisher' | 'publication_date' | 'status' | 
+  // Physical properties - individual
+  'height' | 'width' | 'thickness' | 'weight' | 
+  // Physical properties - grouped
+  'physical_properties' | 
+  // Format details
+  'format' | 'format_extras' | 'format_extra_comments' |
+  // Content details
+  'page_count' | 'edition_number' | 
+  // Carton information - individual
+  'carton_quantity' | 'carton_dimensions' | 
+  // Additional information
+  'synopsis' | 'subtitle' | 'series_name' | 'age_range' | 'license' |
+  // Codes
+  'language_code' | 'subject_code' | 'product_availability_code';
+
+export type DialogColumn = 
+  // Basic info
+  'title' | 'isbn13' | 'isbn10' | 'price' | 
+  // Product details
+  'product_form' | 'product_form_detail' | 'publisher' | 'publication_date' | 'status' | 
+  // Physical properties - individual
+  'height' | 'width' | 'thickness' | 'weight' | 
+  // Physical properties - grouped
+  'physical_properties' | 
+  // Format details
+  'format' | 'format_extras' | 'format_extra_comments' |
+  // Content details
+  'page_count' | 'edition_number' | 
+  // Carton information - individual
+  'carton_quantity' | 'carton_length' | 'carton_width' | 'carton_height' | 'carton_weight' |
+  // Carton information - grouped
+  'carton_dimensions' | 
+  // Additional information
+  'synopsis' | 'subtitle' | 'series_name' | 'age_range' | 'license' |
+  // Codes
+  'language_code' | 'subject_code' | 'product_availability_code';
+
 export type PresentationViewMode = 'card' | 'table' | 'carousel' | 'kanban';
 export type CardWidthType = 'responsive' | 'fixed';
 
