@@ -44,6 +44,10 @@ const validCardColumns: CardColumn[] = [
   'physical_properties',
   // Format details
   'format', 'format_extras', 'format_extra_comments',
+  // Format information from formats table
+  'format_name', 'binding_type', 'cover_material', 'cover_stock_print',
+  'internal_material', 'internal_stock_print', 'orientation', 'extent',
+  'tps_dimensions', 'plc_dimensions',
   // Content details
   'page_count', 'edition_number',
   // Carton information - individual
@@ -65,6 +69,10 @@ const validDialogColumns: DialogColumn[] = [
   'physical_properties',
   // Format details
   'format', 'format_extras', 'format_extra_comments',
+  // Format information from formats table
+  'format_name', 'binding_type', 'cover_material', 'cover_stock_print',
+  'internal_material', 'internal_stock_print', 'orientation', 'extent',
+  'tps_dimensions', 'plc_dimensions',
   // Content details
   'page_count', 'edition_number',
   // Carton information - individual

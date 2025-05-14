@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
@@ -118,6 +117,15 @@ export function ProductSection({
     return classes.join(" ");
   };
 
+  // Helper to format dimensions
+  const formatDimensions = (height?: number | null, width?: number | null, depth?: number | null) => {
+    if (!height && !width) return 'N/A';
+    
+    let dimensions = `${height || '-'}mm × ${width || '-'}mm`;
+    if (depth) dimensions += ` × ${depth}mm`;
+    return dimensions;
+  };
+
   const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
@@ -151,6 +159,28 @@ export function ProductSection({
         return product.product_form_detail || 'N/A';
       case 'status':
         return product.status || 'N/A';
+        
+      // Format information from formats table
+      case 'format_name':
+        return product.format?.format_name || 'N/A';
+      case 'binding_type':
+        return product.format?.binding_type || 'N/A';
+      case 'cover_material':
+        return product.format?.cover_material || 'N/A';
+      case 'cover_stock_print':
+        return product.format?.cover_stock_print || 'N/A';
+      case 'internal_material':
+        return product.format?.internal_material || 'N/A';
+      case 'internal_stock_print':
+        return product.format?.internal_stock_print || 'N/A';
+      case 'orientation':
+        return product.format?.orientation || 'N/A';
+      case 'extent':
+        return product.format?.extent || 'N/A';
+      case 'tps_dimensions':
+        return formatDimensions(product.format?.tps_height_mm, product.format?.tps_width_mm, product.format?.tps_depth_mm);
+      case 'plc_dimensions':
+        return formatDimensions(product.format?.tps_plc_height_mm, product.format?.tps_plc_width_mm, product.format?.tps_plc_depth_mm);
         
       // Physical properties - individual
       case 'height':
