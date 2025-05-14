@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { CardGridLayout, PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
+import { CardGridLayout, PresentationDisplaySettings, PresentationViewMode, CardWidthType } from '@/types/salesPresentation';
 
 interface UpdateSalesPresentationParams {
   id: string;
@@ -47,7 +47,8 @@ export async function updateSalesPresentation({
           allowViewToggle: true,
           showProductDetails: true,
           showPricing: true,
-          allowDownload: false
+          allowDownload: false,
+          cardWidthType: 'responsive' as CardWidthType
         };
       } else {
         // Ensure required feature flags exist with defaults
@@ -60,11 +61,20 @@ export async function updateSalesPresentation({
           showProductDetails: updatedSettings.features.showProductDetails !== false,
           showPricing: updatedSettings.features.showPricing !== false,
           allowDownload: updatedSettings.features.allowDownload || false,
+          cardWidthType: updatedSettings.features.cardWidthType || 'responsive',
           ...updatedSettings.features
         };
         
-        // Ensure cardGridLayout has proper values if provided
-        if (updatedSettings.features.cardGridLayout) {
+        // Process card width settings
+        if (updatedSettings.features.cardWidthType === 'fixed') {
+          // Ensure fixedCardWidth has a default value if not provided
+          if (!updatedSettings.features.fixedCardWidth) {
+            updatedSettings.features.fixedCardWidth = 320;
+          }
+        }
+        
+        // Ensure cardGridLayout has proper values if provided (only needed for responsive mode)
+        if (updatedSettings.features.cardWidthType === 'responsive' && updatedSettings.features.cardGridLayout) {
           const gridLayout = updatedSettings.features.cardGridLayout as CardGridLayout;
           
           // Apply default values for any missing breakpoints

@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { CreatePresentationForm } from '@/components/sales-presentations/CreatePresentationForm';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
-import { CardGridLayout, PresentationViewMode } from '@/types/salesPresentation';
+import { CardGridLayout, PresentationViewMode, CardWidthType } from '@/types/salesPresentation';
 
 const CreateSalesPresentation = () => {
   const navigate = useNavigate();
@@ -19,18 +19,22 @@ const CreateSalesPresentation = () => {
     try {
       setError(null);
       
-      // Process cardGridLayout if exists (convert from string values to numbers)
+      // Process cardGridLayout if exists (explicitly convert values to the union types)
       let processedCardGridLayout: CardGridLayout | undefined = undefined;
       
       if (formData.cardGridLayout) {
         processedCardGridLayout = {
-          sm: formData.cardGridLayout.sm !== undefined ? Number(formData.cardGridLayout.sm) : 1,
-          md: formData.cardGridLayout.md !== undefined ? Number(formData.cardGridLayout.md) : 2,
-          lg: formData.cardGridLayout.lg !== undefined ? Number(formData.cardGridLayout.lg) : 3,
-          xl: formData.cardGridLayout.xl !== undefined ? Number(formData.cardGridLayout.xl) : 4,
-          xxl: formData.cardGridLayout.xxl !== undefined ? Number(formData.cardGridLayout.xxl) : 5
+          sm: formData.cardGridLayout.sm as 1 | 2,
+          md: formData.cardGridLayout.md as 1 | 2 | 3,
+          lg: formData.cardGridLayout.lg as 2 | 3 | 4,
+          xl: formData.cardGridLayout.xl as 3 | 4 | 5,
+          xxl: formData.cardGridLayout.xxl as 4 | 5 | 6
         };
       }
+      
+      // Extract card width settings
+      const cardWidthType = formData.cardWidthType as CardWidthType;
+      const fixedCardWidth = cardWidthType === 'fixed' ? formData.fixedCardWidth : undefined;
       
       const displaySettings = {
         cardColumns: formData.cardColumns,
@@ -42,6 +46,8 @@ const CreateSalesPresentation = () => {
           showProductDetails: formData.showProductDetails,
           allowDownload: formData.allowDownload,
           showPricing: formData.showPricing,
+          cardWidthType,
+          ...(fixedCardWidth && { fixedCardWidth }),
           ...(processedCardGridLayout && { cardGridLayout: processedCardGridLayout })
         }
       };

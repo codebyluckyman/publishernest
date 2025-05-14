@@ -7,7 +7,7 @@ import { formatPrice } from '@/utils/productUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from '@/components/ui/img';
 import { useFormatDetails } from '@/hooks/format/useFormatDetails';
-import { PresentationDisplaySettings, PresentationViewMode, PresentationFeatures, CardGridLayout } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, PresentationViewMode, PresentationFeatures, CardGridLayout, CardWidthType } from '@/types/salesPresentation';
 import { ViewToggle } from './ViewToggle';
 import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
@@ -47,13 +47,17 @@ export function ProductSection({
   const allowViewToggle = features?.allowViewToggle !== false;
   const showProductDetails = features?.showProductDetails !== false;
   const showPricing = features?.showPricing !== false;
-  const cardGridLayout = features?.cardGridLayout || {
+  const cardWidthType: CardWidthType = features?.cardWidthType || 'responsive';
+  const fixedCardWidth = features?.fixedCardWidth || 320;
+  
+  // Only use cardGridLayout if we're in responsive mode
+  const cardGridLayout = cardWidthType === 'responsive' ? features?.cardGridLayout || {
     sm: 1,
     md: 2,
     lg: 3,
     xl: 4,
     xxl: 5
-  };
+  } : undefined;
   
   // Use the defaultView from displaySettings, falling back to 'card' if not specified
   // But ensure it's one of the enabled views
@@ -84,23 +88,32 @@ export function ProductSection({
   );
 
   // Generate grid classes based on card grid layout configuration
-  const generateGridClasses = (gridLayout: CardGridLayout) => {
+  const generateGridClasses = () => {
+    if (cardWidthType === 'fixed') {
+      return "flex flex-wrap gap-6";
+    }
+    
+    // Use responsive grid for 'responsive' mode
+    if (!cardGridLayout) {
+      return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6";
+    }
+    
     const classes = ["grid", "gap-6"];
     
     // Small screens (default)
-    classes.push(`grid-cols-${gridLayout.sm || 1}`);
+    classes.push(`grid-cols-${cardGridLayout.sm || 1}`);
     
     // Medium screens (md: ≥768px)
-    if (gridLayout.md) classes.push(`md:grid-cols-${gridLayout.md}`);
+    if (cardGridLayout.md) classes.push(`md:grid-cols-${cardGridLayout.md}`);
     
     // Large screens (lg: ≥1024px)
-    if (gridLayout.lg) classes.push(`lg:grid-cols-${gridLayout.lg}`);
+    if (cardGridLayout.lg) classes.push(`lg:grid-cols-${cardGridLayout.lg}`);
     
     // Extra large screens (xl: ≥1280px)
-    if (gridLayout.xl) classes.push(`xl:grid-cols-${gridLayout.xl}`);
+    if (cardGridLayout.xl) classes.push(`xl:grid-cols-${cardGridLayout.xl}`);
     
     // 2XL screens (2xl: ≥1536px)
-    if (gridLayout.xxl) classes.push(`2xl:grid-cols-${gridLayout.xxl}`);
+    if (cardGridLayout.xxl) classes.push(`2xl:grid-cols-${cardGridLayout.xxl}`);
     
     return classes.join(" ");
   };
@@ -153,38 +166,82 @@ export function ProductSection({
   };
 
   // Render the card view (default)
-  const renderCardView = () => (
-    <div className={generateGridClasses(cardGridLayout)}>
-      {products.map((item) => (
-        <Card 
-          key={item.product.id} 
-          className={`overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
-          onClick={() => handleProductSelection(item)}
-        >
-          {item.product.cover_image_url && (
-            <div className="w-full h-48 overflow-hidden">
-              <Image
-                src={item.product.cover_image_url}
-                alt={item.product.title}
-                className="w-full h-full object-contain"
-              />
-            </div>
-          )}
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {cardColumns.map((column) => (
-              <div key={column} className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
-                <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+  const renderCardView = () => {
+    if (cardWidthType === 'fixed') {
+      return (
+        <div className={generateGridClasses()}>
+          {products.map((item) => (
+            <Card 
+              key={item.product.id} 
+              className={cn(
+                "overflow-hidden",
+                showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : ""
+              )}
+              onClick={() => handleProductSelection(item)}
+              style={{ width: `${fixedCardWidth}px`, flexShrink: 0 }}
+            >
+              {item.product.cover_image_url && (
+                <div className="w-full h-48 overflow-hidden">
+                  <Image
+                    src={item.product.cover_image_url}
+                    alt={item.product.title}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              )}
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {cardColumns.map((column) => (
+                  <div key={column} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
+                    <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      );
+    } else {
+      return (
+        <div className={generateGridClasses()}>
+          {products.map((item) => (
+            <Card 
+              key={item.product.id} 
+              className={cn(
+                "overflow-hidden",
+                showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : ""
+              )}
+              onClick={() => handleProductSelection(item)}
+            >
+              {item.product.cover_image_url && (
+                <div className="w-full h-48 overflow-hidden">
+                  <Image
+                    src={item.product.cover_image_url}
+                    alt={item.product.title}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              )}
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {cardColumns.map((column) => (
+                  <div key={column} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
+                    <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="space-y-6">

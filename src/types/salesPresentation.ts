@@ -1,4 +1,3 @@
-
 export interface SalesPresentation {
   id: string;
   organization_id: string;
@@ -72,6 +71,7 @@ export interface PresentationShare {
 export type CardColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'synopsis';
 export type DialogColumn = 'price' | 'isbn13' | 'publisher' | 'publication_date' | 'format' | 'physical_properties' | 'carton_dimensions' | 'synopsis';
 export type PresentationViewMode = 'card' | 'table' | 'carousel' | 'kanban';
+export type CardWidthType = 'responsive' | 'fixed';
 
 // Define grid layout configuration type
 export interface CardGridLayout {
@@ -90,6 +90,8 @@ export interface PresentationFeatures {
   allowDownload?: boolean;
   customCss?: string;
   cardGridLayout?: CardGridLayout;
+  cardWidthType?: CardWidthType; // New property for card width type
+  fixedCardWidth?: number; // New property for fixed card width in pixels
   [key: string]: any; // Allow for future feature flags
 }
 
