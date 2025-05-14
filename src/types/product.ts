@@ -41,9 +41,21 @@ export interface Product {
   carton_length_mm?: number | null;
   carton_width_mm?: number | null;
   carton_height_mm?: number | null;
+  carton_weight_kg?: number | null;
   
   // Additional properties
+  subtitle?: string | null;
   synopsis?: string | null;
+  series_name?: string | null;
+  age_range?: string | null;
+  license?: string | null;
+  language_code?: string | null;
+  subject_code?: string | null;
+  product_availability_code?: string | null;
+  product_form_detail?: string | null;
+  status?: string | null;
+  page_count?: number | null;
+  edition_number?: number | null;
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';
