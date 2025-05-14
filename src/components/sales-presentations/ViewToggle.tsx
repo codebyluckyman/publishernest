@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { LayoutGrid, Table2, Layers, KanbanSquare } from "lucide-react";
 import { PresentationViewMode, PresentationFeatures } from "@/types/salesPresentation";
 
+// Default values for features
+const defaultEnabledViews: PresentationViewMode[] = ['card', 'table'];
+
 interface ViewToggleProps {
   viewMode: PresentationViewMode;
   setViewMode: (mode: PresentationViewMode) => void;
@@ -10,8 +13,8 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ viewMode, setViewMode, features }: ViewToggleProps) {
-  // Default to showing all views if no features provided (backward compatibility)
-  const enabledViews = features?.enabledViews || ['card', 'table', 'carousel', 'kanban'];
+  // Default to showing card and table views if no features provided (backward compatibility)
+  const enabledViews = features?.enabledViews || defaultEnabledViews;
   const allowViewToggle = features?.allowViewToggle !== false;
 
   // Log to help with debugging

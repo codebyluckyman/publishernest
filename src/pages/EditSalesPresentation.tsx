@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -31,6 +32,34 @@ const viewModeOptions = [
   { value: 'kanban', label: 'Kanban View' },
 ];
 
+// Default values for display settings
+const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
+const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'];
+const defaultViewMode: PresentationViewMode = 'card';
+const defaultCardGridLayout: CardGridLayout = {
+  sm: 1,
+  md: 2,
+  lg: 3,
+  xl: 4,
+  xxl: 5
+};
+const defaultFeatures: PresentationFeatures = {
+  enabledViews: ['card', 'table'],
+  allowViewToggle: true,
+  showProductDetails: true,
+  showPricing: true,
+  allowDownload: false,
+  cardWidthType: 'responsive',
+  cardGridLayout: defaultCardGridLayout
+};
+
+const defaultDisplaySettings: PresentationDisplaySettings = {
+  cardColumns: defaultCardColumns,
+  dialogColumns: defaultDialogColumns,
+  defaultView: defaultViewMode,
+  features: defaultFeatures
+};
+
 const EditSalesPresentation = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -52,63 +81,56 @@ const EditSalesPresentation = () => {
   const [fixedCardWidth, setFixedCardWidth] = useState<number>(320);
 
   // Card grid layout state
-  const [cardGridLayout, setCardGridLayout] = useState<CardGridLayout>({
-    sm: 1,
-    md: 2,
-    lg: 3,
-    xl: 4,
-    xxl: 5
-  });
+  const [cardGridLayout, setCardGridLayout] = useState<CardGridLayout>(defaultCardGridLayout);
 
   useEffect(() => {
     if (presentation) {
       setTitle(presentation.title);
       setDescription(presentation.description || '');
       
-      // Initialize display settings
-      const displaySettings = presentation.display_settings || {
-        cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
-        dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
-        defaultView: 'card' as PresentationViewMode,
-        features: {}
-      };
+      // Initialize display settings with complete defaults
+      const displaySettings = presentation.display_settings || { ...defaultDisplaySettings };
       
-      setDefaultView(displaySettings.defaultView || 'card');
+      // Set default view
+      setDefaultView(displaySettings.defaultView || defaultViewMode);
       
       // Initialize card columns with defaults if not available
       const cardColumns = Array.isArray(displaySettings.cardColumns) 
         ? displaySettings.cardColumns 
-        : ['price', 'isbn13', 'publisher'];
+        : defaultCardColumns;
       
       // Initialize dialog columns with defaults if not available
       const dialogColumns = Array.isArray(displaySettings.dialogColumns) 
         ? displaySettings.dialogColumns 
-        : ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'];
+        : defaultDialogColumns;
       
-      const features = displaySettings.features || {};
+      // Initialize features with defaults
+      const features = displaySettings.features || { ...defaultFeatures };
       
       // Set enabled views if available
       if (Array.isArray(features.enabledViews) && features.enabledViews.length > 0) {
         setEnabledViews(features.enabledViews);
+      } else {
+        setEnabledViews(defaultFeatures.enabledViews);
       }
       
-      // Set feature flags if available
+      // Set feature flags with defaults if not available
       setAllowViewToggle(features.allowViewToggle !== false);
       setShowProductDetails(features.showProductDetails !== false);
       setShowPricing(features.showPricing !== false);
       
-      // Set card width settings
-      setCardWidthType(features.cardWidthType || 'responsive');
+      // Set card width settings with defaults if not available
+      setCardWidthType(features.cardWidthType || defaultFeatures.cardWidthType);
       setFixedCardWidth(features.fixedCardWidth || 320);
       
-      // Set card grid layout if available
+      // Set card grid layout with defaults if not available
       if (features.cardGridLayout) {
         setCardGridLayout({
-          sm: features.cardGridLayout.sm || 1,
-          md: features.cardGridLayout.md || 2,
-          lg: features.cardGridLayout.lg || 3,
-          xl: features.cardGridLayout.xl || 4,
-          xxl: features.cardGridLayout.xxl || 5
+          sm: features.cardGridLayout.sm || defaultCardGridLayout.sm,
+          md: features.cardGridLayout.md || defaultCardGridLayout.md,
+          lg: features.cardGridLayout.lg || defaultCardGridLayout.lg,
+          xl: features.cardGridLayout.xl || defaultCardGridLayout.xl,
+          xxl: features.cardGridLayout.xxl || defaultCardGridLayout.xxl
         });
       }
     }
@@ -148,15 +170,7 @@ const EditSalesPresentation = () => {
       }
       
       // Get current cardColumns and dialogColumns or use defaults
-      const currentDisplaySettings = presentation?.display_settings || {
-        cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
-        dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
-        defaultView: 'card' as PresentationViewMode,
-        features: {}
-      };
-      
-      const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher']; 
-      const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis']; 
+      const currentDisplaySettings = presentation?.display_settings || { ...defaultDisplaySettings };
       
       const cardColumns = Array.isArray(currentDisplaySettings.cardColumns) 
         ? currentDisplaySettings.cardColumns 
@@ -229,34 +243,20 @@ const EditSalesPresentation = () => {
     return <div>Presentation not found</div>;
   }
 
-  // Default display settings to ensure type safety
-  const defaultDisplaySettings: PresentationDisplaySettings = {
-    cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
-    dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
-    defaultView: 'card',
-    features: {
-      enabledViews: ['card', 'table'],
-      allowViewToggle: true,
-      showProductDetails: true,
-      showPricing: true,
-      cardWidthType: 'responsive',
-    }
-  };
-
   // Process display settings for backward compatibility
-  const displaySettings = presentation.display_settings || defaultDisplaySettings;
+  const displaySettings = presentation.display_settings || { ...defaultDisplaySettings };
   
   // Create a properly typed displaySettings object
   const processedDisplaySettings: PresentationDisplaySettings = {
     cardColumns: Array.isArray(displaySettings.cardColumns) 
       ? displaySettings.cardColumns 
-      : defaultDisplaySettings.cardColumns,
+      : defaultCardColumns,
     dialogColumns: Array.isArray(displaySettings.dialogColumns) 
       ? displaySettings.dialogColumns 
-      : defaultDisplaySettings.dialogColumns,
-    defaultView: displaySettings.defaultView || defaultDisplaySettings.defaultView,
+      : defaultDialogColumns,
+    defaultView: displaySettings.defaultView || defaultViewMode,
     features: {
-      ...defaultDisplaySettings.features,
+      ...defaultFeatures,
       ...(displaySettings.features || {})
     }
   };

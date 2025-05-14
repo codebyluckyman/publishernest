@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -7,6 +8,35 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
 import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
+
+// Default values for display settings
+const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
+const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'];
+const defaultViewMode: PresentationViewMode = 'card';
+const defaultCardGridLayout = {
+  sm: 1,
+  md: 2,
+  lg: 3,
+  xl: 4,
+  xxl: 5
+};
+const defaultFeatures: PresentationFeatures = {
+  enabledViews: ['card', 'table'],
+  allowViewToggle: true,
+  showProductDetails: true,
+  showPricing: true,
+  allowDownload: false,
+  cardWidthType: 'responsive',
+  cardGridLayout: defaultCardGridLayout
+};
+
+// Default display settings to ensure type safety
+const defaultDisplaySettings: PresentationDisplaySettings = {
+  cardColumns: defaultCardColumns,
+  dialogColumns: defaultDialogColumns,
+  defaultView: defaultViewMode,
+  features: defaultFeatures
+};
 
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,20 +55,6 @@ const SalesPresentationDetail = () => {
       await publishMutation.mutateAsync({ id });
     }
   };
-
-  // Default display settings to ensure type safety
-  const defaultDisplaySettings: PresentationDisplaySettings = {
-    cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
-    dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
-    defaultView: 'card' as PresentationViewMode,
-    features: {
-      enabledViews: ['card', 'table'],
-      allowViewToggle: true,
-      showProductDetails: true,
-      showPricing: true,
-      allowDownload: false
-    }
-  };
   
   // Log what we got from the API for debugging
   console.log("SalesPresentationDetail - raw presentation data:", presentation?.display_settings);
@@ -52,23 +68,23 @@ const SalesPresentationDetail = () => {
   }
 
   // If presentation is loaded, use its display settings or fall back to defaults
-  const displaySettings = presentation.display_settings || defaultDisplaySettings;
+  const displaySettings = presentation.display_settings || { ...defaultDisplaySettings };
   
   // Process display settings to ensure all required properties are present
   const processedDisplaySettings: PresentationDisplaySettings = {
     cardColumns: Array.isArray(displaySettings.cardColumns) 
       ? displaySettings.cardColumns
-      : defaultDisplaySettings.cardColumns,
+      : defaultCardColumns,
     
     dialogColumns: Array.isArray(displaySettings.dialogColumns) 
       ? displaySettings.dialogColumns
-      : defaultDisplaySettings.dialogColumns,
+      : defaultDialogColumns,
     
-    defaultView: displaySettings.defaultView || defaultDisplaySettings.defaultView,
+    defaultView: displaySettings.defaultView || defaultViewMode,
     
     features: {
       // Start with default features
-      ...defaultDisplaySettings.features,
+      ...defaultFeatures,
       // Override with any features from the presentation
       ...(displaySettings.features || {})
     }
