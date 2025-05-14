@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -67,7 +66,13 @@ const EditSalesPresentation = () => {
       setDescription(presentation.description || '');
       
       // Initialize display settings
-      const displaySettings = presentation.display_settings || {};
+      const displaySettings = presentation.display_settings || {
+        cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
+        dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
+        defaultView: 'card' as PresentationViewMode,
+        features: {}
+      };
+      
       setDefaultView(displaySettings.defaultView || 'card');
       
       // Initialize card columns with defaults if not available
@@ -143,7 +148,13 @@ const EditSalesPresentation = () => {
       }
       
       // Get current cardColumns and dialogColumns or use defaults
-      const currentDisplaySettings = presentation?.display_settings || {};
+      const currentDisplaySettings = presentation?.display_settings || {
+        cardColumns: ['price', 'isbn13', 'publisher'] as CardColumn[],
+        dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'] as DialogColumn[],
+        defaultView: 'card' as PresentationViewMode,
+        features: {}
+      };
+      
       const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher']; 
       const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis']; 
       
