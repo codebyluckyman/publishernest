@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Product } from "@/types/product";
 import Image from "@/components/ui/img";
 import { formatPrice } from "@/utils/productUtils";
+import { PresentationDisplaySettings } from "@/types/salesPresentation";
 
 interface KanbanViewProps {
   products: Array<{
@@ -10,6 +11,7 @@ interface KanbanViewProps {
     customPrice?: number;
     customDescription?: string;
   }>;
+  displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
     product: Product;
     customPrice?: number;
@@ -17,7 +19,10 @@ interface KanbanViewProps {
   }) => void;
 }
 
-export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
+export function KanbanView({ products, displaySettings, onSelectProduct }: KanbanViewProps) {
+  const features = displaySettings?.features;
+  const showPricing = features?.showPricing !== false;
+
   // Group products by publisher
   const groupedProducts = products.reduce((acc, item) => {
     const publisher = item.product.publisher_name || 'Unknown Publisher';
@@ -27,6 +32,17 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
     acc[publisher].push(item);
     return acc;
   }, {} as Record<string, typeof products>);
+
+  // Helper function to format price display
+  const getPrice = (product: Product, customPrice?: number) => {
+    if (!showPricing) {
+      return 'Contact for pricing';
+    }
+    
+    return customPrice !== undefined ? 
+      formatPrice(customPrice, product.default_currency) : 
+      product.list_price ? formatPrice(product.list_price, product.default_currency) : 'Price not available';
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -58,10 +74,13 @@ export function KanbanView({ products, onSelectProduct }: KanbanViewProps) {
                     <h4 className="font-medium line-clamp-2 text-sm">{item.product.title}</h4>
                     <p className="text-xs text-muted-foreground mt-1">
                       {item.product.isbn13 || 'No ISBN'} 
-                      {item.customPrice !== undefined ? 
-                        ` • ${formatPrice(item.customPrice, item.product.default_currency)}` : 
-                        item.product.list_price ? ` • ${formatPrice(item.product.list_price, item.product.default_currency)}` : ''}
+                      {showPricing ? ` • ${getPrice(item.product, item.customPrice)}` : ''}
                     </p>
+                    {item.product.age_range && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Age: {item.product.age_range}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Card>

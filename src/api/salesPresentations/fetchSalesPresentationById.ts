@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardWidthType, CardGridLayout } from '@/types/salesPresentation';
@@ -31,9 +32,51 @@ function hasFeatures(obj: any): obj is { features: PresentationFeatures } {
   );
 }
 
-// Valid column values that can be used
-const validCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format', 'synopsis'];
-const validDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'format', 'physical_properties', 'carton_dimensions', 'synopsis'];
+// Valid column values that can be used - updated to include all possible fields from types
+const validCardColumns: CardColumn[] = [
+  // Basic info
+  'title', 'isbn13', 'isbn10', 'price',
+  // Product details
+  'product_form', 'product_form_detail', 'publisher', 'publication_date', 'status',
+  // Physical properties - individual
+  'height', 'width', 'thickness', 'weight',
+  // Physical properties - grouped
+  'physical_properties',
+  // Format details
+  'format', 'format_extras', 'format_extra_comments',
+  // Content details
+  'page_count', 'edition_number',
+  // Carton information - individual
+  'carton_quantity', 'carton_dimensions',
+  // Additional information
+  'synopsis', 'subtitle', 'series_name', 'age_range', 'license',
+  // Codes
+  'language_code', 'subject_code', 'product_availability_code'
+];
+
+const validDialogColumns: DialogColumn[] = [
+  // Basic info
+  'title', 'isbn13', 'isbn10', 'price',
+  // Product details
+  'product_form', 'product_form_detail', 'publisher', 'publication_date', 'status',
+  // Physical properties - individual
+  'height', 'width', 'thickness', 'weight',
+  // Physical properties - grouped
+  'physical_properties',
+  // Format details
+  'format', 'format_extras', 'format_extra_comments',
+  // Content details
+  'page_count', 'edition_number',
+  // Carton information - individual
+  'carton_quantity', 'carton_length', 'carton_width', 'carton_height', 'carton_weight',
+  // Carton information - grouped
+  'carton_dimensions',
+  // Additional information
+  'synopsis', 'subtitle', 'series_name', 'age_range', 'license',
+  // Codes
+  'language_code', 'subject_code', 'product_availability_code'
+];
+
 const validViewModes: PresentationViewMode[] = ['card', 'table', 'carousel', 'kanban'];
 
 // Default display settings to use if none found or invalid
@@ -63,12 +106,22 @@ const defaultDisplaySettings: PresentationDisplaySettings = {
 // Function to sanitize and validate column values
 function sanitizeCardColumns(columns: any[]): CardColumn[] {
   if (!Array.isArray(columns)) return defaultDisplaySettings.cardColumns;
-  return columns.filter(col => validCardColumns.includes(col as CardColumn)) as CardColumn[];
+  
+  console.log('Sanitizing card columns:', columns);
+  const sanitizedColumns = columns.filter(col => validCardColumns.includes(col as CardColumn)) as CardColumn[];
+  console.log('Sanitized card columns:', sanitizedColumns);
+  
+  return sanitizedColumns.length > 0 ? sanitizedColumns : defaultDisplaySettings.cardColumns;
 }
 
 function sanitizeDialogColumns(columns: any[]): DialogColumn[] {
   if (!Array.isArray(columns)) return defaultDisplaySettings.dialogColumns;
-  return columns.filter(col => validDialogColumns.includes(col as DialogColumn)) as DialogColumn[];
+  
+  console.log('Sanitizing dialog columns:', columns);
+  const sanitizedColumns = columns.filter(col => validDialogColumns.includes(col as DialogColumn)) as DialogColumn[];
+  console.log('Sanitized dialog columns:', sanitizedColumns);
+  
+  return sanitizedColumns.length > 0 ? sanitizedColumns : defaultDisplaySettings.dialogColumns;
 }
 
 // Function to validate view mode
