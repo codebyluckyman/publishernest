@@ -40,6 +40,8 @@ export async function updateSalesPresentation({
         updatedSettings.defaultView = 'card' as PresentationViewMode;
       }
       
+      console.log("Update Sales Presentation - Display settings before processing:", updatedSettings);
+      
       // Ensure features object exists with defaults
       if (!updatedSettings.features) {
         updatedSettings.features = {
@@ -52,7 +54,6 @@ export async function updateSalesPresentation({
         };
       } else {
         // Ensure required feature flags exist with defaults
-        // Only use defaults if the property is undefined (not when it's an empty array)
         updatedSettings.features = {
           enabledViews: updatedSettings.features.enabledViews !== undefined 
             ? updatedSettings.features.enabledViews 
@@ -74,20 +75,27 @@ export async function updateSalesPresentation({
         }
         
         // Ensure cardGridLayout has proper values if provided (only needed for responsive mode)
-        if (updatedSettings.features.cardWidthType === 'responsive' && updatedSettings.features.cardGridLayout) {
+        if (updatedSettings.features.cardWidthType === 'responsive') {
           const gridLayout = updatedSettings.features.cardGridLayout as CardGridLayout;
           
-          // Apply default values for any missing breakpoints
-          updatedSettings.features.cardGridLayout = {
-            sm: gridLayout.sm || 1,
-            md: gridLayout.md || 2,
-            lg: gridLayout.lg || 3,
-            xl: gridLayout.xl || 4,
-            xxl: gridLayout.xxl || 5,
-          };
+          if (gridLayout) {
+            console.log("Update Sales Presentation - Grid layout before processing:", gridLayout);
+            
+            // Apply default values for any missing breakpoints
+            updatedSettings.features.cardGridLayout = {
+              sm: gridLayout.sm || 1,
+              md: gridLayout.md || 2,
+              lg: gridLayout.lg || 3,
+              xl: gridLayout.xl || 4,
+              xxl: gridLayout.xxl || 5,
+            } as CardGridLayout;
+            
+            console.log("Update Sales Presentation - Grid layout after processing:", updatedSettings.features.cardGridLayout);
+          }
         }
       }
       
+      console.log("Update Sales Presentation - Final display settings:", updatedSettings);
       updates.display_settings = updatedSettings;
     }
     

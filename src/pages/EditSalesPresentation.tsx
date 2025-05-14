@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -37,11 +36,11 @@ const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
 const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'];
 const defaultViewMode: PresentationViewMode = 'card';
 const defaultCardGridLayout: CardGridLayout = {
-  sm: 1,
-  md: 2,
-  lg: 3,
-  xl: 4,
-  xxl: 5
+  sm: 1 as const,
+  md: 2 as const,
+  lg: 3 as const,
+  xl: 4 as const,
+  xxl: 5 as const
 };
 const defaultFeatures: PresentationFeatures = {
   enabledViews: ['card', 'table'],
@@ -85,8 +84,12 @@ const EditSalesPresentation = () => {
 
   useEffect(() => {
     if (presentation) {
+      // Set basic fields
       setTitle(presentation.title);
       setDescription(presentation.description || '');
+      
+      console.log("EditSalesPresentation - Raw presentation data:", presentation);
+      console.log("EditSalesPresentation - Raw display settings:", presentation.display_settings);
       
       // Initialize display settings with complete defaults
       const displaySettings = presentation.display_settings || { ...defaultDisplaySettings };
@@ -94,18 +97,10 @@ const EditSalesPresentation = () => {
       // Set default view
       setDefaultView(displaySettings.defaultView || defaultViewMode);
       
-      // Initialize card columns with defaults if not available
-      const cardColumns = Array.isArray(displaySettings.cardColumns) 
-        ? displaySettings.cardColumns 
-        : defaultCardColumns;
-      
-      // Initialize dialog columns with defaults if not available
-      const dialogColumns = Array.isArray(displaySettings.dialogColumns) 
-        ? displaySettings.dialogColumns 
-        : defaultDialogColumns;
-      
       // Initialize features with defaults
       const features = displaySettings.features || { ...defaultFeatures };
+      
+      console.log("EditSalesPresentation - Features from DB:", features);
       
       // Set enabled views if available
       if (Array.isArray(features.enabledViews) && features.enabledViews.length > 0) {
@@ -125,13 +120,21 @@ const EditSalesPresentation = () => {
       
       // Set card grid layout with defaults if not available
       if (features.cardGridLayout) {
-        setCardGridLayout({
-          sm: features.cardGridLayout.sm || defaultCardGridLayout.sm,
-          md: features.cardGridLayout.md || defaultCardGridLayout.md,
-          lg: features.cardGridLayout.lg || defaultCardGridLayout.lg,
-          xl: features.cardGridLayout.xl || defaultCardGridLayout.xl,
-          xxl: features.cardGridLayout.xxl || defaultCardGridLayout.xxl
-        });
+        console.log("EditSalesPresentation - Card grid layout from DB:", features.cardGridLayout);
+        
+        const gridLayout: CardGridLayout = {
+          sm: (features.cardGridLayout.sm as 1 | 2) || defaultCardGridLayout.sm,
+          md: (features.cardGridLayout.md as 1 | 2 | 3) || defaultCardGridLayout.md,
+          lg: (features.cardGridLayout.lg as 2 | 3 | 4) || defaultCardGridLayout.lg,
+          xl: (features.cardGridLayout.xl as 3 | 4 | 5) || defaultCardGridLayout.xl,
+          xxl: (features.cardGridLayout.xxl as 4 | 5 | 6) || defaultCardGridLayout.xxl
+        };
+        
+        console.log("EditSalesPresentation - Processed grid layout:", gridLayout);
+        setCardGridLayout(gridLayout);
+      } else {
+        console.log("EditSalesPresentation - Using default grid layout");
+        setCardGridLayout(defaultCardGridLayout);
       }
     }
   }, [presentation]);
@@ -227,6 +230,7 @@ const EditSalesPresentation = () => {
       else if (size === 'xl') updatedLayout[size] = value as 3 | 4 | 5;
       else if (size === 'xxl') updatedLayout[size] = value as 4 | 5 | 6;
       
+      console.log("EditSalesPresentation - Grid layout updated:", updatedLayout);
       return updatedLayout;
     });
   };

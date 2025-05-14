@@ -7,18 +7,18 @@ import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
-import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardGridLayout } from '@/types/salesPresentation';
 
 // Default values for display settings
 const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
 const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'];
 const defaultViewMode: PresentationViewMode = 'card';
-const defaultCardGridLayout = {
-  sm: 1,
-  md: 2,
-  lg: 3,
-  xl: 4,
-  xxl: 5
+const defaultCardGridLayout: CardGridLayout = {
+  sm: 1 as const,
+  md: 2 as const,
+  lg: 3 as const,
+  xl: 4 as const,
+  xxl: 5 as const
 };
 const defaultFeatures: PresentationFeatures = {
   enabledViews: ['card', 'table'],

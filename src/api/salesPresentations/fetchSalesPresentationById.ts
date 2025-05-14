@@ -1,7 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardWidthType, CardGridLayout } from '@/types/salesPresentation';
 
 // Type guard to verify the shape of display_settings for legacy format
 function hasDisplayColumns(obj: any): obj is { displayColumns: CardColumn[] } {
@@ -38,6 +37,14 @@ const validDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'pub
 const validViewModes: PresentationViewMode[] = ['card', 'table', 'carousel', 'kanban'];
 
 // Default display settings to use if none found or invalid
+const defaultCardGridLayout: CardGridLayout = {
+  sm: 1 as const,
+  md: 2 as const,
+  lg: 3 as const,
+  xl: 4 as const,
+  xxl: 5 as const
+};
+
 const defaultDisplaySettings: PresentationDisplaySettings = {
   cardColumns: ["price", "isbn13", "publisher", "publication_date"],
   dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"],
@@ -47,7 +54,9 @@ const defaultDisplaySettings: PresentationDisplaySettings = {
     allowViewToggle: true,
     showProductDetails: true,
     showPricing: true,
-    allowDownload: false
+    allowDownload: false,
+    cardWidthType: 'responsive' as CardWidthType,
+    cardGridLayout: defaultCardGridLayout
   }
 };
 
@@ -70,6 +79,38 @@ function sanitizeViewMode(viewMode: any): PresentationViewMode {
   return viewMode as PresentationViewMode;
 }
 
+// Function to validate and normalize a grid layout configuration
+function sanitizeCardGridLayout(gridLayout: any): CardGridLayout {
+  if (!gridLayout || typeof gridLayout !== 'object') {
+    return defaultCardGridLayout;
+  }
+  
+  // Create a valid grid layout object ensuring all values are of the correct type
+  const sanitizedLayout: CardGridLayout = {
+    sm: typeof gridLayout.sm === 'number' && (gridLayout.sm === 1 || gridLayout.sm === 2) 
+      ? gridLayout.sm as 1 | 2 
+      : defaultCardGridLayout.sm,
+      
+    md: typeof gridLayout.md === 'number' && [1, 2, 3].includes(gridLayout.md)
+      ? gridLayout.md as 1 | 2 | 3
+      : defaultCardGridLayout.md,
+      
+    lg: typeof gridLayout.lg === 'number' && [2, 3, 4].includes(gridLayout.lg)
+      ? gridLayout.lg as 2 | 3 | 4
+      : defaultCardGridLayout.lg,
+      
+    xl: typeof gridLayout.xl === 'number' && [3, 4, 5].includes(gridLayout.xl)
+      ? gridLayout.xl as 3 | 4 | 5
+      : defaultCardGridLayout.xl,
+      
+    xxl: typeof gridLayout.xxl === 'number' && [4, 5, 6].includes(gridLayout.xxl)
+      ? gridLayout.xxl as 4 | 5 | 6
+      : defaultCardGridLayout.xxl
+  };
+  
+  return sanitizedLayout;
+}
+
 // Function to merge features with defaults
 function mergeFeatures(features: any): PresentationFeatures {
   const defaultFeatures = defaultDisplaySettings.features!;
@@ -77,6 +118,9 @@ function mergeFeatures(features: any): PresentationFeatures {
   if (!features || typeof features !== 'object') {
     return defaultFeatures;
   }
+  
+  // Correctly parse and validate the card grid layout
+  const cardGridLayout = sanitizeCardGridLayout(features.cardGridLayout);
   
   return {
     enabledViews: Array.isArray(features.enabledViews) 
@@ -94,7 +138,15 @@ function mergeFeatures(features: any): PresentationFeatures {
     allowDownload: typeof features.allowDownload === 'boolean' 
       ? features.allowDownload 
       : defaultFeatures.allowDownload,
-    ...(features.customCss ? { customCss: features.customCss } : {})
+    cardWidthType: (typeof features.cardWidthType === 'string' && 
+      (features.cardWidthType === 'responsive' || features.cardWidthType === 'fixed'))
+      ? features.cardWidthType as CardWidthType
+      : defaultFeatures.cardWidthType,
+    cardGridLayout: cardGridLayout,
+    ...(features.customCss ? { customCss: features.customCss } : {}),
+    ...(features.cardWidthType === 'fixed' && typeof features.fixedCardWidth === 'number' 
+      ? { fixedCardWidth: features.fixedCardWidth } 
+      : {})
   };
 }
 
