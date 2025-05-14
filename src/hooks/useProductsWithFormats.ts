@@ -8,7 +8,7 @@ import { Format } from '@/types/format';
 // Define a complete format interface for the component needs
 interface FormatLight {
   id: string;
-  format_name: string;
+  format_name: string | null;
   tps_height_mm: number | null;
   tps_width_mm: number | null;
   tps_depth_mm: number | null;

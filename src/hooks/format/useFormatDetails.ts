@@ -1,7 +1,24 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Format } from "@/components/format/types/FormatTypes";
+
+interface Format {
+  id: string;
+  format_name: string | null;
+  tps_height_mm: number | null;
+  tps_width_mm: number | null;
+  tps_depth_mm: number | null;
+  tps_plc_height_mm: number | null;
+  tps_plc_width_mm: number | null;
+  tps_plc_depth_mm: number | null;
+  extent: string | null;
+  binding_type: string | null;
+  cover_material: string | null;
+  internal_material: string | null;
+  cover_stock_print: string | null;
+  internal_stock_print: string | null;
+  orientation: string | null;
+}
 
 export function useFormatDetails(formatId: string | null) {
   return useQuery({

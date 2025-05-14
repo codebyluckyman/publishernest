@@ -53,6 +53,10 @@ const formSchema = z.object({
     'physical_properties',
     // Format details
     'format', 'format_extras', 'format_extra_comments',
+    // Format information from formats table
+    'format_name', 'binding_type', 'cover_material', 'cover_stock_print',
+    'internal_material', 'internal_stock_print', 'orientation', 'extent',
+    'tps_dimensions', 'plc_dimensions',
     // Content details
     'page_count', 'edition_number',
     // Carton information - individual
@@ -73,6 +77,10 @@ const formSchema = z.object({
     'physical_properties',
     // Format details
     'format', 'format_extras', 'format_extra_comments',
+    // Format information from formats table
+    'format_name', 'binding_type', 'cover_material', 'cover_stock_print',
+    'internal_material', 'internal_stock_print', 'orientation', 'extent',
+    'tps_dimensions', 'plc_dimensions',
     // Content details
     'page_count', 'edition_number',
     // Carton information - individual
@@ -126,6 +134,17 @@ const columnOptions = {
     { value: 'format', label: 'Format' },
     { value: 'format_extras', label: 'Format Features' },
     { value: 'format_extra_comments', label: 'Format Comments' },
+    // New format fields from formats table
+    { value: 'format_name', label: 'Format Name' },
+    { value: 'binding_type', label: 'Binding Type' },
+    { value: 'cover_material', label: 'Cover Material' },
+    { value: 'cover_stock_print', label: 'Cover Stock/Print' },
+    { value: 'internal_material', label: 'Internal Material' },
+    { value: 'internal_stock_print', label: 'Internal Stock/Print' },
+    { value: 'orientation', label: 'Orientation' },
+    { value: 'extent', label: 'Extent' },
+    { value: 'tps_dimensions', label: 'TPS Dimensions' },
+    { value: 'plc_dimensions', label: 'PLC Dimensions' },
   ],
   'Physical Properties': [
     { value: 'height', label: 'Height' },
