@@ -4,16 +4,17 @@ import { Product } from "@/types/product";
 import Image from "@/components/ui/img";
 import { formatPrice } from "@/utils/productUtils";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
+import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
 
 interface KanbanViewProps {
   products: Array<{
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }>;
   displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }) => void;
@@ -34,7 +35,7 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
   }, {} as Record<string, typeof products>);
 
   // Helper function to format price display
-  const getPrice = (product: Product, customPrice?: number) => {
+  const getPrice = (product: ProductWithFormat, customPrice?: number) => {
     if (!showPricing) {
       return 'Contact for pricing';
     }
@@ -42,6 +43,16 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
     return customPrice !== undefined ? 
       formatPrice(customPrice, product.default_currency) : 
       product.list_price ? formatPrice(product.list_price, product.default_currency) : 'Price not available';
+  };
+
+  // Helper function to get formatted format display
+  const getFormatDisplay = (product: ProductWithFormat) => {
+    if (product.format && product.format.format_name) {
+      return product.format.format_name;
+    } else if (product.format_id) {
+      return "Format assigned";
+    }
+    return null; // Return null if no format info available
   };
 
   return (
@@ -79,6 +90,11 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
                     {item.product.age_range && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Age: {item.product.age_range}
+                      </p>
+                    )}
+                    {getFormatDisplay(item.product) && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Format: {getFormatDisplay(item.product)}
                       </p>
                     )}
                   </div>
