@@ -7,7 +7,7 @@ import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
-import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardGridLayout } from '@/types/salesPresentation';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardGridLayout, CarouselSettings } from '@/types/salesPresentation';
 
 // Default values for display settings
 const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
@@ -20,6 +20,16 @@ const defaultCardGridLayout: CardGridLayout = {
   xl: 4 as const,
   xxl: 5 as const
 };
+
+// Default carousel settings
+const defaultCarouselSettings: CarouselSettings = {
+  slidesPerView: { sm: 1, md: 2, lg: 3 },
+  autoplay: false,
+  autoplayDelay: 3000,
+  slideHeight: 192,
+  showIndicators: true
+};
+
 const defaultFeatures: PresentationFeatures = {
   enabledViews: ['card', 'table'],
   allowViewToggle: true,
@@ -28,6 +38,7 @@ const defaultFeatures: PresentationFeatures = {
   allowDownload: false,
   cardWidthType: 'responsive',
   cardGridLayout: defaultCardGridLayout,
+  carouselSettings: defaultCarouselSettings,
   kanbanGroupByField: 'publisher_name'
 };
 
@@ -88,7 +99,9 @@ const SalesPresentationDetail = () => {
       ...defaultFeatures,
       // Override with any features from the presentation
       ...(displaySettings.features || {}),
-      // Ensure kanbanGroupByField is preserved from the existing settings or use default
+      // Ensure carouselSettings is preserved or use default
+      carouselSettings: displaySettings.features?.carouselSettings || defaultCarouselSettings,
+      // Ensure kanbanGroupByField is preserved or use default
       kanbanGroupByField: displaySettings.features?.kanbanGroupByField || defaultFeatures.kanbanGroupByField
     }
   };

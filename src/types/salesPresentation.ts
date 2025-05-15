@@ -131,6 +131,19 @@ export interface CardGridLayout {
   xxl?: 4 | 5 | 6;
 }
 
+// New interface for carousel settings
+export interface CarouselSettings {
+  slidesPerView?: {
+    sm?: 1 | 2;      // Small screens (mobile)
+    md?: 1 | 2 | 3;  // Medium screens (tablet)
+    lg?: 1 | 2 | 3 | 4; // Large screens (desktop)
+  };
+  autoplay?: boolean;
+  autoplayDelay?: number;  // in milliseconds
+  slideHeight?: number;    // custom height for slides in pixels
+  showIndicators?: boolean; // Show dots indicator for slides
+}
+
 export interface PresentationFeatures {
   enabledViews: PresentationViewMode[];
   allowViewToggle: boolean;
@@ -142,6 +155,7 @@ export interface PresentationFeatures {
   cardWidthType?: CardWidthType;
   fixedCardWidth?: number;
   kanbanGroupByField?: string; // New field for Kanban grouping
+  carouselSettings?: CarouselSettings; // New field for carousel options
   [key: string]: any; // Allow for future feature flags
 }
 

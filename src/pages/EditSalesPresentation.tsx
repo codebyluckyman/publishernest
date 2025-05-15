@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -17,13 +18,15 @@ import {
   DialogColumn, 
   PresentationViewMode, 
   PresentationFeatures, 
-  CardWidthType 
+  CardWidthType,
+  CarouselSettings
 } from '@/types/salesPresentation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { EditProductFieldsTab } from '@/components/sales-presentations/EditProductFieldsTab';
+import { CarouselSettingsTab } from '@/components/sales-presentations/CarouselSettingsTab';
 
 const viewModeOptions = [
   { value: 'card', label: 'Card View' },
@@ -54,6 +57,16 @@ const defaultCardGridLayout: CardGridLayout = {
   xl: 4 as const,
   xxl: 5 as const
 };
+
+// Default carousel settings
+const defaultCarouselSettings: CarouselSettings = {
+  slidesPerView: { sm: 1, md: 2, lg: 3 },
+  autoplay: false,
+  autoplayDelay: 3000,
+  slideHeight: 192,  // 192px default height
+  showIndicators: true
+};
+
 const defaultFeatures: PresentationFeatures = {
   enabledViews: ['card', 'table'],
   allowViewToggle: true,
@@ -61,7 +74,8 @@ const defaultFeatures: PresentationFeatures = {
   showPricing: true,
   allowDownload: false,
   cardWidthType: 'responsive',
-  cardGridLayout: defaultCardGridLayout
+  cardGridLayout: defaultCardGridLayout,
+  carouselSettings: defaultCarouselSettings
 };
 
 const defaultDisplaySettings: PresentationDisplaySettings = {
@@ -91,6 +105,7 @@ const EditSalesPresentation = () => {
   const [cardWidthType, setCardWidthType] = useState<CardWidthType>('responsive');
   const [fixedCardWidth, setFixedCardWidth] = useState<number>(320);
   const [kanbanGroupByField, setKanbanGroupByField] = useState<string>('publisher_name');
+  const [carouselSettings, setCarouselSettings] = useState<CarouselSettings>(defaultCarouselSettings);
 
   // Card grid layout state
   const [cardGridLayout, setCardGridLayout] = useState<CardGridLayout>(defaultCardGridLayout);
@@ -169,6 +184,17 @@ const EditSalesPresentation = () => {
       
       // Set kanban group by field if available
       setKanbanGroupByField(features.kanbanGroupByField || 'publisher_name');
+
+      // Set carousel settings if available
+      if (features.carouselSettings) {
+        console.log("EditSalesPresentation - Carousel settings from DB:", features.carouselSettings);
+        setCarouselSettings({
+          ...defaultCarouselSettings,
+          ...features.carouselSettings
+        });
+      } else {
+        setCarouselSettings(defaultCarouselSettings);
+      }
     }
   }, [presentation]);
 
@@ -192,6 +218,7 @@ const EditSalesPresentation = () => {
         cardWidthType,
         cardGridLayout,
         kanbanGroupByField,
+        carouselSettings,
         // Include existing features we don't explicitly manage
         ...(presentation?.display_settings?.features?.allowDownload !== undefined && {
           allowDownload: presentation.display_settings.features.allowDownload
@@ -361,10 +388,11 @@ const EditSalesPresentation = () => {
               <h3 className="text-lg font-medium">Display Options</h3>
               
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-4">
+                <TabsList className="grid grid-cols-5">
                   <TabsTrigger value="view-options">View Options</TabsTrigger>
                   <TabsTrigger value="product-fields">Product Fields</TabsTrigger>
                   <TabsTrigger value="card-layout">Card Layout</TabsTrigger>
+                  <TabsTrigger value="carousel-layout">Carousel Layout</TabsTrigger>
                   <TabsTrigger value="kanban-layout">Kanban Layout</TabsTrigger>
                 </TabsList>
                 
@@ -626,6 +654,14 @@ const EditSalesPresentation = () => {
                       Resize your browser to see how the grid adapts to different screen sizes
                     </p>
                   </div>
+                </TabsContent>
+                
+                {/* New Tab for Carousel Layout Settings */}
+                <TabsContent value="carousel-layout" className="space-y-6 pt-4">
+                  <CarouselSettingsTab
+                    carouselSettings={carouselSettings}
+                    onSettingsChange={setCarouselSettings}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="kanban-layout" className="space-y-6 pt-4">

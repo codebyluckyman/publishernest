@@ -2,20 +2,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
-import { Product } from "@/types/product";
 import { formatPrice } from "@/utils/productUtils";
 import Image from "@/components/ui/img";
 import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
+import { useEffect, useState } from "react";
 
 interface CarouselViewProps {
   products: Array<{
-    product: ProductWithFormat; // Updated to ProductWithFormat
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }>;
   displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
-    product: ProductWithFormat; // Updated to ProductWithFormat
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }) => void;
@@ -26,6 +26,42 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
   const features = displaySettings?.features;
   const showPricing = features?.showPricing !== false;
   const showProductDetails = features?.showProductDetails !== false;
+  
+  // Extract carousel settings or use defaults
+  const carouselSettings = features?.carouselSettings || {};
+  const slidesPerView = carouselSettings.slidesPerView || { sm: 1, md: 2, lg: 3 };
+  const slideHeight = carouselSettings.slideHeight || 192; // Default to 192px
+  const showIndicators = carouselSettings.showIndicators !== false;
+  
+  // Set up autoplay if enabled
+  const [api, setApi] = useState<any>(null);
+  
+  // Handle autoplay
+  useEffect(() => {
+    if (!api) return;
+    
+    if (carouselSettings.autoplay) {
+      const autoplayInterval = setInterval(() => {
+        api.scrollNext();
+      }, carouselSettings.autoplayDelay || 3000);
+      
+      return () => clearInterval(autoplayInterval);
+    }
+  }, [api, carouselSettings.autoplay, carouselSettings.autoplayDelay]);
+  
+  // Calculate responsive classes based on settings
+  const getSlideClass = () => {
+    return `
+      ${slidesPerView.sm === 2 ? 'md:basis-1/2' : 'md:basis-full'}
+      ${slidesPerView.md === 1 ? 'lg:basis-full' : 
+        slidesPerView.md === 2 ? 'lg:basis-1/2' : 
+        'lg:basis-1/3'}
+      ${slidesPerView.lg === 1 ? 'xl:basis-full' : 
+        slidesPerView.lg === 2 ? 'xl:basis-1/2' : 
+        slidesPerView.lg === 3 ? 'xl:basis-1/3' : 
+        'xl:basis-1/4'}
+    `;
+  };
   
   const getDisplayValue = (product: ProductWithFormat, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
@@ -180,40 +216,65 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
   };
   
   return (
-    <Carousel className="w-full px-12">
-      <CarouselContent>
-        {products.map((item) => (
-          <CarouselItem key={item.product.id} className="md:basis-1/2 lg:basis-1/3">
-            <Card 
-              className={`h-full overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
-              onClick={() => onSelectProduct(item)}
-            >
-              {item.product.cover_image_url && (
-                <div className="w-full h-48 overflow-hidden">
-                  <Image
-                    src={item.product.cover_image_url}
-                    alt={item.product.title}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              )}
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {cardColumns.map((column) => (
-                  <div key={column} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:</span>
-                    <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
+    <div className="w-full">
+      <Carousel 
+        className="w-full px-12" 
+        setApi={setApi}
+      >
+        <CarouselContent>
+          {products.map((item) => (
+            <CarouselItem key={item.product.id} className={getSlideClass()}>
+              <Card 
+                className={`h-full overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
+                onClick={() => showProductDetails && onSelectProduct(item)}
+              >
+                {item.product.cover_image_url && (
+                  <div 
+                    className="w-full overflow-hidden" 
+                    style={{ height: `${slideHeight}px` }}
+                  >
+                    <Image
+                      src={item.product.cover_image_url}
+                      alt={item.product.title}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious className="-left-2" />
-      <CarouselNext className="-right-2" />
-    </Carousel>
+                )}
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {cardColumns.map((column) => (
+                    <div key={column} className="flex justify-between text-sm">
+                      <span className="font-medium text-muted-foreground">
+                        {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:
+                      </span>
+                      <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="-left-2" />
+        <CarouselNext className="-right-2" />
+      </Carousel>
+      
+      {/* Show indicators if enabled */}
+      {showIndicators && products.length > 1 && (
+        <div className="flex justify-center mt-4 space-x-1">
+          {products.map((_, index) => (
+            <button
+              key={index}
+              className={`h-1.5 rounded-full transition-all 
+                ${index === (api?.selectedScrollSnap?.() || 0) ? 'bg-primary w-4' : 'bg-muted w-1.5'}`}
+              onClick={() => api?.scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
