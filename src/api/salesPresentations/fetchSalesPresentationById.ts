@@ -1,7 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardWidthType, CardGridLayout } from '@/types/salesPresentation';
+import { SalesPresentation, PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardWidthType, CardGridLayout, CarouselSettings } from '@/types/salesPresentation';
 
 // Type guard to verify the shape of display_settings for legacy format
 function hasDisplayColumns(obj: any): obj is { displayColumns: CardColumn[] } {
@@ -96,6 +95,15 @@ const defaultCardGridLayout: CardGridLayout = {
   xxl: 5 as const
 };
 
+// Default carousel settings
+const defaultCarouselSettings: CarouselSettings = {
+  slidesPerView: { sm: 1, md: 2, lg: 3 },
+  autoplay: false,
+  autoplayDelay: 3000,
+  slideHeight: 192,  // 192px default height
+  showIndicators: true
+};
+
 const defaultDisplaySettings: PresentationDisplaySettings = {
   cardColumns: ["price", "isbn13", "publisher", "publication_date"],
   dialogColumns: ["price", "isbn13", "publisher", "publication_date", "synopsis"],
@@ -108,7 +116,8 @@ const defaultDisplaySettings: PresentationDisplaySettings = {
     allowDownload: false,
     cardWidthType: 'responsive' as CardWidthType,
     cardGridLayout: defaultCardGridLayout,
-    kanbanGroupByField: 'publisher_name'
+    kanbanGroupByField: 'publisher_name',
+    carouselSettings: defaultCarouselSettings
   }
 };
 
@@ -173,6 +182,48 @@ function sanitizeCardGridLayout(gridLayout: any): CardGridLayout {
   return sanitizedLayout;
 }
 
+// Function to sanitize and validate carousel settings
+function sanitizeCarouselSettings(carouselSettings: any): CarouselSettings {
+  if (!carouselSettings || typeof carouselSettings !== 'object') {
+    return defaultCarouselSettings;
+  }
+  
+  // Create a valid carousel settings object ensuring all values are of the correct type
+  const sanitizedSettings: CarouselSettings = {
+    slidesPerView: {
+      sm: typeof carouselSettings.slidesPerView?.sm === 'number' && [1, 2].includes(carouselSettings.slidesPerView.sm)
+        ? carouselSettings.slidesPerView.sm as 1 | 2
+        : defaultCarouselSettings.slidesPerView!.sm,
+        
+      md: typeof carouselSettings.slidesPerView?.md === 'number' && [1, 2, 3].includes(carouselSettings.slidesPerView.md)
+        ? carouselSettings.slidesPerView.md as 1 | 2 | 3
+        : defaultCarouselSettings.slidesPerView!.md,
+        
+      lg: typeof carouselSettings.slidesPerView?.lg === 'number' && [1, 2, 3, 4].includes(carouselSettings.slidesPerView.lg)
+        ? carouselSettings.slidesPerView.lg as 1 | 2 | 3 | 4
+        : defaultCarouselSettings.slidesPerView!.lg,
+    },
+    
+    autoplay: typeof carouselSettings.autoplay === 'boolean'
+      ? carouselSettings.autoplay
+      : defaultCarouselSettings.autoplay,
+      
+    autoplayDelay: typeof carouselSettings.autoplayDelay === 'number' && carouselSettings.autoplayDelay > 0
+      ? carouselSettings.autoplayDelay
+      : defaultCarouselSettings.autoplayDelay,
+      
+    slideHeight: typeof carouselSettings.slideHeight === 'number' && carouselSettings.slideHeight > 0
+      ? carouselSettings.slideHeight
+      : defaultCarouselSettings.slideHeight,
+      
+    showIndicators: typeof carouselSettings.showIndicators === 'boolean'
+      ? carouselSettings.showIndicators
+      : defaultCarouselSettings.showIndicators
+  };
+  
+  return sanitizedSettings;
+}
+
 // Function to merge features with defaults
 function mergeFeatures(features: any): PresentationFeatures {
   const defaultFeatures = defaultDisplaySettings.features!;
@@ -183,6 +234,9 @@ function mergeFeatures(features: any): PresentationFeatures {
   
   // Correctly parse and validate the card grid layout
   const cardGridLayout = sanitizeCardGridLayout(features.cardGridLayout);
+  
+  // Parse and validate carousel settings
+  const carouselSettings = sanitizeCarouselSettings(features.carouselSettings);
   
   return {
     enabledViews: Array.isArray(features.enabledViews) 
@@ -208,6 +262,7 @@ function mergeFeatures(features: any): PresentationFeatures {
     kanbanGroupByField: typeof features.kanbanGroupByField === 'string'
       ? features.kanbanGroupByField
       : defaultFeatures.kanbanGroupByField,
+    carouselSettings: carouselSettings,
     ...(features.customCss ? { customCss: features.customCss } : {}),
     ...(features.cardWidthType === 'fixed' && typeof features.fixedCardWidth === 'number' 
       ? { fixedCardWidth: features.fixedCardWidth } 

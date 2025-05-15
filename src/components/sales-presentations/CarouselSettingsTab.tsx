@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -12,32 +11,20 @@ interface CarouselSettingsTabProps {
 }
 
 export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: CarouselSettingsTabProps) {
-  // Initialize with provided settings or defaults
-  const [settings, setSettings] = useState<CarouselSettings>({
-    slidesPerView: carouselSettings?.slidesPerView || { sm: 1, md: 2, lg: 3 },
-    autoplay: carouselSettings?.autoplay || false,
-    autoplayDelay: carouselSettings?.autoplayDelay || 3000,
-    slideHeight: carouselSettings?.slideHeight || 192, // Default to current height (48px * 4)
-    showIndicators: carouselSettings?.showIndicators !== false,
-  });
+  // Ensure we have default values for all settings
+  const settings = {
+    slidesPerView: carouselSettings.slidesPerView || { sm: 1, md: 2, lg: 3 },
+    autoplay: typeof carouselSettings.autoplay === 'boolean' ? carouselSettings.autoplay : false,
+    autoplayDelay: carouselSettings.autoplayDelay || 3000,
+    slideHeight: carouselSettings.slideHeight || 192,
+    showIndicators: typeof carouselSettings.showIndicators === 'boolean' ? carouselSettings.showIndicators : true,
+  };
 
   // Update settings and propagate changes to parent
   const updateSettings = (newSettings: Partial<CarouselSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
-    setSettings(updatedSettings);
     onSettingsChange(updatedSettings);
   };
-
-  // Update local state when props change
-  useEffect(() => {
-    setSettings({
-      slidesPerView: carouselSettings?.slidesPerView || { sm: 1, md: 2, lg: 3 },
-      autoplay: carouselSettings?.autoplay || false,
-      autoplayDelay: carouselSettings?.autoplayDelay || 3000,
-      slideHeight: carouselSettings?.slideHeight || 192,
-      showIndicators: carouselSettings?.showIndicators !== false,
-    });
-  }, [carouselSettings]);
 
   return (
     <div className="space-y-6">
@@ -48,7 +35,7 @@ export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: Caro
           <div className="space-y-2">
             <Label htmlFor="slides-sm">Small Screens (Mobile)</Label>
             <Select
-              value={settings.slidesPerView?.sm?.toString()}
+              value={settings.slidesPerView.sm?.toString()}
               onValueChange={(value) => {
                 const slidesPerView = { 
                   ...settings.slidesPerView, 
@@ -65,12 +52,13 @@ export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: Caro
                 <SelectItem value="2">2 slides</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">For screens ≤640px</p>
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="slides-md">Medium Screens (Tablet)</Label>
             <Select
-              value={settings.slidesPerView?.md?.toString()}
+              value={settings.slidesPerView.md?.toString()}
               onValueChange={(value) => {
                 const slidesPerView = { 
                   ...settings.slidesPerView, 
@@ -88,15 +76,16 @@ export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: Caro
                 <SelectItem value="3">3 slides</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">For screens ≥768px</p>
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="slides-lg">Large Screens (Desktop)</Label>
             <Select
-              value={settings.slidesPerView?.lg?.toString()}
+              value={settings.slidesPerView.lg?.toString()}
               onValueChange={(value) => {
                 const slidesPerView = { 
-                  ...settings.slidesPerView,
+                  ...settings.slidesPerView, 
                   lg: parseInt(value) as 1 | 2 | 3 | 4 
                 };
                 updateSettings({ slidesPerView });
@@ -112,29 +101,35 @@ export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: Caro
                 <SelectItem value="4">4 slides</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">For screens ≥1024px</p>
           </div>
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="slide-height">Image Height (pixels)</Label>
+          <Label htmlFor="slide-height">Slide Height (pixels)</Label>
           <Input
             id="slide-height"
             type="number"
-            min={80}
+            min={48}
             max={600}
             value={settings.slideHeight}
             onChange={(e) => updateSettings({ slideHeight: parseInt(e.target.value) })}
           />
           <p className="text-sm text-muted-foreground">
-            Height of the image area in each carousel slide
+            Height of each card in the carousel
           </p>
         </div>
         
         <div className="flex items-center justify-between">
-          <Label htmlFor="autoplay">Auto-play Slides</Label>
+          <div>
+            <Label htmlFor="autoplay">Auto-play Slides</Label>
+            <p className="text-sm text-muted-foreground">
+              Automatically advance through slides
+            </p>
+          </div>
           <Switch
             id="autoplay"
-            checked={settings.autoplay || false}
+            checked={settings.autoplay}
             onCheckedChange={(checked) => updateSettings({ autoplay: checked })}
           />
         </div>
@@ -158,10 +153,15 @@ export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: Caro
         )}
         
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-indicators">Show Slide Indicators</Label>
+          <div>
+            <Label htmlFor="show-indicators">Show Slide Indicators</Label>
+            <p className="text-sm text-muted-foreground">
+              Display dots indicating current slide position
+            </p>
+          </div>
           <Switch
             id="show-indicators"
-            checked={settings.showIndicators !== false}
+            checked={settings.showIndicators}
             onCheckedChange={(checked) => updateSettings({ showIndicators: checked })}
           />
         </div>
@@ -169,7 +169,7 @@ export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: Caro
       
       {/* Carousel Preview */}
       <div className="mt-6 border-t pt-4">
-        <h4 className="text-sm font-medium mb-2">Preview</h4>
+        <h4 className="text-sm font-medium mb-2">Carousel Preview</h4>
         <div className="bg-muted/30 border rounded-lg p-4">
           <div className="relative">
             <div className="flex space-x-4 overflow-hidden">
@@ -179,9 +179,9 @@ export function CarouselSettingsTab({ carouselSettings, onSettingsChange }: Caro
                   style={{ 
                     height: `${settings.slideHeight}px`,
                     width: "240px",
-                    flexShrink: 0,
+                    flexShrink: 0
                   }}
-                  className="bg-muted border rounded flex items-center justify-center"
+                  className="bg-card border rounded flex items-center justify-center"
                 >
                   <span className="text-sm text-muted-foreground">Slide {num}</span>
                 </div>
