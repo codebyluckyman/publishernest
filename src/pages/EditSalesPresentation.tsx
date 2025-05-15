@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -31,6 +30,16 @@ const viewModeOptions = [
   { value: 'table', label: 'Table View' },
   { value: 'carousel', label: 'Carousel View' },
   { value: 'kanban', label: 'Kanban View' },
+];
+
+// Define the group by options for the kanban view
+const kanbanGroupByOptions = [
+  { value: 'publisher_name', label: 'Publisher' },
+  { value: 'format', label: 'Format' },
+  { value: 'product_form', label: 'Format Type' },
+  { value: 'age_range', label: 'Age Range' },
+  { value: 'publication_date', label: 'Publication Year' },
+  { value: 'status', label: 'Status' }
 ];
 
 // Default values for display settings
@@ -80,6 +89,7 @@ const EditSalesPresentation = () => {
   const [error, setError] = useState<string | null>(null);
   const [cardWidthType, setCardWidthType] = useState<CardWidthType>('responsive');
   const [fixedCardWidth, setFixedCardWidth] = useState<number>(320);
+  const [kanbanGroupByField, setKanbanGroupByField] = useState<string>('publisher_name');
 
   // Card grid layout state
   const [cardGridLayout, setCardGridLayout] = useState<CardGridLayout>(defaultCardGridLayout);
@@ -155,6 +165,9 @@ const EditSalesPresentation = () => {
         console.log("EditSalesPresentation - Using default grid layout");
         setCardGridLayout(defaultCardGridLayout);
       }
+      
+      // Set kanban group by field if available
+      setKanbanGroupByField(features.kanbanGroupByField || 'publisher_name');
     }
   }, [presentation]);
 
@@ -177,6 +190,7 @@ const EditSalesPresentation = () => {
         showPricing,
         cardWidthType,
         cardGridLayout,
+        kanbanGroupByField,
         // Include existing features we don't explicitly manage
         ...(presentation?.display_settings?.features?.allowDownload !== undefined && {
           allowDownload: presentation.display_settings.features.allowDownload
@@ -346,10 +360,11 @@ const EditSalesPresentation = () => {
               <h3 className="text-lg font-medium">Display Options</h3>
               
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-3">
+                <TabsList className="grid grid-cols-4">
                   <TabsTrigger value="view-options">View Options</TabsTrigger>
                   <TabsTrigger value="product-fields">Product Fields</TabsTrigger>
                   <TabsTrigger value="card-layout">Card Layout</TabsTrigger>
+                  <TabsTrigger value="kanban-layout">Kanban Layout</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="view-options" className="space-y-4 pt-4">
@@ -609,6 +624,63 @@ const EditSalesPresentation = () => {
                     <p className="text-xs text-muted-foreground mt-2">
                       Resize your browser to see how the grid adapts to different screen sizes
                     </p>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="kanban-layout" className="space-y-6 pt-4">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Kanban Grouping</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Choose how products will be grouped in the Kanban view
+                    </p>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="kanbanGroupBy">Group products by</Label>
+                      <Select
+                        value={kanbanGroupByField}
+                        onValueChange={(value) => setKanbanGroupByField(value)}
+                      >
+                        <SelectTrigger id="kanbanGroupBy" className="w-full">
+                          <SelectValue placeholder="Select grouping field" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {kanbanGroupByOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground">
+                        Products will be grouped by the selected field in the Kanban view
+                      </p>
+                    </div>
+                    
+                    {/* Kanban Preview */}
+                    <div className="pt-6 mt-4 border-t">
+                      <h4 className="text-sm font-medium mb-2">Preview</h4>
+                      <div className="bg-muted/30 border rounded-lg p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {['Group 1', 'Group 2'].map((group) => (
+                            <div key={group} className="border rounded-md p-3">
+                              <h3 className="text-sm font-medium mb-2 border-b pb-1">
+                                {kanbanGroupByOptions.find(opt => opt.value === kanbanGroupByField)?.label}: {group}
+                              </h3>
+                              <div className="space-y-2">
+                                {[1, 2].map((item) => (
+                                  <div key={item} className="bg-background border rounded p-2 text-xs">
+                                    Product {group}-{item}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        This is how products will be grouped in the Kanban view
+                      </p>
+                    </div>
                   </div>
                 </TabsContent>
               </Tabs>

@@ -139,8 +139,9 @@ export interface PresentationFeatures {
   allowDownload?: boolean;
   customCss?: string;
   cardGridLayout?: CardGridLayout;
-  cardWidthType?: CardWidthType; // New property for card width type
-  fixedCardWidth?: number; // New property for fixed card width in pixels
+  cardWidthType?: CardWidthType;
+  fixedCardWidth?: number;
+  kanbanGroupByField?: string; // New field for Kanban grouping
   [key: string]: any; // Allow for future feature flags
 }
 

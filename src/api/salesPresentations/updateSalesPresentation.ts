@@ -50,7 +50,8 @@ export async function updateSalesPresentation({
           showProductDetails: true,
           showPricing: true,
           allowDownload: false,
-          cardWidthType: 'responsive' as CardWidthType
+          cardWidthType: 'responsive' as CardWidthType,
+          kanbanGroupByField: 'publisher_name'
         };
       } else {
         // Ensure required feature flags exist with defaults
@@ -63,6 +64,7 @@ export async function updateSalesPresentation({
           showPricing: updatedSettings.features.showPricing !== false,
           allowDownload: updatedSettings.features.allowDownload || false,
           cardWidthType: updatedSettings.features.cardWidthType || 'responsive',
+          kanbanGroupByField: updatedSettings.features.kanbanGroupByField || 'publisher_name',
           ...updatedSettings.features
         };
         

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -104,7 +103,8 @@ const formSchema = z.object({
     lg: z.union([z.literal(2), z.literal(3), z.literal(4)]).default(3),
     xl: z.union([z.literal(3), z.literal(4), z.literal(5)]).default(4),
     xxl: z.union([z.literal(4), z.literal(5), z.literal(6)]).default(5)
-  }).optional()
+  }).optional(),
+  kanbanGroupByField: z.string().default('publisher_name')
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -208,7 +208,8 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
         lg: 3,
         xl: 4,
         xxl: 5
-      }
+      },
+      kanbanGroupByField: 'publisher_name'
     },
   });
 
@@ -231,11 +232,12 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="display">Display Options</TabsTrigger>
             <TabsTrigger value="product-fields">Product Fields</TabsTrigger>
             <TabsTrigger value="card-layout">Card Layout</TabsTrigger>
+            <TabsTrigger value="kanban-layout">Kanban Layout</TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic" className="space-y-4 pt-4">
@@ -886,6 +888,72 @@ export function CreatePresentationForm({ onSubmit, isSubmitting }: CreatePresent
               <p className="text-xs text-muted-foreground mt-2">
                 Resize your browser to see how the layout adapts to different screen sizes
               </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="kanban-layout" className="space-y-6 pt-4">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Kanban Grouping</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Choose how products will be grouped in the Kanban view
+              </p>
+              
+              <FormField
+                control={form.control}
+                name="kanbanGroupByField"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Group products by</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select grouping field" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {kanbanGroupByOptions.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Products will be grouped by the selected field in the Kanban view
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {/* Kanban Preview */}
+              <div className="pt-6 mt-4 border-t">
+                <h4 className="text-sm font-medium mb-2">Preview</h4>
+                <div className="bg-muted/30 border rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {['Group 1', 'Group 2'].map((group) => (
+                      <div key={group} className="border rounded-md p-3">
+                        <h3 className="text-sm font-medium mb-2 border-b pb-1">
+                          {kanbanGroupByOptions.find(opt => opt.value === form.watch('kanbanGroupByField'))?.label}: {group}
+                        </h3>
+                        <div className="space-y-2">
+                          {[1, 2].map((item) => (
+                            <div key={item} className="bg-background border rounded p-2 text-xs">
+                              Product {group}-{item}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  This is how products will be grouped in the Kanban view
+                </p>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
