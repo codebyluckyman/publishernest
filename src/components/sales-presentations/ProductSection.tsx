@@ -72,9 +72,9 @@ export function ProductSection({
           )}
           {allowViewToggle && enabledViews.length > 1 && (
             <ViewToggle
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              features={features}
+              value={viewMode}
+              onValueChange={setViewMode}
+              availableViews={enabledViews}
             />
           )}
         </div>
