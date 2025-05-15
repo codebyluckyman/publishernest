@@ -2,19 +2,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
-import { Product } from "@/types/product";
 import { formatPrice } from "@/utils/productUtils";
 import Image from "@/components/ui/img";
+import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
 
 interface CarouselViewProps {
   products: Array<{
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }>;
   displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }) => void;
@@ -26,7 +26,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
   const showPricing = features?.showPricing !== false;
   const showProductDetails = features?.showProductDetails !== false;
   
-  const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
+  const getDisplayValue = (product: ProductWithFormat, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
       return 'Contact for pricing';
@@ -73,7 +73,33 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
         
       // Format details
       case 'format':
-        return product.format_id || 'N/A';
+        return product.format?.format_name || 'N/A';
+      case 'format_name':
+        return product.format?.format_name || 'N/A';
+      case 'binding_type':
+        return product.format?.binding_type || 'N/A';
+      case 'cover_material':
+        return product.format?.cover_material || 'N/A';
+      case 'internal_material':
+        return product.format?.internal_material || 'N/A';
+      case 'cover_stock_print':
+        return product.format?.cover_stock_print || 'N/A';
+      case 'internal_stock_print':
+        return product.format?.internal_stock_print || 'N/A';
+      case 'orientation':
+        return product.format?.orientation || 'N/A';
+      case 'extent':
+        return product.format?.extent || 'N/A';
+      case 'tps_dimensions':
+        if (product.format?.tps_height_mm || product.format?.tps_width_mm || product.format?.tps_depth_mm) {
+          return `H: ${product.format.tps_height_mm || '-'}mm × W: ${product.format.tps_width_mm || '-'}mm × D: ${product.format.tps_depth_mm || '-'}mm`;
+        }
+        return 'N/A';
+      case 'plc_dimensions':
+        if (product.format?.tps_plc_height_mm || product.format?.tps_plc_width_mm || product.format?.tps_plc_depth_mm) {
+          return `H: ${product.format.tps_plc_height_mm || '-'}mm × W: ${product.format.tps_plc_width_mm || '-'}mm × D: ${product.format.tps_plc_depth_mm || '-'}mm`;
+        }
+        return 'N/A';
       case 'format_extras':
         if (product.format_extras && typeof product.format_extras === 'object') {
           const extras = Object.entries(product.format_extras)

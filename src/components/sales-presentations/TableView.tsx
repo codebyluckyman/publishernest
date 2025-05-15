@@ -1,5 +1,6 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Product } from "@/types/product";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
 import { formatPrice } from "@/utils/productUtils";
 import Image from "@/components/ui/img";
@@ -72,19 +73,9 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
         
       // Format details
       case 'format':
-        return product.format?.id || 'N/A';
+        return product.format?.format_name || 'N/A';
       case 'format_name':
         return product.format?.format_name || 'N/A';
-      case 'format_extras':
-        if (product.format_extras && typeof product.format_extras === 'object') {
-          const extras = Object.entries(product.format_extras)
-            .filter(([_, value]) => value === true)
-            .map(([key]) => key.replace('_', ' '));
-          return extras.length > 0 ? extras.join(', ') : 'None';
-        }
-        return 'N/A';
-      case 'format_extra_comments':
-        return product.format_extra_comments || 'N/A';
       case 'binding_type':
         return product.format?.binding_type || 'N/A';
       case 'cover_material':
@@ -100,13 +91,25 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
       case 'extent':
         return product.format?.extent || 'N/A';
       case 'tps_dimensions':
-        return product.format?.tps_height_mm && product.format?.tps_width_mm ? 
-          `H: ${product.format.tps_height_mm}mm × W: ${product.format.tps_width_mm}mm${product.format.tps_depth_mm ? ` × D: ${product.format.tps_depth_mm}mm` : ''}` : 
-          'N/A';
+        if (product.format?.tps_height_mm || product.format?.tps_width_mm || product.format?.tps_depth_mm) {
+          return `H: ${product.format.tps_height_mm || '-'}mm × W: ${product.format.tps_width_mm || '-'}mm × D: ${product.format.tps_depth_mm || '-'}mm`;
+        }
+        return 'N/A';
       case 'plc_dimensions':
-        return product.format?.tps_plc_height_mm && product.format?.tps_plc_width_mm ? 
-          `H: ${product.format.tps_plc_height_mm}mm × W: ${product.format.tps_plc_width_mm}mm${product.format.tps_plc_depth_mm ? ` × D: ${product.format.tps_plc_depth_mm}mm` : ''}` : 
-          'N/A';
+        if (product.format?.tps_plc_height_mm || product.format?.tps_plc_width_mm || product.format?.tps_plc_depth_mm) {
+          return `H: ${product.format.tps_plc_height_mm || '-'}mm × W: ${product.format.tps_plc_width_mm || '-'}mm × D: ${product.format.tps_plc_depth_mm || '-'}mm`;
+        }
+        return 'N/A';
+      case 'format_extras':
+        if (product.format_extras && typeof product.format_extras === 'object') {
+          const extras = Object.entries(product.format_extras)
+            .filter(([_, value]) => value === true)
+            .map(([key]) => key.replace('_', ' '));
+          return extras.length > 0 ? extras.join(', ') : 'None';
+        }
+        return 'N/A';
+      case 'format_extra_comments':
+        return product.format_extra_comments || 'N/A';
         
       // Content details
       case 'page_count':

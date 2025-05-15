@@ -1,19 +1,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Product } from "@/types/product";
-import Image from "@/components/ui/img";
 import { formatPrice } from "@/utils/productUtils";
+import Image from "@/components/ui/img";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
+import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
 
 interface KanbanViewProps {
   products: Array<{
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }>;
   displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }) => void;
@@ -34,7 +34,7 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
   }, {} as Record<string, typeof products>);
 
   // Helper function to format price display
-  const getPrice = (product: Product, customPrice?: number) => {
+  const getPrice = (product: ProductWithFormat, customPrice?: number) => {
     if (!showPricing) {
       return 'Contact for pricing';
     }
@@ -42,6 +42,14 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
     return customPrice !== undefined ? 
       formatPrice(customPrice, product.default_currency) : 
       product.list_price ? formatPrice(product.list_price, product.default_currency) : 'Price not available';
+  };
+
+  // Helper function to get format name if available
+  const getFormatInfo = (product: ProductWithFormat) => {
+    if (product.format) {
+      return product.format.format_name || 'No format details';
+    }
+    return '';
   };
 
   return (
@@ -79,6 +87,11 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
                     {item.product.age_range && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Age: {item.product.age_range}
+                      </p>
+                    )}
+                    {item.product.format && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Format: {getFormatInfo(item.product)}
                       </p>
                     )}
                   </div>
