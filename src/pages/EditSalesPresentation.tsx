@@ -39,6 +39,7 @@ const kanbanGroupByOptions = [
   { value: 'product_form', label: 'Format Type' },
   { value: 'age_range', label: 'Age Range' },
   { value: 'publication_date', label: 'Publication Year' },
+  { value: 'publication_month_year', label: 'Publication Month' },
   { value: 'status', label: 'Status' }
 ];
 

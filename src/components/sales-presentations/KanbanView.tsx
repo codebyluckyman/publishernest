@@ -5,6 +5,7 @@ import Image from "@/components/ui/img";
 import { formatPrice } from "@/utils/productUtils";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
 import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
+import { format, parse, isValid } from "date-fns";
 
 interface KanbanViewProps {
   products: Array<{
@@ -31,6 +32,7 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
   const groupedProducts = products.reduce((acc, item) => {
     // Get the value for the grouping field
     let groupValue: string;
+    let sortValue: any = null; // Used for chronological sorting
     
     if (groupByField === 'format') {
       // Special handling for format which needs to pull from format object
@@ -38,10 +40,30 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
     } else if (groupByField === 'age_range') {
       groupValue = item.product.age_range || 'Unspecified Age Range';
     } else if (groupByField === 'publication_date') {
-      // Format date for better display
-      groupValue = item.product.publication_date ? 
-        new Date(item.product.publication_date).getFullYear().toString() : 
-        'No Publication Date';
+      // Format year for better display
+      if (item.product.publication_date) {
+        const pubDate = new Date(item.product.publication_date);
+        groupValue = pubDate.getFullYear().toString();
+        sortValue = pubDate.getFullYear();
+      } else {
+        groupValue = 'No Publication Date';
+        sortValue = 9999; // Sort at the end
+      }
+    } else if (groupByField === 'publication_month_year') {
+      // Format as Month Year (e.g., "May 2025")
+      if (item.product.publication_date) {
+        const pubDate = new Date(item.product.publication_date);
+        if (isValid(pubDate)) {
+          groupValue = format(pubDate, 'MMMM yyyy');
+          sortValue = pubDate.getTime(); // Use timestamp for accurate sorting
+        } else {
+          groupValue = 'Invalid Date';
+          sortValue = Number.MAX_SAFE_INTEGER;
+        }
+      } else {
+        groupValue = 'No Publication Date';
+        sortValue = Number.MAX_SAFE_INTEGER; // Sort at the end
+      }
     } else if (groupByField === 'product_form') {
       groupValue = item.product.product_form || 'Unspecified Format Type';
     } else if (groupByField === 'status') {
@@ -51,12 +73,18 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
       groupValue = (item.product as any)[groupByField] || `Unknown ${groupByField}`;
     }
     
-    if (!acc[groupValue]) {
-      acc[groupValue] = [];
+    // Create group key with sort value for chronological sorting
+    const groupKey = groupValue;
+    
+    if (!acc[groupKey]) {
+      acc[groupKey] = {
+        items: [],
+        sortValue: sortValue
+      };
     }
-    acc[groupValue].push(item);
+    acc[groupKey].items.push(item);
     return acc;
-  }, {} as Record<string, typeof products>);
+  }, {} as Record<string, { items: typeof products, sortValue: any }>);
 
   // Helper function to format price display
   const getPrice = (product: ProductWithFormat, customPrice?: number) => {
@@ -87,20 +115,39 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
       case 'product_form': return 'Format Type';
       case 'age_range': return 'Age Range';
       case 'publication_date': return 'Publication Year';
+      case 'publication_month_year': return 'Publication Month';
       case 'status': return 'Status';
       default: return field.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
   };
 
+  // Sort groups chronologically if we're dealing with dates
+  let sortedGroupKeys = Object.keys(groupedProducts);
+  
+  if (groupByField === 'publication_date' || groupByField === 'publication_month_year') {
+    sortedGroupKeys = sortedGroupKeys.sort((a, b) => {
+      const groupA = groupedProducts[a];
+      const groupB = groupedProducts[b];
+      
+      // If sortValues are available, use them for comparison
+      if (groupA.sortValue !== null && groupB.sortValue !== null) {
+        return groupA.sortValue - groupB.sortValue;
+      }
+      
+      // Fallback to string comparison
+      return a.localeCompare(b);
+    });
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Object.entries(groupedProducts).map(([groupName, items]) => (
+      {sortedGroupKeys.map((groupName) => (
         <div key={groupName} className="border rounded-md p-4">
           <h3 className="text-lg font-medium mb-4 border-b pb-2">
             {getGroupDisplayName(groupByField)}: {groupName}
           </h3>
           <div className="space-y-4">
-            {items.map((item) => (
+            {groupedProducts[groupName].items.map((item) => (
               <Card 
                 key={item.product.id}
                 className="hover:shadow-md transition-shadow cursor-pointer"
