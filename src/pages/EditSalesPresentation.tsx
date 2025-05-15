@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -64,7 +63,21 @@ const defaultCarouselSettings: CarouselSettings = {
   autoplay: false,
   autoplayDelay: 3000,
   slideHeight: 192,  // 192px default height
-  showIndicators: true
+  showIndicators: true,
+  cardLayout: 'standard',
+  layoutOptions: {
+    showCover: true,
+    showSynopsis: true,
+    showSpecsTable: true,
+    imageSide: 'left',
+    includeTableBorders: true,
+    alternateRowColors: false,
+  },
+  sectionStyles: {
+    useBorders: true,
+    headerBackground: 'bg-gray-50',
+    sectionPadding: 4,
+  }
 };
 
 const defaultFeatures: PresentationFeatures = {

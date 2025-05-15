@@ -1,6 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
 import { formatPrice } from "@/utils/productUtils";
 import Image from "@/components/ui/img";
@@ -32,6 +32,24 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
   const slidesPerView = carouselSettings.slidesPerView || { sm: 1, md: 2, lg: 3 };
   const slideHeight = carouselSettings.slideHeight || 192; // Default to 192px
   const showIndicators = carouselSettings.showIndicators !== false;
+  
+  // New layout options
+  const cardLayout = carouselSettings.cardLayout || 'standard';
+  const layoutOptions = carouselSettings.layoutOptions || {
+    showCover: true,
+    showSynopsis: true,
+    showSpecsTable: true,
+    imageSide: 'left',
+    coverToDescriptionRatio: 0.4,
+    includeTableBorders: true,
+    alternateRowColors: false,
+  };
+  const sectionStyles = carouselSettings.sectionStyles || {
+    useBorders: true,
+    borderColor: 'border-gray-200',
+    headerBackground: 'bg-gray-50',
+    sectionPadding: 4,
+  };
   
   // Set up autoplay if enabled
   const [api, setApi] = useState<any>(null);
@@ -224,36 +242,113 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
         <CarouselContent>
           {products.map((item) => (
             <CarouselItem key={item.product.id} className={getSlideClass()}>
-              <Card 
-                className={`h-full overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
-                onClick={() => showProductDetails && onSelectProduct(item)}
-              >
-                {item.product.cover_image_url && (
-                  <div 
-                    className="w-full overflow-hidden" 
-                    style={{ height: `${slideHeight}px` }}
-                  >
-                    <Image
-                      src={item.product.cover_image_url}
-                      alt={item.product.title}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {cardColumns.map((column) => (
-                    <div key={column} className="flex justify-between text-sm">
-                      <span className="font-medium text-muted-foreground">
-                        {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:
-                      </span>
-                      <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
+              {cardLayout === 'standard' ? (
+                // Standard card layout (original)
+                <Card 
+                  className={`h-full overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
+                  onClick={() => showProductDetails && onSelectProduct(item)}
+                >
+                  {item.product.cover_image_url && (
+                    <div 
+                      className="w-full overflow-hidden" 
+                      style={{ height: `${slideHeight}px` }}
+                    >
+                      <Image
+                        src={item.product.cover_image_url}
+                        alt={item.product.title}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                  )}
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {cardColumns.map((column) => (
+                      <div key={column} className="flex justify-between text-sm">
+                        <span className="font-medium text-muted-foreground">
+                          {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:
+                        </span>
+                        <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ) : (
+                // Product sheet layout (new)
+                <Card 
+                  className={`h-full overflow-hidden ${showProductDetails ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}
+                  onClick={() => showProductDetails && onSelectProduct(item)}
+                >
+                  {/* Card title in header section */}
+                  <div className={`${sectionStyles.useBorders ? 'border-b' : ''} ${sectionStyles.headerBackground || 'bg-gray-50'}`}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+                    </CardHeader>
+                  </div>
+                  
+                  {/* Cover image and synopsis section */}
+                  <div className={`flex ${layoutOptions.imageSide === 'top' ? 'flex-col' : ''}`}>
+                    {/* Cover image section */}
+                    {item.product.cover_image_url && layoutOptions.showCover && (
+                      <div 
+                        className={`${layoutOptions.imageSide === 'top' ? 'w-full' : 
+                          layoutOptions.imageSide === 'left' ? 'w-2/5' : 'w-2/5 order-2'} 
+                          ${sectionStyles.useBorders ? 'border-r border-b' : ''} p-2`}
+                      >
+                        <div className="overflow-hidden" style={{ maxHeight: `${slideHeight}px` }}>
+                          <Image
+                            src={item.product.cover_image_url}
+                            alt={item.product.title}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Synopsis section */}
+                    {layoutOptions.showSynopsis && (
+                      <div 
+                        className={`${layoutOptions.imageSide === 'top' ? 'w-full' : 
+                          layoutOptions.showCover ? 'w-3/5' : 'w-full'} 
+                          ${sectionStyles.useBorders ? 'border-b' : ''} p-4`}
+                      >
+                        <h4 className="font-medium mb-1">Synopsis</h4>
+                        <p className="text-sm line-clamp-3">
+                          {item.customDescription || item.product.synopsis || 'No synopsis available'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Product details table */}
+                  {layoutOptions.showSpecsTable && (
+                    <div className="p-4">
+                      <div className={`${layoutOptions.includeTableBorders ? 'border rounded overflow-hidden' : ''}`}>
+                        <Table>
+                          <TableBody>
+                            {cardColumns.map((column, idx) => (
+                              <TableRow 
+                                key={column}
+                                className={layoutOptions.alternateRowColors && idx % 2 === 1 ? 'bg-muted/30' : ''}
+                              >
+                                <TableCell className={`py-2 font-medium w-1/3 text-sm
+                                  ${layoutOptions.includeTableBorders ? 'border-r' : ''}`}
+                                >
+                                  {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}
+                                </TableCell>
+                                <TableCell className="py-2 text-sm">
+                                  {getDisplayValue(item.product, column, item.customPrice)}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              )}
             </CarouselItem>
           ))}
         </CarouselContent>

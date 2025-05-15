@@ -142,6 +142,24 @@ export interface CarouselSettings {
   autoplayDelay?: number;  // in milliseconds
   slideHeight?: number;    // custom height for slides in pixels
   showIndicators?: boolean; // Show dots indicator for slides
+  
+  // New layout properties
+  cardLayout?: 'standard' | 'product-sheet';
+  layoutOptions?: {
+    showCover?: boolean;
+    showSynopsis?: boolean;
+    showSpecsTable?: boolean;
+    imageSide?: 'left' | 'right' | 'top';
+    coverToDescriptionRatio?: number; // From 0.2 to 0.8
+    includeTableBorders?: boolean;
+    alternateRowColors?: boolean;
+  };
+  sectionStyles?: {
+    useBorders?: boolean;
+    borderColor?: string;
+    headerBackground?: string;
+    sectionPadding?: number;
+  };
 }
 
 export interface PresentationFeatures {
