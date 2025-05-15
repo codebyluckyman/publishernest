@@ -20,9 +20,14 @@ import { QuoteExtraProductConfigurator } from "../price-breaks/QuoteExtraPriceCo
 interface ExtraCostsTabProps {
   control: Control<SupplierQuoteFormValues>;
   quoteRequest: QuoteRequest;
+  mode?: "create" | "edit";
 }
 
-export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
+export function ExtraCostsTab({
+  control,
+  quoteRequest,
+  mode,
+}: ExtraCostsTabProps) {
   const [activeTab, setActiveTab] = useState("extra-costs");
   const { getValues, watch } = useFormContext<SupplierQuoteFormValues>();
   const { unitOfMeasures } = useUnitOfMeasures();
@@ -130,14 +135,15 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                   </thead>
                   <tbody>
                     {extraCosts.map((cost, index) => {
-                      const extraCostDetails = quoteRequest.extra_costs?.find(
-                        (ec) => ec.id === cost.extra_cost_id
-                      ) || {
-                        name: "Unknown",
-                        description: "",
-                        unit_of_measure_name: "",
-                        unit_of_measure_id: "",
-                      };
+                      const extraCostDetails: any =
+                        quoteRequest.extra_costs?.find(
+                          (ec) => ec.id === cost.extra_cost_id
+                        ) || {
+                          name: "Unknown",
+                          description: "",
+                          unit_of_measure_name: "",
+                          unit_of_measure_id: "",
+                        };
 
                       // Check if this extra cost uses the price break unit of measure
                       const unitOfMeasure = unitOfMeasures.find(
@@ -169,7 +175,10 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                                     <div className="flex flex-col items-start text-left">
                                       <span className="font-medium text-sm">
                                         {extraCostDetails.name},{" "}
-                                        {extraCostDetails.unit_of_measure_name}
+                                        {mode === "edit"
+                                          ? extraCostDetails?.unit_of_measures
+                                              ?.abbreviation
+                                          : extraCostDetails.unit_of_measure_name}
                                       </span>
                                     </div>
                                   </AccordionTrigger>
@@ -209,7 +218,13 @@ export function ExtraCostsTab({ control, quoteRequest }: ExtraCostsTabProps) {
                             {extraCostDetails.description || "-"}
                           </td>
                           <td className="py-2 px-4 text-sm text-right">
-                            {extraCostDetails.unit_of_measure_name || "-"}
+                            {mode === "edit"
+                              ? extraCostDetails?.unit_of_measures?.name +
+                                " (" +
+                                extraCostDetails?.unit_of_measures
+                                  ?.abbreviation +
+                                ")"
+                              : extraCostDetails?.unit_of_measure_name || "-"}
                           </td>
                           <td className="py-2 px-4 text-sm text-right flex justify-end items-center">
                             <FormField

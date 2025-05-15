@@ -227,7 +227,7 @@ export function SupplierQuotesTable({
 
   const columns: ColumnDef<SupplierQuote>[] = [
     {
-      accessorKey: "supplier.supplier_name",
+      accessorKey: "supplier_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -668,11 +668,12 @@ export function SupplierQuotesTable({
         }
       />
 
-      {showEditDialog && selectedQuote && selectedQuote.quote_request && (
+      {/* {showEditDialog && selectedQuote && selectedQuote.quote_request && ( */}
+      {showEditDialog && selectedQuote && selectedQuote?.quote_request && (
         <SupplierQuoteDialog
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          quoteRequest={selectedQuote.quote_request as QuoteRequest}
+          quoteRequest={selectedQuote as any}
           existingQuote={selectedQuote}
           mode="edit"
         />

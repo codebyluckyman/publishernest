@@ -1,0 +1,223 @@
+CREATE VIEW test_quote_management_view AS
+SELECT
+    sq.id,
+    sq.valid_from,
+    sq.valid_to,
+    sq.organization_id,
+    sq.supplier_id,
+    sq.status,
+    sq.terms,
+    sq.remarks,
+    sq.notes,
+    sq.production_schedule,
+    sq.packaging_carton_quantity,
+    sq.packaging_carton_weight,
+    sq.packaging_carton_length,
+    sq.packaging_carton_width,
+    sq.packaging_carton_height,
+    sq.packaging_carton_volume,
+    sq.packaging_cartons_per_pallet,
+    sq.packaging_copies_per_20ft_palletized,
+    sq.packaging_copies_per_20ft_unpalletized,
+    sq.packaging_copies_per_40ft_palletized,
+    sq.packaging_copies_per_40ft_unpalletized,
+    qr.title,
+    qr.description,
+    qr.requested_by,
+    qr.requested_at,
+    sq.updated_at,
+    sq.created_at,
+    qr.due_date,
+    qr.products,
+    qr.quantities,
+    qr.currency,
+    qr.supplier_ids,
+    qr.reference_id,
+    sq.reference,
+    qr.production_schedule_requested,
+    qr.required_step_id,
+    qr.required_step_date,
+    (
+      SELECT json_build_object(
+        'id', qr2.id,
+        'title', qr2.title,
+        'description', qr2.description,
+        'due_date', qr2.due_date,
+        'formats', (
+          SELECT COALESCE(json_agg(
+            json_build_object(
+              'id', qrf.id,
+              'format_id', qrf.format_id,
+              'format', (
+                SELECT json_build_object(
+                  'id', f.id,
+                  'format_name', f.format_name
+                )
+                FROM formats f
+                WHERE f.id = qrf.format_id
+              ),
+              'products', (
+                SELECT COALESCE(json_agg(
+                  json_build_object(
+                    'id', qrfp.id,
+                    'product_id', qrfp.product_id,
+                    'quantity', qrfp.quantity,
+                    'notes', qrfp.notes
+                  )
+                ), '[]'::json)
+                FROM quote_request_format_products qrfp
+                WHERE qrfp.quote_request_format_id = qrf.id
+              )
+            )
+          ), '[]'::json)
+          FROM quote_request_formats qrf
+          WHERE qrf.quote_request_id = qr2.id
+        )
+      )
+      FROM quote_requests qr2
+      WHERE qr2.id = sq.quote_request_id
+    ) AS quote_request,
+    -- Formats array
+    (
+      SELECT COALESCE(json_agg(
+        json_build_object(
+          'id', qrf.id,
+          'notes', qrf.notes,
+          'format', json_build_object(
+            'id', f.id,
+            'format_name', f.format_name
+          ),
+          'products', (
+            SELECT COALESCE(json_agg(
+              json_build_object(
+                'id', qrfp.id,
+                'product_id', qrfp.product_id,
+                'quantity', qrfp.quantity,
+                'notes', qrfp.notes
+              )
+            ), '[]'::json)
+            FROM quote_request_format_products qrfp
+            WHERE qrfp.quote_request_format_id = qrf.id
+          ),
+          'format_id', qrf.format_id,
+          'num_products', (
+            SELECT COUNT(*)
+            FROM quote_request_format_products qrfp2
+            WHERE qrfp2.quote_request_format_id = qrf.id
+          ),
+          'price_breaks', (
+            SELECT COALESCE(json_agg(
+                json_build_object(
+                    'id', sqpbp.id,
+                    'quantity', sqpb.quantity,
+                    'num_products', sqpbp.num_products,
+                    'unit_cost', sqpb.unit_cost,
+                    'unit_cost_1', sqpb.unit_cost_1,
+                    'unit_cost_2', sqpb.unit_cost_2,
+                    'unit_cost_3', sqpb.unit_cost_3,
+                    'unit_cost_4', sqpb.unit_cost_4,
+                    'unit_cost_5', sqpb.unit_cost_5,
+                    'unit_cost_6', sqpb.unit_cost_6,
+                    'unit_cost_7', sqpb.unit_cost_7,
+                    'unit_cost_8', sqpb.unit_cost_8,
+                    'unit_cost_9', sqpb.unit_cost_9,
+                    'unit_cost_10', sqpb.unit_cost_10
+                )
+            ), '[]'::json)
+            FROM supplier_quote_price_breaks sqpb
+            JOIN quote_request_format_price_breaks sqpbp ON sqpbp.id = sqpb.price_break_id
+            WHERE sqpb.supplier_quote_id = sq.id AND sqpb.quote_request_format_id = qrf.id
+        ),
+          'format_name', f.format_name
+        )
+      ), '[]'::json)
+      FROM quote_request_formats qrf
+      JOIN formats f ON qrf.format_id = f.id
+      WHERE qrf.quote_request_id = qr.id
+    ) AS formats,
+    -- Extra Costs array
+    (
+      SELECT COALESCE(json_agg(
+        json_build_object(
+          'id', ec.id,
+          'quote_request_id', ec.quote_request_id,
+          'name', ec.name,
+          'unit_cost', sqec.unit_cost, 
+          'description', ec.description,
+          'unit_of_measure_id', ec.unit_of_measure_id,
+          'unit_of_measures', json_build_object(
+            'id', uom.id,
+            'name', uom.name,
+            'abbreviation', uom.abbreviation
+          ),
+          'price_breaks', (
+            SELECT COALESCE(json_agg(
+              json_build_object(
+                'id', ecpb.id,
+                'quantity', ecpb.quantity,
+                'unit_cost', ecpb.unit_cost,
+                'unit_cost_1', ecpb.unit_cost_1,
+                'unit_cost_2', ecpb.unit_cost_2,
+                'unit_cost_3', ecpb.unit_cost_3,
+                'unit_cost_4', ecpb.unit_cost_4,
+                'unit_cost_5', ecpb.unit_cost_5,
+                'unit_cost_6', ecpb.unit_cost_6,
+                'unit_cost_7', ecpb.unit_cost_7,
+                'unit_cost_8', ecpb.unit_cost_8,
+                'unit_cost_9', ecpb.unit_cost_9,
+                'unit_cost_10', ecpb.unit_cost_10,
+                'unit_of_measure_id', ecpb.unit_of_measure_id
+              )
+            ), '[]'::json)
+            FROM supplier_quote_extra_cost_price_breaks ecpb
+            WHERE ecpb.extra_cost_id = ec.id
+              AND ecpb.supplier_quote_id = sq.id
+          )
+        )
+      ), '[]'::json)
+      FROM quote_request_extra_costs ec
+      LEFT JOIN unit_of_measures uom ON ec.unit_of_measure_id = uom.id
+      LEFT JOIN supplier_quote_extra_costs sqec ON sqec.extra_cost_id = ec.id AND sqec.supplier_quote_id = sq.id
+      WHERE ec.quote_request_id = qr.id
+    ) AS extra_costs,
+    -- Savings array
+    (
+      SELECT COALESCE(json_agg(
+        json_build_object(
+          'id', s.id,
+          'quote_request_id', s.quote_request_id,
+          'name', s.name,
+          'description', s.description,
+          'unit_of_measure_id', s.unit_of_measure_id,
+          'unit_of_measure_name', json_build_object(
+            'id', uom2.id,
+            'name', uom2.name,
+            'abbreviation', uom2.abbreviation
+          )
+        )
+      ), '[]'::json)
+      FROM quote_request_savings s
+      LEFT JOIN unit_of_measures uom2 ON s.unit_of_measure_id = uom2.id
+      WHERE s.quote_request_id = qr.id
+    ) AS savings,
+    -- Required step object
+    (
+      SELECT json_build_object(
+        'id', rs.id,
+        'step_name', rs.step_name
+      )
+      FROM organization_production_steps rs
+      WHERE rs.id = qr.required_step_id
+    ) AS required_step,
+    -- Supplier names array
+    (
+      SELECT COALESCE(json_agg(s2.supplier_name), '[]'::json)
+      FROM suppliers s2
+      WHERE s2.id = ANY(qr.supplier_ids)
+    ) AS supplier_names,
+    -- Single supplier name for this quote
+    s.supplier_name
+FROM supplier_quotes sq
+JOIN suppliers s ON sq.supplier_id = s.id
+JOIN quote_requests qr ON sq.quote_request_id = qr.id
+;

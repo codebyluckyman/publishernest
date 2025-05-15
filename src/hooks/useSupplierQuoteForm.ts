@@ -134,14 +134,55 @@ export function useSupplierQuoteForm({
   const [isFormComplete, setIsFormComplete] = useState(false);
 
   // Initialize extra costs if needed
-  const extraCosts = initialValues.extra_costs || [];
+  let extraCosts = initialValues.extra_costs || [];
 
   // Initialize savings if needed
   const savings = initialValues.savings || [];
 
-  // Log current state of extra costs and savings from initialValues (for debugging)
-  console.log("Initial extra costs:", extraCosts);
-  console.log("Initial savings:", savings);
+  //handle extra costs and savigns in edit mode
+  if (
+    mode === "edit" &&
+    quoteRequest.extra_costs &&
+    quoteRequest.extra_costs.length > 0
+  ) {
+    const transformedExtraCosts = (initialValues.extra_costs || []).map(
+      (extraCost: any) => {
+        // Ensure price_breaks exists and is an array
+        const priceBreaks = Array.isArray(extraCost?.price_breaks)
+          ? extraCost.price_breaks
+          : [];
+        return {
+          ...extraCost,
+          // Provide fallback empty array and handle null/undefined
+          unit_cost_1: priceBreaks.map((pb) => pb?.unit_cost_1 ?? null),
+          unit_cost_2: priceBreaks.map((pb) => pb?.unit_cost_2 ?? null),
+          unit_cost_3: priceBreaks.map((pb) => pb?.unit_cost_3 ?? null),
+          unit_cost_4: priceBreaks.map((pb) => pb?.unit_cost_4 ?? null),
+          unit_cost_5: priceBreaks.map((pb) => pb?.unit_cost_5 ?? null),
+          unit_cost_6: priceBreaks.map((pb) => pb?.unit_cost_6 ?? null),
+          unit_cost_7: priceBreaks.map((pb) => pb?.unit_cost_7 ?? null),
+          unit_cost_8: priceBreaks.map((pb) => pb?.unit_cost_8 ?? null),
+          unit_cost_9: priceBreaks.map((pb) => pb?.unit_cost_9 ?? null),
+          unit_cost_10: priceBreaks.map((pb) => pb?.unit_cost_10 ?? null),
+        };
+      }
+    );
+
+    const updatedExtraCosts = transformedExtraCosts.map((extraCost) => ({
+      extra_cost_id: extraCost.id,
+      unit_cost: extraCost.unit_cost,
+      unit_of_measure_id: extraCost.unit_of_measure_id || null,
+      // Include all unit_cost arrays in the final object
+      ...Object.fromEntries(
+        Array.from({ length: 10 }, (_, i) => [
+          `unit_cost_${i + 1}`,
+          extraCost[`unit_cost_${i + 1}`] || [],
+        ])
+      ),
+    }));
+
+    extraCosts = updatedExtraCosts;
+  }
 
   // Handle extra costs initialization
   if (
@@ -156,7 +197,6 @@ export function useSupplierQuoteForm({
       );
 
       const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
-
       if (isInventoryUnit) {
         console.log(`Adding inventory unit extra cost: ${extraCost.name}`);
         extraCosts.push({
@@ -179,11 +219,61 @@ export function useSupplierQuoteForm({
           extra_cost_id: extraCost.id,
           unit_cost: null,
           unit_of_measure_id: extraCost.unit_of_measure_id || null,
-          // unit_of_measure_id: extraCost.unit_of_measure_id || null,
         });
       }
     });
   }
+
+  // if (quoteRequest.extra_costs && quoteRequest.extra_costs.length > 0) {
+  //   // For create mode or when extraCosts is empty
+  //   if (extraCosts.length === 0 || mode === "create") {
+  //     quoteRequest.extra_costs.forEach((extraCost) => {
+  //       const unitOfMeasure = unitOfMeasures.find(
+  //         (unit) => unit.id === extraCost.unit_of_measure_id
+  //       );
+
+  //       const isInventoryUnit = unitOfMeasure?.is_inventory_unit || false;
+
+  //       if (isInventoryUnit) {
+  //         extraCosts.push({
+  //           extra_cost_id: extraCost.id,
+  //           unit_cost: null,
+  //           unit_cost_1: null,
+  //           unit_cost_2: null,
+  //           unit_cost_3: null,
+  //           unit_cost_4: null,
+  //           unit_cost_5: null,
+  //           unit_cost_6: null,
+  //           unit_cost_7: null,
+  //           unit_cost_8: null,
+  //           unit_cost_9: null,
+  //           unit_cost_10: null,
+  //           unit_of_measure_id: extraCost.unit_of_measure_id || null,
+  //         });
+  //       } else {
+  //         extraCosts.push({
+  //           extra_cost_id: extraCost.id,
+  //           unit_cost: null,
+  //           unit_of_measure_id: extraCost.unit_of_measure_id || null,
+  //         });
+  //       }
+  //     });
+  //   } else {
+  //     // For edit mode, ensure we have all required extra costs
+  //     quoteRequest.extra_costs.forEach((extraCost) => {
+  //       const existingCost = extraCosts.find(
+  //         (ec) => ec.extra_cost_id === extraCost.id
+  //       );
+  //       if (!existingCost) {
+  //         extraCosts.push({
+  //           extra_cost_id: extraCost.id,
+  //           unit_cost: null,
+  //           unit_of_measure_id: extraCost.unit_of_measure_id || null,
+  //         });
+  //       }
+  //     });
+  //   }
+  // }
 
   // Handle savings initialization
   if (
@@ -232,6 +322,7 @@ export function useSupplierQuoteForm({
       ...initialValues,
       price_breaks: initialValues.price_breaks || [],
       extra_costs: extraCosts,
+      // extra_costs: extraCosts,
       savings: savings,
       packaging_carton_quantity:
         initialValues.packaging_carton_quantity || null,
@@ -250,15 +341,10 @@ export function useSupplierQuoteForm({
         initialValues.packaging_copies_per_20ft_unpalletized || null,
       packaging_copies_per_40ft_unpalletized:
         initialValues.packaging_copies_per_40ft_unpalletized || null,
+      id: initialValues.id || null,
+      quote_request_id: initialValues.quote_request_id || null,
     },
   });
-
-  // Log the form values for extra costs and savings after initialization
-  console.log(
-    "Extra costs after form initialization:",
-    form.getValues("extra_costs")
-  );
-  console.log("Savings after form initialization:", form.getValues("savings"));
 
   // Set required production schedule steps if any
   useEffect(() => {

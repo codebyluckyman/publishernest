@@ -212,7 +212,7 @@ export async function fetchSupplierQuotes(
       : null;
 
   // Call the RPC function with filters
-  const { data, error } = await supabase.rpc("search_quotes", {
+  const { data, error } = await supabase.rpc("test_search_quotes", {
     search_title,
     filter_supplier_name,
     filter_format_id,
@@ -244,21 +244,22 @@ export async function fetchSupplierQuotes(
   }
 
   // Transform the data to match the SupplierQuote type
-  const formattedQuotes = filteredData.map((quote) => {
-    const formattedFormats: SupplierQuoteFormat[] =
-      quote.formats?.map((format: any) => ({
-        id: format.id,
-        supplier_quote_id: format.supplier_quote_id,
-        format_id: format.format_id,
-        quote_request_format_id: format.quote_request_format_id,
-        format_name: format.format?.format_name || "Unknown Format",
-      })) || [];
 
-    return {
-      ...quote,
-      formats: formattedFormats,
-    } as SupplierQuote;
-  });
+  // const formattedQuotes = filteredData.map((quote) => {
+  //   const formattedFormats: SupplierQuoteFormat[] =
+  //     quote.formats?.map((format: any) => ({
+  //       id: format.id,
+  //       supplier_quote_id: format.supplier_quote_id,
+  //       format_id: format.format_id,
+  //       quote_request_format_id: format.quote_request_format_id,
+  //       format_name: format.format?.format_name || "Unknown Format",
+  //     })) || [];
 
-  return formattedQuotes;
+  //   return {
+  //     ...quote,
+  //     formats: formattedFormats,
+  //   } as SupplierQuote;
+  // });
+
+  return filteredData;
 }
