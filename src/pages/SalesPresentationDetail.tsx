@@ -27,7 +27,8 @@ const defaultFeatures: PresentationFeatures = {
   showPricing: true,
   allowDownload: false,
   cardWidthType: 'responsive',
-  cardGridLayout: defaultCardGridLayout
+  cardGridLayout: defaultCardGridLayout,
+  kanbanGroupByField: 'publisher_name'
 };
 
 // Default display settings to ensure type safety
@@ -86,7 +87,9 @@ const SalesPresentationDetail = () => {
       // Start with default features
       ...defaultFeatures,
       // Override with any features from the presentation
-      ...(displaySettings.features || {})
+      ...(displaySettings.features || {}),
+      // Ensure kanbanGroupByField is preserved from the existing settings or use default
+      kanbanGroupByField: displaySettings.features?.kanbanGroupByField || defaultFeatures.kanbanGroupByField
     }
   };
 

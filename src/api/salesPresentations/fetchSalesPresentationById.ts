@@ -107,7 +107,8 @@ const defaultDisplaySettings: PresentationDisplaySettings = {
     showPricing: true,
     allowDownload: false,
     cardWidthType: 'responsive' as CardWidthType,
-    cardGridLayout: defaultCardGridLayout
+    cardGridLayout: defaultCardGridLayout,
+    kanbanGroupByField: 'publisher_name'
   }
 };
 
@@ -204,6 +205,9 @@ function mergeFeatures(features: any): PresentationFeatures {
       ? features.cardWidthType as CardWidthType
       : defaultFeatures.cardWidthType,
     cardGridLayout: cardGridLayout,
+    kanbanGroupByField: typeof features.kanbanGroupByField === 'string'
+      ? features.kanbanGroupByField
+      : defaultFeatures.kanbanGroupByField,
     ...(features.customCss ? { customCss: features.customCss } : {}),
     ...(features.cardWidthType === 'fixed' && typeof features.fixedCardWidth === 'number' 
       ? { fixedCardWidth: features.fixedCardWidth } 
