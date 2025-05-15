@@ -401,8 +401,8 @@ export function ProductSection({
               <CardContent className="space-y-2">
                 {cardColumns.map((column) => (
                   <div key={column} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{getDisplayName(column)}:</span>
-                    <span className="font-medium text-right ml-2">{getDisplayValue(item.product, column, item.customPrice)}</span>
+                    <span className="text-muted-foreground font-medium">{getDisplayName(column)}:</span>
+                    <span className="text-right ml-2">{getDisplayValue(item.product, column, item.customPrice)}</span>
                   </div>
                 ))}
               </CardContent>
@@ -440,8 +440,8 @@ export function ProductSection({
               <CardContent className="space-y-2">
                 {cardColumns.map((column) => (
                   <div key={column} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{getDisplayName(column)}:</span>
-                    <span className="font-medium text-right ml-2">{getDisplayValue(item.product, column, item.customPrice)}</span>
+                    <span className="text-muted-foreground font-medium">{getDisplayName(column)}:</span>
+                    <span className="text-right ml-2">{getDisplayValue(item.product, column, item.customPrice)}</span>
                   </div>
                 ))}
               </CardContent>
