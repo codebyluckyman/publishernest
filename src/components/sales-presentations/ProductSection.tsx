@@ -500,6 +500,7 @@ export function ProductSection({
           {viewMode === 'kanban' && enabledViews.includes('kanban') && (
             <KanbanView 
               products={products}
+              displaySettings={displaySettings}
               onSelectProduct={handleProductSelection}
             />
           )}
