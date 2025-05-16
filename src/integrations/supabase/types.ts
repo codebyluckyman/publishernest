@@ -976,7 +976,6 @@ export type Database = {
           product_form_detail: string | null
           publication_date: string | null
           publisher_name: string | null
-          selling_points: Json | null
           series_name: string | null
           status: string
           subject_code: string | null
@@ -1017,7 +1016,6 @@ export type Database = {
           product_form_detail?: string | null
           publication_date?: string | null
           publisher_name?: string | null
-          selling_points?: Json | null
           series_name?: string | null
           status?: string
           subject_code?: string | null
@@ -1058,7 +1056,6 @@ export type Database = {
           product_form_detail?: string | null
           publication_date?: string | null
           publisher_name?: string | null
-          selling_points?: Json | null
           series_name?: string | null
           status?: string
           subject_code?: string | null

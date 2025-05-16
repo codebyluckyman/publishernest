@@ -68,8 +68,6 @@ export function useProductsWithFormats() {
         ...product,
         default_price: product.list_price,
         default_currency: product.currency_code || 'USD',
-        // Ensure selling_points is properly formatted as an array of strings
-        selling_points: Array.isArray(product.selling_points) ? product.selling_points : []
       }));
       
       return productsWithDefaults as unknown as ProductWithFormat[];

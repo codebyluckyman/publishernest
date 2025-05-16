@@ -33,8 +33,6 @@ export const productSchema = z.object({
   age_range: z.string().optional(),
   synopsis: z.string().optional(),
   license: z.string().optional(),
-  // New selling points field
-  selling_points: z.array(z.string()).optional().default([]),
   // Updated to use dynamic format extras
   format_extras: z.array(z.object({
     id: z.string().optional(),
@@ -115,7 +113,6 @@ export const defaultProductValues: ProductFormValues = {
   age_range: "",
   synopsis: "",
   license: "",
-  selling_points: [],
   // Updated to use dynamic format extras
   format_extras: [],
   format_extra_comments: null,

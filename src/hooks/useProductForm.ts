@@ -46,13 +46,6 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
                   : data.format_extras)
               : defaultProductValues.format_extras;
               
-            // Parse selling_points from JSON if it exists, otherwise use default
-            const sellingPoints = data.selling_points
-              ? (typeof data.selling_points === 'string'
-                  ? JSON.parse(data.selling_points)
-                  : data.selling_points)
-              : defaultProductValues.selling_points;
-              
             form.reset({
               ...data,
               publication_date: publicationDate,
@@ -76,7 +69,6 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               license: data.license || "",
               format_extras: formatExtras,
               format_extra_comments: data.format_extra_comments || null,
-              selling_points: sellingPoints || [],
             });
           }
         } catch (err: any) {
@@ -102,18 +94,12 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       // Clean up the format_id field - if it's an empty string, set it to null
       const cleanedFormatId = values.format_id === "" ? null : values.format_id;
       
-      // Ensure selling_points is properly formatted for the database
-      // It should be a JSONB array in the database, so we need to make sure it's properly formatted
-      const formattedSellingPoints = values.selling_points || [];
-      console.log("Selling points before formatting:", formattedSellingPoints);
-      
       const formattedValues = {
         ...values,
         title: values.title,
         publication_date: values.publication_date ? formatDateToYYYYMMDD(values.publication_date) : null,
         organization_id: currentOrganization.id,
         format_id: cleanedFormatId, // Use the cleaned format_id
-        selling_points: formattedSellingPoints, // Use the formatted selling points
       };
 
       console.log("Submitting product with values:", formattedValues);
@@ -138,7 +124,6 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       }
       
       if (result.error) {
-        console.error("Supabase error:", result.error);
         throw result.error;
       }
       
@@ -147,7 +132,6 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       
       return { success: true, productId: submittedProductId };
     } catch (error: any) {
-      console.error("Error in product submission:", error);
       toast.error(`Failed to ${isEditMode ? "update" : "create"} product: ${error.message}`);
       return { success: false, productId: null };
     } finally {
