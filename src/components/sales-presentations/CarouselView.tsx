@@ -270,9 +270,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                         <span className="font-medium text-muted-foreground">
                           {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:
                         </span>
-                        <span className="text-right truncate max-w-[60%]">
-                          {getDisplayValue(item.product, column, item.customPrice)}
-                        </span>
+                        <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
                       </div>
                     ))}
                   </CardContent>
@@ -337,12 +335,12 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                                 key={column}
                                 className={layoutOptions.alternateRowColors && idx % 2 === 1 ? 'bg-muted/30' : ''}
                               >
-                                <TableCell className={`py-2 font-medium w-1/3 text-sm break-words
+                                <TableCell className={`py-2 font-medium w-1/3 text-sm
                                   ${layoutOptions.includeTableBorders ? 'border-r' : ''}`}
                                 >
                                   {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}
                                 </TableCell>
-                                <TableCell className="py-2 text-sm break-words truncate">
+                                <TableCell className="py-2 text-sm">
                                   {getDisplayValue(item.product, column, item.customPrice)}
                                 </TableCell>
                               </TableRow>

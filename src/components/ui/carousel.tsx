@@ -161,8 +161,7 @@ const CarouselContent = React.forwardRef<
         ref={ref}
         className={cn(
           "flex",
-          // Remove negative margins and use gap instead
-          orientation === "horizontal" ? "gap-4" : "flex-col gap-4",
+          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
           className
         )}
         {...props}
@@ -185,7 +184,7 @@ const CarouselItem = React.forwardRef<
       aria-roledescription="slide"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        // Remove padding as we're using gap in CarouselContent instead
+        orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       )}
       {...props}

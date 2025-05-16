@@ -10,7 +10,7 @@ interface GalleryViewProps {
 
 export function GalleryView({ products, onProductClick }: GalleryViewProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full overflow-x-hidden">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {products.map((product) => (
         <Card 
           key={product.id} 
@@ -36,7 +36,7 @@ export function GalleryView({ products, onProductClick }: GalleryViewProps) {
             </div>
             <div className="p-4">
               <h4 className="font-medium line-clamp-2">{product.title}</h4>
-              <p className="text-sm text-muted-foreground truncate">
+              <p className="text-sm text-muted-foreground">
                 {product.isbn13 || product.isbn10 || "No ISBN"}
               </p>
             </div>
