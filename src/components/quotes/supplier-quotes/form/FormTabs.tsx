@@ -11,12 +11,14 @@ import { ExtraCostsTab } from "./ExtraCostsTab";
 
 interface FormTabsProps {
   control: Control<SupplierQuoteFormValues>;
-  quoteRequest: QuoteRequest;
+  quoteRequest: any;
+  // quoteRequest: QuoteRequest;
   selectedSupplier: Supplier | null;
   activeTab: string;
   setActiveTab: (value: string) => void;
   currencies: { label: string; value: string }[];
   form: UseFormReturn<SupplierQuoteFormValues>;
+  mode?: "create" | "edit";
 }
 
 export function FormTabs({
@@ -26,10 +28,16 @@ export function FormTabs({
   activeTab,
   setActiveTab,
   currencies,
-  form
-}: FormTabsProps) {  
+  form,
+  mode,
+}: FormTabsProps) {
   return (
-    <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs
+      defaultValue="details"
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full"
+    >
       <TabsList className="grid grid-cols-5">
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="pricing">Pricing</TabsTrigger>
@@ -37,42 +45,38 @@ export function FormTabs({
         <TabsTrigger value="production">Schedule</TabsTrigger>
         <TabsTrigger value="packaging">Packaging</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="details" className="space-y-4 pt-4">
-        <DetailsTab 
-          control={control} 
+        <DetailsTab
+          control={control}
           quoteRequest={quoteRequest}
           selectedSupplier={selectedSupplier}
           currencies={currencies}
         />
       </TabsContent>
-      
+
       <TabsContent value="pricing" className="space-y-4 pt-4">
-        <PricingTab 
-          control={control}
-          quoteRequest={quoteRequest}
-        />
+        <PricingTab control={control} quoteRequest={quoteRequest} />
       </TabsContent>
-      
+
       <TabsContent value="extra-costs" className="space-y-4 pt-4">
-        <ExtraCostsTab 
+        <ExtraCostsTab
           control={control}
           quoteRequest={quoteRequest}
+          mode={mode}
         />
       </TabsContent>
-      
+
       <TabsContent value="production" className="space-y-4 pt-4">
-        <ProductionScheduleSection 
+        <ProductionScheduleSection
           control={control}
           scheduleRequested={quoteRequest.production_schedule_requested}
           selectedSupplier={selectedSupplier}
         />
       </TabsContent>
-      
+
       <TabsContent value="packaging" className="space-y-4 pt-4">
-        <PackagingTab 
-          control={control}
-        />
+        <PackagingTab control={control} />
       </TabsContent>
     </Tabs>
   );

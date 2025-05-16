@@ -1,0 +1,22 @@
+CREATE OR REPLACE FUNCTION test_search_quotes(
+    search_title text DEFAULT NULL,
+    filter_supplier_name text DEFAULT NULL,
+    filter_format_id text DEFAULT NULL
+)
+RETURNS SETOF test_quote_management_view AS $$
+BEGIN
+  RETURN QUERY
+  SELECT *
+  FROM test_quote_management_view
+  WHERE
+    (search_title IS NULL OR title ILIKE '%' || search_title || '%')
+    AND (filter_supplier_name IS NULL OR supplier_name ILIKE '%' || filter_supplier_name || '%')
+    AND (
+      filter_format_id IS NULL OR EXISTS (
+        SELECT 1
+        FROM json_array_elements(formats::json) AS elem
+        WHERE (elem->>'format_id') = filter_format_id
+      )
+    );
+END;
+$$ LANGUAGE plpgsql STABLE;

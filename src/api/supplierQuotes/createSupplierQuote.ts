@@ -5,7 +5,7 @@ import {
 } from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
-async function insertSupplierQuoteExtraCostPriceBreaks(
+export async function insertSupplierQuoteExtraCostPriceBreaks(
   supplierQuoteId: string,
   extraCosts: any[]
 ): Promise<void> {
@@ -453,15 +453,15 @@ export async function createSupplierQuote(
         unit_of_measure_id: ec.unit_of_measure_id,
       }));
 
-    // if (standardCostsToInsert.length > 0) {
-    //   const { error: extraCostsError } = await supabase
-    //     .from("supplier_quote_extra_costs")
-    //     .insert(standardCostsToInsert);
+    if (standardCostsToInsert.length > 0) {
+      const { error: extraCostsError } = await supabase
+        .from("supplier_quote_extra_costs")
+        .insert(standardCostsToInsert);
 
-    //   if (extraCostsError) {
-    //     console.error("Error inserting standard extra costs:", extraCostsError);
-    //   }
-    // }
+      if (extraCostsError) {
+        console.error("Error inserting standard extra costs:", extraCostsError);
+      }
+    }
 
     if (priceBreakCostsToInsert.length > 0) {
       const { error: priceBreakError } = await supabase

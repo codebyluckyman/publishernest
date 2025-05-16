@@ -23,6 +23,7 @@ export interface SupplierQuotePriceBreak {
   unit_cost_8?: number | null;
   unit_cost_9?: number | null;
   unit_cost_10?: number | null;
+  num_products?: number | null;
 }
 
 export interface SupplierQuoteExtraCost {
@@ -30,7 +31,6 @@ export interface SupplierQuoteExtraCost {
   supplier_quote_id?: string;
   extra_cost_id: string;
   unit_cost?: number | null;
-  // unit_cost_array?: SupplierQuoteExtraCostEachType[]
   unit_cost_1?: number[] | null;
   unit_cost_2?: number[] | null;
   unit_cost_3?: number[] | null;
@@ -44,11 +44,34 @@ export interface SupplierQuoteExtraCost {
   unit_of_measure_id?: string | null;
 }
 
-export interface SupplierQuoteExtraCostEachType {
-  quantity: number | null;
-  unit_cost: number | null;
-}
-
+// export interface SupplierQuoteExtraCost {
+//   id?: string;
+//   quote_request_id?: string;
+//   name: string;
+//   description: string | null;
+//   unit_of_measure_id: string;
+//   unit_of_measures?: {
+//     id: string;
+//     name: string;
+//     abbreviation: string;
+//   };
+//   price_breaks: {
+//     id: string;
+//     quantity: number;
+//     unit_cost: number | null;
+//     unit_cost_1: number | null;
+//     unit_cost_2: number | null;
+//     unit_cost_3: number | null;
+//     unit_cost_4: number | null;
+//     unit_cost_5: number | null;
+//     unit_cost_6: number | null;
+//     unit_cost_7: number | null;
+//     unit_cost_8: number | null;
+//     unit_cost_9: number | null;
+//     unit_cost_10: number | null;
+//     unit_of_measure_id: string;
+//   }[];
+// }
 export interface SupplierQuoteSaving {
   id?: string;
   supplier_quote_id?: string;
@@ -152,7 +175,8 @@ export interface SupplierQuoteAttachment {
 }
 
 export interface SupplierQuoteFormValues {
-  quote_request_id: string;
+  quote_request_id?: string;
+  id?: string;
   supplier_id: string;
   notes?: string;
   currency: string;
@@ -181,4 +205,6 @@ export interface SupplierQuoteFormValues {
   extra_costs?: SupplierQuoteExtraCost[];
   savings?: SupplierQuoteSaving[];
   special?: number;
+
+  status: SupplierQuoteStatus;
 }
