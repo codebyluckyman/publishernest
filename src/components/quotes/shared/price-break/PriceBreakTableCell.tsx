@@ -3,6 +3,7 @@ import { FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Control, useFormContext } from "react-hook-form";
 import { formatCurrency } from "@/utils/formatters";
 import { TableCell } from "@/components/ui/table";
+import { useRef } from "react";
 
 interface PriceBreakTableCellProps {
   productIndex: number;
@@ -32,6 +33,25 @@ export function PriceBreakTableCell({
   const formContext = useFormContext();
   const unitCostKey = `unit_cost_${productIndex + 1}`;
   const costFieldName = `${fieldArrayName}.${fieldIndex}.${unitCostKey}`;
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Tab") {
+      const inputs = Array.from(
+        document.querySelectorAll<HTMLInputElement>(
+          "input:not([disabled]):not([readonly])"
+        )
+      );
+      const currentIndex = inputs.indexOf(e.currentTarget);
+
+      if (currentIndex >= 0) {
+        e.preventDefault();
+        const nextIndex = e.shiftKey ? currentIndex - 1 : currentIndex + 1;
+        inputs[nextIndex]?.focus();
+      }
+    }
+  };
 
   if (isReadOnly) {
     return (
@@ -80,11 +100,12 @@ export function PriceBreakTableCell({
                     }
                   }}
                   disabled={useSingleCostForAll}
-                  tabIndex={fieldIndex * productLength! + productIndex + 1}
+                  // tabIndex={fieldIndex * productLength! + productIndex + 1}
                   ref={(input) => {
-                    input?.blur();
-                    input?.focus({ preventScroll: true });
+                    // input?.blur();
+                    // input?.focus({ preventScroll: true });
                   }}
+                  onKeyDown={handleKeyDown}
                 />
               </FormControl>
             </FormItem>
@@ -116,11 +137,12 @@ export function PriceBreakTableCell({
                   field.onChange(value);
                 }}
                 disabled={useSingleProductCost || useSingleCostForAll}
-                tabIndex={fieldIndex * productLength! + productIndex + 1}
+                // tabIndex={fieldIndex * productLength! + productIndex + 1}
                 ref={(input) => {
-                  input?.blur();
-                  input?.focus({ preventScroll: true });
+                  // input?.blur();
+                  // input?.focus({ preventScroll: true });
                 }}
+                onKeyDown={handleKeyDown}
               />
             </FormControl>
           </FormItem>
