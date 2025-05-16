@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Product } from "@/types/product";
 import Image from "@/components/ui/img";
@@ -170,7 +169,7 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
                   <div>
                     <h4 className="font-medium line-clamp-2 text-sm">{item.product.title}</h4>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {item.product.isbn13 || 'No ISBN'} 
+                      {item.product.isbn13 ? `ISBN-13: ${item.product.isbn13}` : 'No ISBN'} 
                       {showPricing ? ` • ${getPrice(item.product, item.customPrice)}` : ''}
                     </p>
                     {item.product.age_range && (

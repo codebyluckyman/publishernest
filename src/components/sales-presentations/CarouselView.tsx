@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -80,6 +79,15 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
         slidesPerView.lg === 3 ? 'xl:basis-1/3' : 
         'xl:basis-1/4'}
     `;
+  };
+  
+  // Function to format column display names
+  const getColumnDisplayName = (column: string) => {
+    if (column === 'isbn13') return 'ISBN-13';
+    if (column === 'isbn10') return 'ISBN-10';
+    
+    // Default formatting for other columns
+    return column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ');
   };
   
   const getDisplayValue = (product: ProductWithFormat, column: string, customPrice?: number) => {
@@ -268,7 +276,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                     {cardColumns.map((column) => (
                       <div key={column} className="flex justify-between text-sm">
                         <span className="font-medium text-muted-foreground">
-                          {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:
+                          {getColumnDisplayName(column)}:
                         </span>
                         <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
                       </div>
@@ -338,7 +346,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                                 <TableCell className={`py-2 font-medium w-1/3 text-sm
                                   ${layoutOptions.includeTableBorders ? 'border-r' : ''}`}
                                 >
-                                  {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}
+                                  {getColumnDisplayName(column)}
                                 </TableCell>
                                 <TableCell className="py-2 text-sm">
                                   {getDisplayValue(item.product, column, item.customPrice)}
