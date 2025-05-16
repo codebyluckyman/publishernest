@@ -148,6 +148,8 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
   // Combine all data into a single supplier quote object
   const supplierQuote: SupplierQuote = {
     ...quoteData,
+    supplier_name: quoteData.supplier?.supplier_name || null,
+    title: quoteRequest?.title || null,
     quote_request: quoteRequest || null,
     formats: processedFormats,
     attachments: processedAttachments,

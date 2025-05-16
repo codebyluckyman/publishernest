@@ -1,4 +1,10 @@
 
+export interface FormatExtra {
+  name: string;
+  description?: string;
+  unit_of_measure_id?: string;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -21,8 +27,54 @@ export interface Product {
     embossing: boolean;
     die_cut: boolean;
     holographic: boolean;
-  };
+  } | FormatExtra[];
   format_extra_comments?: string | null;
+  
+  // Physical properties
+  height_measurement?: number | null;
+  width_measurement?: number | null;
+  thickness_measurement?: number | null;
+  weight_measurement?: number | null;
+  
+  // Carton information
+  carton_quantity?: number | null;
+  carton_length_mm?: number | null;
+  carton_width_mm?: number | null;
+  carton_height_mm?: number | null;
+  carton_weight_kg?: number | null;
+  
+  // Additional properties
+  subtitle?: string | null;
+  synopsis?: string | null;
+  series_name?: string | null;
+  age_range?: string | null;
+  license?: string | null;
+  language_code?: string | null;
+  subject_code?: string | null;
+  product_availability_code?: string | null;
+  product_form_detail?: string | null;
+  status?: string | null;
+  page_count?: number | null;
+  edition_number?: number | null;
+  
+  // Format information - referenced from the formats table
+  format?: {
+    id: string;
+    format_name: string | null;
+    tps_height_mm: number | null;
+    tps_width_mm: number | null;
+    tps_depth_mm: number | null;
+    tps_plc_height_mm: number | null;
+    tps_plc_width_mm: number | null;
+    tps_plc_depth_mm: number | null;
+    extent: string | null;
+    binding_type: string | null;
+    cover_material: string | null;
+    internal_material: string | null;
+    cover_stock_print: string | null;
+    internal_stock_print: string | null;
+    orientation: string | null;
+  } | null;
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';

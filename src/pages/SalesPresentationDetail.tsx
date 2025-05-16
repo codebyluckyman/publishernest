@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -6,6 +5,64 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
+import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardGridLayout, CarouselSettings } from '@/types/salesPresentation';
+
+// Default values for display settings
+const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
+const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'];
+const defaultViewMode: PresentationViewMode = 'card';
+const defaultCardGridLayout: CardGridLayout = {
+  sm: 1 as const,
+  md: 2 as const,
+  lg: 3 as const,
+  xl: 4 as const,
+  xxl: 5 as const
+};
+
+// Default carousel settings
+const defaultCarouselSettings: CarouselSettings = {
+  slidesPerView: { sm: 1, md: 2, lg: 3 },
+  autoplay: false,
+  autoplayDelay: 3000,
+  slideHeight: 192,
+  showIndicators: true,
+  cardLayout: 'standard',
+  layoutOptions: {
+    showCover: true,
+    showSynopsis: true,
+    showSpecsTable: true,
+    imageSide: 'left',
+    includeTableBorders: true,
+    alternateRowColors: false,
+  },
+  sectionStyles: {
+    useBorders: true,
+    headerBackground: 'bg-gray-50',
+    sectionPadding: 4,
+  }
+};
+
+// Default features
+const defaultFeatures: PresentationFeatures = {
+  enabledViews: ['card', 'table'],
+  allowViewToggle: true,
+  showProductDetails: true,
+  showPricing: true,
+  allowDownload: false,
+  cardWidthType: 'responsive',
+  cardGridLayout: defaultCardGridLayout,
+  carouselSettings: defaultCarouselSettings,
+  kanbanGroupByField: 'publisher_name'
+};
+
+// Default display settings to ensure type safety
+const defaultDisplaySettings: PresentationDisplaySettings = {
+  cardColumns: defaultCardColumns,
+  dialogColumns: defaultDialogColumns,
+  defaultView: defaultViewMode,
+  features: defaultFeatures
+};
 
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +81,9 @@ const SalesPresentationDetail = () => {
       await publishMutation.mutateAsync({ id });
     }
   };
+  
+  // Log what we got from the API for debugging
+  console.log("SalesPresentationDetail - raw presentation data:", presentation?.display_settings);
 
   if (isLoading) {
     return <div>Loading presentation...</div>;
@@ -32,6 +92,36 @@ const SalesPresentationDetail = () => {
   if (isError || !presentation) {
     return <div>Error loading presentation</div>;
   }
+
+  // If presentation is loaded, use its display settings or fall back to defaults
+  const displaySettings = presentation.display_settings || { ...defaultDisplaySettings };
+  
+  // Process display settings to ensure all required properties are present
+  const processedDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: Array.isArray(displaySettings.cardColumns) 
+      ? displaySettings.cardColumns
+      : defaultCardColumns,
+    
+    dialogColumns: Array.isArray(displaySettings.dialogColumns) 
+      ? displaySettings.dialogColumns
+      : defaultDialogColumns,
+    
+    defaultView: displaySettings.defaultView || defaultViewMode,
+    
+    features: {
+      // Start with default features
+      ...defaultFeatures,
+      // Override with any features from the presentation
+      ...(displaySettings.features || {}),
+      // Ensure carouselSettings is preserved or use default
+      carouselSettings: displaySettings.features?.carouselSettings || defaultCarouselSettings,
+      // Ensure kanbanGroupByField is preserved or use default
+      kanbanGroupByField: displaySettings.features?.kanbanGroupByField || defaultFeatures.kanbanGroupByField
+    }
+  };
+
+  // Log processed display settings for debugging
+  console.log("SalesPresentationDetail - processed display settings:", processedDisplaySettings);
 
   return (
     <div className="space-y-6">
@@ -85,22 +175,22 @@ const SalesPresentationDetail = () => {
         )}
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">
-            {presentation.description || 'No description provided.'}
-          </p>
-        </CardContent>
-      </Card>
+      {presentation.description && (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">
+              {presentation.description}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Placeholder for presentation content editor */}
-      <div className="bg-gray-50 p-6 rounded-lg border border-dashed border-gray-300 text-center">
-        <h2 className="text-lg font-medium mb-4">Presentation Content Editor</h2>
-        <p className="text-muted-foreground mb-4">
-          This is a placeholder for the presentation content editor. In a full implementation, 
-          you would be able to add sections, products, formats, and other content here.
-        </p>
-        <Button onClick={handleEdit}>Edit Presentation</Button>
+      <div className="mt-8">
+        <PresentationSections
+          presentationId={id!}
+          isEditable={presentation.status === 'draft'}
+          displaySettings={processedDisplaySettings}
+        />
       </div>
     </div>
   );
