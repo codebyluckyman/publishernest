@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { CardGridLayout, PresentationDisplaySettings, PresentationViewMode, CardWidthType } from '@/types/salesPresentation';
+import { CardGridLayout, PresentationDisplaySettings, PresentationViewMode, CardWidthType, CarouselSettings } from '@/types/salesPresentation';
 
 interface UpdateSalesPresentationParams {
   id: string;
@@ -42,6 +42,29 @@ export async function updateSalesPresentation({
       
       console.log("Update Sales Presentation - Display settings before processing:", updatedSettings);
       
+      // Define default carousel settings
+      const defaultCarouselSettings: CarouselSettings = {
+        slidesPerView: { sm: 1, md: 2, lg: 3 },
+        autoplay: false,
+        autoplayDelay: 3000,
+        slideHeight: 192,
+        showIndicators: true,
+        cardLayout: 'standard',
+        layoutOptions: {
+          showCover: true,
+          showSynopsis: true,
+          showSpecsTable: true,
+          imageSide: 'left',
+          includeTableBorders: true,
+          alternateRowColors: false,
+        },
+        sectionStyles: {
+          useBorders: true,
+          headerBackground: 'bg-gray-50',
+          sectionPadding: 4,
+        }
+      };
+      
       // Ensure features object exists with defaults
       if (!updatedSettings.features) {
         updatedSettings.features = {
@@ -54,19 +77,45 @@ export async function updateSalesPresentation({
           kanbanGroupByField: 'publisher_name'
         };
       } else {
-        // Ensure required feature flags exist with defaults
+        // IMPORTANT: First spread the updated features, then apply defaults for missing props
+        // This ensures user settings take precedence over defaults
         updatedSettings.features = {
-          enabledViews: updatedSettings.features.enabledViews !== undefined 
-            ? updatedSettings.features.enabledViews 
-            : ['card', 'table', 'carousel', 'kanban'],
-          allowViewToggle: updatedSettings.features.allowViewToggle !== false,
-          showProductDetails: updatedSettings.features.showProductDetails !== false,
-          showPricing: updatedSettings.features.showPricing !== false,
-          allowDownload: updatedSettings.features.allowDownload || false,
-          cardWidthType: updatedSettings.features.cardWidthType || 'responsive',
-          kanbanGroupByField: updatedSettings.features.kanbanGroupByField || 'publisher_name',
+          // Default values
+          enabledViews: ['card', 'table', 'carousel', 'kanban'],
+          allowViewToggle: true,
+          showProductDetails: true,
+          showPricing: true,
+          allowDownload: false,
+          cardWidthType: 'responsive' as CardWidthType,
+          kanbanGroupByField: 'publisher_name',
+          // Override with provided values (moved this spread AFTER the defaults)
           ...updatedSettings.features
         };
+        
+        // Process carousel settings specifically to ensure nested objects are preserved
+        if (updatedSettings.features.carouselSettings) {
+          console.log("Update Sales Presentation - Carousel settings before processing:", updatedSettings.features.carouselSettings);
+          
+          // Merge carousel settings with defaults, preserving nested objects
+          updatedSettings.features.carouselSettings = {
+            ...defaultCarouselSettings,
+            ...updatedSettings.features.carouselSettings,
+            // Handle nested objects separately to ensure they merge properly
+            layoutOptions: {
+              ...defaultCarouselSettings.layoutOptions,
+              ...(updatedSettings.features.carouselSettings.layoutOptions || {})
+            },
+            sectionStyles: {
+              ...defaultCarouselSettings.sectionStyles,
+              ...(updatedSettings.features.carouselSettings.sectionStyles || {})
+            }
+          };
+          
+          console.log("Update Sales Presentation - Carousel settings after processing:", updatedSettings.features.carouselSettings);
+        } else {
+          // If no carousel settings provided, use defaults
+          updatedSettings.features.carouselSettings = defaultCarouselSettings;
+        }
         
         // Process card width settings
         if (updatedSettings.features.cardWidthType === 'fixed') {
