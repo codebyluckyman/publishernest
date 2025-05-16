@@ -9,7 +9,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuote } from "@/types/supplierQuote";
-import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
+import { SupplierQuoteDetails } from "@/components/quotes/supplier-quotes/SupplierQuoteDetails";
 import { SupplierQuoteAuditHistory } from "../SupplierQuoteAuditHistory";
 
 interface SupplierQuoteDetailsSheetProps {
