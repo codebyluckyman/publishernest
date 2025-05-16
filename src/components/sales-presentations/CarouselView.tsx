@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -234,9 +235,9 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
   };
   
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-hidden">
       <Carousel 
-        className="w-full px-12" 
+        className="w-full relative" 
         setApi={setApi}
       >
         <CarouselContent>
@@ -354,8 +355,8 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="-left-2" />
-        <CarouselNext className="-right-2" />
+        <CarouselPrevious className="left-0 -translate-x-1/2" />
+        <CarouselNext className="right-0 translate-x-1/2" />
       </Carousel>
       
       {/* Show indicators if enabled */}
