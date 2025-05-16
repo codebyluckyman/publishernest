@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Control, UseFormReturn } from "react-hook-form";
 import { QuoteRequest } from "@/types/quoteRequest";
@@ -36,9 +37,9 @@ export function FormTabs({
       defaultValue="details"
       value={activeTab}
       onValueChange={setActiveTab}
-      className="w-full"
+      className="w-full max-w-full overflow-hidden"
     >
-      <TabsList className="grid grid-cols-5">
+      <TabsList className="grid grid-cols-5 w-full max-w-full">
         <TabsTrigger value="details">Details</TabsTrigger>
         <TabsTrigger value="pricing">Pricing</TabsTrigger>
         <TabsTrigger value="extra-costs">Extra Costs & Savings</TabsTrigger>
