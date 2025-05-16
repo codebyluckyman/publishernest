@@ -1,4 +1,3 @@
-
 export interface FormatExtra {
   name: string;
   description?: string;
@@ -75,6 +74,8 @@ export interface Product {
     internal_stock_print: string | null;
     orientation: string | null;
   } | null;
+  
+  selling_points?: string[] | null;
 }
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';

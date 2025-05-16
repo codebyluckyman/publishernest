@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,6 +45,13 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
                   : data.format_extras)
               : defaultProductValues.format_extras;
               
+            // Parse selling_points from JSON if it exists, otherwise use default
+            const sellingPoints = data.selling_points
+              ? (typeof data.selling_points === 'string'
+                  ? JSON.parse(data.selling_points)
+                  : data.selling_points)
+              : defaultProductValues.selling_points;
+              
             form.reset({
               ...data,
               publication_date: publicationDate,
@@ -69,6 +75,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               license: data.license || "",
               format_extras: formatExtras,
               format_extra_comments: data.format_extra_comments || null,
+              selling_points: sellingPoints || [],
             });
           }
         } catch (err: any) {

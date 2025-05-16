@@ -220,6 +220,11 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
       // Additional information
       case 'synopsis':
         return product.synopsis || 'N/A';
+      case 'selling_points':
+        if (product.selling_points && Array.isArray(product.selling_points) && product.selling_points.length > 0) {
+          return product.selling_points;
+        }
+        return 'N/A';
       case 'subtitle':
         return product.subtitle || 'N/A';
       case 'series_name':
@@ -240,6 +245,24 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
       default:
         return 'N/A';
     }
+  };
+  
+  // Function to render selling points as bullet list
+  const renderSellingPoints = (product: ProductWithFormat) => {
+    if (!product.selling_points || !Array.isArray(product.selling_points) || product.selling_points.length === 0) {
+      return null;
+    }
+    
+    return (
+      <div className="mt-3">
+        <h5 className="font-medium text-sm mb-1">Key Selling Points:</h5>
+        <ul className="list-disc pl-5 text-sm space-y-1">
+          {product.selling_points.map((point, idx) => (
+            <li key={idx}>{point}</li>
+          ))}
+        </ul>
+      </div>
+    );
   };
   
   return (
@@ -317,7 +340,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                       </div>
                     )}
                     
-                    {/* Synopsis section */}
+                    {/* Synopsis and selling points section */}
                     {layoutOptions.showSynopsis && (
                       <div 
                         className={`${layoutOptions.imageSide === 'top' ? 'w-full' : 
@@ -328,6 +351,9 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                         <p className="text-sm line-clamp-3">
                           {item.customDescription || item.product.synopsis || 'No synopsis available'}
                         </p>
+                        
+                        {/* Render selling points */}
+                        {renderSellingPoints(item.product)}
                       </div>
                     )}
                   </div>
