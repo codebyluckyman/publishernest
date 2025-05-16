@@ -101,7 +101,23 @@ const defaultCarouselSettings: CarouselSettings = {
   autoplay: false,
   autoplayDelay: 3000,
   slideHeight: 192,  // 192px default height
-  showIndicators: true
+  showIndicators: true,
+  cardLayout: 'standard', // Add default cardLayout
+  layoutOptions: {     // Add default layoutOptions
+    showCover: true,
+    showSynopsis: true,
+    showSpecsTable: true,
+    imageSide: 'left',
+    coverToDescriptionRatio: 0.4, // Default ratio
+    includeTableBorders: true,
+    alternateRowColors: false
+  },
+  sectionStyles: {    // Add default sectionStyles
+    useBorders: true, 
+    borderColor: 'gray',
+    headerBackground: 'bg-gray-50',
+    sectionPadding: 4
+  }
 };
 
 const defaultDisplaySettings: PresentationDisplaySettings = {
@@ -218,7 +234,66 @@ function sanitizeCarouselSettings(carouselSettings: any): CarouselSettings {
       
     showIndicators: typeof carouselSettings.showIndicators === 'boolean'
       ? carouselSettings.showIndicators
-      : defaultCarouselSettings.showIndicators
+      : defaultCarouselSettings.showIndicators,
+      
+    // Add support for cardLayout
+    cardLayout: (typeof carouselSettings.cardLayout === 'string' && 
+                ['standard', 'product-sheet'].includes(carouselSettings.cardLayout))
+      ? carouselSettings.cardLayout
+      : defaultCarouselSettings.cardLayout,
+      
+    // Add support for layoutOptions with defaults
+    layoutOptions: {
+      showCover: typeof carouselSettings.layoutOptions?.showCover === 'boolean'
+        ? carouselSettings.layoutOptions.showCover
+        : defaultCarouselSettings.layoutOptions!.showCover,
+        
+      showSynopsis: typeof carouselSettings.layoutOptions?.showSynopsis === 'boolean'
+        ? carouselSettings.layoutOptions.showSynopsis
+        : defaultCarouselSettings.layoutOptions!.showSynopsis,
+        
+      showSpecsTable: typeof carouselSettings.layoutOptions?.showSpecsTable === 'boolean'
+        ? carouselSettings.layoutOptions.showSpecsTable
+        : defaultCarouselSettings.layoutOptions!.showSpecsTable,
+        
+      imageSide: (typeof carouselSettings.layoutOptions?.imageSide === 'string' &&
+                 ['left', 'right', 'top'].includes(carouselSettings.layoutOptions.imageSide))
+        ? carouselSettings.layoutOptions.imageSide
+        : defaultCarouselSettings.layoutOptions!.imageSide,
+        
+      coverToDescriptionRatio: typeof carouselSettings.layoutOptions?.coverToDescriptionRatio === 'number' &&
+                              carouselSettings.layoutOptions.coverToDescriptionRatio >= 0.2 &&
+                              carouselSettings.layoutOptions.coverToDescriptionRatio <= 0.8
+        ? carouselSettings.layoutOptions.coverToDescriptionRatio
+        : defaultCarouselSettings.layoutOptions!.coverToDescriptionRatio,
+        
+      includeTableBorders: typeof carouselSettings.layoutOptions?.includeTableBorders === 'boolean'
+        ? carouselSettings.layoutOptions.includeTableBorders
+        : defaultCarouselSettings.layoutOptions!.includeTableBorders,
+        
+      alternateRowColors: typeof carouselSettings.layoutOptions?.alternateRowColors === 'boolean'
+        ? carouselSettings.layoutOptions.alternateRowColors
+        : defaultCarouselSettings.layoutOptions!.alternateRowColors,
+    },
+    
+    // Add support for sectionStyles with defaults
+    sectionStyles: {
+      useBorders: typeof carouselSettings.sectionStyles?.useBorders === 'boolean'
+        ? carouselSettings.sectionStyles.useBorders
+        : defaultCarouselSettings.sectionStyles!.useBorders,
+        
+      borderColor: typeof carouselSettings.sectionStyles?.borderColor === 'string'
+        ? carouselSettings.sectionStyles.borderColor
+        : defaultCarouselSettings.sectionStyles!.borderColor,
+        
+      headerBackground: typeof carouselSettings.sectionStyles?.headerBackground === 'string'
+        ? carouselSettings.sectionStyles.headerBackground
+        : defaultCarouselSettings.sectionStyles!.headerBackground,
+        
+      sectionPadding: typeof carouselSettings.sectionStyles?.sectionPadding === 'number'
+        ? carouselSettings.sectionStyles.sectionPadding
+        : defaultCarouselSettings.sectionStyles!.sectionPadding,
+    }
   };
   
   return sanitizedSettings;
