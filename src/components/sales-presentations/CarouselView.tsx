@@ -289,18 +289,20 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                   
                   {/* Cover image and synopsis section */}
                   <div className={`flex ${layoutOptions.imageSide === 'top' ? 'flex-col' : ''}`}>
-                    {/* Cover image section */}
+                    {/* Cover image section - FIXED TO PREVENT STRETCHING */}
                     {item.product.cover_image_url && layoutOptions.showCover && (
                       <div 
                         className={`${layoutOptions.imageSide === 'top' ? 'w-full' : 
                           layoutOptions.imageSide === 'left' ? 'w-2/5' : 'w-2/5 order-2'} 
-                          ${sectionStyles.useBorders ? 'border-r border-b' : ''} p-2`}
+                          ${sectionStyles.useBorders ? 'border-r border-b' : ''} p-2 flex items-center justify-center`}
+                        style={{ height: layoutOptions.imageSide === 'top' ? 'auto' : `${slideHeight}px` }}
                       >
-                        <div className="overflow-hidden" style={{ maxHeight: `${slideHeight}px` }}>
+                        <div className="relative flex items-center justify-center h-full">
                           <Image
                             src={item.product.cover_image_url}
                             alt={item.product.title}
-                            className="w-full h-full object-contain"
+                            className="max-w-full max-h-full object-contain"
+                            style={{ maxHeight: `${slideHeight - 20}px` }} // Subtract padding
                           />
                         </div>
                       </div>
