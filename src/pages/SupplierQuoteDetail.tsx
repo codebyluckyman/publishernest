@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, FileText } from "lucide-react";
 import { SupplierQuoteDetail } from "@/components/quotes/supplier-quotes/view/SupplierQuoteDetail";
+import { SupplierQuoteAuditHistory } from "@/components/quotes/supplier-quotes/SupplierQuoteAuditHistory";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogContent, AlertDialogAction, AlertDialogCancel, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +31,7 @@ const SupplierQuoteDetailPage = () => {
   
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [showAuditHistory, setShowAuditHistory] = useState(false);
   
   const isPublisher = currentOrganization?.organization_type === 'publisher';
   
@@ -164,13 +166,21 @@ const SupplierQuoteDetailPage = () => {
         </Button>
       </div>
       
-      <SupplierQuoteDetail 
-        quote={quote} 
-        isPublisher={isPublisher}
-        onSubmit={quote.status === 'draft' ? handleSubmit : undefined}
-        onApprove={quote.status === 'submitted' && isPublisher ? handleApprove : undefined}
-        onReject={quote.status === 'submitted' && isPublisher ? handleOpenRejectDialog : undefined}
-      />
+      {showAuditHistory ? (
+        <SupplierQuoteAuditHistory 
+          supplierQuoteId={quote.id} 
+          onBack={() => setShowAuditHistory(false)} 
+        />
+      ) : (
+        <SupplierQuoteDetail 
+          quote={quote} 
+          isPublisher={isPublisher}
+          onSubmit={quote.status === 'draft' ? handleSubmit : undefined}
+          onApprove={quote.status === 'submitted' && isPublisher ? handleApprove : undefined}
+          onReject={quote.status === 'submitted' && isPublisher ? handleOpenRejectDialog : undefined}
+          onShowHistory={() => setShowAuditHistory(true)}
+        />
+      )}
       
       <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <AlertDialogContent>
@@ -206,6 +216,6 @@ const SupplierQuoteDetailPage = () => {
       </AlertDialog>
     </div>
   );
-};
+}
 
 export default SupplierQuoteDetailPage;
