@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { CreatePresentationForm } from '@/components/sales-presentations/CreatePresentationForm';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
+import { CardGridLayout, PresentationViewMode, CardWidthType } from '@/types/salesPresentation';
 
 const CreateSalesPresentation = () => {
   const navigate = useNavigate();
@@ -18,9 +19,43 @@ const CreateSalesPresentation = () => {
     try {
       setError(null);
       
+      // Process cardGridLayout if exists (explicitly convert values to the union types)
+      let processedCardGridLayout: CardGridLayout | undefined = undefined;
+      
+      if (formData.cardGridLayout) {
+        processedCardGridLayout = {
+          sm: formData.cardGridLayout.sm as 1 | 2,
+          md: formData.cardGridLayout.md as 1 | 2 | 3,
+          lg: formData.cardGridLayout.lg as 2 | 3 | 4,
+          xl: formData.cardGridLayout.xl as 3 | 4 | 5,
+          xxl: formData.cardGridLayout.xxl as 4 | 5 | 6
+        };
+      }
+      
+      // Extract card width settings
+      const cardWidthType = formData.cardWidthType as CardWidthType;
+      const fixedCardWidth = cardWidthType === 'fixed' ? formData.fixedCardWidth : undefined;
+      
+      const displaySettings = {
+        cardColumns: formData.cardColumns,
+        dialogColumns: formData.dialogColumns,
+        defaultView: formData.defaultView as PresentationViewMode,
+        features: {
+          enabledViews: formData.enabledViews,
+          allowViewToggle: formData.allowViewToggle,
+          showProductDetails: formData.showProductDetails,
+          allowDownload: formData.allowDownload,
+          showPricing: formData.showPricing,
+          cardWidthType,
+          ...(fixedCardWidth && { fixedCardWidth }),
+          ...(processedCardGridLayout && { cardGridLayout: processedCardGridLayout })
+        }
+      };
+      
       const result = await createPresentation.mutateAsync({
         title: formData.title,
-        description: formData.description
+        description: formData.description,
+        displaySettings
       });
       
       if (result) {
@@ -68,6 +103,6 @@ const CreateSalesPresentation = () => {
       </Card>
     </div>
   );
-};
+}
 
 export default CreateSalesPresentation;

@@ -137,24 +137,25 @@
 //   }
 
 //   // Transform the data to match the SupplierQuote type
-//   const formattedQuotes =
-//     data?.map((quote) => {
-//       // Format the formats array to ensure it has format_name
-//       const formattedFormats: SupplierQuoteFormat[] =
-//         quote.formats?.map((format: any) => ({
-//           id: format.id,
-//           supplier_quote_id: format.supplier_quote_id,
-//           format_id: format.format_id,
-//           quote_request_format_id: format.quote_request_format_id,
-//           format_name: format.format?.format_name || "Unknown Format",
-//         })) || [];
+//   const formattedQuotes = data?.map((quote) => {
+//     // Format the formats array to ensure it has format_name
+//     const formattedFormats: SupplierQuoteFormat[] =
+//       quote.formats && Array.isArray(quote.formats)
+//         ? quote.formats.map((format: any) => ({
+//             id: format.id,
+//             supplier_quote_id: format.supplier_quote_id,
+//             format_id: format.format_id,
+//             quote_request_format_id: format.quote_request_format_id,
+//             format_name: format.format?.format_name || "Unknown Format",
+//           }))
+//         : [];
 
-//       // Return a properly typed SupplierQuote
-//       return {
-//         ...quote,
-//         formats: formattedFormats,
-//       } as SupplierQuote;
-//     }) || [];
+//     // Return a properly typed SupplierQuote
+//     return {
+//       ...quote,
+//       formats: formattedFormats,
+//     } as SupplierQuote;
+//   }) || [];
 
 //   return formattedQuotes;
 // }
@@ -244,7 +245,7 @@ export async function fetchSupplierQuotes(
   }
 
   // Transform the data to match the SupplierQuote type
-
+  
   // const formattedQuotes = filteredData.map((quote) => {
   //   const formattedFormats: SupplierQuoteFormat[] =
   //     quote.formats?.map((format: any) => ({

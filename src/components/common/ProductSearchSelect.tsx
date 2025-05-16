@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils';
 
 interface ProductSearchSelectProps {
   value?: string;
+  selectedProductIds?: string[];
+  multiple?: boolean;
   onChange: (value: string, product: Product) => void;
   disabled?: boolean;
   placeholder?: string;
@@ -22,6 +24,8 @@ interface ProductSearchSelectProps {
 
 export function ProductSearchSelect({
   value,
+  selectedProductIds = [],
+  multiple = false,
   onChange,
   disabled = false,
   placeholder = "Select a product",
@@ -32,8 +36,12 @@ export function ProductSearchSelect({
   const { products, isLoading } = useProducts();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
-  // Find the currently selected product
-  const selectedProduct = value ? products?.find(product => product.id === value) : undefined;
+  // Find the currently selected product(s)
+  const selectedProducts = products?.filter(product => 
+    multiple 
+      ? selectedProductIds.includes(product.id)
+      : product.id === value
+  ) || [];
 
   // Filter products based on search term
   useEffect(() => {
@@ -50,6 +58,12 @@ export function ProductSearchSelect({
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
 
+  const getDisplayText = () => {
+    if (selectedProducts.length === 0) return placeholder;
+    if (!multiple) return selectedProducts[0]?.title;
+    return `${selectedProducts.length} product${selectedProducts.length === 1 ? '' : 's'} selected`;
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
@@ -61,7 +75,7 @@ export function ProductSearchSelect({
           className={cn("w-full justify-between", className)}
         >
           <span className="truncate">
-            {selectedProduct ? selectedProduct.title : placeholder}
+            {getDisplayText()}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -86,7 +100,9 @@ export function ProductSearchSelect({
                       value={`${product.title} ${product.isbn13 || ''}`}
                       onSelect={() => {
                         onChange(product.id, product);
-                        setOpen(false);
+                        if (!multiple) {
+                          setOpen(false);
+                        }
                       }}
                     >
                       <div className="flex flex-col text-left">
@@ -94,7 +110,9 @@ export function ProductSearchSelect({
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              value === product.id ? "opacity-100" : "opacity-0"
+                              multiple
+                                ? selectedProductIds.includes(product.id) ? "opacity-100" : "opacity-0"
+                                : value === product.id ? "opacity-100" : "opacity-0"
                             )}
                           />
                           <span className="font-medium">{product.title}</span>
