@@ -69,11 +69,19 @@ export function FormatSpecifications({ format, isLoading, hide = false }: Format
           
           {format.cover_stock_print && (
             <div>
-              <p className="text-muted-foreground">Cover:</p>
+              <p className="text-muted-foreground">Cover Print Specifications:</p>
               <p>{format.cover_stock_print}</p>
             </div>
           )}
-          
+
+          {format.cover_material && (
+            <div>
+              <p className="text-muted-foreground">Cover Material:</p>
+              <p>{format.cover_material}</p>
+            </div>
+          )}
+                    
+
           {format.internal_stock_print && (
             <div>
               <p className="text-muted-foreground">Internal:</p>
