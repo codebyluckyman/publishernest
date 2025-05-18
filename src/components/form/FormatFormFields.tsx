@@ -10,7 +10,8 @@ import { CoverSpecificationsSection } from "./format-sections/CoverSpecification
 import { InternalSpecificationsSection } from "./format-sections/InternalSpecificationsSection";
 import { BindingSection } from "./format-sections/BindingSection";
 import { ComponentsSection } from "./format-sections/ComponentsSection";
-import { EndPapersAndSpacersSection } from "./format-sections/EndPapersAndSpacersSection";
+import { EndPapersSection } from "./format-sections/EndPapersSection";
+import { SpacersSection } from "./format-sections/SpacersSection";
 
 interface FormatFormFieldsProps {
   form: UseFormReturn<FormatFormValues>;
@@ -48,7 +49,10 @@ export function FormatFormFields({ form, formatId, readOnly = false }: FormatFor
       <InternalSpecificationsSection form={form} readOnly={readOnly} />
       
       <Separator />
-      <EndPapersAndSpacersSection form={form} readOnly={readOnly} />
+      <EndPapersSection form={form} readOnly={readOnly} />
+      
+      <Separator />
+      <SpacersSection form={form} readOnly={readOnly} />
       
       <Separator />
       <BindingSection form={form} readOnly={readOnly} />
