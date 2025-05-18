@@ -13,7 +13,7 @@ export function InternalSpecificationsSection({ form, readOnly = false }: Intern
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Internal Specifications</h3>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="internal_stock_print"
