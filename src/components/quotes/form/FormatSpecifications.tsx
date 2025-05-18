@@ -80,6 +80,34 @@ export function FormatSpecifications({ format, isLoading, hide = false }: Format
               <p>{format.internal_stock_print}</p>
             </div>
           )}
+          
+          {format.end_papers_material && (
+            <div>
+              <p className="text-muted-foreground">End Papers Material:</p>
+              <p>{format.end_papers_material}</p>
+            </div>
+          )}
+          
+          {format.end_papers_print && (
+            <div>
+              <p className="text-muted-foreground">End Papers Print:</p>
+              <p>{format.end_papers_print}</p>
+            </div>
+          )}
+          
+          {format.spacers_material && (
+            <div>
+              <p className="text-muted-foreground">Spacers Material:</p>
+              <p>{format.spacers_material}</p>
+            </div>
+          )}
+          
+          {format.spacers_stock_print && (
+            <div>
+              <p className="text-muted-foreground">Spacers Print:</p>
+              <p>{format.spacers_stock_print}</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

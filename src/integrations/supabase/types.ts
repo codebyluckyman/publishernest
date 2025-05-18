@@ -359,6 +359,8 @@ export type Database = {
           cover_material: string | null
           cover_stock_print: string | null
           created_at: string
+          end_papers_material: string | null
+          end_papers_print: string | null
           extent: string | null
           format_name: string
           id: string
@@ -366,6 +368,8 @@ export type Database = {
           internal_stock_print: string | null
           organization_id: string
           orientation: string | null
+          spacers_material: string | null
+          spacers_stock_print: string | null
           tps_depth_mm: number | null
           tps_height_mm: number | null
           tps_plc_depth_mm: number | null
@@ -379,6 +383,8 @@ export type Database = {
           cover_material?: string | null
           cover_stock_print?: string | null
           created_at?: string
+          end_papers_material?: string | null
+          end_papers_print?: string | null
           extent?: string | null
           format_name: string
           id?: string
@@ -386,6 +392,8 @@ export type Database = {
           internal_stock_print?: string | null
           organization_id: string
           orientation?: string | null
+          spacers_material?: string | null
+          spacers_stock_print?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null
@@ -399,6 +407,8 @@ export type Database = {
           cover_material?: string | null
           cover_stock_print?: string | null
           created_at?: string
+          end_papers_material?: string | null
+          end_papers_print?: string | null
           extent?: string | null
           format_name?: string
           id?: string
@@ -406,6 +416,8 @@ export type Database = {
           internal_stock_print?: string | null
           organization_id?: string
           orientation?: string | null
+          spacers_material?: string | null
+          spacers_stock_print?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null
@@ -976,6 +988,7 @@ export type Database = {
           product_form_detail: string | null
           publication_date: string | null
           publisher_name: string | null
+          selling_points: Json | null
           series_name: string | null
           status: string
           subject_code: string | null
@@ -1016,6 +1029,7 @@ export type Database = {
           product_form_detail?: string | null
           publication_date?: string | null
           publisher_name?: string | null
+          selling_points?: Json | null
           series_name?: string | null
           status?: string
           subject_code?: string | null
@@ -1056,6 +1070,7 @@ export type Database = {
           product_form_detail?: string | null
           publication_date?: string | null
           publisher_name?: string | null
+          selling_points?: Json | null
           series_name?: string | null
           status?: string
           subject_code?: string | null

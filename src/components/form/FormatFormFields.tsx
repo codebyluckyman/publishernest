@@ -10,6 +10,7 @@ import { PrintingSection } from "./format-sections/PrintingSection";
 import { MaterialSection } from "./format-sections/MaterialSection";
 import { BindingSection } from "./format-sections/BindingSection";
 import { ComponentsSection } from "./format-sections/ComponentsSection";
+import { EndPapersAndSpacersSection } from "./format-sections/EndPapersAndSpacersSection";
 
 interface FormatFormFieldsProps {
   form: UseFormReturn<FormatFormValues>;
@@ -48,6 +49,9 @@ export function FormatFormFields({ form, formatId, readOnly = false }: FormatFor
       
       <Separator />
       <BindingSection form={form} readOnly={readOnly} />
+
+      <Separator />
+      <EndPapersAndSpacersSection form={form} readOnly={readOnly} />
 
       {/* Only show components section when the format has been saved */}
       {formatId && (
