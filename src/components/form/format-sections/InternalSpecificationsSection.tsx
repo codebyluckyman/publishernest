@@ -1,7 +1,7 @@
 
 import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { FormatFormValues } from "@/hooks/useFormatForm";
 
 interface InternalSpecificationsSectionProps {
@@ -21,7 +21,7 @@ export function InternalSpecificationsSection({ form, readOnly = false }: Intern
             <FormItem>
               <FormLabel>Interior Print Specifications</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., 1-color black" {...field} disabled={readOnly} />
+                <Input placeholder="e.g., 1-color black" {...field} disabled={readOnly} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -35,7 +35,7 @@ export function InternalSpecificationsSection({ form, readOnly = false }: Intern
             <FormItem>
               <FormLabel>Interior Material</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., 60# white offset" {...field} disabled={readOnly} />
+                <Input placeholder="e.g., 60# white offset" {...field} disabled={readOnly} />
               </FormControl>
               <FormMessage />
             </FormItem>

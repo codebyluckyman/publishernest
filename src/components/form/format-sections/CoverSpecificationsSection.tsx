@@ -1,7 +1,7 @@
 
 import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { FormatFormValues } from "@/hooks/useFormatForm";
 
 interface CoverSpecificationsSectionProps {
@@ -21,7 +21,7 @@ export function CoverSpecificationsSection({ form, readOnly = false }: CoverSpec
             <FormItem>
               <FormLabel>Cover Print Specifications</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., 4-color process + matte lamination" {...field} disabled={readOnly} />
+                <Input placeholder="e.g., 4-color process + matte lamination" {...field} disabled={readOnly} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -35,7 +35,7 @@ export function CoverSpecificationsSection({ form, readOnly = false }: CoverSpec
             <FormItem>
               <FormLabel>Cover Material</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., 12pt C1S" {...field} disabled={readOnly} />
+                <Input placeholder="e.g., 12pt C1S" {...field} disabled={readOnly} />
               </FormControl>
               <FormMessage />
             </FormItem>
