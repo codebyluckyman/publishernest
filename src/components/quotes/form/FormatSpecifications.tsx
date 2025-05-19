@@ -91,7 +91,7 @@ export function FormatSpecifications({ format, isLoading, hide = false }: Format
           {format.internal_material && (
             <div>
               <p className="text-muted-foreground">Internal Material:</p>
-              <p>{format.internal_stock_print}</p>
+              <p>{format.internal_material}</p>
             </div>
           )}          
           
