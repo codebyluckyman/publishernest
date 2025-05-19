@@ -7,7 +7,6 @@ import { deleteSalesPresentation } from './deleteSalesPresentation';
 import { publishSalesPresentation } from './publishSalesPresentation';
 import { createPresentationShare } from './createPresentationShare';
 import { trackPresentationView } from './trackPresentationView';
-import { fetchSharedPresentation, updatePresentationAnalytics } from './fetchSharedPresentation';
 import { 
   fetchPresentationSections,
   fetchPresentationItems, 
@@ -28,8 +27,6 @@ export {
   publishSalesPresentation,
   createPresentationShare,
   trackPresentationView,
-  fetchSharedPresentation,
-  updatePresentationAnalytics,
   // Presentation sections and items
   fetchPresentationSections,
   fetchPresentationItems,
