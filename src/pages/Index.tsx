@@ -1,68 +1,51 @@
-import { useEffect, useState } from "react";
-import { useOrganization } from "@/hooks/useOrganization";
-import { supabase } from "@/integrations/supabase/client";
 
-// Keep the rest of the code the same, but update the data fetching functions
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useOrganization } from '@/hooks/useOrganization';
+
 const Dashboard = () => {
-  const { currentOrganization } = useOrganization();
-  const [printRunsCount, setPrintRunsCount] = useState<number>(0);
-  const [purchaseOrdersCount, setPurchaseOrdersCount] = useState<number>(0);
-  
-  useEffect(() => {
-    if (currentOrganization) {
-      // Fetch print runs count
-      const fetchPrintRunsCount = async () => {
-        const { count, error } = await supabase
-          .from('print_runs')
-          .select('*', { count: 'exact', head: true })
-          .eq('organization_id', currentOrganization.id);
-          
-        if (!error && count !== null) {
-          setPrintRunsCount(count);
-        }
-      };
-      
-      // Fetch purchase orders count
-      const fetchPurchaseOrdersCount = async () => {
-        const { count, error } = await supabase
-          .from('purchase_orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('organization_id', currentOrganization.id);
-          
-        if (!error && count !== null) {
-          setPurchaseOrdersCount(count);
-        }
-      };
-      
-      // Call the fetch functions
-      fetchPrintRunsCount();
-      fetchPurchaseOrdersCount();
-    }
-  }, [currentOrganization]);
+  const { currentOrganization, isLoading } = useOrganization();
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-24">Loading...</div>;
+  }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
-      
-      {!currentOrganization ? (
-        <div className="p-6 bg-gray-50 rounded-lg text-center">
-          <p className="text-lg text-muted-foreground">Please select or create an organization to get started.</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="p-6 bg-white shadow rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">Print Runs</h2>
-            <p className="text-3xl font-bold">{printRunsCount}</p>
-            <p className="text-sm text-muted-foreground mt-1">Total print runs</p>
-          </div>
-          <div className="p-6 bg-white shadow rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">Purchase Orders</h2>
-            <p className="text-3xl font-bold">{purchaseOrdersCount}</p>
-            <p className="text-sm text-muted-foreground mt-1">Total purchase orders</p>
-          </div>
-          {/* Additional dashboard widgets can be added here */}
-        </div>
-      )}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Welcome to Publishing Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {currentOrganization ? `Welcome to ${currentOrganization.name}` : 'Please select an organization to get started.'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Quote Requests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Manage your quote requests and supplier quotes.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Sales Presentations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Create and manage presentations for your customers.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

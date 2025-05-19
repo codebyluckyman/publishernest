@@ -1,129 +1,150 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ColumnDef, 
-  flexRender, 
-  getCoreRowModel, 
-  getSortedRowModel, 
-  SortingState, 
-  useReactTable 
+import {
+  ColumnDef,
+  flexRenderWithOriginal,
+  getCoreRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
 import { SalesPresentation } from '@/types/salesPresentation';
-import { formatDate } from '@/utils/formatters';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, EyeIcon, Trash2, Share2 } from 'lucide-react';
-import { UserInfo } from '@/services/userService';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Calendar, MoreHorizontal, Share } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface PresentationsTableProps {
   presentations: SalesPresentation[];
-  isLoading: boolean;
   onDelete: (id: string) => void;
+  onPublish: (id: string) => void;
   onShare: (id: string) => void;
-  users?: Map<string, UserInfo>;
 }
 
-export function PresentationsTable({ 
-  presentations, 
-  isLoading, 
-  onDelete, 
-  onShare,
-  users
-}: PresentationsTableProps) {
+export const PresentationsTable: React.FC<PresentationsTableProps> = ({
+  presentations,
+  onDelete,
+  onPublish,
+  onShare
+}) => {
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const navigate = useNavigate();
-  const [sorting, setSorting] = useState<SortingState>([]);
-
-  const handleEdit = (id: string) => {
-    navigate(`/sales-presentations/${id}/edit`);
-  };
-
-  const handleView = (id: string) => {
-    navigate(`/sales-presentations/${id}`);
-  };
-
+  
   const columns: ColumnDef<SalesPresentation>[] = [
     {
-      id: 'title',
-      header: 'Title',
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getRowModel().rows.length > 0 &&
+            table.getRowModel().rows.every(row => selectedRows.includes(row.original.id))
+          }
+          onCheckedChange={(value) => {
+            if (value) {
+              setSelectedRows(table.getRowModel().rows.map(row => row.original.id));
+            } else {
+              setSelectedRows([]);
+            }
+          }}
+          aria-label="Select all"
+        />
+      ),
       cell: ({ row }) => (
-        <div className="font-medium max-w-[200px] truncate">
-          {row.original.title}
-        </div>
+        <Checkbox
+          checked={selectedRows.includes(row.original.id)}
+          onCheckedChange={(value) => {
+            if (value) {
+              setSelectedRows([...selectedRows, row.original.id]);
+            } else {
+              setSelectedRows(selectedRows.filter(id => id !== row.original.id));
+            }
+          }}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      header: "Title",
+      accessorKey: "title",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.original.title}</div>
       ),
     },
     {
-      id: 'status',
-      header: 'Status',
+      header: "Status",
+      accessorKey: "status",
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <Badge className={
-            status === 'published' 
-              ? 'bg-green-100 text-green-800' 
-              : status === 'draft'
-                ? 'bg-yellow-100 text-yellow-800'
-                : 'bg-gray-100 text-gray-800'
-          }>
+          <Badge variant={status === 'published' ? 'success' : (status === 'archived' ? 'secondary' : 'default')}>
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </Badge>
         );
       },
     },
     {
-      id: 'created_by',
-      header: 'Created By',
+      header: "Created",
+      accessorKey: "created_at",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          {format(new Date(row.original.created_at), 'MMM dd, yyyy')}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
       cell: ({ row }) => {
-        const userId = row.original.created_by;
-        const user = users?.get(userId);
+        const presentation = row.original;
+        
         return (
-          <div>
-            {user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Unknown User'}
+          <div className="flex justify-end">
+            {presentation.status === 'published' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShare(presentation.id);
+                }}
+              >
+                <Share className="h-4 w-4" />
+              </Button>
+            )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate(`/sales-presentations/${presentation.id}`)}>
+                  View
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(`/sales-presentations/${presentation.id}/edit`)}>
+                  Edit
+                </DropdownMenuItem>
+                {presentation.status !== 'published' && (
+                  <DropdownMenuItem onClick={() => onPublish(presentation.id)}>
+                    Publish
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={() => onDelete(presentation.id)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         );
       },
-    },
-    {
-      id: 'created_at',
-      header: 'Created At',
-      cell: ({ row }) => <div>{formatDate(row.original.created_at)}</div>,
-    },
-    {
-      id: 'published_at',
-      header: 'Published At',
-      cell: ({ row }) => (
-        <div>
-          {row.original.published_at ? formatDate(row.original.published_at) : '-'}
-        </div>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleView(row.original.id)}>
-            <EyeIcon className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original.id)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(row.original.id)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onShare(row.original.id)}>
-            <Share2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
     },
   ];
 
@@ -131,88 +152,48 @@ export function PresentationsTable({
     data: presentations,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
-    },
   });
 
-  if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {columns.map((column) => (
-                <TableHead key={column.id || String(column.accessorKey)}>
-                  {column.header as React.ReactNode}
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder ? null : header.column.columnDef.header}
                 </TableHead>
               ))}
-            </TableHeader>
-            <TableBody>
-              {[...Array(3)].map((_, i) => (
-                <TableRow key={i}>
-                  {columns.map((column, j) => (
-                    <TableCell key={j} className="h-12">
-                      <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-full">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <div
-                        className={header.column.getCanSort() ? 'cursor-pointer select-none' : ''}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </div>
-                    )}
-                  </TableHead>
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.length > 0 ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className="cursor-pointer hover:bg-gray-50"
+                onClick={() => navigate(`/sales-presentations/${row.original.id}`)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} onClick={(e) => cell.column.id === 'select' && e.stopPropagation()}>
+                    {cell.column.columnDef.cell ? cell.column.columnDef.cell({ row, table, column: cell.column }) : cell.getValue() as React.ReactNode}
+                  </TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No presentations found
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No presentations found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
-}
+};
+
+export default PresentationsTable;

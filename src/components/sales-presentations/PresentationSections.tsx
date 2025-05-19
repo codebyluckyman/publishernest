@@ -1,197 +1,171 @@
-import { useState } from 'react';
-import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
-import { usePresentationSections } from '@/hooks/usePresentationSections';
-import { useSectionItems } from '@/hooks/useSectionItems';
-import { useProductsWithFormats, ProductWithFormat } from '@/hooks/useProductsWithFormats';
-import { ProductSection } from './ProductSection';
-import { AddSectionDialog } from './AddSectionDialog';
+
+import React, { useEffect, useState } from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { usePresentationSections } from '@/hooks/usePresentationSections';
+import { PresentationSection, PresentationDisplaySettings } from '@/types/salesPresentation';
+import AddSectionDialog from './AddSectionDialog';
+import ProductSection from './ProductSection';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PresentationSectionsProps {
   presentationId: string;
-  isEditable: boolean;
+  isEditable?: boolean;
   displaySettings: PresentationDisplaySettings;
   isSharedView?: boolean;
 }
 
-export function PresentationSections({ 
-  presentationId, 
-  isEditable, 
+export const PresentationSections: React.FC<PresentationSectionsProps> = ({
+  presentationId,
+  isEditable = true,
   displaySettings,
   isSharedView = false
-}: PresentationSectionsProps) {
-  const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
+}) => {
+  const [isAddingSectionOpen, setIsAddingSectionOpen] = useState(false);
+  const { toast } = useToast();
   
-  const { 
-    sections, 
+  const {
+    sections,
+    loading,
+    error,
     createSection,
+    updateSection,
     deleteSection,
-    addItem
+    moveSection,
   } = usePresentationSections(presentationId);
-  
-  // Changed from useProducts to useProductsWithFormats to get format data
-  const { products } = useProductsWithFormats();
-  
-  const sectionIds = sections.data?.map(section => section.id) || [];
-  const { data: sectionItemsMap, isLoading: isLoadingItems } = useSectionItems(sectionIds);
-  
-  const handleAddSection = async (sectionData: {
-    title: string;
-    description?: string;
-    section_type: 'products' | 'text' | 'media' | 'formats' | 'custom';
-    content?: any;
-    products?: Array<{
-      productId: string;
-      customPrice?: number;
-      customDescription?: string;
-    }>;
-  }) => {
-    const sectionOrder = sections.data?.length ? sections.data.length : 0;
-    
-    const sectionId = await createSection.mutateAsync({
-      title: sectionData.title,
-      description: sectionData.description,
-      section_type: sectionData.section_type,
-      content: sectionData.content,
-      section_order: sectionOrder
-    });
-    
-    if (sectionId && sectionData.products && sectionData.products.length > 0) {
-      for (let i = 0; i < sectionData.products.length; i++) {
-        const product = sectionData.products[i];
-        
-        await addItem.mutateAsync({
-          sectionId,
-          itemData: {
-            item_type: 'product',
-            item_id: product.productId,
-            custom_price: product.customPrice,
-            description: product.customDescription,
-            display_order: i
-          }
-        });
-      }
+
+  const handleCreateSection = async (sectionData: Partial<PresentationSection>) => {
+    try {
+      await createSection({
+        ...sectionData,
+        presentation_id: presentationId
+      });
+      toast({ description: "Section created successfully" });
+      setIsAddingSectionOpen(false);
+    } catch (err) {
+      toast({ 
+        title: "Failed to create section", 
+        description: "Please try again later", 
+        variant: "destructive" 
+      });
     }
   };
-  
-  const handleDeleteSection = async (sectionId: string) => {
-    await deleteSection.mutateAsync(sectionId);
-    setSectionToDelete(null);
-  };
-  
-  // Create a map of product IDs to products with format data
-  const productMap = new Map<string, ProductWithFormat>();
-  if (products) {
-    products.forEach(product => {
-      productMap.set(product.id, product);
-    });
-  }
-  
-  const processedSections = sections.data?.map(section => {
-    if (section.section_type === 'products') {
-      const sectionItems = sectionItemsMap?.get(section.id) || [];
-      
-      const productsWithData = sectionItems.map(item => {
-        const product = item.item_id ? productMap.get(item.item_id) : undefined;
-        
-        return {
-          product: product as ProductWithFormat,
-          customPrice: item.custom_price,
-          customDescription: item.description
-        };
-      }).filter(item => item.product) || [];
-      
-      return {
-        ...section,
-        productsWithData
-      };
+
+  const handleMoveSection = async (sectionId: string, direction: 'up' | 'down') => {
+    try {
+      await moveSection(sectionId, direction);
+    } catch (err) {
+      toast({ 
+        title: "Failed to move section", 
+        description: "Please try again later", 
+        variant: "destructive" 
+      });
     }
-    
-    return section;
-  });
-  
-  if (sections.isLoading || isLoadingItems) {
-    return <div>Loading sections...</div>;
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
-  
-  return (
-    <div className="space-y-8">
-      {isEditable && (
-        <div className="flex justify-end">
-          <AddSectionDialog onAddSection={handleAddSection} />
-        </div>
-      )}
-      
-      {processedSections && processedSections.length > 0 ? (
-        processedSections.map(section => {
-          if (section.section_type === 'products' && 'productsWithData' in section) {
-            return (
-              <div key={section.id} className="relative">
-                {isEditable && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="absolute right-0 top-0"
-                    onClick={() => setSectionToDelete(section.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-                
-                <ProductSection
-                  title={section.title}
-                  description={section.description}
-                  products={section.productsWithData || []}
-                  displaySettings={displaySettings}
-                  isEditable={isEditable}
-                  onEdit={() => {/* Edit functionality will be added later */}}
-                />
-              </div>
-            );
-          }
-          
-          return null;
-        })
-      ) : (
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium">No sections found</h3>
-          <p className="text-muted-foreground mt-1">
-            {isEditable ? (
-              "Add sections to your presentation to showcase your products."
-            ) : (
-              "This presentation doesn't have any content yet."
-            )}
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-center text-red-500">
+            Failed to load presentation sections. Please try refreshing the page.
           </p>
-          {isEditable && (
-            <div className="mt-4">
-              <AddSectionDialog onAddSection={handleAddSection} />
-            </div>
-          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (sections.length === 0) {
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="pt-6 text-center">
+            {isEditable ? (
+              <>
+                <p className="mb-4">This presentation doesn't have any sections yet.</p>
+                <Button onClick={() => setIsAddingSectionOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Section
+                </Button>
+                
+                <AddSectionDialog 
+                  open={isAddingSectionOpen} 
+                  onOpenChange={setIsAddingSectionOpen}
+                  onSave={handleCreateSection}
+                />
+              </>
+            ) : (
+              <p>This presentation doesn't have any content yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Accordion type="multiple" className="w-full" defaultValue={sections.map(s => s.id)}>
+        {sections.map((section) => (
+          <AccordionItem key={section.id} value={section.id}>
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-2 text-left">
+                <span className="font-medium text-lg">{section.title}</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              {section.section_type === 'products' && (
+                <ProductSection 
+                  section={section} 
+                  isEditable={isEditable} 
+                  displaySettings={displaySettings}
+                  isSharedView={isSharedView}
+                />
+              )}
+              
+              {section.section_type === 'text' && (
+                <div className="prose max-w-none dark:prose-invert">
+                  {section.content && typeof section.content === 'string' ? (
+                    <div dangerouslySetInnerHTML={{ __html: section.content }} />
+                  ) : (
+                    <p>No content</p>
+                  )}
+                </div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+      
+      {isEditable && (
+        <div className="flex justify-center mt-6">
+          <Button onClick={() => setIsAddingSectionOpen(true)} variant="outline">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Section
+          </Button>
         </div>
       )}
       
-      <AlertDialog open={!!sectionToDelete} onOpenChange={(open) => !open && setSectionToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the section
-              and all its contents.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => sectionToDelete && handleDeleteSection(sectionToDelete)}
-              className="bg-destructive text-destructive-foreground"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {isEditable && (
+        <AddSectionDialog 
+          open={isAddingSectionOpen} 
+          onOpenChange={setIsAddingSectionOpen}
+          onSave={handleCreateSection}
+        />
+      )}
     </div>
   );
-}
+};
