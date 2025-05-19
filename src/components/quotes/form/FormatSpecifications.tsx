@@ -79,15 +79,21 @@ export function FormatSpecifications({ format, isLoading, hide = false }: Format
               <p className="text-muted-foreground">Cover Material:</p>
               <p>{format.cover_material}</p>
             </div>
-          )}
-                    
+          )}                    
 
           {format.internal_stock_print && (
             <div>
-              <p className="text-muted-foreground">Internal:</p>
+              <p className="text-muted-foreground">Internal Print Specifications:</p>
               <p>{format.internal_stock_print}</p>
             </div>
           )}
+
+          {format.internal_material && (
+            <div>
+              <p className="text-muted-foreground">Internal Material:</p>
+              <p>{format.internal_stock_print}</p>
+            </div>
+          )}          
           
           {format.end_papers_material && (
             <div>
