@@ -3400,6 +3400,19 @@ export type Database = {
         Args: { format_id: string; preserved_ids: string[] }
         Returns: undefined
       }
+      fetch_shared_presentation: {
+        Args: { access_code: string }
+        Returns: {
+          id: string
+          title: string
+          description: string
+          cover_image_url: string
+          display_settings: Json
+          created_at: string
+          published_at: string
+          expires_at: string
+        }[]
+      }
       generate_api_key: {
         Args: Record<PropertyKey, never>
         Returns: string

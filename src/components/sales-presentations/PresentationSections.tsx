@@ -11,14 +11,16 @@ import { Trash2 } from 'lucide-react';
 
 interface PresentationSectionsProps {
   presentationId: string;
-  isEditable?: boolean;
-  displaySettings?: PresentationDisplaySettings;
+  isEditable: boolean;
+  displaySettings: PresentationDisplaySettings;
+  isSharedView?: boolean;
 }
 
 export function PresentationSections({ 
   presentationId, 
-  isEditable = false,
-  displaySettings 
+  isEditable, 
+  displaySettings,
+  isSharedView = false
 }: PresentationSectionsProps) {
   const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
   
@@ -115,7 +117,7 @@ export function PresentationSections({
   }
   
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {isEditable && (
         <div className="flex justify-end">
           <AddSectionDialog onAddSection={handleAddSection} />
