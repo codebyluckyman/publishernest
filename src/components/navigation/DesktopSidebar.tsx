@@ -1,12 +1,22 @@
-
-import { 
-  Link, 
-  useLocation, 
-  useNavigate 
-} from "react-router-dom";
-import { User, LogOut, Building, ChevronDown, ChevronRight, Presentation } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  User,
+  LogOut,
+  Building,
+  ChevronDown,
+  ChevronRight,
+  Presentation,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,65 +35,37 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { user, signOut } = useAuth();
+  const { user, signOut, userProfile } = useAuth();
   const { currentOrganization } = useOrganization();
-  
+
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
-  const [userProfile, setUserProfile] = useState<{
-    first_name: string | null;
-    last_name: string | null;
-    avatar_url: string | null;
-  } | null>(null);
 
   useEffect(() => {
     const currentPath = location.pathname;
-    
-    menuItems.forEach(item => {
+
+    menuItems.forEach((item) => {
       if (item.submenu) {
-        const isSubmenuActive = item.submenu.some(subItem => 
-          currentPath === subItem.path || 
-          (currentPath.includes('/quote-requests') && subItem.path === '/quote-requests')
+        const isSubmenuActive = item.submenu.some(
+          (subItem) =>
+            currentPath === subItem.path ||
+            (currentPath.includes("/quote-requests") &&
+              subItem.path === "/quote-requests")
         );
-        
+
         if (isSubmenuActive) {
-          setOpenSubmenus(prev => ({
+          setOpenSubmenus((prev) => ({
             ...prev,
-            [item.label]: true
+            [item.label]: true,
           }));
         }
       }
     });
   }, [location.pathname, menuItems]);
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, avatar_url')
-            .eq('id', user.id)
-            .single();
-
-          if (error) throw error;
-          
-          if (data) {
-            console.log("Fetched profile in sidebar:", data);
-            setUserProfile(data);
-          }
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-        }
-      }
-    };
-
-    fetchUserProfile();
-  }, [user?.id]);
-
   const toggleSubmenu = (label: string) => {
-    setOpenSubmenus(prev => ({
+    setOpenSubmenus((prev) => ({
       ...prev,
-      [label]: !prev[label]
+      [label]: !prev[label],
     }));
   };
 
@@ -113,24 +95,31 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
   };
 
   return (
-    <Sidebar className="border-r border-gray-200 hidden md:flex" collapsible={isMobile ? "offcanvas" : "icon"}>
+    <Sidebar
+      className="border-r border-gray-200 hidden md:flex"
+      collapsible={isMobile ? "offcanvas" : "icon"}
+    >
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             {currentOrganization?.logo_url && (
               <div className="flex justify-center my-2">
-                <img src={currentOrganization.logo_url} alt={`${currentOrganization.name} logo`} className="h-24 w-auto object-contain rounded-sm" />
+                <img
+                  src={currentOrganization.logo_url}
+                  alt={`${currentOrganization.name} logo`}
+                  className="h-24 w-auto object-contain rounded-sm"
+                />
               </div>
             )}
             <div className="px-3 mb-2">
               <OrganizationSwitcher />
             </div>
             <SidebarMenu>
-              {menuItems.map(item => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.path}>
                   {item.submenu ? (
                     <div className="flex flex-col w-full">
-                      <button 
+                      <button
                         className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors hover:bg-gray-100`}
                         onClick={() => toggleSubmenu(item.label)}
                       >
@@ -144,14 +133,24 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                           <ChevronRight className="w-4 h-4" />
                         )}
                       </button>
-                      
+
                       {openSubmenus[item.label] && (
                         <div className="ml-6 pl-2 border-l border-gray-200 mt-1">
-                          {item.submenu.map(subItem => (
-                            <SidebarMenuButton key={subItem.path} asChild tooltip={subItem.label}>
-                              <Link 
-                                to={subItem.path} 
-                                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === subItem.path || (location.pathname.includes(subItem.path) && subItem.path !== '/') ? "bg-accent text-white" : "hover:bg-gray-100"}`}
+                          {item.submenu.map((subItem) => (
+                            <SidebarMenuButton
+                              key={subItem.path}
+                              asChild
+                              tooltip={subItem.label}
+                            >
+                              <Link
+                                to={subItem.path}
+                                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+                                  location.pathname === subItem.path ||
+                                  (location.pathname.includes(subItem.path) &&
+                                    subItem.path !== "/")
+                                    ? "bg-accent text-white"
+                                    : "hover:bg-gray-100"
+                                }`}
                               >
                                 <subItem.icon className="w-5 h-5" />
                                 <span>{subItem.label}</span>
@@ -163,7 +162,14 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                     </div>
                   ) : (
                     <SidebarMenuButton asChild tooltip={item.label}>
-                      <Link to={item.path} className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === item.path ? "bg-accent text-white" : "hover:bg-gray-100"}`}>
+                      <Link
+                        to={item.path}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+                          location.pathname === item.path
+                            ? "bg-accent text-white"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
                         <item.icon className="w-5 h-5" />
                         <span>{item.label}</span>
                       </Link>
@@ -173,11 +179,11 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-          
+
           {user && (
             <div className="mt-auto p-4 border-t border-gray-200">
               <div className="flex items-center gap-3 mb-3">
-                <UserAvatar 
+                <UserAvatar
                   avatarUrl={userProfile?.avatar_url}
                   fallback={getUserInitials()}
                   className="h-9 w-9"
@@ -192,11 +198,19 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigate('/profile')}>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  onClick={() => navigate("/profile")}
+                >
                   <User className="w-4 h-4" />
                   Profile
                 </Button>
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={handleSignOut}>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  onClick={handleSignOut}
+                >
                   <LogOut className="w-4 h-4" />
                   Sign Out
                 </Button>
