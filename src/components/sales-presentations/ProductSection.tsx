@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2 } from 'lucide-react';
@@ -7,7 +7,6 @@ import { useSectionItems } from '@/hooks/useSectionItems';
 import { useToast } from '@/components/ui/use-toast';
 import { PresentationSection, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { ProductWithFormat } from '@/hooks/useProductsWithFormats';
-import { Product } from '@/types/product';
 
 interface ProductSectionProps {
   section: PresentationSection;
@@ -25,18 +24,14 @@ const ProductSection: React.FC<ProductSectionProps> = ({
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const { toast } = useToast();
 
-  const {
-    items,
-    loading,
-    error,
-    addItem,
-    updateItem,
-    deleteItem,
-    moveItem,
-  } = useSectionItems(section.id);
+  // Use the hook with a single section ID
+  const { data: itemsMap, isLoading: loading, isError: error } = useSectionItems([section.id]);
+  
+  // Get items for this section from the map
+  const sectionItems = itemsMap?.get(section.id) || [];
 
   // Convert items to the expected format
-  const products = items.map(item => ({
+  const products = sectionItems.map(item => ({
     product: item.item_type === 'product' && item.custom_content ? 
       item.custom_content as unknown as ProductWithFormat : 
       {} as ProductWithFormat,

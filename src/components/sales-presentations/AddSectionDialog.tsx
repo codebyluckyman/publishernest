@@ -13,22 +13,26 @@ import { ProductSectionForm } from './ProductSectionForm';
 import { Plus } from 'lucide-react';
 
 interface AddSectionDialogProps {
-  onAddSection: (sectionData: {
+  onSave: (sectionData: {
     title: string;
-    description?: string;
-    section_type: 'products' | 'text' | 'media' | 'formats' | 'custom';
-    content?: any;
-    products?: Array<{
+    description: string;
+    products: Array<{
       productId: string;
       customPrice?: number;
       customDescription?: string;
     }>;
   }) => Promise<void>;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddSectionDialog({ onAddSection }: AddSectionDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddSectionDialog({ onSave, open, onOpenChange }: AddSectionDialogProps) {
+  const [localOpen, setLocalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'products' | 'text' | 'media'>('products');
+  
+  // Use either controlled or uncontrolled state
+  const isOpen = open !== undefined ? open : localOpen;
+  const handleOpenChange = onOpenChange || setLocalOpen;
   
   const handleSaveProductSection = async (data: {
     title: string;
@@ -39,19 +43,17 @@ export function AddSectionDialog({ onAddSection }: AddSectionDialogProps) {
       customDescription?: string;
     }>;
   }) => {
-    await onAddSection({
+    await onSave({
       title: data.title,
       description: data.description,
-      section_type: 'products',
-      content: { layout: 'grid' },
       products: data.products
     });
     
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />

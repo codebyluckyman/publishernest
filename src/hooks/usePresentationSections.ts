@@ -10,7 +10,8 @@ import {
   updatePresentationItem,
   deletePresentationItem 
 } from '@/api/salesPresentations/presentationSections';
-import { toast } from '@/utils/toast-utils';
+import { toast } from 'sonner';
+import { PresentationSection } from '@/types/salesPresentation';
 
 export function usePresentationSections(presentationId?: string) {
   const queryClient = useQueryClient();
@@ -35,10 +36,13 @@ export function usePresentationSections(presentationId?: string) {
       description?: string;
       section_type: string;
       content?: any;
-      section_order: number;
+      presentation_id: string;
     }) => {
       if (!presentationId) throw new Error('No presentation ID provided');
-      return createPresentationSection(presentationId, sectionData);
+      return createPresentationSection(presentationId, {
+        ...sectionData,
+        section_order: 0, // This will be sorted on the backend
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['presentation-sections', presentationId] });

@@ -7,6 +7,8 @@ export function useSectionItems(sectionIds: string[]) {
   return useQuery({
     queryKey: ['presentation-items', sectionIds],
     queryFn: async () => {
+      if (sectionIds.length === 0) return new Map<string, PresentationItem[]>();
+      
       const itemsPromises = sectionIds.map(sectionId => fetchPresentationItems(sectionId));
       const itemsResults = await Promise.all(itemsPromises);
       

@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
 import { PresentationSection, PresentationDisplaySettings } from '@/types/salesPresentation';
-import AddSectionDialog from './AddSectionDialog';
+import { AddSectionDialog } from './AddSectionDialog';
 import ProductSection from './ProductSection';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,17 +29,14 @@ export const PresentationSections: React.FC<PresentationSectionsProps> = ({
   
   const {
     sections,
-    loading,
-    error,
     createSection,
     updateSection,
-    deleteSection,
-    moveSection,
+    deleteSection
   } = usePresentationSections(presentationId);
 
   const handleCreateSection = async (sectionData: Partial<PresentationSection>) => {
     try {
-      await createSection({
+      await createSection.mutateAsync({
         ...sectionData,
         presentation_id: presentationId
       });
@@ -54,19 +51,7 @@ export const PresentationSections: React.FC<PresentationSectionsProps> = ({
     }
   };
 
-  const handleMoveSection = async (sectionId: string, direction: 'up' | 'down') => {
-    try {
-      await moveSection(sectionId, direction);
-    } catch (err) {
-      toast({ 
-        title: "Failed to move section", 
-        description: "Please try again later", 
-        variant: "destructive" 
-      });
-    }
-  };
-
-  if (loading) {
+  if (sections.isLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-12 w-full" />
@@ -76,7 +61,7 @@ export const PresentationSections: React.FC<PresentationSectionsProps> = ({
     );
   }
 
-  if (error) {
+  if (sections.isError) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -88,7 +73,7 @@ export const PresentationSections: React.FC<PresentationSectionsProps> = ({
     );
   }
 
-  if (sections.length === 0) {
+  if (!sections.data || sections.data.length === 0) {
     return (
       <div className="space-y-4">
         <Card>
@@ -118,8 +103,8 @@ export const PresentationSections: React.FC<PresentationSectionsProps> = ({
 
   return (
     <div className="space-y-6">
-      <Accordion type="multiple" className="w-full" defaultValue={sections.map(s => s.id)}>
-        {sections.map((section) => (
+      <Accordion type="multiple" className="w-full" defaultValue={sections.data.map(s => s.id)}>
+        {sections.data.map((section) => (
           <AccordionItem key={section.id} value={section.id}>
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-2 text-left">

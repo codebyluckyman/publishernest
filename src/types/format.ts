@@ -20,6 +20,10 @@ export interface FormatLight {
   end_papers_print: string;
   spacers_material: string;
   spacers_stock_print: string;
+  // Add these fields that were missing
+  tps_plc_height_mm: number;
+  tps_plc_width_mm: number;
+  tps_plc_depth_mm: number;
 }
 
 export interface Format extends FormatLight {
