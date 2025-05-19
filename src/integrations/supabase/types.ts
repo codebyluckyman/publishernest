@@ -370,6 +370,8 @@ export type Database = {
           orientation: string | null
           spacers_material: string | null
           spacers_stock_print: string | null
+          sticker_material: string | null
+          sticker_stock_print: string | null
           tps_depth_mm: number | null
           tps_height_mm: number | null
           tps_plc_depth_mm: number | null
@@ -394,6 +396,8 @@ export type Database = {
           orientation?: string | null
           spacers_material?: string | null
           spacers_stock_print?: string | null
+          sticker_material?: string | null
+          sticker_stock_print?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null
@@ -418,6 +422,8 @@ export type Database = {
           orientation?: string | null
           spacers_material?: string | null
           spacers_stock_print?: string | null
+          sticker_material?: string | null
+          sticker_stock_print?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null
