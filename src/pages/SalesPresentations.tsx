@@ -7,7 +7,7 @@ import { PresentationCard } from '@/components/sales-presentations/PresentationC
 import { PresentationsTable } from '@/components/sales-presentations/PresentationsTable';
 import { UserFilter } from '@/components/sales-presentations/UserFilter';
 import { ViewToggle } from '@/components/sales-presentations/ViewToggle';
-import { PlusCircle, Table2, LayoutGrid } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +38,7 @@ const SalesPresentations = () => {
 
   // New state for view mode and user filter
   const [viewMode, setViewMode] = useState<PresentationViewMode>('card');
-  const [userFilter, setUserFilter] = useState('');
+  const [userFilter, setUserFilter] = useState('none');
   const [users, setUsers] = useState<Map<string, any>>(new Map());
 
   // Extract all unique user IDs from presentations
@@ -61,7 +61,7 @@ const SalesPresentations = () => {
   }, [presentations]);
 
   // Filter presentations by selected user
-  const filteredPresentations = userFilter 
+  const filteredPresentations = userFilter !== 'none' 
     ? presentations.filter(p => p.created_by === userFilter)
     : presentations;
 
@@ -184,12 +184,12 @@ const SalesPresentations = () => {
         <div className="text-center py-12">
           <h3 className="text-lg font-medium">No presentations found</h3>
           <p className="text-muted-foreground mt-1">
-            {userFilter 
+            {userFilter !== 'none' 
               ? "No presentations found for the selected user. Try selecting a different user."
               : "Create your first sales presentation to showcase your products to clients."
             }
           </p>
-          {!userFilter && (
+          {userFilter === 'none' && (
             <Button onClick={handleCreateNew} className="mt-4">
               <PlusCircle className="h-4 w-4 mr-2" />
               Create First Presentation

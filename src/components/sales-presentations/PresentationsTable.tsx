@@ -52,7 +52,7 @@ export function PresentationsTable({
 
   const columns: ColumnDef<SalesPresentation>[] = [
     {
-      accessorKey: 'title',
+      id: 'title',
       header: 'Title',
       cell: ({ row }) => (
         <div className="font-medium max-w-[200px] truncate">
@@ -61,7 +61,7 @@ export function PresentationsTable({
       ),
     },
     {
-      accessorKey: 'status',
+      id: 'status',
       header: 'Status',
       cell: ({ row }) => {
         const status = row.original.status;
@@ -79,7 +79,7 @@ export function PresentationsTable({
       },
     },
     {
-      accessorKey: 'created_by',
+      id: 'created_by',
       header: 'Created By',
       cell: ({ row }) => {
         const userId = row.original.created_by;
@@ -92,12 +92,12 @@ export function PresentationsTable({
       },
     },
     {
-      accessorKey: 'created_at',
+      id: 'created_at',
       header: 'Created At',
       cell: ({ row }) => <div>{formatDate(row.original.created_at)}</div>,
     },
     {
-      accessorKey: 'published_at',
+      id: 'published_at',
       header: 'Published At',
       cell: ({ row }) => (
         <div>

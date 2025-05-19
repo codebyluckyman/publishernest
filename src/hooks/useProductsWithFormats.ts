@@ -6,7 +6,7 @@ import { Product } from '@/types/product';
 import { Format } from '@/types/format';
 
 // Define a complete format interface for the component needs
-interface FormatLight {
+export interface FormatLight {
   id: string;
   format_name: string | null;
   tps_height_mm: number | null;

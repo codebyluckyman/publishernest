@@ -12,7 +12,7 @@ interface UserFilterProps {
 
 export function UserFilter({ userIds, value, onValueChange, className }: UserFilterProps) {
   const [options, setOptions] = useState<FilterOption[]>([
-    { value: "", label: "All Users" }
+    { value: "none", label: "All Users" }
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,7 +29,7 @@ export function UserFilter({ userIds, value, onValueChange, className }: UserFil
         const usersMap = await fetchUsersByIds(uniqueUserIds);
         
         const userOptions: FilterOption[] = [
-          { value: "", label: "All Users" }
+          { value: "none", label: "All Users" }
         ];
         
         // Convert to options
