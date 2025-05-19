@@ -78,9 +78,9 @@ export async function fetchSupplierQuotes(
     filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
   }
   if (quoteRequestId) {
-    // Fixed: Add proper type check before accessing quote_request.id
+    // Fixed: Access the nested quote_request.id field
     filteredData = filteredData.filter(
-      (q) => q.quote_request && typeof q.quote_request === 'object' && 'id' in q.quote_request && q.quote_request.id === quoteRequestId
+      (q) => q.quote_request && q.quote_request.id === quoteRequestId
     );
   }
 

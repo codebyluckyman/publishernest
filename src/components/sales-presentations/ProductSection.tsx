@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
@@ -13,7 +12,31 @@ import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
 import { cn } from '@/lib/utils';
-import { ProductWithFormat, FormatLight } from '@/hooks/useProductsWithFormats';
+
+// Define a type that extends Product with optional format properties
+type ProductWithFormat = Product & {
+  format?: {
+    id: string;
+    format_name: string;
+    tps_height_mm: number;
+    tps_width_mm: number;
+    tps_depth_mm: number;
+    tps_plc_height_mm: number;
+    tps_plc_width_mm: number;
+    tps_plc_depth_mm: number;
+    extent: string;
+    binding_type: string;
+    cover_material: string;
+    cover_stock_print: string;
+    internal_material: string;
+    internal_stock_print: string;
+    orientation: string;
+    end_papers_material?: string;
+    end_papers_print?: string;
+    spacers_material?: string;
+    spacers_stock_print?: string;
+  };
+};
 
 interface ProductSectionProps {
   title: string;
@@ -45,7 +68,7 @@ export function ProductSection({
   // Convert products to ProductWithFormat to satisfy type requirements
   const productsWithFormat = products.map(item => ({
     ...item,
-    product: item.product as unknown as ProductWithFormat
+    product: item.product as ProductWithFormat
   }));
 
   // Extract features from displaySettings
@@ -121,7 +144,6 @@ export function ProductSection({
     if (depth) dimensions += ` × ${depth}mm`;
     return dimensions;
   };
-  
   const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
@@ -309,16 +331,12 @@ export function ProductSection({
 
   // Handle product selection based on showProductDetails setting
   const handleProductSelection = (product: {
-    product: ProductWithFormat;
+    product: Product;
     customPrice?: number;
     customDescription?: string;
   }) => {
     if (showProductDetails) {
-      setSelectedProduct(product as unknown as {
-        product: Product;
-        customPrice?: number;
-        customDescription?: string;
-      });
+      setSelectedProduct(product);
     }
   };
 
