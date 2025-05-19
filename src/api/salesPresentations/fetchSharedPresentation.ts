@@ -16,11 +16,11 @@ export interface SharedPresentation {
 // Fetch a shared presentation using its access code
 export async function fetchSharedPresentation(accessCode: string): Promise<SharedPresentation | null> {
   try {
-    const response = await fetch(`${supabase.supabaseUrl}/functions/v1/get-shared-presentation?accessCode=${accessCode}`, {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-shared-presentation?accessCode=${accessCode}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabase.supabaseKey}`,
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
     });
 
@@ -49,11 +49,11 @@ export async function updatePresentationAnalytics(
   }
 ): Promise<boolean> {
   try {
-    const response = await fetch(`${supabase.supabaseUrl}/functions/v1/update-shared-presentation-analytics`, {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-shared-presentation-analytics`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabase.supabaseKey}`,
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({
         viewId,

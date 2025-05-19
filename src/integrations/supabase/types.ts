@@ -3455,6 +3455,10 @@ export type Database = {
         Args: { org_id: string; required_role: string; user_id?: string }
         Returns: boolean
       }
+      increment_presentation_share_access: {
+        Args: { code: string }
+        Returns: undefined
+      }
       insert_quote_request_format_products: {
         Args: { products_data: Json }
         Returns: undefined
