@@ -7,7 +7,7 @@ import { PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/s
 
 // Assuming this is a simplified view of the presentation for shared links
 const SharedPresentationView = () => {
-  const { id } = useParams<{ id: string }>();
+  const { accessCode } = useParams<{ accessCode: string }>();
   const [presentation, setPresentation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ const SharedPresentationView = () => {
     const fetchPresentation = async () => {
       try {
         // Replace with actual API call to fetch shared presentation
-        const response = await fetch(`/api/shared-presentations/${id}`);
+        const response = await fetch(`/api/shared-presentations/${accessCode}`);
         const data = await response.json();
         setPresentation(data);
       } catch (err) {
@@ -28,10 +28,10 @@ const SharedPresentationView = () => {
       }
     };
     
-    if (id) {
+    if (accessCode) {
       fetchPresentation();
     }
-  }, [id]);
+  }, [accessCode]);
   
   if (loading) return <div>Loading shared presentation...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -69,7 +69,7 @@ const SharedPresentationView = () => {
       
       <div className="mt-8">
         <PresentationSections
-          presentationId={id!}
+          presentationId={accessCode}
           isEditable={false}
           displaySettings={processedDisplaySettings}
         />

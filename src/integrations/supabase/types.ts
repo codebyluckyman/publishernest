@@ -370,6 +370,8 @@ export type Database = {
           orientation: string | null
           spacers_material: string | null
           spacers_stock_print: string | null
+          sticker_material: string | null
+          sticker_stock_print: string | null
           tps_depth_mm: number | null
           tps_height_mm: number | null
           tps_plc_depth_mm: number | null
@@ -394,6 +396,8 @@ export type Database = {
           orientation?: string | null
           spacers_material?: string | null
           spacers_stock_print?: string | null
+          sticker_material?: string | null
+          sticker_stock_print?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null
@@ -418,6 +422,8 @@ export type Database = {
           orientation?: string | null
           spacers_material?: string | null
           spacers_stock_print?: string | null
+          sticker_material?: string | null
+          sticker_stock_print?: string | null
           tps_depth_mm?: number | null
           tps_height_mm?: number | null
           tps_plc_depth_mm?: number | null
@@ -3400,6 +3406,19 @@ export type Database = {
         Args: { format_id: string; preserved_ids: string[] }
         Returns: undefined
       }
+      fetch_shared_presentation: {
+        Args: { access_code: string }
+        Returns: {
+          id: string
+          title: string
+          description: string
+          cover_image_url: string
+          display_settings: Json
+          created_at: string
+          published_at: string
+          expires_at: string
+        }[]
+      }
       generate_api_key: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -3441,6 +3460,10 @@ export type Database = {
       has_organization_role: {
         Args: { org_id: string; required_role: string; user_id?: string }
         Returns: boolean
+      }
+      increment_presentation_share_access: {
+        Args: { code: string }
+        Returns: undefined
       }
       insert_quote_request_format_products: {
         Args: { products_data: Json }
