@@ -145,7 +145,7 @@ export function PresentationsTable({
           <Table>
             <TableHeader>
               {columns.map((column) => (
-                <TableHead key={column.id || String(Math.random())}>
+                <TableHead key={column.id || String(column.accessorKey)}>
                   {column.header as React.ReactNode}
                 </TableHead>
               ))}

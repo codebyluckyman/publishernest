@@ -12,32 +12,6 @@ import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
 import { cn } from '@/lib/utils';
-
-// Define a type that extends Product with optional format properties
-type ProductWithFormat = Product & {
-  format?: {
-    id: string;
-    format_name: string;
-    tps_height_mm: number;
-    tps_width_mm: number;
-    tps_depth_mm: number;
-    tps_plc_height_mm: number;
-    tps_plc_width_mm: number;
-    tps_plc_depth_mm: number;
-    extent: string;
-    binding_type: string;
-    cover_material: string;
-    cover_stock_print: string;
-    internal_material: string;
-    internal_stock_print: string;
-    orientation: string;
-    end_papers_material?: string;
-    end_papers_print?: string;
-    spacers_material?: string;
-    spacers_stock_print?: string;
-  };
-};
-
 interface ProductSectionProps {
   title: string;
   description?: string;
@@ -50,7 +24,6 @@ interface ProductSectionProps {
   isEditable?: boolean;
   onEdit?: () => void;
 }
-
 export function ProductSection({
   title,
   description,
@@ -64,12 +37,6 @@ export function ProductSection({
     customPrice?: number;
     customDescription?: string;
   } | null>(null);
-
-  // Convert products to ProductWithFormat to satisfy type requirements
-  const productsWithFormat = products.map(item => ({
-    ...item,
-    product: item.product as ProductWithFormat
-  }));
 
   // Extract features from displaySettings
   const features = displaySettings?.features;
@@ -379,7 +346,7 @@ export function ProductSection({
   const renderCardView = () => {
     if (cardWidthType === 'fixed') {
       return <div className={generateGridClasses()}>
-          {productsWithFormat.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)} style={{
+          {products.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)} style={{
           width: `${fixedCardWidth}px`,
           flexShrink: 0
         }}>
@@ -400,7 +367,7 @@ export function ProductSection({
         </div>;
     } else {
       return <div className={generateGridClasses()}>
-          {productsWithFormat.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)}>
+          {products.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)}>
               {item.product.cover_image_url && <div className="w-full h-48 overflow-hidden">
                   <Image src={item.product.cover_image_url} alt={item.product.title} className="w-full h-full object-contain" />
                 </div>}
@@ -437,11 +404,11 @@ export function ProductSection({
       {products.length > 0 ? <div>
           {viewMode === 'card' && enabledViews.includes('card') && renderCardView()}
           
-          {viewMode === 'table' && enabledViews.includes('table') && <TableView products={productsWithFormat} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          {viewMode === 'table' && enabledViews.includes('table') && <TableView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
           
-          {viewMode === 'carousel' && enabledViews.includes('carousel') && <CarouselView products={productsWithFormat} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          {viewMode === 'carousel' && enabledViews.includes('carousel') && <CarouselView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
           
-          {viewMode === 'kanban' && enabledViews.includes('kanban') && <KanbanView products={productsWithFormat} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          {viewMode === 'kanban' && enabledViews.includes('kanban') && <KanbanView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
         </div> : <div className="text-center py-12 bg-muted/20 rounded-lg">
           <p className="text-muted-foreground">No products in this section</p>
         </div>}
