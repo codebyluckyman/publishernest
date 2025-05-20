@@ -266,6 +266,7 @@ const ProductFilters = ({
             options={productFormOptions}
             placeholder="Select Format"
             emptyValue={FILTER_VALUES.ALL_FORMATS}
+            allOptionValue={FILTER_VALUES.ALL_FORMATS}
           />
         )}
 
@@ -277,6 +278,7 @@ const ProductFilters = ({
             options={publisherOptions}
             placeholder="Select Publisher"
             emptyValue={FILTER_VALUES.ALL_PUBLISHERS}
+            allOptionValue={FILTER_VALUES.ALL_PUBLISHERS}
           />
         )}
         
@@ -288,6 +290,7 @@ const ProductFilters = ({
             options={pubMonthOptions}
             placeholder="Select Publication Month"
             emptyValue={FILTER_VALUES.ALL_PUB_MONTHS}
+            allOptionValue={FILTER_VALUES.ALL_PUB_MONTHS}
           />
         )}
         
@@ -299,6 +302,7 @@ const ProductFilters = ({
             options={licenseOptions}
             placeholder="Select License"
             emptyValue={FILTER_VALUES.ALL_LICENSES}
+            allOptionValue={FILTER_VALUES.ALL_LICENSES}
           />
         )}
         
@@ -310,6 +314,7 @@ const ProductFilters = ({
             options={formatOptions}
             placeholder="Select Format Name"
             emptyValue={FILTER_VALUES.ALL_FORMAT_NAMES}
+            allOptionValue={FILTER_VALUES.ALL_FORMAT_NAMES}
           />
         )}
       </div>

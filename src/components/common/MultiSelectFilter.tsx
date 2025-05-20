@@ -32,6 +32,7 @@ interface MultiSelectFilterProps {
   className?: string;
   disabled?: boolean;
   emptyValue?: string;
+  allOptionValue?: string; // New prop to identify the "All" option
 }
 
 export function MultiSelectFilter({
@@ -43,6 +44,7 @@ export function MultiSelectFilter({
   className,
   disabled = false,
   emptyValue,
+  allOptionValue, // New prop
 }: MultiSelectFilterProps) {
   const [open, setOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>(value || []);
@@ -55,12 +57,25 @@ export function MultiSelectFilter({
   const handleSelect = (currentValue: string) => {
     let newSelectedItems: string[];
     
-    if (selectedItems.includes(currentValue)) {
-      // Remove item if already selected
-      newSelectedItems = selectedItems.filter(item => item !== currentValue);
-    } else {
-      // Add item if not selected
-      newSelectedItems = [...selectedItems, currentValue];
+    // If "All" option is clicked
+    if (allOptionValue && currentValue === allOptionValue) {
+      // If "All" is being selected, clear everything else
+      newSelectedItems = [allOptionValue];
+    } 
+    // If a specific option is clicked and "All" is currently selected
+    else if (allOptionValue && selectedItems.includes(allOptionValue)) {
+      // Remove "All" and add the clicked option
+      newSelectedItems = [currentValue];
+    }
+    // Normal case: toggle the clicked option
+    else {
+      if (selectedItems.includes(currentValue)) {
+        // Remove item if already selected
+        newSelectedItems = selectedItems.filter(item => item !== currentValue);
+      } else {
+        // Add item if not selected
+        newSelectedItems = [...selectedItems, currentValue];
+      }
     }
     
     setSelectedItems(newSelectedItems);
@@ -68,7 +83,13 @@ export function MultiSelectFilter({
   };
 
   const removeItem = (itemValue: string) => {
-    const newSelectedItems = selectedItems.filter(item => item !== itemValue);
+    // If removing the last item, reset to "All" option
+    let newSelectedItems = selectedItems.filter(item => item !== itemValue);
+    
+    if (newSelectedItems.length === 0 && allOptionValue) {
+      newSelectedItems = [allOptionValue];
+    }
+    
     setSelectedItems(newSelectedItems);
     onChange(newSelectedItems.length > 0 ? newSelectedItems : emptyValue ? [emptyValue] : []);
   };
@@ -79,12 +100,16 @@ export function MultiSelectFilter({
   };
 
   const clearAll = () => {
-    setSelectedItems([]);
+    const newSelectedItems = allOptionValue ? [allOptionValue] : [];
+    setSelectedItems(newSelectedItems);
     onChange(emptyValue ? [emptyValue] : []);
   };
 
+  // Don't show "All" option in the badges
+  const displayBadges = selectedItems.filter(item => !allOptionValue || item !== allOptionValue);
+
   const displayValue = selectedItems.length > 0 
-    ? `${selectedItems.length} selected`
+    ? `${displayBadges.length} selected`
     : placeholder;
 
   return (
@@ -92,7 +117,7 @@ export function MultiSelectFilter({
       {label && (
         <div className="flex justify-between items-center">
           <label className="text-sm font-medium mb-1 block">{label}</label>
-          {selectedItems.length > 0 && (
+          {displayBadges.length > 0 && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -147,9 +172,9 @@ export function MultiSelectFilter({
         </PopoverContent>
       </Popover>
 
-      {selectedItems.length > 0 && (
+      {displayBadges.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1">
-          {selectedItems.map((itemValue) => (
+          {displayBadges.map((itemValue) => (
             <Badge key={itemValue} variant="secondary" className="gap-1">
               {getOptionLabel(itemValue)}
               <button
