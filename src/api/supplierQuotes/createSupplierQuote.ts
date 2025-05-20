@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import {
   SupplierQuoteFormValues,
@@ -107,7 +106,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
         // Set values from arrays
         for (const { fieldName, values } of arrayFields) {
           if (index < values.length && values[index] !== null) {
-            newRow[fieldName] = values[index];
+            newRow[fieldName as keyof typeof newRow] = values[index] as number;
             hasValue = true;
           }
         }
@@ -149,7 +148,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
           extraCost[fieldName] !== null && 
           extraCost[fieldName] !== undefined
         ) {
-          newRow[fieldName] = extraCost[fieldName];
+          newRow[fieldName as keyof typeof newRow] = extraCost[fieldName] as number;
           hasValue = true;
         }
       }

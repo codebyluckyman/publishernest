@@ -90,12 +90,20 @@ export async function fetchSupplierQuotes(
         }
       } 
       else if (q.quote_request && typeof q.quote_request === 'object') {
-        if (typeof q.quote_request.id !== 'undefined') {
-          return q.quote_request.id === quoteRequestId;
+        // Type assertion to access id property safely
+        const quoteReqObj = q.quote_request as { id?: string };
+        if (typeof quoteReqObj.id !== 'undefined') {
+          return quoteReqObj.id === quoteRequestId;
         }
       } 
+      // Handle both cases - quote_request_id might be directly in q or within q.quote_request
       else if (q.quote_request_id) {
         return q.quote_request_id === quoteRequestId;
+      }
+      // Safely access quote_request.quote_request_id if it exists
+      else if (q.quote_request && typeof q.quote_request === 'object') {
+        const quoteReqObj = q.quote_request as { quote_request_id?: string };
+        return quoteReqObj.quote_request_id === quoteRequestId;
       }
       return false;
     });
@@ -116,7 +124,7 @@ export async function fetchSupplierQuotes(
 
     // Fix: Safely extract the quote_request_id
     let safeQuoteRequestId = "";
-    if (quote.quote_request && typeof quote.quote_request === 'object' && quote.quote_request.id) {
+    if (quote.quote_request && typeof quote.quote_request === 'object' && 'id' in quote.quote_request) {
       safeQuoteRequestId = quote.quote_request.id;
     } else if (quote.quote_request_id) {
       safeQuoteRequestId = quote.quote_request_id;
@@ -207,5 +215,5 @@ export async function fetchSupplierQuotes(
     };
   });
 
-  return formattedQuotes;
+  return formattedQuotes as SupplierQuote[];
 }

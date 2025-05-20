@@ -151,7 +151,7 @@ export function ProductSection({ products, selectedProducts, setSelectedProducts
           onChange={handleSearch}
           className="max-w-md"
         />
-        <Select value={sortOrder} onValueChange={handleSort as any}>
+        <Select value={sortOrder} onValueChange={(value) => handleSort(value as 'asc' | 'desc')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by Title" />
           </SelectTrigger>

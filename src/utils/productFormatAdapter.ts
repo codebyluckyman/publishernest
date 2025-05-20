@@ -1,3 +1,4 @@
+
 import { Product } from "@/types/product";
 import { ProductWithFormat, FormatLight } from "@/hooks/useProductsWithFormats";
 
@@ -29,10 +30,10 @@ export function adaptProductToProductWithFormat(product: Product): ProductWithFo
     internal_stock_print: product.format.internal_stock_print,
     orientation: product.format.orientation,
     // Add missing properties with default null values
-    end_papers_material: null,
-    end_papers_print: null,
-    spacers_material: null,
-    spacers_stock_print: null,
+    end_papers_material: product.format.end_papers_material || null,
+    end_papers_print: product.format.end_papers_print || null,
+    spacers_material: product.format.spacers_material || null,
+    spacers_stock_print: product.format.spacers_stock_print || null,
   };
 
   // Return the product with the complete format

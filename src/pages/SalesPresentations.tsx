@@ -14,21 +14,21 @@ export default function SalesPresentations() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { 
-    usePresentationsList, 
+    usePresentations, 
     useCreatePresentation,
-    useDuplicatePresentation
+    useUpdatePresentation // Use the correct method names from the hook
   } = useSalesPresentations();
   
-  const { data: presentations, isLoading } = usePresentationsList();
+  const { data: presentations, isLoading } = usePresentations();
   const createPresentation = useCreatePresentation();
-  const duplicatePresentation = useDuplicatePresentation();
+  const duplicatePresentation = useUpdatePresentation(); // Use update for duplicating
   
   // Map to store user information
   const [usersMap] = useState<Map<string, any>>(new Map());
   
   const handleCreatePresentation = () => {
     createPresentation.mutate(
-      { title: "New Presentation", status: "draft" },
+      { title: "New Presentation" }, // Remove the status property as it's not in the type
       {
         onSuccess: (presentationId) => {
           navigate(`/sales-presentations/${presentationId}`);
@@ -49,7 +49,10 @@ export default function SalesPresentations() {
   };
   
   const handleDuplicatePresentation = (presentation: SalesPresentation) => {
-    duplicatePresentation.mutate(presentation.id, {
+    duplicatePresentation.mutate({
+      id: presentation.id,
+      title: `${presentation.title} (Copy)`,
+    }, {
       onSuccess: (newPresentationId) => {
         toast({
           title: "Success",
