@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
@@ -9,7 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
+import PresentationSections from '@/components/sales-presentations/PresentationSections';
 import { 
   CardGridLayout, 
   PresentationDisplaySettings, 

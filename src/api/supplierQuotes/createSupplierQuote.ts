@@ -50,7 +50,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
       continue;
     }
 
-    // 3. Handle array cases - Fix for TypeScript error by properly handling arrays
+    // 3. Handle array cases
     const quantityArr = [2000, 2500, 3000, 5000, 7500, 10000, 15000, 20000, 25000];
     
     // Process each possible unit_cost_X field (1-10)
@@ -65,7 +65,8 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
       
       // Handle array values - create a separate record for each value
       if (Array.isArray(values)) {
-        values.forEach((value, index) => {
+        for (let index = 0; index < values.length; index++) {
+          const value = values[index];
           if (value !== null && value !== undefined) {
             const newRow: Record<string, any> = {
               supplier_quote_id: supplierQuoteId,
@@ -94,7 +95,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
                 .insert(newRow)
             );
           }
-        });
+        }
       } 
       // Handle single value
       else if (values !== null && values !== undefined) {
@@ -359,8 +360,10 @@ export async function createSupplierQuote(
       (ec) => ec.unit_of_measure_id === "d53da411-5061-4710-aa1d-75a638c45dc6"
     );
 
+    // Handle standard extra costs (with primitive number types)
     const standardCostsToInsert = standardExtraCosts
       .filter((ec) => {
+        // Only insert extra costs that have any values
         const hasValue =
           (ec.unit_cost !== null && ec.unit_cost !== undefined) ||
           (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) ||
@@ -380,41 +383,27 @@ export async function createSupplierQuote(
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
         unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
-        unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
-        unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,
-        unit_cost_3: ec.unit_cost_3 === undefined ? null : ec.unit_cost_3,
-        unit_cost_4: ec.unit_cost_4 === undefined ? null : ec.unit_cost_4,
-        unit_cost_5: ec.unit_cost_5 === undefined ? null : ec.unit_cost_5,
-        unit_cost_6: ec.unit_cost_6 === undefined ? null : ec.unit_cost_6,
-        unit_cost_7: ec.unit_cost_7 === undefined ? null : ec.unit_cost_7,
-        unit_cost_8: ec.unit_cost_8 === undefined ? null : ec.unit_cost_8,
-        unit_cost_9: ec.unit_cost_9 === undefined ? null : ec.unit_cost_9,
-        unit_cost_10: ec.unit_cost_10 === undefined ? null : ec.unit_cost_10,
+        unit_cost_1: typeof ec.unit_cost_1 === 'number' ? ec.unit_cost_1 : null,
+        unit_cost_2: typeof ec.unit_cost_2 === 'number' ? ec.unit_cost_2 : null,
+        unit_cost_3: typeof ec.unit_cost_3 === 'number' ? ec.unit_cost_3 : null,
+        unit_cost_4: typeof ec.unit_cost_4 === 'number' ? ec.unit_cost_4 : null,
+        unit_cost_5: typeof ec.unit_cost_5 === 'number' ? ec.unit_cost_5 : null,
+        unit_cost_6: typeof ec.unit_cost_6 === 'number' ? ec.unit_cost_6 : null,
+        unit_cost_7: typeof ec.unit_cost_7 === 'number' ? ec.unit_cost_7 : null,
+        unit_cost_8: typeof ec.unit_cost_8 === 'number' ? ec.unit_cost_8 : null,
+        unit_cost_9: typeof ec.unit_cost_9 === 'number' ? ec.unit_cost_9 : null,
+        unit_cost_10: typeof ec.unit_cost_10 === 'number' ? ec.unit_cost_10 : null,
         unit_of_measure_id: ec.unit_of_measure_id,
       }));
 
+    // Handle price break extra costs (those need a different approach)
     const priceBreakCostsToInsert = priceBreakExtraCosts
-      .filter((ec) => {
-        const hasValue =
-          (ec.unit_cost !== null && ec.unit_cost !== undefined) ||
-          (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) ||
-          (ec.unit_cost_2 !== null && ec.unit_cost_2 !== undefined) ||
-          (ec.unit_cost_3 !== null && ec.unit_cost_3 !== undefined) ||
-          (ec.unit_cost_4 !== null && ec.unit_cost_4 !== undefined) ||
-          (ec.unit_cost_5 !== null && ec.unit_cost_5 !== undefined) ||
-          (ec.unit_cost_6 !== null && ec.unit_cost_6 !== undefined) ||
-          (ec.unit_cost_7 !== null && ec.unit_cost_7 !== undefined) ||
-          (ec.unit_cost_8 !== null && ec.unit_cost_8 !== undefined) ||
-          (ec.unit_cost_9 !== null && ec.unit_cost_9 !== undefined) ||
-          (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
-
-        return hasValue;
-      })
+      .filter((ec) => ec.extra_cost_id)
       .map((ec) => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id ? ec.extra_cost_id : null,
         unit_cost: null,
-        unit_cost_1: null,
+        unit_cost_1: null, 
         unit_cost_2: null,
         unit_cost_3: null,
         unit_cost_4: null,

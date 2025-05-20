@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Card,
@@ -39,17 +40,24 @@ import { Textarea } from "@/components/ui/textarea"
 import { usePresentationSections } from '@/hooks/usePresentationSections';
 import { Product } from '@/types/product';
 import { ProductSection } from './ProductSection';
-import { PresentationSection, PresentationItem } from '@/types/salesPresentation';
+import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { toast } from 'sonner';
 import { ProductWithFormat } from '@/hooks/useProductsWithFormats';
 import { adaptProductsToProductWithFormat } from "@/utils/productFormatAdapter";
 
 interface PresentationSectionsProps {
   presentationId: string | undefined;
-  products: Product[];
+  products?: Product[];
+  isEditable?: boolean;
+  displaySettings?: PresentationDisplaySettings;
 }
 
-const PresentationSections: React.FC<PresentationSectionsProps> = ({ presentationId, products }) => {
+const PresentationSections: React.FC<PresentationSectionsProps> = ({ 
+  presentationId, 
+  products = [], 
+  isEditable = false,
+  displaySettings 
+}) => {
   const {
     sections,
     getSectionItems,
