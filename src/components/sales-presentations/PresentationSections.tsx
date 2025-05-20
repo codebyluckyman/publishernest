@@ -43,11 +43,12 @@ import { Product } from '@/types/product';
 import { ProductSection } from './ProductSection';
 import { PresentationSection, PresentationItem, PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
 import { toast } from 'sonner';
-import { ProductWithFormat } from '@/hooks/useProductsWithFormats';
+import { ProductWithFormat, useProductsWithFormats } from '@/hooks/useProductsWithFormats';
 import { adaptProductsToProductWithFormat } from "@/utils/productFormatAdapter";
 import { ViewToggle } from './ViewToggle';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
+import { TableView } from './TableView';
 
 interface PresentationSectionsProps {
   presentationId: string | undefined;
@@ -72,6 +73,9 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
     updateItem,
     deleteItem
   } = usePresentationSections(presentationId);
+  
+  // Fetch products with associated format data directly
+  const { products: productsWithFormats, isLoading: productsLoading } = useProductsWithFormats();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sectionType, setSectionType] = useState('products');
@@ -252,6 +256,12 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
     console.log('Selected product:', product);
   };
 
+  // Function to find a product with format data from our fetched products
+  const findProductWithFormat = (productId: string): ProductWithFormat | null => {
+    const product = productsWithFormats.find(p => p.id === productId);
+    return product || null;
+  };
+
   // Function to render section items based on view mode
   const renderSectionItems = (section: PresentationSection) => {
     if (!itemsMap || !itemsMap.get(section.id)) {
@@ -260,25 +270,34 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
 
     const items = itemsMap.get(section.id) || [];
     
+    if (productsLoading) {
+      return <div className="py-4 text-center">Loading products...</div>;
+    }
+    
     // Convert items to product format needed by view components
-    const products = items
+    const productsWithFormatData = items
       .filter(item => item.item_type === 'product')
       .map(item => {
-        // Find the corresponding product from the products prop
-        const product = products.find(p => p.id === item.item_id);
-        if (!product) {
+        // Find the corresponding product from the products with formats
+        const productWithFormat = findProductWithFormat(item.item_id || '');
+        
+        if (!productWithFormat) {
           return null;
         }
         
         return {
-          product: adaptProductsToProductWithFormat([product])[0].product,
+          product: productWithFormat,
           customPrice: item.custom_price,
           customDescription: item.description,
         };
       })
-      .filter(Boolean); // Remove nulls
+      .filter(Boolean) as { 
+        product: ProductWithFormat;
+        customPrice?: number;
+        customDescription?: string;
+      }[];
     
-    if (products.length === 0) {
+    if (productsWithFormatData.length === 0) {
       return <div className="text-muted-foreground py-4 text-center">No products in this section</div>;
     }
 
@@ -286,7 +305,7 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
       case 'card':
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
-            {products.map((item) => (
+            {productsWithFormatData.map((item) => (
               <Card 
                 key={item.product.id}
                 className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
@@ -320,50 +339,11 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
       case 'table':
         return (
           <div className="mt-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">Cover</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>ISBN</TableHead>
-                  <TableHead>Price</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((item) => (
-                  <TableRow 
-                    key={item.product.id}
-                    className="cursor-pointer"
-                    onClick={() => handleSelectProduct(item)}
-                  >
-                    <TableCell>
-                      {item.product.cover_image_url ? (
-                        <div className="w-12 h-16 overflow-hidden">
-                          <img
-                            src={item.product.cover_image_url}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-16 bg-gray-100 flex items-center justify-center">
-                          <span className="text-xs text-gray-500">No image</span>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>{item.product.title}</TableCell>
-                    <TableCell>{item.product.isbn13 || 'N/A'}</TableCell>
-                    <TableCell>
-                      {item.customPrice !== undefined
-                        ? `$${item.customPrice.toFixed(2)}`
-                        : item.product.list_price
-                        ? `$${item.product.list_price.toFixed(2)}`
-                        : 'N/A'}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <TableView 
+              products={productsWithFormatData}
+              displaySettings={displaySettings}
+              onSelectProduct={handleSelectProduct}
+            />
           </div>
         );
       
@@ -371,7 +351,7 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
         return (
           <div className="mt-4">
             <CarouselView 
-              products={products} 
+              products={productsWithFormatData} 
               displaySettings={displaySettings}
               onSelectProduct={handleSelectProduct}
             />
@@ -382,7 +362,7 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
         return (
           <div className="mt-4">
             <KanbanView 
-              products={products} 
+              products={productsWithFormatData} 
               displaySettings={displaySettings}
               onSelectProduct={handleSelectProduct}
             />
@@ -547,7 +527,7 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
             
             {!editSectionId && sectionType === 'products' && (
               <ProductSection
-                products={products}
+                products={productsWithFormats}
                 selectedProducts={selectedProducts}
                 setSelectedProducts={setSelectedProducts}
                 onProductsChange={handleProductsChange}
