@@ -1,4 +1,3 @@
-
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -79,8 +78,9 @@ export async function fetchSupplierQuotes(
     filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
   }
   if (quoteRequestId) {
-    // Filter by quote_request_id or by quote_request.id if it's an object
+    // Filter by quote_request object instead of quote_request_id
     filteredData = filteredData.filter((q) => {
+      // Case 1: quote_request is a string that can be parsed to an object
       if (typeof q.quote_request === 'string' && q.quote_request) {
         try {
           const quoteRequestObj = JSON.parse(q.quote_request);
@@ -89,23 +89,18 @@ export async function fetchSupplierQuotes(
           return false;
         }
       } 
+      // Case 2: quote_request is already an object with an id property
       else if (q.quote_request && typeof q.quote_request === 'object') {
         // Type assertion to access id property safely
         const quoteReqObj = q.quote_request as { id?: string };
         if (quoteReqObj.id !== undefined) {
           return quoteReqObj.id === quoteRequestId;
         }
-      } 
-      
-      // Handle direct quote_request_id property if it exists
-      else if (q.quote_request_id) {
-        return q.quote_request_id === quoteRequestId;
       }
       
-      // Check if quote_request object has quote_request_id property
-      else if (q.quote_request && typeof q.quote_request === 'object') {
-        const quoteReqObj = q.quote_request as any;
-        return quoteReqObj.id === quoteRequestId;
+      // Case 3: Use quote_request_id if available directly on the quote object
+      else if ('quote_request_id' in q && q.quote_request_id) {
+        return q.quote_request_id === quoteRequestId;
       }
       
       return false;
@@ -129,7 +124,7 @@ export async function fetchSupplierQuotes(
     let safeQuoteRequestId = "";
     if (quote.quote_request && typeof quote.quote_request === 'object' && 'id' in quote.quote_request) {
       safeQuoteRequestId = quote.quote_request.id;
-    } else if (quote.quote_request_id) {
+    } else if ('quote_request_id' in quote && quote.quote_request_id) {
       safeQuoteRequestId = quote.quote_request_id;
     } else if (typeof quote.quote_request === 'string' && quote.quote_request) {
       try {

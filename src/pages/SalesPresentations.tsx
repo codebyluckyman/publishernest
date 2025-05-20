@@ -12,6 +12,7 @@ import { useSalesPresentations } from "@/hooks/useSalesPresentations";
 export default function SalesPresentations() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  // Fix: Use the correct hook names from useSalesPresentations
   const { 
     usePresentations, 
     useCreatePresentation,
@@ -27,7 +28,7 @@ export default function SalesPresentations() {
   
   const handleCreatePresentation = () => {
     createPresentation.mutate(
-      { title: "New Presentation" },
+      { title: "New Presentation" }, // Fix: Only pass expected properties
       {
         onSuccess: (presentationId) => {
           navigate(`/sales-presentations/${presentationId}`);

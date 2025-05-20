@@ -29,8 +29,8 @@ export function adaptProductToProductWithFormat(product: Product): ProductWithFo
     cover_stock_print: product.format.cover_stock_print,
     internal_stock_print: product.format.internal_stock_print,
     orientation: product.format.orientation,
-    // Handle potentially missing properties with default null values
-    // Instead of directly accessing properties that might not exist, use optional chaining
+    
+    // Handle properties that might not exist with optional chaining and null defaults
     end_papers_material: product.format?.end_papers_material || null,
     end_papers_print: product.format?.end_papers_print || null,
     spacers_material: product.format?.spacers_material || null,

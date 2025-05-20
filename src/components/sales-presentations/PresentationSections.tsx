@@ -39,7 +39,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { usePresentationSections } from '@/hooks/usePresentationSections';
 import { Product } from '@/types/product';
 import { ProductSection } from './ProductSection';
-import { SalesPresentationSection, SalesPresentationItem } from '@/types/salesPresentation';
+import { PresentationSection, PresentationItem } from '@/types/salesPresentation';
 import { toast } from 'sonner';
 import { ProductWithFormat } from '@/hooks/useProductsWithFormats';
 import { adaptProductsToProductWithFormat } from "@/utils/productFormatAdapter";
@@ -71,7 +71,7 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({ presentatio
   const [editSectionTitle, setEditSectionTitle] = useState('');
   const [editSectionDescription, setEditSectionDescription] = useState('');
   const [editSectionOrder, setEditSectionOrder] = useState(1);
-  const [sectionsData, setSectionsData] = useState<SalesPresentationSection[]>([]);
+  const [sectionsData, setSectionsData] = useState<PresentationSection[]>([]);
   
   // Load sections on component mount
   useEffect(() => {
@@ -166,7 +166,7 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({ presentatio
     }
   };
   
-  const handleEditSection = (section: SalesPresentationSection) => {
+  const handleEditSection = (section: PresentationSection) => {
     setEditSectionId(section.id);
     setEditSectionTitle(section.title);
     setEditSectionDescription(section.description || '');

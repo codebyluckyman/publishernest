@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
+import PresentationSections from "@/components/sales-presentations/PresentationSections";
 import { PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
 
 // Assuming this is a simplified view of the presentation for shared links
