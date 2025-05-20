@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useOrganization } from "@/context/OrganizationContext";
 import ProductDialog from "@/components/ProductDialog";
 import ProductViewDialog from "@/components/ProductViewDialog";
 import { ProductTableHeader } from "./ProductTableHeader";
-import ProductFilters from "./ProductFilters";
+import ProductFilters, { FILTER_VALUES } from "./ProductFilters";
 import ProductTable from "./ProductTable";
 
 export function ProductTableContainer() {
@@ -17,11 +18,17 @@ export function ProductTableContainer() {
   >(undefined);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<{
-    product_form: string | null;
-    publisher_name: string | null;
+    product_form: string | string[];
+    publisher_name: string | string[];
+    pub_month: string | string[] | null;
+    license: string | string[] | null;
+    format_id: string | string[] | null;
   }>({
-    product_form: null,
-    publisher_name: null,
+    product_form: FILTER_VALUES.ALL_FORMATS,
+    publisher_name: FILTER_VALUES.ALL_PUBLISHERS,
+    pub_month: FILTER_VALUES.ALL_PUB_MONTHS,
+    license: FILTER_VALUES.ALL_LICENSES,
+    format_id: FILTER_VALUES.ALL_FORMAT_NAMES,
   });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -48,31 +55,43 @@ export function ProductTableContainer() {
     setShowFilters(!showFilters);
   };
 
-  // const areFiltersActive = () => {
-  //   return filters.product_form !== null || filters.publisher_name !== null;
-  // };
-
   const areFiltersActive = () => {
     const isProductFormActive =
-      filters.product_form !== null && filters.product_form !== "ALL_FORMATS";
+      filters.product_form !== FILTER_VALUES.ALL_FORMATS;
     const isPublisherNameActive =
-      filters.publisher_name !== null &&
-      filters.publisher_name !== "ALL_PUBLISHERS";
-    return isProductFormActive || isPublisherNameActive;
+      filters.publisher_name !== FILTER_VALUES.ALL_PUBLISHERS;
+    const isPubMonthActive =
+      filters.pub_month !== FILTER_VALUES.ALL_PUB_MONTHS;
+    const isLicenseActive =
+      filters.license !== FILTER_VALUES.ALL_LICENSES;
+    const isFormatActive =
+      filters.format_id !== FILTER_VALUES.ALL_FORMAT_NAMES;
+      
+    return isProductFormActive || isPublisherNameActive || isPubMonthActive || 
+           isLicenseActive || isFormatActive;
+  };
+  
+  const countActiveFilters = () => {
+    let count = 0;
+    
+    // Helper function to check if filter is active
+    const isFilterActive = (filter: string | string[] | null, defaultValue: string) => {
+      if (Array.isArray(filter)) {
+        return filter.length > 0 && (filter.length !== 1 || filter[0] !== defaultValue);
+      }
+      return filter !== defaultValue;
+    };
+    
+    if (isFilterActive(filters.product_form, FILTER_VALUES.ALL_FORMATS)) count++;
+    if (isFilterActive(filters.publisher_name, FILTER_VALUES.ALL_PUBLISHERS)) count++;
+    if (isFilterActive(filters.pub_month, FILTER_VALUES.ALL_PUB_MONTHS)) count++;
+    if (isFilterActive(filters.license, FILTER_VALUES.ALL_LICENSES)) count++;
+    if (isFilterActive(filters.format_id, FILTER_VALUES.ALL_FORMAT_NAMES)) count++;
+    
+    return count;
   };
 
-  // const activeFiltersCount = Object.values(filters).filter(Boolean).length;
-
-  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
-    if (
-      (key === "product_form" && value === "ALL_FORMATS") ||
-      (key === "publisher_name" && value === "ALL_PUBLISHERS")
-    ) {
-      return false;
-    }
-
-    return Boolean(value);
-  }).length;
+  const activeFiltersCount = countActiveFilters();
 
   return (
     <Card>

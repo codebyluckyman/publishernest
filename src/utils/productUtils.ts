@@ -50,11 +50,11 @@ export const fetchProducts = async (
   currentOrganization: Organization | null,
   searchQuery: string,
   filters: {
-    product_form: string | null;
-    publisher_name: string | null;
-    pub_month: string | null;
-    license: string | null;
-    format_id: string | null;
+    product_form: string | string[];
+    publisher_name: string | string[];
+    pub_month: string | string[] | null;
+    license: string | string[] | null;
+    format_id: string | string[] | null;
   },
   sortField: SortField,
   sortDirection: SortDirection
@@ -78,20 +78,56 @@ export const fetchProducts = async (
     queryBuilder = queryBuilder.ilike("title", `%${searchQuery}%`);
   }
   
+  // Handle product_form filter
   if (filters.product_form && filters.product_form !== "ALL_FORMATS") {
-    queryBuilder = queryBuilder.eq("product_form", filters.product_form);
+    if (Array.isArray(filters.product_form)) {
+      // Remove the ALL_FORMATS value if present
+      const validFormats = filters.product_form.filter(f => f !== "ALL_FORMATS");
+      if (validFormats.length > 0) {
+        queryBuilder = queryBuilder.in("product_form", validFormats);
+      }
+    } else {
+      queryBuilder = queryBuilder.eq("product_form", filters.product_form);
+    }
   }
 
+  // Handle publisher_name filter
   if (filters.publisher_name && filters.publisher_name !== "ALL_PUBLISHERS") {
-    queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
+    if (Array.isArray(filters.publisher_name)) {
+      // Remove the ALL_PUBLISHERS value if present
+      const validPublishers = filters.publisher_name.filter(p => p !== "ALL_PUBLISHERS");
+      if (validPublishers.length > 0) {
+        queryBuilder = queryBuilder.in("publisher_name", validPublishers);
+      }
+    } else {
+      queryBuilder = queryBuilder.eq("publisher_name", filters.publisher_name);
+    }
   }
   
+  // Handle license filter
   if (filters.license && filters.license !== "ALL_LICENSES") {
-    queryBuilder = queryBuilder.eq("license", filters.license);
+    if (Array.isArray(filters.license)) {
+      // Remove the ALL_LICENSES value if present
+      const validLicenses = filters.license.filter(l => l !== "ALL_LICENSES");
+      if (validLicenses.length > 0) {
+        queryBuilder = queryBuilder.in("license", validLicenses);
+      }
+    } else {
+      queryBuilder = queryBuilder.eq("license", filters.license);
+    }
   }
   
+  // Handle format_id filter
   if (filters.format_id && filters.format_id !== "ALL_FORMAT_NAMES") {
-    queryBuilder = queryBuilder.eq("format_id", filters.format_id);
+    if (Array.isArray(filters.format_id)) {
+      // Remove the ALL_FORMAT_NAMES value if present
+      const validFormatIds = filters.format_id.filter(f => f !== "ALL_FORMAT_NAMES");
+      if (validFormatIds.length > 0) {
+        queryBuilder = queryBuilder.in("format_id", validFormatIds);
+      }
+    } else {
+      queryBuilder = queryBuilder.eq("format_id", filters.format_id);
+    }
   }
 
   // Get data based on the built query
@@ -107,12 +143,26 @@ export const fetchProducts = async (
   // Handle pub_month filter separately since we need to filter client-side
   let filteredProducts = productsData;
   if (filters.pub_month && filters.pub_month !== "ALL_PUB_MONTHS" && productsData) {
-    filteredProducts = productsData.filter(product => {
-      if (!product.publication_date) return false;
-      const date = new Date(product.publication_date);
-      const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      return monthYear === filters.pub_month;
-    });
+    if (Array.isArray(filters.pub_month)) {
+      // Remove the ALL_PUB_MONTHS value if present
+      const validPubMonths = filters.pub_month.filter(pm => pm !== "ALL_PUB_MONTHS");
+      
+      if (validPubMonths.length > 0) {
+        filteredProducts = productsData.filter(product => {
+          if (!product.publication_date) return false;
+          const date = new Date(product.publication_date);
+          const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+          return validPubMonths.includes(monthYear);
+        });
+      }
+    } else {
+      filteredProducts = productsData.filter(product => {
+        if (!product.publication_date) return false;
+        const date = new Date(product.publication_date);
+        const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        return monthYear === filters.pub_month;
+      });
+    }
   }
 
   if (filteredProducts && filteredProducts.length > 0) {

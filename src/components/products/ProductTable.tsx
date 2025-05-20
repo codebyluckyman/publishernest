@@ -12,8 +12,11 @@ export type { SortDirection, SortField };
 interface ProductTableProps {
   searchQuery: string;
   filters: {
-    product_form: string | null;
-    publisher_name: string | null;
+    product_form: string | string[];
+    publisher_name: string | string[];
+    pub_month: string | string[] | null;
+    license: string | string[] | null;
+    format_id: string | string[] | null;
   };
   currentOrganization: Organization | null;
   onViewProduct: (productId: string) => void;

@@ -2,6 +2,7 @@
 import { FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
+import { MultiSelectFilter, MultiSelectOption } from "@/components/common/MultiSelectFilter";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -16,11 +17,11 @@ export const FILTER_VALUES = {
 };
 
 type FilterOptions = {
-  product_form: string;
-  publisher_name: string;
-  pub_month: string | null;
-  license: string | null;
-  format_id: string | null;
+  product_form: string | string[];
+  publisher_name: string | string[];
+  pub_month: string | string[] | null;
+  license: string | string[] | null;
+  format_id: string | string[] | null;
 };
 
 interface ProductFiltersProps {
@@ -143,6 +144,16 @@ const ProductFilters = ({
           : value,
     });
   };
+  
+  const handleMultiFilterChange = (field: keyof FilterOptions, values: string[]) => {
+    setFilters({
+      ...filters,
+      [field]: values.length === 0 || 
+               (values.length === 1 && values[0] === getDefaultValueForField(field))
+        ? getDefaultValueForField(field)
+        : values
+    });
+  };
 
   const getDefaultValueForField = (field: keyof FilterOptions) => {
     switch(field) {
@@ -183,8 +194,8 @@ const ProductFilters = ({
 
   if (!showFilters) return null;
 
-  // Create options arrays for select filters
-  const productFormOptions: FilterOption[] = [
+  // Create options arrays for filters
+  const productFormOptions: MultiSelectOption[] = [
     { value: FILTER_VALUES.ALL_FORMATS, label: "All Formats" },
     ...filterOptions.product_form.map((option) => ({
       value: option,
@@ -192,7 +203,7 @@ const ProductFilters = ({
     })),
   ];
 
-  const publisherOptions: FilterOption[] = [
+  const publisherOptions: MultiSelectOption[] = [
     { value: FILTER_VALUES.ALL_PUBLISHERS, label: "All Publishers" },
     ...filterOptions.publisher_name.map((option) => ({
       value: option,
@@ -200,7 +211,7 @@ const ProductFilters = ({
     })),
   ];
   
-  const pubMonthOptions: FilterOption[] = [
+  const pubMonthOptions: MultiSelectOption[] = [
     { value: FILTER_VALUES.ALL_PUB_MONTHS, label: "All Publication Months" },
     ...filterOptions.pub_month.map((option) => ({
       value: option,
@@ -208,7 +219,7 @@ const ProductFilters = ({
     })),
   ];
   
-  const licenseOptions: FilterOption[] = [
+  const licenseOptions: MultiSelectOption[] = [
     { value: FILTER_VALUES.ALL_LICENSES, label: "All Licenses" },
     ...filterOptions.license.map((option) => ({
       value: option,
@@ -216,66 +227,75 @@ const ProductFilters = ({
     })),
   ];
   
-  const formatOptions: FilterOption[] = [
+  const formatOptions: MultiSelectOption[] = [
     { value: FILTER_VALUES.ALL_FORMAT_NAMES, label: "All Format Names" },
     ...filterOptions.format_id.map((option) => ({
       value: option.id,
       label: option.name,
     })),
   ];
+  
+  const normalizeSingleOrArrayValue = (value: string | string[] | null, defaultValue: string): string[] => {
+    if (!value) return [defaultValue];
+    if (Array.isArray(value)) return value;
+    return [value];
+  };
 
   return (
     <div className="mt-4 space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filterOptions.product_form.length > 0 && (
-          <SelectFilter
+          <MultiSelectFilter
             label="Product Format"
-            value={filters.product_form}
-            onValueChange={(value) => handleFilterChange("product_form", value)}
+            value={normalizeSingleOrArrayValue(filters.product_form, FILTER_VALUES.ALL_FORMATS)}
+            onChange={(values) => handleMultiFilterChange("product_form", values)}
             options={productFormOptions}
             placeholder="Select Format"
+            emptyValue={FILTER_VALUES.ALL_FORMATS}
           />
         )}
 
         {filterOptions.publisher_name.length > 0 && (
-          <SelectFilter
+          <MultiSelectFilter
             label="Publisher"
-            value={filters.publisher_name}
-            onValueChange={(value) =>
-              handleFilterChange("publisher_name", value)
-            }
+            value={normalizeSingleOrArrayValue(filters.publisher_name, FILTER_VALUES.ALL_PUBLISHERS)}
+            onChange={(values) => handleMultiFilterChange("publisher_name", values)}
             options={publisherOptions}
             placeholder="Select Publisher"
+            emptyValue={FILTER_VALUES.ALL_PUBLISHERS}
           />
         )}
         
         {filterOptions.pub_month.length > 0 && (
-          <SelectFilter
+          <MultiSelectFilter
             label="Publication Month"
-            value={filters.pub_month || FILTER_VALUES.ALL_PUB_MONTHS}
-            onValueChange={(value) => handleFilterChange("pub_month", value)}
+            value={normalizeSingleOrArrayValue(filters.pub_month, FILTER_VALUES.ALL_PUB_MONTHS)}
+            onChange={(values) => handleMultiFilterChange("pub_month", values)}
             options={pubMonthOptions}
             placeholder="Select Publication Month"
+            emptyValue={FILTER_VALUES.ALL_PUB_MONTHS}
           />
         )}
         
         {filterOptions.license.length > 0 && (
-          <SelectFilter
+          <MultiSelectFilter
             label="License"
-            value={filters.license || FILTER_VALUES.ALL_LICENSES}
-            onValueChange={(value) => handleFilterChange("license", value)}
+            value={normalizeSingleOrArrayValue(filters.license, FILTER_VALUES.ALL_LICENSES)}
+            onChange={(values) => handleMultiFilterChange("license", values)}
             options={licenseOptions}
             placeholder="Select License"
+            emptyValue={FILTER_VALUES.ALL_LICENSES}
           />
         )}
         
         {filterOptions.format_id.length > 0 && (
-          <SelectFilter
+          <MultiSelectFilter
             label="Format Name"
-            value={filters.format_id || FILTER_VALUES.ALL_FORMAT_NAMES}
-            onValueChange={(value) => handleFilterChange("format_id", value)}
+            value={normalizeSingleOrArrayValue(filters.format_id, FILTER_VALUES.ALL_FORMAT_NAMES)}
+            onChange={(values) => handleMultiFilterChange("format_id", values)}
             options={formatOptions}
             placeholder="Select Format Name"
+            emptyValue={FILTER_VALUES.ALL_FORMAT_NAMES}
           />
         )}
       </div>
