@@ -5,7 +5,7 @@ import { useOrganization } from "@/context/OrganizationContext";
 import ProductDialog from "@/components/ProductDialog";
 import ProductViewDialog from "@/components/ProductViewDialog";
 import { EditableProductTableHeader } from "./EditableProductTableHeader";
-import ProductFilters from "./ProductFilters";
+import ProductFilters, { FILTER_VALUES } from "./ProductFilters";
 import EditableProductTable from "./EditableProductTable";
 import { ProductEditProvider } from "@/context/ProductEditContext";
 
@@ -19,9 +19,15 @@ export function EditableProductTableContainer() {
   const [filters, setFilters] = useState<{
     product_form: string | null;
     publisher_name: string | null;
+    pub_month: string | null;
+    license: string | null;
+    format_id: string | null;
   }>({
-    product_form: null,
-    publisher_name: null,
+    product_form: FILTER_VALUES.ALL_FORMATS,
+    publisher_name: FILTER_VALUES.ALL_PUBLISHERS,
+    pub_month: FILTER_VALUES.ALL_PUB_MONTHS,
+    license: FILTER_VALUES.ALL_LICENSES,
+    format_id: FILTER_VALUES.ALL_FORMAT_NAMES,
   });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -50,17 +56,27 @@ export function EditableProductTableContainer() {
 
   const areFiltersActive = () => {
     const isProductFormActive =
-      filters.product_form !== null && filters.product_form !== "ALL_FORMATS";
+      filters.product_form !== null && filters.product_form !== FILTER_VALUES.ALL_FORMATS;
     const isPublisherNameActive =
-      filters.publisher_name !== null &&
-      filters.publisher_name !== "ALL_PUBLISHERS";
-    return isProductFormActive || isPublisherNameActive;
+      filters.publisher_name !== null && filters.publisher_name !== FILTER_VALUES.ALL_PUBLISHERS;
+    const isPubMonthActive =
+      filters.pub_month !== null && filters.pub_month !== FILTER_VALUES.ALL_PUB_MONTHS;
+    const isLicenseActive =
+      filters.license !== null && filters.license !== FILTER_VALUES.ALL_LICENSES;
+    const isFormatActive =
+      filters.format_id !== null && filters.format_id !== FILTER_VALUES.ALL_FORMAT_NAMES;
+      
+    return isProductFormActive || isPublisherNameActive || isPubMonthActive || 
+           isLicenseActive || isFormatActive;
   };
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (
-      (key === "product_form" && value === "ALL_FORMATS") ||
-      (key === "publisher_name" && value === "ALL_PUBLISHERS")
+      (key === "product_form" && value === FILTER_VALUES.ALL_FORMATS) ||
+      (key === "publisher_name" && value === FILTER_VALUES.ALL_PUBLISHERS) ||
+      (key === "pub_month" && value === FILTER_VALUES.ALL_PUB_MONTHS) ||
+      (key === "license" && value === FILTER_VALUES.ALL_LICENSES) ||
+      (key === "format_id" && value === FILTER_VALUES.ALL_FORMAT_NAMES)
     ) {
       return false;
     }

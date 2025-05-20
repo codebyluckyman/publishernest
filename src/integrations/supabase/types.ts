@@ -2285,6 +2285,7 @@ export type Database = {
           id: string
           message: string
           purchase_order_id: string
+          receiver_id: string | null
         }
         Insert: {
           communication_date?: string
@@ -2294,6 +2295,7 @@ export type Database = {
           id?: string
           message: string
           purchase_order_id: string
+          receiver_id?: string | null
         }
         Update: {
           communication_date?: string
@@ -2303,6 +2305,7 @@ export type Database = {
           id?: string
           message?: string
           purchase_order_id?: string
+          receiver_id?: string | null
         }
         Relationships: [
           {
@@ -2347,13 +2350,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "supplier_conversations_purchase_order_id_fkey"
-            columns: ["purchase_order_id"]
-            isOneToOne: false
-            referencedRelation: "purchase_orders"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "supplier_conversations_user_id_fkey"
             columns: ["user_id"]

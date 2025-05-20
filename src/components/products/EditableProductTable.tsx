@@ -1,25 +1,27 @@
 
-import { useEffect } from "react";
-import { Organization } from "@/types/organization";
-import EditableProductTableContent from "./EditableProductTableContent";
-import { ProductEmptyState } from "./ProductEmptyState";
-import { useProductTableState } from "@/hooks/useProductTableState";
+import { useEffect, useState } from "react";
+import { fetchProducts } from "@/utils/productUtils";
 import { formatDate, formatPrice, getProductFormLabel } from "@/utils/productUtils";
-import { SortDirection, SortField } from "@/types/product";
-import { useProductEdit } from "@/context/ProductEditContext";
-
-// Re-export these types so ProductTableContent can use them
-export type { SortDirection, SortField };
+import { BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import EditableProductTableContent from "./EditableProductTableContent";
+import { useQuery } from "@tanstack/react-query";
+import { Product, SortDirection, SortField } from "@/types/product";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EditableProductTableProps {
   searchQuery: string;
   filters: {
     product_form: string | null;
     publisher_name: string | null;
+    pub_month: string | null;
+    license: string | null;
+    format_id: string | null;
   };
-  currentOrganization: Organization | null;
-  onViewProduct: (productId: string) => void;
-  onEditProduct: (productId: string) => void;
+  currentOrganization: any;
+  onViewProduct: (id: string) => void;
+  onEditProduct: (id: string) => void;
   onAddProduct: () => void;
   refreshTrigger?: number;
 }
@@ -31,40 +33,88 @@ const EditableProductTable = ({
   onViewProduct,
   onEditProduct,
   onAddProduct,
-  refreshTrigger = 0
+  refreshTrigger = 0,
 }: EditableProductTableProps) => {
-  const { setRefreshCallback } = useProductEdit();
-  
+  const [sortField, setSortField] = useState<SortField>("title");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
   const {
-    products,
+    data: products,
     isLoading,
-    sortField,
-    sortDirection,
-    handleSort,
-    handleCopyProduct,
-    refetch
-  } = useProductTableState({
-    searchQuery,
-    filters,
-    currentOrganization,
-    refreshTrigger
+    refetch,
+  } = useQuery({
+    queryKey: [
+      "products",
+      currentOrganization?.id,
+      searchQuery,
+      filters,
+      sortField,
+      sortDirection,
+      refreshTrigger,
+    ],
+    queryFn: () => fetchProducts(currentOrganization, searchQuery, filters, sortField, sortDirection),
+    enabled: !!currentOrganization,
   });
 
-  // Register the refetch callback with the ProductEditContext
   useEffect(() => {
-    setRefreshCallback(() => refetch);
-  }, [refetch, setRefreshCallback]);
+    if (refreshTrigger > 0) {
+      refetch();
+    }
+  }, [refreshTrigger, refetch]);
 
-  if (isLoading) {
-    return null;
-  }
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
-  if (!products || products.length === 0) {
-    return <ProductEmptyState hasOrganization={!!currentOrganization} onAddProduct={onAddProduct} />;
-  }
+  const handleCopyProduct = async (productId: string): Promise<string> => {
+    try {
+      // Get the product to copy
+      const { data: product, error: fetchError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
+
+      if (fetchError || !product) {
+        throw new Error(fetchError?.message || "Failed to fetch product");
+      }
+
+      // Create a copy with modified title
+      const productCopy = {
+        ...product,
+        id: undefined, // Let Supabase generate a new ID
+        title: `${product.title} (Copy)`,
+        created_at: undefined,
+        updated_at: undefined,
+      };
+
+      // Insert the copy
+      const { data: newProduct, error: insertError } = await supabase
+        .from("products")
+        .insert(productCopy)
+        .select()
+        .single();
+
+      if (insertError || !newProduct) {
+        throw new Error(insertError?.message || "Failed to create product copy");
+      }
+
+      toast.success("Product copied successfully");
+      refetch();
+      return newProduct.id;
+    } catch (error: any) {
+      toast.error(`Error copying product: ${error.message}`);
+      throw error;
+    }
+  };
 
   return (
-    <EditableProductTableContent 
+    <EditableProductTableContent
       products={products}
       isLoading={isLoading}
       currentOrganization={currentOrganization}
