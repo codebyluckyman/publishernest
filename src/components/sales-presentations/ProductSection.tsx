@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Product } from '@/types/product';
 import { Input } from "@/components/ui/input"
@@ -10,7 +11,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Select,
@@ -42,11 +42,10 @@ export function ProductSection({ products, selectedProducts, setSelectedProducts
 
   useEffect(() => {
     // Initialize filteredProducts with adapted products
-    setFilteredProducts(
-      adaptProductsToProductWithFormat(
-        products.map(product => ({ product }))
-      )
+    const adaptedProducts = adaptProductsToProductWithFormat(
+      products.map(product => ({ product }))
     );
+    setFilteredProducts(adaptedProducts);
   }, [products]);
 
   useEffect(() => {
@@ -59,33 +58,27 @@ export function ProductSection({ products, selectedProducts, setSelectedProducts
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setFilteredProducts(
-      adaptProductsToProductWithFormat(
-        products
-          .filter(p => p.title.toLowerCase().includes(e.target.value.toLowerCase()))
-          .map(product => ({ product }))
-      )
-    );
+    const filtered = products
+      .filter(p => p.title.toLowerCase().includes(e.target.value.toLowerCase()))
+      .map(product => ({ product }));
+    
+    setFilteredProducts(adaptProductsToProductWithFormat(filtered));
   };
 
   const handleSort = (order: 'asc' | 'desc') => {
     setSortOrder(order);
     if (order === 'asc') {
-      setFilteredProducts(
-        adaptProductsToProductWithFormat(
-          products
-            .sort((a, b) => a.title.localeCompare(b.title))
-            .map(product => ({ product }))
-        )
-      );
+      const sorted = products
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map(product => ({ product }));
+      
+      setFilteredProducts(adaptProductsToProductWithFormat(sorted));
     } else {
-      setFilteredProducts(
-        adaptProductsToProductWithFormat(
-          products
-            .sort((a, b) => b.title.localeCompare(a.title))
-            .map(product => ({ product }))
-        )
-      );
+      const sorted = products
+        .sort((a, b) => b.title.localeCompare(a.title))
+        .map(product => ({ product }));
+      
+      setFilteredProducts(adaptProductsToProductWithFormat(sorted));
     }
   };
 

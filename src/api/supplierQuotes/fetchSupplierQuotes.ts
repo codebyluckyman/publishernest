@@ -81,23 +81,19 @@ export async function fetchSupplierQuotes(
   if (quoteRequestId) {
     // Filter by quote_request_id or by quote_request.id if it's an object
     filteredData = filteredData.filter((q) => {
-      // Check if quote_request is a string that might be a JSON object
       if (typeof q.quote_request === 'string' && q.quote_request) {
         try {
           const quoteRequestObj = JSON.parse(q.quote_request);
           return quoteRequestObj && quoteRequestObj.id === quoteRequestId;
         } catch (e) {
-          // If it can't be parsed as JSON, it's not a match
           return false;
         }
       } 
-      // Check if quote_request is an object with an id property
       else if (q.quote_request && typeof q.quote_request === 'object') {
-        if (q.quote_request.id) {
+        if (typeof q.quote_request.id !== 'undefined') {
           return q.quote_request.id === quoteRequestId;
         }
       } 
-      // Check if there's a direct quote_request_id property
       else if (q.quote_request_id) {
         return q.quote_request_id === quoteRequestId;
       }
@@ -136,8 +132,8 @@ export async function fetchSupplierQuotes(
     }
 
     // Ensure extra_costs is always an array
-    const safeExtraCosts = Array.isArray(quote.extra_costs) 
-      ? quote.extra_costs 
+    const safeExtraCosts: SupplierQuoteExtraCost[] = Array.isArray(quote.extra_costs) 
+      ? quote.extra_costs as SupplierQuoteExtraCost[]
       : [];
 
     // Ensure savings is always an array
@@ -154,8 +150,12 @@ export async function fetchSupplierQuotes(
       currency: quote.currency || "",
       description: quote.description || "",
       status: (quote.status as SupplierQuoteStatus) || "draft",
+      reference_id: quote.reference_id || "",
+      reference: quote.reference || "",
+      supplier_name: quote.supplier_name || "",
+      title: quote.title || "",
       formats: formattedFormats,
-      extra_costs: safeExtraCosts as SupplierQuoteExtraCost[],
+      extra_costs: safeExtraCosts,
       savings: safeSavings,
       total_cost: typeof quote.total_cost === 'number' ? quote.total_cost : 0,
       submitted_at: quote.submitted_at || null,
@@ -188,6 +188,22 @@ export async function fetchSupplierQuotes(
       valid_from: quote.valid_from || null,
       valid_to: quote.valid_to || null,
       warehouse_id: quote.warehouse_id || null,
+      terms: quote.terms || "",
+      remarks: quote.remarks || "",
+      approved_at: quote.approved_at || null,
+      approved_by: quote.approved_by || null,
+      rejected_at: quote.rejected_at || null,
+      rejected_by: quote.rejected_by || null,
+      rejection_reason: quote.rejection_reason || null,
+      packaging_carton_quantity: quote.packaging_carton_quantity || null,
+      packaging_carton_volume: quote.packaging_carton_volume || null,
+      packaging_cartons_per_pallet: quote.packaging_cartons_per_pallet || null,
+      packaging_copies_per_20ft_palletized: quote.packaging_copies_per_20ft_palletized || null,
+      packaging_copies_per_40ft_palletized: quote.packaging_copies_per_40ft_palletized || null,
+      packaging_copies_per_20ft_unpalletized: quote.packaging_copies_per_20ft_unpalletized || null,
+      packaging_copies_per_40ft_unpalletized: quote.packaging_copies_per_40ft_unpalletized || null,
+      supplier: quote.supplier || { supplier_name: "" },
+      attachments: [],
     };
   });
 

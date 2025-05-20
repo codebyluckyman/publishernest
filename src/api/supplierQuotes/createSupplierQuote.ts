@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import {
   SupplierQuoteFormValues,
@@ -19,12 +20,13 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
     return;
   }
 
-  const priceBreaksToInsert = [];
+  // Use Promise.all to handle multiple insertions
+  const insertPromises = [];
 
   for (const extraCost of eligibleExtraCosts) {
     // 2. Handle simple unit_cost case
     if (extraCost.unit_cost !== null && extraCost.unit_cost !== undefined) {
-      priceBreaksToInsert.push({
+      const recordToInsert = {
         supplier_quote_id: supplierQuoteId,
         extra_cost_id: extraCost.extra_cost_id,
         unit_cost: extraCost.unit_cost,
@@ -39,7 +41,13 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
         unit_cost_9: null,
         unit_cost_10: null,
         unit_of_measure_id: extraCost.unit_of_measure_id,
-      });
+      };
+      
+      insertPromises.push(
+        supabase
+          .from("supplier_quote_extra_cost_price_breaks")
+          .insert(recordToInsert)
+      );
       continue;
     }
 
@@ -82,9 +90,16 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
           unit_cost: null,
           unit_of_measure_id: extraCost.unit_of_measure_id,
           quantity: quantityArr[index] || null,
-          ...Object.fromEntries(
-            Array.from({ length: 10 }, (_, i) => [`unit_cost_${i + 1}`, null])
-          ),
+          unit_cost_1: null,
+          unit_cost_2: null,
+          unit_cost_3: null,
+          unit_cost_4: null,
+          unit_cost_5: null,
+          unit_cost_6: null,
+          unit_cost_7: null,
+          unit_cost_8: null,
+          unit_cost_9: null,
+          unit_cost_10: null,
         };
 
         let hasValue = false;
@@ -99,7 +114,11 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
 
         // Only add if at least one unit_cost has value
         if (hasValue) {
-          priceBreaksToInsert.push(newRow);
+          insertPromises.push(
+            supabase
+              .from("supplier_quote_extra_cost_price_breaks")
+              .insert(newRow)
+          );
         }
       }
     } else {
@@ -109,9 +128,16 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
         extra_cost_id: extraCost.extra_cost_id,
         unit_cost: null,
         unit_of_measure_id: extraCost.unit_of_measure_id,
-        ...Object.fromEntries(
-          Array.from({ length: 10 }, (_, i) => [`unit_cost_${i + 1}`, null])
-        ),
+        unit_cost_1: null,
+        unit_cost_2: null,
+        unit_cost_3: null,
+        unit_cost_4: null,
+        unit_cost_5: null,
+        unit_cost_6: null,
+        unit_cost_7: null,
+        unit_cost_8: null,
+        unit_cost_9: null,
+        unit_cost_10: null,
       };
 
       let hasValue = false;
@@ -120,7 +146,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
       for (let i = 1; i <= 10; i++) {
         const fieldName = `unit_cost_${i}`;
         if (
-          extraCost[fieldName] !== null &&
+          extraCost[fieldName] !== null && 
           extraCost[fieldName] !== undefined
         ) {
           newRow[fieldName] = extraCost[fieldName];
@@ -128,50 +154,25 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
         }
       }
 
-      // Only add if at least one unit_cost has value
+      // Only insert if at least one unit_cost has a value
       if (hasValue) {
-        priceBreaksToInsert.push(newRow);
+        insertPromises.push(
+          supabase
+            .from("supplier_quote_extra_cost_price_breaks")
+            .insert(newRow)
+        );
       }
     }
   }
 
-  // 5. Final nuclear validation
-  const validatedRows = priceBreaksToInsert.filter((row) => {
-    // Check unit_cost first
-    if (row.unit_cost !== null) return true;
-
-    // Check all unit_cost_X fields
-    for (let i = 1; i <= 10; i++) {
-      if (row[`unit_cost_${i}`] !== null && row[`unit_cost_${i}`] !== undefined)
-        return true;
-    }
-
-    return false;
-  });
-
-  // 6. Insert only if we have valid rows
-  if (validatedRows.length > 0) {
-    console.log("Inserting rows:", JSON.stringify(validatedRows, null, 2));
-    // Fix: Use Promise.all to insert each row individually to avoid type issues
+  // Execute all insertions in parallel
+  if (insertPromises.length > 0) {
     try {
-      const insertPromises = validatedRows.map(row => 
-        supabase.from("supplier_quote_extra_cost_price_breaks").insert(row)
-      );
-      
-      const results = await Promise.all(insertPromises);
-      
-      // Check for errors
-      const errors = results.filter(r => r.error).map(r => r.error);
-      if (errors.length > 0) {
-        console.error("Insertion errors:", errors);
-        throw errors[0];
-      }
+      await Promise.all(insertPromises);
     } catch (error) {
-      console.error("Insertion error:", error);
+      console.error("Error inserting extra cost price breaks:", error);
       throw error;
     }
-  } else {
-    console.log("No valid rows to insert");
   }
 }
 

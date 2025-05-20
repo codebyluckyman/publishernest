@@ -1,6 +1,4 @@
 
-import React from "react";
-import { createRoot } from "react-dom/client";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -9,70 +7,76 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { createRoot } from "react-dom/client";
 
 interface ConfirmOptions {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   cancelText?: string;
   confirmText?: string;
+  destructive?: boolean;
 }
 
-// Promise-based confirm dialog that returns true if the user confirms
-export const confirm = (options: ConfirmOptions): Promise<boolean> => {
-  const { 
-    title, 
-    description, 
-    cancelText = "Cancel", 
-    confirmText = "Delete" 
-  } = options;
-
+export function confirm(options: ConfirmOptions = {}): Promise<boolean> {
   return new Promise((resolve) => {
-    // Create container for the dialog
-    const containerElement = document.createElement("div");
-    document.body.appendChild(containerElement);
+    const confirmRoot = document.createElement("div");
+    document.body.appendChild(confirmRoot);
     
-    // Create root
-    const root = createRoot(containerElement);
+    const { 
+      title = "Confirm Action",
+      description = "Are you sure you want to proceed?",
+      cancelText = "Cancel",
+      confirmText = "Confirm",
+      destructive = false,
+    } = options;
     
-    // Function to remove the component and clean up
     const cleanup = () => {
-      root.unmount();
-      if (containerElement.parentNode) {
-        containerElement.parentNode.removeChild(containerElement);
-      }
+      document.body.removeChild(confirmRoot);
     };
 
-    // Render component with callbacks
-    const handleConfirm = () => {
-      cleanup();
-      resolve(true);
-    };
+    const ConfirmDialog = () => {
+      const [open, setOpen] = useState(true);
 
-    const handleCancel = () => {
-      cleanup();
-      resolve(false);
+      const handleCancel = () => {
+        setOpen(false);
+        resolve(false);
+        setTimeout(cleanup, 100);
+      };
+      
+      const handleConfirm = () => {
+        setOpen(false);
+        resolve(true);
+        setTimeout(cleanup, 100);
+      };
+      
+      return (
+        <AlertDialog open={open} onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleCancel();
+          }
+        }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{title}</AlertDialogTitle>
+              <AlertDialogDescription>{description}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleCancel}>{cancelText}</AlertDialogCancel>
+              <AlertDialogAction 
+                className={destructive ? "bg-red-600 hover:bg-red-700" : undefined} 
+                onClick={handleConfirm}
+              >
+                {confirmText}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      );
     };
-
-    // Render the AlertDialog
-    root.render(
-      <AlertDialog open={true}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{title}</AlertDialogTitle>
-            <AlertDialogDescription>{description}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancel}>
-              {cancelText}
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm}>
-              {confirmText}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
+    
+    createRoot(confirmRoot).render(<ConfirmDialog />);
   });
-};
+}

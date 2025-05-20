@@ -1,4 +1,3 @@
-
 import { Product } from "@/types/product";
 import { ProductWithFormat, FormatLight } from "@/hooks/useProductsWithFormats";
 
@@ -29,11 +28,11 @@ export function adaptProductToProductWithFormat(product: Product): ProductWithFo
     cover_stock_print: product.format.cover_stock_print,
     internal_stock_print: product.format.internal_stock_print,
     orientation: product.format.orientation,
-    // Add the missing properties
-    end_papers_material: product.format.end_papers_material || null,
-    end_papers_print: product.format.end_papers_print || null,
-    spacers_material: product.format.spacers_material || null,
-    spacers_stock_print: product.format.spacers_stock_print || null,
+    // Add missing properties with default null values
+    end_papers_material: null,
+    end_papers_print: null,
+    spacers_material: null,
+    spacers_stock_print: null,
   };
 
   // Return the product with the complete format
@@ -45,9 +44,25 @@ export function adaptProductToProductWithFormat(product: Product): ProductWithFo
 
 /**
  * Adapts an array of products to ProductWithFormat
- * @param products Array of products to adapt
- * @returns Array of ProductWithFormat
+ * @param products Array of products or product objects to adapt
+ * @returns Array of ProductWithFormat objects
  */
-export function adaptProductsToProductWithFormat(products: Product[]): ProductWithFormat[] {
-  return products.map(product => adaptProductToProductWithFormat(product));
+export function adaptProductsToProductWithFormat(
+  products: (Product | { product: Product; customPrice?: number; customDescription?: string })[]
+): { product: ProductWithFormat; customPrice?: number; customDescription?: string }[] {
+  return products.map(item => {
+    if ('product' in item) {
+      // If the item has a product property, it's already in the right format
+      return {
+        product: adaptProductToProductWithFormat(item.product),
+        customPrice: item.customPrice,
+        customDescription: item.customDescription,
+      };
+    } else {
+      // Otherwise, wrap the product
+      return {
+        product: adaptProductToProductWithFormat(item as Product),
+      };
+    }
+  });
 }
