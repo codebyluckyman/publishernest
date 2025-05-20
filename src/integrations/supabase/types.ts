@@ -1377,6 +1377,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "purchase_orders_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -3184,6 +3191,7 @@ export type Database = {
           id: string
           notes: string | null
           organization_id: string
+          profile_id: string | null
           status: string | null
           supplier_name: string
           updated_at: string
@@ -3198,6 +3206,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id: string
+          profile_id?: string | null
           status?: string | null
           supplier_name: string
           updated_at?: string
@@ -3212,6 +3221,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id?: string
+          profile_id?: string | null
           status?: string | null
           supplier_name?: string
           updated_at?: string

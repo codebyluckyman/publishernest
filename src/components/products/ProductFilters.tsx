@@ -100,10 +100,10 @@ const ProductFilters = ({
         new Set(
           publishers?.map((p) => p.publisher_name).filter(Boolean) || []
         )
-      ) as string[];
+      ).sort() as string[];  // Sort alphabetically
       
       // Process publication dates to extract month-year
-      const pubMonthOptions = Array.from(
+      const pubMonthsUnsorted = Array.from(
         new Set(
           pubDates?.map(p => {
             if (!p.publication_date) return null;
@@ -111,18 +111,32 @@ const ProductFilters = ({
             return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
           }).filter(Boolean) || []
         )
-      ).sort();
+      );
+      
+      // Helper function to convert month-year string to Date for sorting
+      const parseMonthYear = (monthYear: string) => {
+        const [month, year] = monthYear.split(' ');
+        const monthIndex = new Date(Date.parse(`${month} 1, 2000`)).getMonth();
+        return new Date(parseInt(year), monthIndex, 1);
+      };
+      
+      // Sort publication months chronologically
+      const pubMonthOptions = pubMonthsUnsorted.sort((a, b) => {
+        const dateA = parseMonthYear(a);
+        const dateB = parseMonthYear(b);
+        return dateA.getTime() - dateB.getTime();
+      });
       
       const licenseOptions = Array.from(
         new Set(
           licenses?.map(p => p.license).filter(Boolean) || []
         )
-      );
+      ).sort();  // Sort alphabetically
       
       const formatOptions = formats?.map(format => ({
         id: format.id,
         name: format.format_name
-      })) || [];
+      })).sort((a, b) => a.name.localeCompare(b.name)) || [];  // Sort alphabetically by format name
 
       return {
         product_form: formOptions,
