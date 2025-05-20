@@ -91,7 +91,7 @@ const SharedPresentationView = () => {
   // Process display settings for backward compatibility
   const displaySettings = presentation.display_settings || {};
   
-  // Create a properly typed displaySettings object with safeguards for undefined properties
+  // Create a properly typed displaySettings object
   const processedDisplaySettings: PresentationDisplaySettings = {
     cardColumns: Array.isArray(displaySettings.cardColumns) 
       ? displaySettings.cardColumns as CardColumn[]

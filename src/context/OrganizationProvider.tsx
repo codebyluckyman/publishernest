@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
 import { useOrganizationApi } from "@/hooks/useOrganizationApi";
