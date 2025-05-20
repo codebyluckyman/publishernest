@@ -1,10 +1,12 @@
 
+import { useEffect } from "react";
 import { Organization } from "@/types/organization";
 import EditableProductTableContent from "./EditableProductTableContent";
 import { ProductEmptyState } from "./ProductEmptyState";
 import { useProductTableState } from "@/hooks/useProductTableState";
 import { formatDate, formatPrice, getProductFormLabel } from "@/utils/productUtils";
 import { SortDirection, SortField } from "@/types/product";
+import { useProductEdit } from "@/context/ProductEditContext";
 
 // Re-export these types so ProductTableContent can use them
 export type { SortDirection, SortField };
@@ -31,6 +33,8 @@ const EditableProductTable = ({
   onAddProduct,
   refreshTrigger = 0
 }: EditableProductTableProps) => {
+  const { setRefreshCallback } = useProductEdit();
+  
   const {
     products,
     isLoading,
@@ -45,6 +49,11 @@ const EditableProductTable = ({
     currentOrganization,
     refreshTrigger
   });
+
+  // Register the refetch callback with the ProductEditContext
+  useEffect(() => {
+    setRefreshCallback(() => refetch);
+  }, [refetch, setRefreshCallback]);
 
   if (isLoading) {
     return null;

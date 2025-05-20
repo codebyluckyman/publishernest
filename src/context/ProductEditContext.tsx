@@ -11,6 +11,8 @@ interface ProductEditContextProps {
   isSaving: boolean;
   currentlySavingProduct: string | null;
   currentlySavingField: string | null;
+  refreshData?: () => void;
+  setRefreshCallback: (callback: () => void) => void;
 }
 
 const ProductEditContext = createContext<ProductEditContextProps | undefined>(undefined);
@@ -20,7 +22,16 @@ export function ProductEditProvider({ children }: { children: ReactNode }) {
   const [isSaving, setIsSaving] = useState(false);
   const [currentlySavingProduct, setCurrentlySavingProduct] = useState<string | null>(null);
   const [currentlySavingField, setCurrentlySavingField] = useState<string | null>(null);
+  const [refreshCallback, setRefreshCallback] = useState<(() => void) | undefined>(undefined);
   const { toast } = useToast();
+
+  const handleEditModeChange = (mode: boolean) => {
+    setIsEditMode(mode);
+    // If turning off edit mode, trigger the refresh callback
+    if (!mode && refreshCallback) {
+      refreshCallback();
+    }
+  };
 
   const updateProductField = async (productId: string, field: string, value: any) => {
     setIsSaving(true);
@@ -58,11 +69,13 @@ export function ProductEditProvider({ children }: { children: ReactNode }) {
 
   const value = {
     isEditMode,
-    setEditMode: setIsEditMode,
+    setEditMode: handleEditModeChange,
     updateProductField,
     isSaving,
     currentlySavingProduct,
     currentlySavingField,
+    refreshData: refreshCallback,
+    setRefreshCallback,
   };
 
   return (
