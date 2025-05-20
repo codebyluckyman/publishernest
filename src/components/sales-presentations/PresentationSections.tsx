@@ -38,12 +38,16 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { usePresentationSections } from '@/hooks/usePresentationSections';
+import { useSectionItems } from '@/hooks/useSectionItems';
 import { Product } from '@/types/product';
 import { ProductSection } from './ProductSection';
-import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
+import { PresentationSection, PresentationItem, PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
 import { toast } from 'sonner';
 import { ProductWithFormat } from '@/hooks/useProductsWithFormats';
 import { adaptProductsToProductWithFormat } from "@/utils/productFormatAdapter";
+import { ViewToggle } from './ViewToggle';
+import { CarouselView } from './CarouselView';
+import { KanbanView } from './KanbanView';
 
 interface PresentationSectionsProps {
   presentationId: string | undefined;
@@ -81,19 +85,30 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
   const [editSectionOrder, setEditSectionOrder] = useState(1);
   const [sectionsData, setSectionsData] = useState<PresentationSection[]>([]);
   
+  // Add state for view mode
+  const [viewMode, setViewMode] = useState<PresentationViewMode>(
+    displaySettings?.defaultView || 'card'
+  );
+
+  // Add state for selected product for dialog view
+  const [selectedProduct, setSelectedProduct] = useState<{
+    product: ProductWithFormat;
+    customPrice?: number;
+    customDescription?: string;
+  } | null>(null);
+  
   // Load sections on component mount
   useEffect(() => {
     if (sections.data) {
       setSectionsData(sections.data);
     }
   }, [sections.data]);
+
+  // Get all section IDs to fetch items
+  const sectionIds = sectionsData.map(section => section.id);
   
-  // Update sectionsData when sections.data changes
-  useEffect(() => {
-    if (sections.data) {
-      setSectionsData(sections.data);
-    }
-  }, [sections.data]);
+  // Fetch items for all sections
+  const { data: itemsMap, isLoading: itemsLoading } = useSectionItems(sectionIds);
   
   const handleOpenDialog = () => {
     setIsDialogOpen(true);
@@ -226,31 +241,200 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
   const handleProductsChange = (products: { product: ProductWithFormat; customPrice?: number; customDescription?: string; }[]) => {
     setSelectedProducts(products);
   };
+
+  const handleSelectProduct = (product: {
+    product: ProductWithFormat;
+    customPrice?: number;
+    customDescription?: string;
+  }) => {
+    setSelectedProduct(product);
+    // Here you could open a dialog to show product details
+    console.log('Selected product:', product);
+  };
+
+  // Function to render section items based on view mode
+  const renderSectionItems = (section: PresentationSection) => {
+    if (!itemsMap || !itemsMap.get(section.id)) {
+      return <div>No items in this section</div>;
+    }
+
+    const items = itemsMap.get(section.id) || [];
+    
+    // Convert items to product format needed by view components
+    const products = items
+      .filter(item => item.item_type === 'product')
+      .map(item => {
+        // Find the corresponding product from the products prop
+        const product = products.find(p => p.id === item.item_id);
+        if (!product) {
+          return null;
+        }
+        
+        return {
+          product: adaptProductsToProductWithFormat([product])[0].product,
+          customPrice: item.custom_price,
+          customDescription: item.description,
+        };
+      })
+      .filter(Boolean); // Remove nulls
+    
+    if (products.length === 0) {
+      return <div className="text-muted-foreground py-4 text-center">No products in this section</div>;
+    }
+
+    switch (viewMode) {
+      case 'card':
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
+            {products.map((item) => (
+              <Card 
+                key={item.product.id}
+                className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleSelectProduct(item)}
+              >
+                {item.product.cover_image_url && (
+                  <div className="aspect-[3/4] w-full overflow-hidden">
+                    <img
+                      src={item.product.cover_image_url}
+                      alt={item.product.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <CardContent className="p-4">
+                  <h3 className="font-medium line-clamp-2">{item.product.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {item.product.isbn13 || 'No ISBN'}
+                  </p>
+                  {item.customPrice !== undefined ? (
+                    <p className="text-sm font-medium mt-1">${item.customPrice.toFixed(2)}</p>
+                  ) : item.product.list_price ? (
+                    <p className="text-sm font-medium mt-1">${item.product.list_price.toFixed(2)}</p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        );
+      
+      case 'table':
+        return (
+          <div className="mt-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">Cover</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>ISBN</TableHead>
+                  <TableHead>Price</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((item) => (
+                  <TableRow 
+                    key={item.product.id}
+                    className="cursor-pointer"
+                    onClick={() => handleSelectProduct(item)}
+                  >
+                    <TableCell>
+                      {item.product.cover_image_url ? (
+                        <div className="w-12 h-16 overflow-hidden">
+                          <img
+                            src={item.product.cover_image_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-16 bg-gray-100 flex items-center justify-center">
+                          <span className="text-xs text-gray-500">No image</span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>{item.product.title}</TableCell>
+                    <TableCell>{item.product.isbn13 || 'N/A'}</TableCell>
+                    <TableCell>
+                      {item.customPrice !== undefined
+                        ? `$${item.customPrice.toFixed(2)}`
+                        : item.product.list_price
+                        ? `$${item.product.list_price.toFixed(2)}`
+                        : 'N/A'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        );
+      
+      case 'carousel':
+        return (
+          <div className="mt-4">
+            <CarouselView 
+              products={products} 
+              displaySettings={displaySettings}
+              onSelectProduct={handleSelectProduct}
+            />
+          </div>
+        );
+      
+      case 'kanban':
+        return (
+          <div className="mt-4">
+            <KanbanView 
+              products={products} 
+              displaySettings={displaySettings}
+              onSelectProduct={handleSelectProduct}
+            />
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="text-muted-foreground py-4 text-center">
+            Unknown view mode: {viewMode}
+          </div>
+        );
+    }
+  };
   
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Presentation Sections</CardTitle>
-          <CardDescription>Manage sections for this presentation</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sectionsData.map((section) => (
-                <TableRow key={section.id}>
-                  <TableCell>{section.title}</TableCell>
-                  <TableCell>{section.section_type}</TableCell>
-                  <TableCell>{section.section_order}</TableCell>
-                  <TableCell className="text-right">
+    <div className="space-y-8">
+      {/* Presentation controls */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Presentation Sections</h2>
+        <div className="flex items-center gap-4">
+          {/* View toggle component */}
+          <ViewToggle 
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            features={displaySettings?.features}
+          />
+          
+          {isEditable && (
+            <Button onClick={handleOpenDialog}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Section
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      {/* Display each section */}
+      {sectionsData.length > 0 ? (
+        sectionsData
+          .sort((a, b) => (a.section_order || 0) - (b.section_order || 0))
+          .map((section) => (
+            <Card key={section.id} className="mb-6">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle>{section.title}</CardTitle>
+                  {section.description && (
+                    <CardDescription>{section.description}</CardDescription>
+                  )}
+                </div>
+                {isEditable && (
+                  <div className="flex items-center space-x-2">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -267,24 +451,35 @@ const PresentationSections: React.FC<PresentationSectionsProps> = ({
                       <Trash className="h-4 w-4 mr-2" />
                       Delete
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={4}>
-                  <Button onClick={handleOpenDialog}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Section
-                  </Button>
-                </TableCell>
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </CardContent>
-      </Card>
+                  </div>
+                )}
+              </CardHeader>
+              
+              <CardContent>
+                {/* Display section items based on view mode */}
+                {itemsLoading ? (
+                  <div className="py-4 text-center">Loading items...</div>
+                ) : (
+                  renderSectionItems(section)
+                )}
+              </CardContent>
+            </Card>
+          ))
+      ) : (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <p className="text-muted-foreground">No sections in this presentation yet.</p>
+            {isEditable && (
+              <Button onClick={handleOpenDialog} className="mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Section
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
       
+      {/* Section dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
