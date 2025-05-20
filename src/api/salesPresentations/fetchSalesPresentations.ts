@@ -52,6 +52,7 @@ export async function fetchSalesPresentations({
       .eq('organization_id', currentOrganization.id)
       .order('created_at', { ascending: false });
 
+    // Apply status filter if provided
     if (status) {
       query = query.eq('status', status);
     }

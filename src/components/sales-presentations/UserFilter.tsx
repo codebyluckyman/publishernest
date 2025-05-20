@@ -8,9 +8,16 @@ interface UserFilterProps {
   value: string;
   onValueChange: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function UserFilter({ userIds, value, onValueChange, className }: UserFilterProps) {
+export function UserFilter({ 
+  userIds, 
+  value, 
+  onValueChange, 
+  className,
+  disabled = false 
+}: UserFilterProps) {
   const [options, setOptions] = useState<FilterOption[]>([
     { value: "none", label: "All Users" }
   ]);
@@ -60,6 +67,7 @@ export function UserFilter({ userIds, value, onValueChange, className }: UserFil
       placeholder="Filter by user"
       label="Created By"
       className={className}
+      disabled={disabled}
     />
   );
 }

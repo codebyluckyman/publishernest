@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { PresentationCard } from '@/components/sales-presentations/PresentationCard';
 import { PresentationsTable } from '@/components/sales-presentations/PresentationsTable';
 import { UserFilter } from '@/components/sales-presentations/UserFilter';
+import { StatusFilter } from '@/components/sales-presentations/StatusFilter';
 import { ViewToggle } from '@/components/sales-presentations/ViewToggle';
 import { PlusCircle, Search, X } from 'lucide-react';
 import {
@@ -26,7 +27,18 @@ import { fetchUsersByIds } from '@/services/userService';
 const SalesPresentations = () => {
   const navigate = useNavigate();
   const { usePresentations, useDeletePresentation, useSharePresentation } = useSalesPresentations();
-  const { data: presentations = [], isLoading } = usePresentations();
+  
+  // Add status filter state
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [userFilter, setUserFilter] = useState('none');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFiltering, setIsFiltering] = useState(false);
+  
+  // Pass status filter to usePresentations when not "all"
+  const { data: presentations = [], isLoading } = usePresentations(
+    statusFilter !== 'all' ? statusFilter : undefined
+  );
+  
   const deletePresentation = useDeletePresentation();
   const sharePresentation = useSharePresentation();
   
@@ -39,14 +51,13 @@ const SalesPresentations = () => {
 
   // Changed default view mode to 'table' instead of 'card'
   const [viewMode, setViewMode] = useState<PresentationViewMode>('table');
-  const [userFilter, setUserFilter] = useState('none');
-  const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<Map<string, any>>(new Map());
 
   // Extract all unique user IDs from presentations
   useEffect(() => {
     const loadUsers = async () => {
       if (!presentations.length) return;
+      setIsFiltering(true);
       
       // Get unique user IDs
       const userIds = [...new Set(presentations.map(p => p.created_by))];
@@ -56,6 +67,8 @@ const SalesPresentations = () => {
         setUsers(usersMap);
       } catch (error) {
         console.error("Error fetching users:", error);
+      } finally {
+        setIsFiltering(false);
       }
     };
     
@@ -115,6 +128,9 @@ const SalesPresentations = () => {
     setSearchQuery('');
   };
 
+  // Check if we're in any loading/filtering state
+  const isProcessing = isLoading || isFiltering || deletePresentation.isPending || sharePresentation.isPending;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -145,21 +161,30 @@ const SalesPresentations = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pr-8"
+                disabled={isProcessing}
               />
               {searchQuery && (
                 <button 
                   onClick={handleClearSearch}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={isProcessing}
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
             </div>
+            <StatusFilter
+              value={statusFilter}
+              onValueChange={setStatusFilter}
+              className="w-full sm:w-[200px]"
+              disabled={isProcessing}
+            />
             <UserFilter
               userIds={presentations.map(p => p.created_by)}
               value={userFilter}
               onValueChange={setUserFilter}
-              className="w-full sm:w-[250px]"
+              className="w-full sm:w-[200px]"
+              disabled={isProcessing}
             />
           </>
         )}
@@ -210,12 +235,12 @@ const SalesPresentations = () => {
         <div className="text-center py-12">
           <h3 className="text-lg font-medium">No presentations found</h3>
           <p className="text-muted-foreground mt-1">
-            {userFilter !== 'none' || searchQuery 
+            {userFilter !== 'none' || searchQuery || statusFilter !== 'all'
               ? "No presentations found with the current filters. Try adjusting your search criteria."
               : "Create your first sales presentation to showcase your products to clients."
             }
           </p>
-          {userFilter === 'none' && !searchQuery && (
+          {userFilter === 'none' && !searchQuery && statusFilter === 'all' && (
             <Button onClick={handleCreateNew} className="mt-4">
               <PlusCircle className="h-4 w-4 mr-2" />
               Create First Presentation
