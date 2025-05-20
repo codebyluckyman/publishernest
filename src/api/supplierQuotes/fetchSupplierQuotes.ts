@@ -79,18 +79,26 @@ export async function fetchSupplierQuotes(
     filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
   }
   if (quoteRequestId) {
-    // Fix: Filter by quote_request_id directly if it exists
+    // Filter by quote_request_id or by quote_request.id if it's an object
     filteredData = filteredData.filter((q) => {
+      // Check if quote_request is a string that might be a JSON object
       if (typeof q.quote_request === 'string' && q.quote_request) {
         try {
           const quoteRequestObj = JSON.parse(q.quote_request);
           return quoteRequestObj && quoteRequestObj.id === quoteRequestId;
         } catch (e) {
+          // If it can't be parsed as JSON, it's not a match
           return false;
         }
-      } else if (q.quote_request && typeof q.quote_request === 'object') {
-        return q.quote_request.id === quoteRequestId;
-      } else if (q.quote_request_id) {
+      } 
+      // Check if quote_request is an object with an id property
+      else if (q.quote_request && typeof q.quote_request === 'object') {
+        if (q.quote_request.id) {
+          return q.quote_request.id === quoteRequestId;
+        }
+      } 
+      // Check if there's a direct quote_request_id property
+      else if (q.quote_request_id) {
         return q.quote_request_id === quoteRequestId;
       }
       return false;
@@ -98,18 +106,17 @@ export async function fetchSupplierQuotes(
   }
 
   // Transform the data to match the expected SupplierQuote type
-  const formattedQuotes = filteredData.map((quote) => {
+  const formattedQuotes: SupplierQuote[] = filteredData.map((quote: any) => {
     // Format the formats array to ensure it has format_name
-    const formattedFormats: SupplierQuoteFormat[] =
-      quote.formats && Array.isArray(quote.formats)
-        ? quote.formats.map((format: any) => ({
-            id: format.id || "",
-            supplier_quote_id: format.supplier_quote_id || "",
-            format_id: format.format_id || "",
-            quote_request_format_id: format.quote_request_format_id || "",
-            format_name: format.format?.format_name || "Unknown Format",
-          }))
-        : [];
+    const formattedFormats: SupplierQuoteFormat[] = Array.isArray(quote.formats)
+      ? quote.formats.map((format: any) => ({
+          id: format.id || "",
+          supplier_quote_id: format.supplier_quote_id || "",
+          format_id: format.format_id || "",
+          quote_request_format_id: format.quote_request_format_id || "",
+          format_name: format.format?.format_name || "Unknown Format",
+        }))
+      : [];
 
     // Fix: Safely extract the quote_request_id
     let safeQuoteRequestId = "";
@@ -117,19 +124,71 @@ export async function fetchSupplierQuotes(
       safeQuoteRequestId = quote.quote_request.id;
     } else if (quote.quote_request_id) {
       safeQuoteRequestId = quote.quote_request_id;
+    } else if (typeof quote.quote_request === 'string' && quote.quote_request) {
+      try {
+        const quoteRequestObj = JSON.parse(quote.quote_request);
+        if (quoteRequestObj && quoteRequestObj.id) {
+          safeQuoteRequestId = quoteRequestObj.id;
+        }
+      } catch (e) {
+        // Unable to parse, leave empty
+      }
     }
 
-    // Return a properly typed SupplierQuote with type assertion to handle mismatches
+    // Ensure extra_costs is always an array
+    const safeExtraCosts = Array.isArray(quote.extra_costs) 
+      ? quote.extra_costs 
+      : [];
+
+    // Ensure savings is always an array
+    const safeSavings = Array.isArray(quote.savings) 
+      ? quote.savings 
+      : [];
+
+    // Return a properly typed SupplierQuote with safe default values
     return {
-      ...quote,
       id: quote.id || "",
+      organization_id: quote.organization_id || "",
+      supplier_id: quote.supplier_id || "",
       quote_request_id: safeQuoteRequestId,
-      total_cost: quote.total_cost !== undefined ? quote.total_cost : 0,
-      submitted_at: quote.submitted_at || null,
+      currency: quote.currency || "",
+      description: quote.description || "",
+      status: (quote.status as SupplierQuoteStatus) || "draft",
       formats: formattedFormats,
-      extra_costs: [], // Default empty array for extra_costs
-      savings: [],     // Default empty array for savings
-    } as unknown as SupplierQuote; // Type assertion to handle the conversion
+      extra_costs: safeExtraCosts as SupplierQuoteExtraCost[],
+      savings: safeSavings,
+      total_cost: typeof quote.total_cost === 'number' ? quote.total_cost : 0,
+      submitted_at: quote.submitted_at || null,
+      notes: quote.notes || "",
+      created_at: quote.created_at || new Date().toISOString(),
+      updated_at: quote.updated_at || new Date().toISOString(),
+      // Add all other required fields with safe defaults
+      delivery_days: quote.delivery_days || 0,
+      due_date: quote.due_date || null,
+      packaging_carton_height: quote.packaging_carton_height || 0,
+      packaging_carton_length: quote.packaging_carton_length || 0,
+      packaging_carton_qty: quote.packaging_carton_qty || 0,
+      packaging_carton_weight: quote.packaging_carton_weight || 0,
+      packaging_carton_width: quote.packaging_carton_width || 0,
+      packaging_inner_height: quote.packaging_inner_height || 0,
+      packaging_inner_length: quote.packaging_inner_length || 0,
+      packaging_inner_qty: quote.packaging_inner_qty || 0,
+      packaging_inner_weight: quote.packaging_inner_weight || 0,
+      packaging_inner_width: quote.packaging_inner_width || 0,
+      packaging_outer_height: quote.packaging_outer_height || 0,
+      packaging_outer_length: quote.packaging_outer_length || 0,
+      packaging_outer_qty: quote.packaging_outer_qty || 0,
+      packaging_outer_weight: quote.packaging_outer_weight || 0,
+      packaging_outer_width: quote.packaging_outer_width || 0,
+      payment_terms: quote.payment_terms || "",
+      production_schedule: quote.production_schedule || null,
+      quote_reference: quote.quote_reference || "",
+      transportation_method: quote.transportation_method || "",
+      unit_of_measure_id: quote.unit_of_measure_id || "",
+      valid_from: quote.valid_from || null,
+      valid_to: quote.valid_to || null,
+      warehouse_id: quote.warehouse_id || null,
+    };
   });
 
   return formattedQuotes;

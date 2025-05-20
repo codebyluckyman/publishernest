@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import {
   ColumnDef,
@@ -37,6 +38,10 @@ interface PresentationsTableProps {
   presentations: SalesPresentation[];
   onEdit: (presentation: SalesPresentation) => void;
   onDuplicate: (presentation: SalesPresentation) => void;
+  isLoading?: boolean;
+  onDelete?: (id: string) => void;
+  onShare?: (id: string) => void;
+  users?: Map<string, any>;
 }
 
 function compare(a: any, b: any) {
@@ -51,6 +56,10 @@ export function PresentationsTable({
   presentations,
   onEdit,
   onDuplicate,
+  isLoading = false,
+  onDelete,
+  onShare,
+  users,
 }: PresentationsTableProps) {
   const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -61,15 +70,15 @@ export function PresentationsTable({
   const columns: ColumnDef<SalesPresentation>[] = useMemo(
     () => [
       {
-        accessorKey: "title",
+        accessor: "title", // Changed from accessorKey to accessor
         header: "Title",
       },
       {
-        accessorKey: "status",
+        accessor: "status", // Changed from accessorKey to accessor
         header: "Status",
       },
       {
-        accessorKey: "created_at",
+        accessor: "created_at", // Changed from accessorKey to accessor
         header: "Created At",
       },
       {
@@ -105,28 +114,36 @@ export function PresentationsTable({
               return;
             }
 
-            deletePresentation.mutate(presentation.id, {
-              onSuccess: () => {
-                toast({
-                  title: "Success",
-                  description: "Presentation deleted successfully.",
-                });
-              },
-              onError: (error: any) => {
-                toast({
-                  variant: "destructive",
-                  title: "Error",
-                  description: error.message,
-                });
-              },
-            });
+            if (onDelete) {
+              onDelete(presentation.id);
+            } else {
+              deletePresentation.mutate(presentation.id, {
+                onSuccess: () => {
+                  toast({
+                    title: "Success",
+                    description: "Presentation deleted successfully.",
+                  });
+                },
+                onError: (error: any) => {
+                  toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: error.message,
+                  });
+                },
+              });
+            }
           };
 
           const handleShare = async (
             event: React.MouseEvent<HTMLButtonElement, MouseEvent>
           ) => {
             event.stopPropagation();
-            navigate(`/sales-presentations/${presentation.id}/share`);
+            if (onShare) {
+              onShare(presentation.id);
+            } else {
+              navigate(`/sales-presentations/${presentation.id}/share`);
+            }
           };
 
           const handleView = async (
@@ -164,7 +181,7 @@ export function PresentationsTable({
         },
       },
     ],
-    [navigate, onEdit, onDuplicate, deletePresentation, toast]
+    [navigate, onEdit, onDuplicate, deletePresentation, toast, onDelete, onShare]
   );
 
   const [rowSelection, setRowSelection] = useState({});
@@ -226,7 +243,15 @@ export function PresentationsTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24">
+                  <div className="flex justify-center">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-primary"></div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
