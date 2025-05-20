@@ -31,8 +31,17 @@ import {
 } from "@/components/ui/table";
 import { SalesPresentation } from "@/types/salesPresentation";
 import { useToast } from "@/components/ui/use-toast";
-import { useDeletePresentation } from "@/hooks/useSalesPresentations";
-import { confirm } from "@/components/ui/confirm";
+import { useSalesPresentations } from "@/hooks/useSalesPresentations";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PresentationsTableProps {
   presentations: SalesPresentation[];
@@ -65,20 +74,23 @@ export function PresentationsTable({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [search, setSearch] = useState("");
   const { toast } = useToast();
+  const { useDeletePresentation } = useSalesPresentations();
   const deletePresentation = useDeletePresentation();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [presentationToDelete, setPresentationToDelete] = useState<SalesPresentation | null>(null);
 
   const columns: ColumnDef<SalesPresentation>[] = useMemo(
     () => [
       {
-        accessor: "title", // Changed from accessorKey to accessor
+        accessor: "title", 
         header: "Title",
       },
       {
-        accessor: "status", // Changed from accessorKey to accessor
+        accessor: "status", 
         header: "Status",
       },
       {
-        accessor: "created_at", // Changed from accessorKey to accessor
+        accessor: "created_at", 
         header: "Created At",
       },
       {
@@ -86,58 +98,23 @@ export function PresentationsTable({
         cell: ({ row }) => {
           const presentation = row.original;
 
-          const handleDuplicate = async (
-            event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-          ) => {
+          const handleDuplicate = (event: React.MouseEvent) => {
             event.stopPropagation();
             onDuplicate(presentation);
           };
 
-          const handleEdit = async (
-            event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-          ) => {
+          const handleEdit = (event: React.MouseEvent) => {
             event.stopPropagation();
             onEdit(presentation);
           };
 
-          const handleDelete = async (
-            event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-          ) => {
+          const handleDelete = (event: React.MouseEvent) => {
             event.stopPropagation();
-            const confirmed = await confirm({
-              title: "Delete Presentation",
-              description:
-                "Are you sure you want to delete this presentation? This action cannot be undone.",
-            });
-
-            if (!confirmed) {
-              return;
-            }
-
-            if (onDelete) {
-              onDelete(presentation.id);
-            } else {
-              deletePresentation.mutate(presentation.id, {
-                onSuccess: () => {
-                  toast({
-                    title: "Success",
-                    description: "Presentation deleted successfully.",
-                  });
-                },
-                onError: (error: any) => {
-                  toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: error.message,
-                  });
-                },
-              });
-            }
+            setPresentationToDelete(presentation);
+            setShowConfirmDialog(true);
           };
 
-          const handleShare = async (
-            event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-          ) => {
+          const handleShare = (event: React.MouseEvent) => {
             event.stopPropagation();
             if (onShare) {
               onShare(presentation.id);
@@ -146,9 +123,7 @@ export function PresentationsTable({
             }
           };
 
-          const handleView = async (
-            event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-          ) => {
+          const handleView = (event: React.MouseEvent) => {
             event.stopPropagation();
             navigate(`/sales-presentations/${presentation.id}/view`);
           };
@@ -181,7 +156,7 @@ export function PresentationsTable({
         },
       },
     ],
-    [navigate, onEdit, onDuplicate, deletePresentation, toast, onDelete, onShare]
+    [navigate, onEdit, onDuplicate, onShare]
   );
 
   const [rowSelection, setRowSelection] = useState({});
@@ -198,6 +173,32 @@ export function PresentationsTable({
       rowSelection,
     },
   });
+
+  const confirmDelete = () => {
+    if (!presentationToDelete) return;
+    
+    if (onDelete) {
+      onDelete(presentationToDelete.id);
+    } else {
+      deletePresentation.mutate(presentationToDelete.id, {
+        onSuccess: () => {
+          toast({
+            title: "Success",
+            description: "Presentation deleted successfully.",
+          });
+        },
+        onError: (error: any) => {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.message,
+          });
+        },
+      });
+    }
+    setShowConfirmDialog(false);
+    setPresentationToDelete(null);
+  };
 
   const sorted = useMemo(() => {
     if (!search) {
@@ -300,6 +301,24 @@ export function PresentationsTable({
           </Button>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Presentation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this presentation? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
