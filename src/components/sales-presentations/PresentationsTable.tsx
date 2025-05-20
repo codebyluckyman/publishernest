@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { 
   ColumnDef, 
   flexRender, 
@@ -21,9 +21,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { PresentationActions } from './PresentationActions';
 import { UserInfo } from '@/services/userService';
-import { usePagination, PageSize } from '@/hooks/usePagination';
-import { PaginationControls } from '@/components/ui/pagination-controls';
-import { memo } from 'react';
 
 interface PresentationsTableProps {
   presentations: SalesPresentation[];
@@ -35,7 +32,7 @@ interface PresentationsTableProps {
   users?: Map<string, UserInfo>;
 }
 
-export const PresentationsTable = memo(function PresentationsTable({ 
+export function PresentationsTable({ 
   presentations, 
   isLoading, 
   onDelete, 
@@ -45,26 +42,6 @@ export const PresentationsTable = memo(function PresentationsTable({
   users
 }: PresentationsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pageSize, setPageSize] = useState<PageSize>(10);
-
-  const {
-    currentPage,
-    totalPages,
-    currentData,
-    totalItems,
-    goToPage,
-    nextPage,
-    previousPage,
-    changePageSize,
-  } = usePagination({
-    data: presentations,
-    initialPageSize: pageSize
-  });
-
-  const getUsername = useCallback((userId: string) => {
-    const user = users?.get(userId);
-    return user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Unknown User';
-  }, [users]);
 
   const columns: ColumnDef<SalesPresentation>[] = [
     {
@@ -99,7 +76,12 @@ export const PresentationsTable = memo(function PresentationsTable({
       header: 'Created By',
       cell: ({ row }) => {
         const userId = row.original.created_by;
-        return <div>{getUsername(userId)}</div>;
+        const user = users?.get(userId);
+        return (
+          <div>
+            {user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Unknown User'}
+          </div>
+        );
       },
     },
     {
@@ -132,7 +114,7 @@ export const PresentationsTable = memo(function PresentationsTable({
   ];
 
   const table = useReactTable({
-    data: currentData,
+    data: presentations,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -217,19 +199,6 @@ export const PresentationsTable = memo(function PresentationsTable({
           </TableBody>
         </Table>
       </div>
-      
-      {totalItems > 0 && (
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          totalItems={totalItems}
-          onPageChange={goToPage}
-          onPreviousPage={previousPage}
-          onNextPage={nextPage}
-          onPageSizeChange={changePageSize}
-        />
-      )}
     </div>
   );
-});
+}
