@@ -1,6 +1,6 @@
 
 import ProductCategories from "@/components/products/ProductCategories";
-import { ProductTableContainer } from "@/components/products/ProductTableContainer";
+import { EditableProductTableContainer } from "@/components/products/EditableProductTableContainer";
 
 const Products = () => {
   return (
@@ -12,7 +12,7 @@ const Products = () => {
 
       <ProductCategories />
 
-      <ProductTableContainer />
+      <EditableProductTableContainer />
     </div>
   );
 };
