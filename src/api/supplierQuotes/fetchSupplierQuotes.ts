@@ -5,6 +5,7 @@ import {
   SupplierQuote,
   SupplierQuoteStatus,
   SupplierQuoteFormat,
+  SupplierQuoteExtraCost,
 } from "@/types/supplierQuote";
 
 interface FetchQuotesParams {
@@ -78,14 +79,21 @@ export async function fetchSupplierQuotes(
     filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
   }
   if (quoteRequestId) {
-    // Fix: Use quote_request property and check its id
+    // Fix: Filter by quote_request_id directly if it exists
     filteredData = filteredData.filter((q) => {
-      // Parse the quote_request JSON if needed
-      const quoteRequest = typeof q.quote_request === 'string' 
-        ? JSON.parse(q.quote_request) 
-        : q.quote_request;
-      
-      return quoteRequest && quoteRequest.id === quoteRequestId;
+      if (typeof q.quote_request === 'string' && q.quote_request) {
+        try {
+          const quoteRequestObj = JSON.parse(q.quote_request);
+          return quoteRequestObj && quoteRequestObj.id === quoteRequestId;
+        } catch (e) {
+          return false;
+        }
+      } else if (q.quote_request && typeof q.quote_request === 'object') {
+        return q.quote_request.id === quoteRequestId;
+      } else if (q.quote_request_id) {
+        return q.quote_request_id === quoteRequestId;
+      }
+      return false;
     });
   }
 
@@ -103,15 +111,25 @@ export async function fetchSupplierQuotes(
           }))
         : [];
 
-    // Return a properly typed SupplierQuote
+    // Fix: Safely extract the quote_request_id
+    let safeQuoteRequestId = "";
+    if (quote.quote_request && typeof quote.quote_request === 'object' && quote.quote_request.id) {
+      safeQuoteRequestId = quote.quote_request.id;
+    } else if (quote.quote_request_id) {
+      safeQuoteRequestId = quote.quote_request_id;
+    }
+
+    // Return a properly typed SupplierQuote with type assertion to handle mismatches
     return {
       ...quote,
-      // Ensure all required properties are present
-      quote_request_id: quote.quote_request?.id || "",
-      total_cost: quote.total_cost || 0,
+      id: quote.id || "",
+      quote_request_id: safeQuoteRequestId,
+      total_cost: quote.total_cost !== undefined ? quote.total_cost : 0,
       submitted_at: quote.submitted_at || null,
       formats: formattedFormats,
-    } as SupplierQuote;
+      extra_costs: [], // Default empty array for extra_costs
+      savings: [],     // Default empty array for savings
+    } as unknown as SupplierQuote; // Type assertion to handle the conversion
   });
 
   return formattedQuotes;

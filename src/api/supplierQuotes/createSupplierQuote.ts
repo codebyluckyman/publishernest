@@ -152,11 +152,21 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
   // 6. Insert only if we have valid rows
   if (validatedRows.length > 0) {
     console.log("Inserting rows:", JSON.stringify(validatedRows, null, 2));
-    const { error } = await supabase
-      .from("supplier_quote_extra_cost_price_breaks")
-      .insert(validatedRows);
-
-    if (error) {
+    // Fix: Use Promise.all to insert each row individually to avoid type issues
+    try {
+      const insertPromises = validatedRows.map(row => 
+        supabase.from("supplier_quote_extra_cost_price_breaks").insert(row)
+      );
+      
+      const results = await Promise.all(insertPromises);
+      
+      // Check for errors
+      const errors = results.filter(r => r.error).map(r => r.error);
+      if (errors.length > 0) {
+        console.error("Insertion errors:", errors);
+        throw errors[0];
+      }
+    } catch (error) {
       console.error("Insertion error:", error);
       throw error;
     }

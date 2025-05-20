@@ -72,11 +72,21 @@ export function useProductsWithFormats() {
       if (error) throw error;
       
       // Add missing default_price and default_currency properties to make it compatible with ProductWithFormat type
-      const productsWithDefaults = data.map(product => ({
-        ...product,
-        default_price: product.list_price,
-        default_currency: product.currency_code || 'USD',
-      }));
+      const productsWithDefaults = data.map(product => {
+        // Add these missing properties from FormatLight if they don't exist
+        if (product.format) {
+          product.format.end_papers_material = product.format.end_papers_material || null;
+          product.format.end_papers_print = product.format.end_papers_print || null;
+          product.format.spacers_material = product.format.spacers_material || null;
+          product.format.spacers_stock_print = product.format.spacers_stock_print || null;
+        }
+        
+        return {
+          ...product,
+          default_price: product.list_price,
+          default_currency: product.currency_code || 'USD',
+        };
+      });
       
       return productsWithDefaults as unknown as ProductWithFormat[];
     },
