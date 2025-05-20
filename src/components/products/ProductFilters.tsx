@@ -1,7 +1,6 @@
 
 import { FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
 import { MultiSelectFilter, MultiSelectOption } from "@/components/common/MultiSelectFilter";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +13,7 @@ export const FILTER_VALUES = {
   ALL_PUB_MONTHS: "ALL_PUB_MONTHS",
   ALL_LICENSES: "ALL_LICENSES",
   ALL_FORMAT_NAMES: "ALL_FORMAT_NAMES",
+  ALL_SERIES: "ALL_SERIES",
 };
 
 type FilterOptions = {
@@ -22,6 +22,7 @@ type FilterOptions = {
   pub_month: string | string[] | null;
   license: string | string[] | null;
   format_id: string | string[] | null;
+  series_name: string | string[] | null;
 };
 
 interface ProductFiltersProps {
@@ -45,7 +46,8 @@ const ProductFilters = ({
     publisher_name: [],
     pub_month: [],
     license: [],
-    format_id: [] 
+    format_id: [],
+    series_name: [] 
   } } = useQuery({
     queryKey: ["productFilterOptions", currentOrganization?.id],
     queryFn: async () => {
@@ -55,7 +57,8 @@ const ProductFilters = ({
           publisher_name: [],
           pub_month: [],
           license: [],
-          format_id: [] 
+          format_id: [],
+          series_name: []
         };
 
       const { data: productForms } = await supabase
@@ -89,6 +92,13 @@ const ProductFilters = ({
         .from("formats")
         .select("id, format_name")
         .eq("organization_id", currentOrganization.id);
+        
+      // Fetch series names
+      const { data: series } = await supabase
+        .from("products")
+        .select("series_name")
+        .eq("organization_id", currentOrganization.id)
+        .not("series_name", "is", null);
 
       const formOptions = Array.from(
         new Set(
@@ -137,6 +147,13 @@ const ProductFilters = ({
         id: format.id,
         name: format.format_name
       })).sort((a, b) => a.name.localeCompare(b.name)) || [];  // Sort alphabetically by format name
+      
+      // Sort series names alphabetically
+      const seriesOptions = Array.from(
+        new Set(
+          series?.map(p => p.series_name).filter(Boolean) || []
+        )
+      ).sort();
 
       return {
         product_form: formOptions,
@@ -144,6 +161,7 @@ const ProductFilters = ({
         pub_month: pubMonthOptions,
         license: licenseOptions,
         format_id: formatOptions,
+        series_name: seriesOptions,
       };
     },
     enabled: !!currentOrganization,
@@ -181,6 +199,8 @@ const ProductFilters = ({
         return FILTER_VALUES.ALL_LICENSES;
       case 'format_id':
         return FILTER_VALUES.ALL_FORMAT_NAMES;
+      case 'series_name':
+        return FILTER_VALUES.ALL_SERIES;
       default:
         return null;
     }
@@ -193,6 +213,7 @@ const ProductFilters = ({
       pub_month: FILTER_VALUES.ALL_PUB_MONTHS,
       license: FILTER_VALUES.ALL_LICENSES,
       format_id: FILTER_VALUES.ALL_FORMAT_NAMES,
+      series_name: FILTER_VALUES.ALL_SERIES,
     });
   };
 
@@ -202,7 +223,8 @@ const ProductFilters = ({
       filters.publisher_name !== FILTER_VALUES.ALL_PUBLISHERS ||
       filters.pub_month !== FILTER_VALUES.ALL_PUB_MONTHS ||
       filters.license !== FILTER_VALUES.ALL_LICENSES ||
-      filters.format_id !== FILTER_VALUES.ALL_FORMAT_NAMES
+      filters.format_id !== FILTER_VALUES.ALL_FORMAT_NAMES ||
+      filters.series_name !== FILTER_VALUES.ALL_SERIES
     );
   };
 
@@ -246,6 +268,15 @@ const ProductFilters = ({
     ...filterOptions.format_id.map((option) => ({
       value: option.id,
       label: option.name,
+    })),
+  ];
+  
+  // Add series options
+  const seriesOptions: MultiSelectOption[] = [
+    { value: FILTER_VALUES.ALL_SERIES, label: "All Series" },
+    ...filterOptions.series_name.map((option) => ({
+      value: option,
+      label: option,
     })),
   ];
   
@@ -315,6 +346,18 @@ const ProductFilters = ({
             placeholder="Select Format Name"
             emptyValue={FILTER_VALUES.ALL_FORMAT_NAMES}
             allOptionValue={FILTER_VALUES.ALL_FORMAT_NAMES}
+          />
+        )}
+        
+        {filterOptions.series_name.length > 0 && (
+          <MultiSelectFilter
+            label="Series"
+            value={normalizeSingleOrArrayValue(filters.series_name, FILTER_VALUES.ALL_SERIES)}
+            onChange={(values) => handleMultiFilterChange("series_name", values)}
+            options={seriesOptions}
+            placeholder="Select Series"
+            emptyValue={FILTER_VALUES.ALL_SERIES}
+            allOptionValue={FILTER_VALUES.ALL_SERIES}
           />
         )}
       </div>
