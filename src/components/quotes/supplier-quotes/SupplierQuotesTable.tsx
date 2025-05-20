@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import {
   ColumnDef,
@@ -234,6 +233,7 @@ export function SupplierQuotesTable({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="min-w-[120px]"
         >
           Supplier
           {column.getIsSorted() === "desc" ? (
@@ -250,6 +250,7 @@ export function SupplierQuotesTable({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="min-w-[120px]"
         >
           Reference
           {column.getIsSorted() === "desc" ? (
@@ -263,7 +264,7 @@ export function SupplierQuotesTable({
         const reference = row.getValue("reference");
         const referenceId = row.original.reference_id;
         return (
-          <div>
+          <div className="min-w-[120px]">
             {reference ? (
               <span>{reference as string}</span>
             ) : (
@@ -312,7 +313,7 @@ export function SupplierQuotesTable({
               onClick={() =>
                 column.toggleSorting(column.getIsSorted() === "asc")
               }
-              className="justify-center"
+              className="justify-center min-w-[150px]"
             >
               Title
               {column.getIsSorted() === "desc" ? (
@@ -326,7 +327,7 @@ export function SupplierQuotesTable({
       },
       cell: ({ row }) => {
         return (
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-[150px]">
             <span>{row.original?.quote_request?.title}</span>
             <span className="text-xs text-muted-foreground font-mono">
               {row.original?.reference_id || "No reference"}
@@ -496,17 +497,14 @@ export function SupplierQuotesTable({
     },
     {
       accessorKey: "format",
-      header: () => <div className="text-center">Format</div>,
+      header: () => <div className="text-center min-w-[200px]">Format</div>,
       cell: ({ row }: any) => {
         return (
-          <div className="flex justify-center min-w-[200px] ">
+          <div className="flex justify-center min-w-[200px]">
             {row.original?.formats?.length > 0 ? (
               <div className="flex flex-wrap gap-1">
                 {row.original?.formats?.map((item: any, index: number) => (
-                  // <span key={index} className="px-2 py-1 rounded-full text-xs break-words font-medium bg-blue-100">
-                  //   {item?.format_name}
-                  // </span>
-                  <Badge>{item?.format_name}</Badge>
+                  <Badge key={index}>{item?.format_name}</Badge>
                 ))}
               </div>
             ) : (
@@ -567,73 +565,75 @@ export function SupplierQuotesTable({
   });
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : filteredQuotes.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="cursor-pointer hover:bg-gray-50"
-                  onClick={() => handleViewDetails(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={
-                        cell.column.id === "actions"
-                          ? (e) => e.stopPropagation()
-                          : undefined
-                      }
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+    <div className="w-full">
+      <div className="overflow-x-auto" style={{ minWidth: "100%" }}>
+        <div className="rounded-md border min-w-[1200px]">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : filteredQuotes.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="cursor-pointer hover:bg-gray-50"
+                    onClick={() => handleViewDetails(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        onClick={
+                          cell.column.id === "actions"
+                            ? (e) => e.stopPropagation()
+                            : undefined
+                        }
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       <div className="flex items-center justify-between space-x-2 py-4">

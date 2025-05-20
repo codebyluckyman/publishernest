@@ -1,3 +1,4 @@
+
 import { QuoteRequest } from "@/types/quoteRequest";
 import { Table, TableBody } from "@/components/ui/table";
 import { useSuppliersApi } from "@/hooks/useSuppliersApi";
@@ -102,33 +103,37 @@ export function QuoteRequestTable({
         onClearSelection={clearSelection}
       />
 
-      <Table>
-        <QuoteRequestTableHeader
-          sortField={sortField}
-          sortDirection={sortDirection}
-          handleSort={handleSort}
-          selectedRows={selectedRows}
-          allRowIds={allQuoteRequestIds}
-          onSelectAll={(selected) =>
-            handleSelectAll(selected, allQuoteRequestIds)
-          }
-        />
-        <TableBody>
-          {paginatedQuoteRequests.map((request) => (
-            <QuoteRequestRow
-              key={request.id}
-              request={request}
-              onStatusChange={handleStatusChange}
-              onDelete={handleDelete}
-              onViewDetails={viewDetails}
-              onEdit={editRequest}
-              onViewSupplierQuotes={handleViewSupplierQuotes}
-              isSelected={selectedRows.includes(request.id)}
-              onSelectRow={handleSelectRow}
+      <div className="overflow-x-auto">
+        <div className="min-w-[1000px]">
+          <Table>
+            <QuoteRequestTableHeader
+              sortField={sortField}
+              sortDirection={sortDirection}
+              handleSort={handleSort}
+              selectedRows={selectedRows}
+              allRowIds={allQuoteRequestIds}
+              onSelectAll={(selected) =>
+                handleSelectAll(selected, allQuoteRequestIds)
+              }
             />
-          ))}
-        </TableBody>
-      </Table>
+            <TableBody>
+              {paginatedQuoteRequests.map((request) => (
+                <QuoteRequestRow
+                  key={request.id}
+                  request={request}
+                  onStatusChange={handleStatusChange}
+                  onDelete={handleDelete}
+                  onViewDetails={viewDetails}
+                  onEdit={editRequest}
+                  onViewSupplierQuotes={handleViewSupplierQuotes}
+                  isSelected={selectedRows.includes(request.id)}
+                  onSelectRow={handleSelectRow}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
 
       <PaginationControls
         currentPage={currentPage}
