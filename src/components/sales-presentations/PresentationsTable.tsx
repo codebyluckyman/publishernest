@@ -125,7 +125,7 @@ export function PresentationsTable({
 
           const handleView = (event: React.MouseEvent) => {
             event.stopPropagation();
-            navigate(`/sales-presentations/${presentation.id}/view`);
+            navigate(`/sales-presentations/${presentation.id}`);
           };
 
           return (

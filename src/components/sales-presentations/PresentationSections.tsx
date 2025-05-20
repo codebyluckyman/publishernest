@@ -44,7 +44,6 @@ import { ProductSection } from './ProductSection';
 import { PresentationSection, PresentationItem, PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
 import { toast } from 'sonner';
 import { ProductWithFormat, useProductsWithFormats } from '@/hooks/useProductsWithFormats';
-import { adaptProductsToProductWithFormat } from "@/utils/productFormatAdapter";
 import { ViewToggle } from './ViewToggle';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
