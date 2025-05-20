@@ -1,102 +1,58 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { useOrganization } from './useOrganization';
+import { useState, useEffect } from 'react';
 import { Product } from '@/types/product';
-import { Format } from '@/types/format';
-
-// Define a complete format interface for the component needs
-export interface FormatLight {
-  id: string;
-  format_name: string | null;
-  tps_height_mm: number | null;
-  tps_width_mm: number | null;
-  tps_depth_mm: number | null;
-  tps_plc_height_mm: number | null;
-  tps_plc_width_mm: number | null;
-  tps_plc_depth_mm: number | null;
-  extent: string | null;
-  binding_type: string | null;
-  cover_material: string | null;
-  internal_material: string | null;
-  cover_stock_print: string | null;
-  internal_stock_print: string | null;
-  orientation: string | null;
-  end_papers_material: string | null;
-  end_papers_print: string | null;
-  spacers_material: string | null;
-  spacers_stock_print: string | null;
-}
+import { FormatLight } from '@/types/format';
+import { supabase } from '@/integrations/supabase/client';
+import { useOrganization } from './useOrganization';
 
 export interface ProductWithFormat extends Product {
-  format?: FormatLight | null;
+  format: FormatLight;
 }
 
-export function useProductsWithFormats() {
+export const useProductsWithFormats = () => {
+  const [products, setProducts] = useState<ProductWithFormat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const { currentOrganization } = useOrganization();
-  
-  const query = useQuery({
-    queryKey: ['products-with-formats', currentOrganization?.id],
-    queryFn: async () => {
-      if (!currentOrganization) return [];
-      
-      const { data, error } = await supabaseCustom
-        .from('products')
-        .select(`
-          *,
-          format:format_id (
-            id,
-            format_name,
-            tps_height_mm,
-            tps_width_mm,
-            tps_depth_mm,
-            tps_plc_height_mm,
-            tps_plc_width_mm,
-            tps_plc_depth_mm,
-            extent,
-            binding_type,
-            cover_material,
-            internal_material,
-            cover_stock_print,
-            internal_stock_print,
-            orientation,
-            end_papers_material,
-            end_papers_print,
-            spacers_material,
-            spacers_stock_print
-          )
-        `)
-        .eq('organization_id', currentOrganization.id)
-        .order('title');
+
+  useEffect(() => {
+    if (!currentOrganization) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchProductsWithFormats = async () => {
+      try {
+        setLoading(true);
         
-      if (error) throw error;
-      
-      // Add missing default_price and default_currency properties to make it compatible with ProductWithFormat type
-      const productsWithDefaults = data.map(product => {
-        // Add these missing properties from FormatLight if they don't exist
-        if (product.format) {
-          product.format.end_papers_material = product.format.end_papers_material || null;
-          product.format.end_papers_print = product.format.end_papers_print || null;
-          product.format.spacers_material = product.format.spacers_material || null;
-          product.format.spacers_stock_print = product.format.spacers_stock_print || null;
-        }
-        
-        return {
-          ...product,
-          default_price: product.list_price,
-          default_currency: product.currency_code || 'USD',
-        };
-      });
-      
-      return productsWithDefaults as unknown as ProductWithFormat[];
-    },
-    enabled: !!currentOrganization,
-  });
-  
-  return {
-    products: query.data || [],
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-  };
-}
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            format:format_id(
+              id, format_name, binding_type, cover_material, cover_stock_print, 
+              internal_material, internal_stock_print, orientation, extent,
+              tps_height_mm, tps_width_mm, tps_depth_mm,
+              plc_height_mm, plc_width_mm, plc_depth_mm,
+              end_papers_material, end_papers_print, spacers_material, spacers_stock_print
+            )
+          `)
+          .eq('organization_id', currentOrganization.id);
+
+        if (error) throw error;
+
+        // Cast to ProductWithFormat[] since we know the structure matches
+        setProducts(data as unknown as ProductWithFormat[]);
+      } catch (err) {
+        console.error('Error fetching products with formats:', err);
+        setError(err instanceof Error ? err : new Error('Failed to fetch products'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductsWithFormats();
+  }, [currentOrganization]);
+
+  return { products, loading, error };
+};

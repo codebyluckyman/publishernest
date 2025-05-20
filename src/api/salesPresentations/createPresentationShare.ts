@@ -17,9 +17,20 @@ export async function createPresentationShare({
   expiresAt,
 }: CreatePresentationShareParams): Promise<string | null> {
   try {
-    // Generate a unique identifier for the share link
-    const shareToken = uuidv4().replace(/-/g, '').substring(0, 12);
-    const shareLink = `${window.location.origin}/shared/presentation/${shareToken}`;
+    // First, get the presentation's access code
+    const { data: presentation, error: presentationError } = await supabaseCustom
+      .from('sales_presentations')
+      .select('access_code')
+      .eq('id', presentationId)
+      .single();
+
+    if (presentationError || !presentation) {
+      console.error('Error fetching presentation access code:', presentationError);
+      return null;
+    }
+
+    // Generate the share link using the access code
+    const shareLink = `${window.location.origin}/shared/presentation/${presentation.access_code}`;
 
     const { data, error } = await supabaseCustom
       .from('presentation_shares')

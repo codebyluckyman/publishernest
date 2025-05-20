@@ -19,13 +19,12 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
     return;
   }
 
-  // Use Promise.all to handle multiple insertions
-  const insertPromises = [];
+  const priceBreaksToInsert = [];
 
   for (const extraCost of eligibleExtraCosts) {
     // 2. Handle simple unit_cost case
     if (extraCost.unit_cost !== null && extraCost.unit_cost !== undefined) {
-      const recordToInsert = {
+      priceBreaksToInsert.push({
         supplier_quote_id: supplierQuoteId,
         extra_cost_id: extraCost.extra_cost_id,
         unit_cost: extraCost.unit_cost,
@@ -40,103 +39,129 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
         unit_cost_9: null,
         unit_cost_10: null,
         unit_of_measure_id: extraCost.unit_of_measure_id,
-      };
-      
-      insertPromises.push(
-        supabase
-          .from("supplier_quote_extra_cost_price_breaks")
-          .insert(recordToInsert)
-      );
+      });
       continue;
     }
 
     // 3. Handle array cases
-    const quantityArr = [2000, 2500, 3000, 5000, 7500, 10000, 15000, 20000, 25000];
-    
-    // Process each possible unit_cost_X field (1-10)
+    const arrayFields = [];
+    let maxArrayLength = 0;
+
+    // Find all array fields
     for (let i = 1; i <= 10; i++) {
       const fieldName = `unit_cost_${i}`;
-      const values = extraCost[fieldName];
-      
-      // Skip if no values for this field
-      if (!values || (Array.isArray(values) && values.length === 0)) {
-        continue;
+      if (Array.isArray(extraCost[fieldName])) {
+        arrayFields.push({ fieldName, values: extraCost[fieldName] });
+        maxArrayLength = Math.max(maxArrayLength, extraCost[fieldName].length);
       }
-      
-      // Handle array values - create a separate record for each value
-      if (Array.isArray(values)) {
-        for (let index = 0; index < values.length; index++) {
-          const value = values[index];
-          if (value !== null && value !== undefined) {
-            const newRow: Record<string, any> = {
-              supplier_quote_id: supplierQuoteId,
-              extra_cost_id: extraCost.extra_cost_id,
-              unit_of_measure_id: extraCost.unit_of_measure_id,
-              quantity: quantityArr[index] || null,
-              unit_cost: null,
-              unit_cost_1: null,
-              unit_cost_2: null,
-              unit_cost_3: null,
-              unit_cost_4: null,
-              unit_cost_5: null,
-              unit_cost_6: null,
-              unit_cost_7: null,
-              unit_cost_8: null,
-              unit_cost_9: null,
-              unit_cost_10: null,
-            };
-            
-            // Set only the relevant field
-            newRow[fieldName] = value;
-            
-            insertPromises.push(
-              supabase
-                .from("supplier_quote_extra_cost_price_breaks")
-                .insert(newRow)
-            );
-          }
-        }
-      } 
-      // Handle single value
-      else if (values !== null && values !== undefined) {
-        const newRow: Record<string, any> = {
+    }
+
+    const quantities = [
+      "2,000",
+      "2,500",
+      "3,000",
+      "5,000",
+      "7,500",
+      "10,000",
+      "15,000",
+      "20,000",
+      "25,000",
+    ];
+
+    // Convert to number[]
+    const quantityArr = quantities.map((q) =>
+      parseInt(q.replace(/,/g, ""), 10)
+    );
+
+    // Process array indices
+    if (arrayFields.length > 0) {
+      for (let index = 0; index < maxArrayLength; index++) {
+        const newRow = {
           supplier_quote_id: supplierQuoteId,
           extra_cost_id: extraCost.extra_cost_id,
-          unit_of_measure_id: extraCost.unit_of_measure_id,
-          quantity: null,
           unit_cost: null,
-          unit_cost_1: null,
-          unit_cost_2: null,
-          unit_cost_3: null,
-          unit_cost_4: null,
-          unit_cost_5: null,
-          unit_cost_6: null,
-          unit_cost_7: null,
-          unit_cost_8: null,
-          unit_cost_9: null,
-          unit_cost_10: null,
+          unit_of_measure_id: extraCost.unit_of_measure_id,
+          quantity: quantityArr[index] || null,
+          ...Object.fromEntries(
+            Array.from({ length: 10 }, (_, i) => [`unit_cost_${i + 1}`, null])
+          ),
         };
-        
-        // Set only the relevant field
-        newRow[fieldName] = values;
-        
-        insertPromises.push(
-          supabase
-            .from("supplier_quote_extra_cost_price_breaks")
-            .insert(newRow)
-        );
+
+        let hasValue = false;
+
+        // Set values from arrays
+        for (const { fieldName, values } of arrayFields) {
+          if (index < values.length && values[index] !== null) {
+            newRow[fieldName] = values[index];
+            hasValue = true;
+          }
+        }
+
+        // Only add if at least one unit_cost has value
+        if (hasValue) {
+          priceBreaksToInsert.push(newRow);
+        }
+      }
+    } else {
+      // 4. Handle non-array values
+      const newRow = {
+        supplier_quote_id: supplierQuoteId,
+        extra_cost_id: extraCost.extra_cost_id,
+        unit_cost: null,
+        unit_of_measure_id: extraCost.unit_of_measure_id,
+        ...Object.fromEntries(
+          Array.from({ length: 10 }, (_, i) => [`unit_cost_${i + 1}`, null])
+        ),
+      };
+
+      let hasValue = false;
+
+      // Set non-array values
+      for (let i = 1; i <= 10; i++) {
+        const fieldName = `unit_cost_${i}`;
+        if (
+          extraCost[fieldName] !== null &&
+          extraCost[fieldName] !== undefined
+        ) {
+          newRow[fieldName] = extraCost[fieldName];
+          hasValue = true;
+        }
+      }
+
+      // Only add if at least one unit_cost has value
+      if (hasValue) {
+        priceBreaksToInsert.push(newRow);
       }
     }
   }
 
-  // Execute all insertions in parallel
-  if (insertPromises.length > 0) {
-    try {
-      await Promise.all(insertPromises);
-    } catch (error) {
-      console.error("Error inserting extra cost price breaks:", error);
+  // 5. Final nuclear validation
+  const validatedRows = priceBreaksToInsert.filter((row) => {
+    // Check unit_cost first
+    if (row.unit_cost !== null) return true;
+
+    // Check all unit_cost_X fields
+    for (let i = 1; i <= 10; i++) {
+      if (row[`unit_cost_${i}`] !== null && row[`unit_cost_${i}`] !== undefined)
+        return true;
+    }
+
+    return false;
+  });
+
+  // 6. Insert only if we have valid rows
+  if (validatedRows.length > 0) {
+    console.log("Inserting rows:", JSON.stringify(validatedRows, null, 2));
+    const { error } = await supabase
+      .from("supplier_quote_extra_cost_price_breaks")
+      .insert(validatedRows);
+
+    if (error) {
+      console.error("Insertion error:", error);
       throw error;
     }
+  } else {
+    console.log("No valid rows to insert");
   }
 }
 
@@ -360,10 +385,8 @@ export async function createSupplierQuote(
       (ec) => ec.unit_of_measure_id === "d53da411-5061-4710-aa1d-75a638c45dc6"
     );
 
-    // Handle standard extra costs (with primitive number types)
     const standardCostsToInsert = standardExtraCosts
       .filter((ec) => {
-        // Only insert extra costs that have any values
         const hasValue =
           (ec.unit_cost !== null && ec.unit_cost !== undefined) ||
           (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) ||
@@ -383,27 +406,41 @@ export async function createSupplierQuote(
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
         unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
-        unit_cost_1: typeof ec.unit_cost_1 === 'number' ? ec.unit_cost_1 : null,
-        unit_cost_2: typeof ec.unit_cost_2 === 'number' ? ec.unit_cost_2 : null,
-        unit_cost_3: typeof ec.unit_cost_3 === 'number' ? ec.unit_cost_3 : null,
-        unit_cost_4: typeof ec.unit_cost_4 === 'number' ? ec.unit_cost_4 : null,
-        unit_cost_5: typeof ec.unit_cost_5 === 'number' ? ec.unit_cost_5 : null,
-        unit_cost_6: typeof ec.unit_cost_6 === 'number' ? ec.unit_cost_6 : null,
-        unit_cost_7: typeof ec.unit_cost_7 === 'number' ? ec.unit_cost_7 : null,
-        unit_cost_8: typeof ec.unit_cost_8 === 'number' ? ec.unit_cost_8 : null,
-        unit_cost_9: typeof ec.unit_cost_9 === 'number' ? ec.unit_cost_9 : null,
-        unit_cost_10: typeof ec.unit_cost_10 === 'number' ? ec.unit_cost_10 : null,
+        unit_cost_1: ec.unit_cost_1 === undefined ? null : ec.unit_cost_1,
+        unit_cost_2: ec.unit_cost_2 === undefined ? null : ec.unit_cost_2,
+        unit_cost_3: ec.unit_cost_3 === undefined ? null : ec.unit_cost_3,
+        unit_cost_4: ec.unit_cost_4 === undefined ? null : ec.unit_cost_4,
+        unit_cost_5: ec.unit_cost_5 === undefined ? null : ec.unit_cost_5,
+        unit_cost_6: ec.unit_cost_6 === undefined ? null : ec.unit_cost_6,
+        unit_cost_7: ec.unit_cost_7 === undefined ? null : ec.unit_cost_7,
+        unit_cost_8: ec.unit_cost_8 === undefined ? null : ec.unit_cost_8,
+        unit_cost_9: ec.unit_cost_9 === undefined ? null : ec.unit_cost_9,
+        unit_cost_10: ec.unit_cost_10 === undefined ? null : ec.unit_cost_10,
         unit_of_measure_id: ec.unit_of_measure_id,
       }));
 
-    // Handle price break extra costs (those need a different approach)
     const priceBreakCostsToInsert = priceBreakExtraCosts
-      .filter((ec) => ec.extra_cost_id)
+      .filter((ec) => {
+        const hasValue =
+          (ec.unit_cost !== null && ec.unit_cost !== undefined) ||
+          (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) ||
+          (ec.unit_cost_2 !== null && ec.unit_cost_2 !== undefined) ||
+          (ec.unit_cost_3 !== null && ec.unit_cost_3 !== undefined) ||
+          (ec.unit_cost_4 !== null && ec.unit_cost_4 !== undefined) ||
+          (ec.unit_cost_5 !== null && ec.unit_cost_5 !== undefined) ||
+          (ec.unit_cost_6 !== null && ec.unit_cost_6 !== undefined) ||
+          (ec.unit_cost_7 !== null && ec.unit_cost_7 !== undefined) ||
+          (ec.unit_cost_8 !== null && ec.unit_cost_8 !== undefined) ||
+          (ec.unit_cost_9 !== null && ec.unit_cost_9 !== undefined) ||
+          (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
+
+        return hasValue;
+      })
       .map((ec) => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id ? ec.extra_cost_id : null,
         unit_cost: null,
-        unit_cost_1: null, 
+        unit_cost_1: null,
         unit_cost_2: null,
         unit_cost_3: null,
         unit_cost_4: null,

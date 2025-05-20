@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import PresentationSections from "@/components/sales-presentations/PresentationSections";
+import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
 import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardGridLayout, CarouselSettings } from '@/types/salesPresentation';
 
 // Default values for display settings
