@@ -46,9 +46,3 @@ port = 54328
 
 [functions.update-stock]
 verify_jwt = false
-
-[functions.get-shared-presentation]
-verify_jwt = false
-
-[functions.update-shared-presentation-analytics]
-verify_jwt = false
