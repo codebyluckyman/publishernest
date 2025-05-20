@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,19 +15,19 @@ export default function SalesPresentations() {
   const { 
     usePresentations, 
     useCreatePresentation,
-    useUpdatePresentation // Use the correct method names from the hook
+    useUpdatePresentation 
   } = useSalesPresentations();
   
   const { data: presentations, isLoading } = usePresentations();
   const createPresentation = useCreatePresentation();
-  const duplicatePresentation = useUpdatePresentation(); // Use update for duplicating
+  const duplicatePresentation = useUpdatePresentation();
   
   // Map to store user information
   const [usersMap] = useState<Map<string, any>>(new Map());
   
   const handleCreatePresentation = () => {
     createPresentation.mutate(
-      { title: "New Presentation" }, // Remove the status property as it's not in the type
+      { title: "New Presentation" },
       {
         onSuccess: (presentationId) => {
           navigate(`/sales-presentations/${presentationId}`);
@@ -76,14 +75,6 @@ export default function SalesPresentations() {
   
   const handleSharePresentation = (id: string) => {
     navigate(`/sales-presentations/${id}/share`);
-  };
-  
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "MMM d, yyyy");
-    } catch (error) {
-      return dateString;
-    }
   };
 
   return (

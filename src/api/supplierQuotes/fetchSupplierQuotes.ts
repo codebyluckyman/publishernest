@@ -92,19 +92,22 @@ export async function fetchSupplierQuotes(
       else if (q.quote_request && typeof q.quote_request === 'object') {
         // Type assertion to access id property safely
         const quoteReqObj = q.quote_request as { id?: string };
-        if (typeof quoteReqObj.id !== 'undefined') {
+        if (quoteReqObj.id !== undefined) {
           return quoteReqObj.id === quoteRequestId;
         }
       } 
-      // Handle both cases - quote_request_id might be directly in q or within q.quote_request
+      
+      // Handle direct quote_request_id property if it exists
       else if (q.quote_request_id) {
         return q.quote_request_id === quoteRequestId;
       }
-      // Safely access quote_request.quote_request_id if it exists
+      
+      // Check if quote_request object has quote_request_id property
       else if (q.quote_request && typeof q.quote_request === 'object') {
-        const quoteReqObj = q.quote_request as { quote_request_id?: string };
-        return quoteReqObj.quote_request_id === quoteRequestId;
+        const quoteReqObj = q.quote_request as any;
+        return quoteReqObj.id === quoteRequestId;
       }
+      
       return false;
     });
   }
@@ -215,5 +218,5 @@ export async function fetchSupplierQuotes(
     };
   });
 
-  return formattedQuotes as SupplierQuote[];
+  return formattedQuotes;
 }

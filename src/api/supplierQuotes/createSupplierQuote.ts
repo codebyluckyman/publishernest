@@ -83,7 +83,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
     // Process array indices
     if (arrayFields.length > 0) {
       for (let index = 0; index < maxArrayLength; index++) {
-        const newRow = {
+        const newRow: Record<string, any> = {
           supplier_quote_id: supplierQuoteId,
           extra_cost_id: extraCost.extra_cost_id,
           unit_cost: null,
@@ -106,7 +106,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
         // Set values from arrays
         for (const { fieldName, values } of arrayFields) {
           if (index < values.length && values[index] !== null) {
-            newRow[fieldName as keyof typeof newRow] = values[index] as number;
+            newRow[fieldName] = values[index];
             hasValue = true;
           }
         }
@@ -122,7 +122,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
       }
     } else {
       // 4. Handle non-array values
-      const newRow = {
+      const newRow: Record<string, any> = {
         supplier_quote_id: supplierQuoteId,
         extra_cost_id: extraCost.extra_cost_id,
         unit_cost: null,
@@ -148,7 +148,7 @@ export async function insertSupplierQuoteExtraCostPriceBreaks(
           extraCost[fieldName] !== null && 
           extraCost[fieldName] !== undefined
         ) {
-          newRow[fieldName as keyof typeof newRow] = extraCost[fieldName] as number;
+          newRow[fieldName] = extraCost[fieldName];
           hasValue = true;
         }
       }

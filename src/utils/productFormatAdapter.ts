@@ -29,11 +29,12 @@ export function adaptProductToProductWithFormat(product: Product): ProductWithFo
     cover_stock_print: product.format.cover_stock_print,
     internal_stock_print: product.format.internal_stock_print,
     orientation: product.format.orientation,
-    // Add missing properties with default null values
-    end_papers_material: product.format.end_papers_material || null,
-    end_papers_print: product.format.end_papers_print || null,
-    spacers_material: product.format.spacers_material || null,
-    spacers_stock_print: product.format.spacers_stock_print || null,
+    // Handle potentially missing properties with default null values
+    // Instead of directly accessing properties that might not exist, use optional chaining
+    end_papers_material: product.format?.end_papers_material || null,
+    end_papers_print: product.format?.end_papers_print || null,
+    spacers_material: product.format?.spacers_material || null,
+    spacers_stock_print: product.format?.spacers_stock_print || null,
   };
 
   // Return the product with the complete format
@@ -50,7 +51,7 @@ export function adaptProductToProductWithFormat(product: Product): ProductWithFo
  */
 export function adaptProductsToProductWithFormat(
   products: (Product | { product: Product; customPrice?: number; customDescription?: string })[]
-): { product: ProductWithFormat; customPrice?: number; customDescription?: string }[] {
+): { product: ProductWithFormat; customPrice?: number; customDescription?: string; }[] {
   return products.map(item => {
     if ('product' in item) {
       // If the item has a product property, it's already in the right format
