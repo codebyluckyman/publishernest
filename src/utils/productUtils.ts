@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -54,7 +55,6 @@ export const fetchProducts = async (
     pub_month: string | string[] | null;
     license: string | string[] | null;
     format_id: string | string[] | null;
-    series_name: string | string[] | null;
   },
   sortField: SortField,
   sortDirection: SortDirection
@@ -127,19 +127,6 @@ export const fetchProducts = async (
       }
     } else {
       queryBuilder = queryBuilder.eq("format_id", filters.format_id);
-    }
-  }
-  
-  // Handle series_name filter
-  if (filters.series_name && filters.series_name !== "ALL_SERIES") {
-    if (Array.isArray(filters.series_name)) {
-      // Remove the ALL_SERIES value if present
-      const validSeries = filters.series_name.filter(s => s !== "ALL_SERIES");
-      if (validSeries.length > 0) {
-        queryBuilder = queryBuilder.in("series_name", validSeries);
-      }
-    } else {
-      queryBuilder = queryBuilder.eq("series_name", filters.series_name);
     }
   }
 

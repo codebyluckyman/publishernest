@@ -1,8 +1,14 @@
 
-import { useEffect } from "react";
-import ProductTable from "./ProductTable";
-import { Organization } from "@/types/organization";
-import { useProductEdit } from "@/context/ProductEditContext";
+import { useEffect, useState } from "react";
+import { fetchProducts } from "@/utils/productUtils";
+import { formatDate, formatPrice, getProductFormLabel } from "@/utils/productUtils";
+import { BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import EditableProductTableContent from "./EditableProductTableContent";
+import { useQuery } from "@tanstack/react-query";
+import { Product, SortDirection, SortField } from "@/types/product";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EditableProductTableProps {
   searchQuery: string;
@@ -12,11 +18,10 @@ interface EditableProductTableProps {
     pub_month: string | string[] | null;
     license: string | string[] | null;
     format_id: string | string[] | null;
-    series_name: string | string[] | null;
   };
-  currentOrganization: Organization | null;
-  onViewProduct: (productId: string) => void;
-  onEditProduct: (productId: string) => void;
+  currentOrganization: any;
+  onViewProduct: (id: string) => void;
+  onEditProduct: (id: string) => void;
   onAddProduct: () => void;
   refreshTrigger?: number;
 }
@@ -28,32 +33,101 @@ const EditableProductTable = ({
   onViewProduct,
   onEditProduct,
   onAddProduct,
-  refreshTrigger = 0
+  refreshTrigger = 0,
 }: EditableProductTableProps) => {
-  const { setRefreshCallback, isEditMode } = useProductEdit();
+  const [sortField, setSortField] = useState<SortField>("title");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // Set up the refresh callback function when component mounts or refreshTrigger changes
+  const {
+    data: products,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      "products",
+      currentOrganization?.id,
+      searchQuery,
+      filters,
+      sortField,
+      sortDirection,
+      refreshTrigger,
+    ],
+    queryFn: () => fetchProducts(currentOrganization, searchQuery, filters, sortField, sortDirection),
+    enabled: !!currentOrganization,
+  });
+
   useEffect(() => {
-    const triggerRefresh = () => {
-      // The refetch happens automatically when refreshTrigger changes
-      // This is handled by the useProductTableState hook's dependency on refreshTrigger
-    };
-    
-    setRefreshCallback(() => triggerRefresh);
-    
-    // Clean up when component unmounts
-    return () => setRefreshCallback(() => {});
-  }, [setRefreshCallback, refreshTrigger]);
+    if (refreshTrigger > 0) {
+      refetch();
+    }
+  }, [refreshTrigger, refetch]);
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const handleCopyProduct = async (productId: string): Promise<string> => {
+    try {
+      // Get the product to copy
+      const { data: product, error: fetchError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
+
+      if (fetchError || !product) {
+        throw new Error(fetchError?.message || "Failed to fetch product");
+      }
+
+      // Create a copy with modified title
+      const productCopy = {
+        ...product,
+        id: undefined, // Let Supabase generate a new ID
+        title: `${product.title} (Copy)`,
+        created_at: undefined,
+        updated_at: undefined,
+      };
+
+      // Insert the copy
+      const { data: newProduct, error: insertError } = await supabase
+        .from("products")
+        .insert(productCopy)
+        .select()
+        .single();
+
+      if (insertError || !newProduct) {
+        throw new Error(insertError?.message || "Failed to create product copy");
+      }
+
+      toast.success("Product copied successfully");
+      refetch();
+      return newProduct.id;
+    } catch (error: any) {
+      toast.error(`Error copying product: ${error.message}`);
+      throw error;
+    }
+  };
 
   return (
-    <ProductTable
-      searchQuery={searchQuery}
-      filters={filters}
+    <EditableProductTableContent
+      products={products}
+      isLoading={isLoading}
       currentOrganization={currentOrganization}
-      onViewProduct={onViewProduct}
-      onEditProduct={onEditProduct}
-      onAddProduct={onAddProduct}
-      refreshTrigger={refreshTrigger}
+      handleViewProduct={onViewProduct}
+      handleEditProduct={onEditProduct}
+      handleAddProduct={onAddProduct}
+      handleCopyProduct={handleCopyProduct}
+      formatDate={formatDate}
+      formatPrice={formatPrice}
+      getProductFormLabel={getProductFormLabel}
+      sortField={sortField}
+      sortDirection={sortDirection}
+      onSort={handleSort}
     />
   );
 };

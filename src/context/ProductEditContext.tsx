@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
@@ -24,13 +24,6 @@ export function ProductEditProvider({ children }: { children: ReactNode }) {
   const [currentlySavingField, setCurrentlySavingField] = useState<string | null>(null);
   const [refreshCallback, setRefreshCallback] = useState<(() => void) | undefined>(undefined);
   const { toast } = useToast();
-
-  // When edit mode changes from true to false, trigger a refresh
-  useEffect(() => {
-    if (!isEditMode && refreshCallback) {
-      refreshCallback();
-    }
-  }, [isEditMode, refreshCallback]);
 
   const handleEditModeChange = (mode: boolean) => {
     setIsEditMode(mode);

@@ -7,7 +7,7 @@ import ProductViewDialog from "@/components/ProductViewDialog";
 import { EditableProductTableHeader } from "./EditableProductTableHeader";
 import ProductFilters, { FILTER_VALUES } from "./ProductFilters";
 import EditableProductTable from "./EditableProductTable";
-import { ProductEditProvider, useProductEdit } from "@/context/ProductEditContext";
+import { ProductEditProvider } from "@/context/ProductEditContext";
 
 export function EditableProductTableContainer() {
   const { currentOrganization } = useOrganization();
@@ -22,14 +22,12 @@ export function EditableProductTableContainer() {
     pub_month: string | string[] | null;
     license: string | string[] | null;
     format_id: string | string[] | null;
-    series_name: string | string[] | null;
   }>({
     product_form: FILTER_VALUES.ALL_FORMATS,
     publisher_name: FILTER_VALUES.ALL_PUBLISHERS,
     pub_month: FILTER_VALUES.ALL_PUB_MONTHS,
     license: FILTER_VALUES.ALL_LICENSES,
     format_id: FILTER_VALUES.ALL_FORMAT_NAMES,
-    series_name: FILTER_VALUES.ALL_SERIES,
   });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -52,10 +50,6 @@ export function EditableProductTableContainer() {
     setRefreshTrigger((prev) => prev + 1);
   };
 
-  const handleRefresh = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
-
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
@@ -71,11 +65,9 @@ export function EditableProductTableContainer() {
       filters.license !== FILTER_VALUES.ALL_LICENSES;
     const isFormatActive =
       filters.format_id !== FILTER_VALUES.ALL_FORMAT_NAMES;
-    const isSeriesActive =
-      filters.series_name !== FILTER_VALUES.ALL_SERIES;
       
     return isProductFormActive || isPublisherNameActive || isPubMonthActive || 
-           isLicenseActive || isFormatActive || isSeriesActive;
+           isLicenseActive || isFormatActive;
   };
 
   const countActiveFilters = () => {
@@ -94,7 +86,6 @@ export function EditableProductTableContainer() {
     if (isFilterActive(filters.pub_month, FILTER_VALUES.ALL_PUB_MONTHS)) count++;
     if (isFilterActive(filters.license, FILTER_VALUES.ALL_LICENSES)) count++;
     if (isFilterActive(filters.format_id, FILTER_VALUES.ALL_FORMAT_NAMES)) count++;
-    if (isFilterActive(filters.series_name, FILTER_VALUES.ALL_SERIES)) count++;
     
     return count;
   };
@@ -151,5 +142,4 @@ export function EditableProductTableContainer() {
       </Card>
     </ProductEditProvider>
   );
-};
-
+}

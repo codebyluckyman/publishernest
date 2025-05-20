@@ -17,7 +17,6 @@ interface ProductTableProps {
     pub_month: string | string[] | null;
     license: string | string[] | null;
     format_id: string | string[] | null;
-    series_name: string | string[] | null;
   };
   currentOrganization: Organization | null;
   onViewProduct: (productId: string) => void;
