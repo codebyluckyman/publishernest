@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { 
   ColumnDef, 
   flexRender, 
@@ -23,6 +23,7 @@ import { PresentationActions } from './PresentationActions';
 import { UserInfo } from '@/services/userService';
 import { usePagination, PageSize } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
+import { memo } from 'react';
 
 interface PresentationsTableProps {
   presentations: SalesPresentation[];
@@ -34,7 +35,7 @@ interface PresentationsTableProps {
   users?: Map<string, UserInfo>;
 }
 
-export function PresentationsTable({ 
+export const PresentationsTable = memo(function PresentationsTable({ 
   presentations, 
   isLoading, 
   onDelete, 
@@ -59,6 +60,11 @@ export function PresentationsTable({
     data: presentations,
     initialPageSize: pageSize
   });
+
+  const getUsername = useCallback((userId: string) => {
+    const user = users?.get(userId);
+    return user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Unknown User';
+  }, [users]);
 
   const columns: ColumnDef<SalesPresentation>[] = [
     {
@@ -93,12 +99,7 @@ export function PresentationsTable({
       header: 'Created By',
       cell: ({ row }) => {
         const userId = row.original.created_by;
-        const user = users?.get(userId);
-        return (
-          <div>
-            {user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Unknown User'}
-          </div>
-        );
+        return <div>{getUsername(userId)}</div>;
       },
     },
     {
@@ -231,4 +232,4 @@ export function PresentationsTable({
       )}
     </div>
   );
-}
+});

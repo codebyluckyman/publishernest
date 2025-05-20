@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import { ShareDialog } from '@/components/sales-presentations/ShareDialog';
 import { PresentationViewMode } from '@/types/salesPresentation';
 import { fetchUsersByIds } from '@/services/userService';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const SalesPresentations = () => {
   const navigate = useNavigate();
@@ -39,85 +40,113 @@ const SalesPresentations = () => {
   const [presentationToShare, setPresentationToShare] = useState<string | null>(null);
   const [shareLink, setShareLink] = useState<string | null>(null);
 
-  // Changed default view mode to 'table' instead of 'card'
   const [viewMode, setViewMode] = useState<PresentationViewMode>('table');
   const [userFilter, setUserFilter] = useState('none');
   const [statusFilter, setStatusFilter] = useState<PresentationStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<Map<string, any>>(new Map());
+  const [isFiltering, setIsFiltering] = useState(false);
+
+  // Apply debouncing to search input
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Extract all unique user IDs from presentations
   useEffect(() => {
     const loadUsers = async () => {
       if (!presentations.length) return;
       
-      // Get unique user IDs
-      const userIds = [...new Set(presentations.map(p => p.created_by))];
-      
       try {
+        setIsFiltering(true);
+        // Get unique user IDs
+        const userIds = [...new Set(presentations.map(p => p.created_by))];
         const usersMap = await fetchUsersByIds(userIds);
         setUsers(usersMap);
       } catch (error) {
         console.error("Error fetching users:", error);
+      } finally {
+        setIsFiltering(false);
       }
     };
     
     loadUsers();
   }, [presentations]);
 
-  // Filter presentations by selected user, status and search query
-  const filteredPresentations = presentations
-    .filter(p => userFilter === 'none' || p.created_by === userFilter)
-    .filter(p => statusFilter === 'all' || p.status === statusFilter)
-    .filter(p => !searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Memoized filtering function to prevent unnecessary recalculations
+  const filteredPresentations = useMemo(() => {
+    return presentations
+      .filter(p => userFilter === 'none' || p.created_by === userFilter)
+      .filter(p => statusFilter === 'all' || p.status === statusFilter)
+      .filter(p => !debouncedSearchQuery || 
+        p.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()));
+  }, [presentations, userFilter, statusFilter, debouncedSearchQuery]);
 
-  const handleCreateNew = () => {
+  const handleCreateNew = useCallback(() => {
     navigate('/sales-presentations/create');
-  };
+  }, [navigate]);
 
-  const handleEdit = (id: string) => {
+  const handleEdit = useCallback((id: string) => {
     navigate(`/sales-presentations/${id}/edit`);
-  };
+  }, [navigate]);
 
-  const handleView = (id: string) => {
+  const handleView = useCallback((id: string) => {
     navigate(`/sales-presentations/${id}`);
-  };
+  }, [navigate]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     setPresentationToDelete(id);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
   const confirmDelete = async () => {
     if (presentationToDelete) {
-      await deletePresentation.mutateAsync(presentationToDelete);
-      setDeleteDialogOpen(false);
-      setPresentationToDelete(null);
-    }
-  };
-
-  const handleShare = (id: string) => {
-    setPresentationToShare(id);
-    setShareLink(null);
-    setShareDialogOpen(true);
-  };
-
-  const confirmShare = async (recipientEmail?: string) => {
-    if (presentationToShare) {
-      const link = await sharePresentation.mutateAsync({
-        presentationId: presentationToShare,
-        sharedWith: recipientEmail
-      });
-      
-      if (link) {
-        setShareLink(link);
+      try {
+        await deletePresentation.mutateAsync(presentationToDelete);
+        setDeleteDialogOpen(false);
+        setPresentationToDelete(null);
+      } catch (error) {
+        console.error("Error deleting presentation:", error);
       }
     }
   };
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
+  const handleShare = useCallback((id: string) => {
+    setPresentationToShare(id);
+    setShareLink(null);
+    setShareDialogOpen(true);
+  }, []);
+
+  const confirmShare = async (recipientEmail?: string) => {
+    if (presentationToShare) {
+      try {
+        const link = await sharePresentation.mutateAsync({
+          presentationId: presentationToShare,
+          sharedWith: recipientEmail
+        });
+        
+        if (link) {
+          setShareLink(link);
+        }
+      } catch (error) {
+        console.error("Error sharing presentation:", error);
+      }
+    }
   };
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+  }, []);
+
+  const handleStatusFilterChange = useCallback((value: PresentationStatus) => {
+    setStatusFilter(value);
+  }, []);
+
+  const handleUserFilterChange = useCallback((value: string) => {
+    setUserFilter(value);
+  }, []);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -151,8 +180,9 @@ const SalesPresentations = () => {
                 <Input
                   placeholder="Search by title..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   className="pr-8"
+                  disabled={isFiltering}
                 />
                 {searchQuery && (
                   <button 
@@ -166,13 +196,15 @@ const SalesPresentations = () => {
               <UserFilter
                 userIds={presentations.map(p => p.created_by)}
                 value={userFilter}
-                onValueChange={setUserFilter}
+                onValueChange={handleUserFilterChange}
                 className="w-full sm:w-[200px]"
+                disabled={isFiltering}
               />
               <StatusFilter 
                 value={statusFilter}
-                onValueChange={setStatusFilter}
+                onValueChange={handleStatusFilterChange}
                 className="w-full sm:w-[200px]"
+                disabled={isFiltering}
               />
             </div>
           )}
@@ -224,12 +256,12 @@ const SalesPresentations = () => {
             <div className="text-center py-12">
               <h3 className="text-lg font-medium">No presentations found</h3>
               <p className="text-muted-foreground mt-1">
-                {userFilter !== 'none' || statusFilter !== 'all' || searchQuery 
+                {userFilter !== 'none' || statusFilter !== 'all' || debouncedSearchQuery 
                   ? "No presentations found with the current filters. Try adjusting your search criteria."
                   : "Create your first sales presentation to showcase your products to clients."
                 }
               </p>
-              {userFilter === 'none' && statusFilter === 'all' && !searchQuery && (
+              {userFilter === 'none' && statusFilter === 'all' && !debouncedSearchQuery && (
                 <Button onClick={handleCreateNew} className="mt-4">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Create First Presentation

@@ -7,6 +7,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { File, FileMinus, Archive, Check } from "lucide-react";
+import { memo } from "react";
 
 export type PresentationStatus = 'all' | 'draft' | 'published' | 'archived';
 
@@ -14,13 +15,24 @@ interface StatusFilterProps {
   value: PresentationStatus;
   onValueChange: (value: PresentationStatus) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function StatusFilter({ value, onValueChange, className }: StatusFilterProps) {
+export const StatusFilter = memo(function StatusFilter({ 
+  value, 
+  onValueChange, 
+  className, 
+  disabled = false 
+}: StatusFilterProps) {
+  const handleValueChange = (val: string) => {
+    onValueChange(val as PresentationStatus);
+  };
+
   return (
     <Select
       value={value}
-      onValueChange={(val) => onValueChange(val as PresentationStatus)}
+      onValueChange={handleValueChange}
+      disabled={disabled}
     >
       <SelectTrigger className={className}>
         <SelectValue placeholder="Filter by status">
@@ -61,4 +73,4 @@ export function StatusFilter({ value, onValueChange, className }: StatusFilterPr
       </SelectContent>
     </Select>
   );
-}
+});
