@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { PresentationCard } from '@/components/sales-presentations/PresentationCard';
 import { PresentationsTable } from '@/components/sales-presentations/PresentationsTable';
 import { UserFilter } from '@/components/sales-presentations/UserFilter';
 import { ViewToggle } from '@/components/sales-presentations/ViewToggle';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Search, X } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,9 +37,10 @@ const SalesPresentations = () => {
   const [presentationToShare, setPresentationToShare] = useState<string | null>(null);
   const [shareLink, setShareLink] = useState<string | null>(null);
 
-  // New state for view mode and user filter
-  const [viewMode, setViewMode] = useState<PresentationViewMode>('card');
+  // Changed default view mode to 'table' instead of 'card'
+  const [viewMode, setViewMode] = useState<PresentationViewMode>('table');
   const [userFilter, setUserFilter] = useState('none');
+  const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<Map<string, any>>(new Map());
 
   // Extract all unique user IDs from presentations
@@ -60,10 +62,10 @@ const SalesPresentations = () => {
     loadUsers();
   }, [presentations]);
 
-  // Filter presentations by selected user
-  const filteredPresentations = userFilter !== 'none' 
-    ? presentations.filter(p => p.created_by === userFilter)
-    : presentations;
+  // Filter presentations by selected user and search query
+  const filteredPresentations = presentations
+    .filter(p => userFilter === 'none' || p.created_by === userFilter)
+    .filter(p => !searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const handleCreateNew = () => {
     navigate('/sales-presentations/create');
@@ -109,6 +111,10 @@ const SalesPresentations = () => {
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -130,14 +136,32 @@ const SalesPresentations = () => {
         </div>
       </div>
 
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0">
         {presentations.length > 0 && (
-          <UserFilter
-            userIds={presentations.map(p => p.created_by)}
-            value={userFilter}
-            onValueChange={setUserFilter}
-            className="w-[250px]"
-          />
+          <>
+            <div className="relative w-full sm:w-[250px]">
+              <Input
+                placeholder="Search by title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-8"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={handleClearSearch}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <UserFilter
+              userIds={presentations.map(p => p.created_by)}
+              value={userFilter}
+              onValueChange={setUserFilter}
+              className="w-full sm:w-[250px]"
+            />
+          </>
         )}
       </div>
 
@@ -178,18 +202,20 @@ const SalesPresentations = () => {
             onDelete={handleDelete}
             onShare={handleShare}
             users={users}
+            onView={handleView}
+            onEdit={handleEdit}
           />
         )
       ) : (
         <div className="text-center py-12">
           <h3 className="text-lg font-medium">No presentations found</h3>
           <p className="text-muted-foreground mt-1">
-            {userFilter !== 'none' 
-              ? "No presentations found for the selected user. Try selecting a different user."
+            {userFilter !== 'none' || searchQuery 
+              ? "No presentations found with the current filters. Try adjusting your search criteria."
               : "Create your first sales presentation to showcase your products to clients."
             }
           </p>
-          {userFilter === 'none' && (
+          {userFilter === 'none' && !searchQuery && (
             <Button onClick={handleCreateNew} className="mt-4">
               <PlusCircle className="h-4 w-4 mr-2" />
               Create First Presentation

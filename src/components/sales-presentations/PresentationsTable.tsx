@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   ColumnDef, 
   flexRender, 
@@ -19,9 +18,8 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, EyeIcon, Trash2, Share2 } from 'lucide-react';
+import { PresentationActions } from './PresentationActions';
 import { UserInfo } from '@/services/userService';
 
 interface PresentationsTableProps {
@@ -29,6 +27,8 @@ interface PresentationsTableProps {
   isLoading: boolean;
   onDelete: (id: string) => void;
   onShare: (id: string) => void;
+  onView: (id: string) => void;
+  onEdit: (id: string) => void;
   users?: Map<string, UserInfo>;
 }
 
@@ -37,18 +37,11 @@ export function PresentationsTable({
   isLoading, 
   onDelete, 
   onShare,
+  onView,
+  onEdit,
   users
 }: PresentationsTableProps) {
-  const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
-
-  const handleEdit = (id: string) => {
-    navigate(`/sales-presentations/${id}/edit`);
-  };
-
-  const handleView = (id: string) => {
-    navigate(`/sales-presentations/${id}`);
-  };
 
   const columns: ColumnDef<SalesPresentation>[] = [
     {
@@ -109,20 +102,13 @@ export function PresentationsTable({
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleView(row.original.id)}>
-            <EyeIcon className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original.id)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(row.original.id)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onShare(row.original.id)}>
-            <Share2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <PresentationActions
+          presentation={row.original}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onShare={onShare}
+        />
       ),
     },
   ];
@@ -145,7 +131,7 @@ export function PresentationsTable({
           <Table>
             <TableHeader>
               {columns.map((column) => (
-                <TableHead key={column.id || String(column.accessorKey)}>
+                <TableHead key={column.id || String(column.id)}>
                   {column.header as React.ReactNode}
                 </TableHead>
               ))}

@@ -35,9 +35,9 @@ export async function updateSalesPresentation({
       // Ensure displaySettings has the expected structure
       const updatedSettings = { ...displaySettings };
       
-      // Set default view if not provided
+      // Set default view if not provided - updated to table instead of card
       if (!updatedSettings.defaultView) {
-        updatedSettings.defaultView = 'card' as PresentationViewMode;
+        updatedSettings.defaultView = 'table' as PresentationViewMode;
       }
       
       console.log("Update Sales Presentation - Display settings before processing:", updatedSettings);
