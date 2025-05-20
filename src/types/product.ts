@@ -61,21 +61,8 @@ export interface Product {
   format?: {
     id: string;
     format_name: string | null;
-    tps_height_mm: number | null;
-    tps_width_mm: number | null;
-    tps_depth_mm: number | null;
-    tps_plc_height_mm: number | null;
-    tps_plc_width_mm: number | null;
-    tps_plc_depth_mm: number | null;
-    extent: string | null;
-    binding_type: string | null;
-    cover_material: string | null;
-    internal_material: string | null;
-    cover_stock_print: string | null;
-    internal_stock_print: string | null;
-    orientation: string | null;
   } | null;
 }
 
-export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price';
+export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price' | 'series_name';
 export type SortDirection = 'asc' | 'desc';

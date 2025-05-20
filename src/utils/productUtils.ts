@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -6,6 +7,12 @@ import { Product, SortDirection, SortField } from "@/types/product";
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString();
+};
+
+export const formatMonthYear = (dateString: string | null) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
 
 export const formatPrice = (
@@ -55,7 +62,13 @@ export const fetchProducts = async (
 
   let queryBuilder = supabase
     .from("products")
-    .select("*")
+    .select(`
+      *,
+      format:format_id (
+        id,
+        format_name
+      )
+    `)
     .eq("organization_id", currentOrganization.id);
 
   if (searchQuery) {
@@ -93,7 +106,7 @@ export const fetchProducts = async (
         ...product,
         default_price: product.list_price,
         default_currency: "USD",
-      })) as unknown as Product[];
+      }));
     }
 
     const priceMap: Record<string, { price: number; currency: string }> = {};
@@ -111,14 +124,12 @@ export const fetchProducts = async (
       ...product,
       default_price: priceMap[product.id]?.price ?? product.list_price,
       default_currency: priceMap[product.id]?.currency ?? "USD",
-    })) as unknown as Product[];
+    }));
   }
 
-  return productsData
-    ? (productsData.map((product) => ({
-        ...product,
-        default_price: product.list_price,
-        default_currency: "USD",
-      })) as unknown as Product[])
-    : [];
+  return productsData ? productsData.map((product) => ({
+    ...product,
+    default_price: product.list_price,
+    default_currency: "USD",
+  })) : [];
 };

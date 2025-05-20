@@ -1,5 +1,5 @@
 
-import { BookOpen, Pencil, Eye, Image, PlusCircle, ArrowUpDown, ChevronUp, ChevronDown, Copy } from "lucide-react";
+import { BookOpen, Image, PlusCircle, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +14,8 @@ import { EditablePriceCell } from "./editable-cells/EditablePriceCell";
 import { EditableDateCell } from "./editable-cells/EditableDateCell";
 import { EditableSelectCell } from "./editable-cells/EditableSelectCell";
 import { useProductEdit } from "@/context/ProductEditContext";
+import { ProductActionMenu } from "./ProductActionMenu";
+import { formatMonthYear } from "@/utils/productUtils";
 
 interface Product {
   id: string;
@@ -29,6 +31,14 @@ interface Product {
   created_at: string;
   updated_at: string;
   cover_image_url: string | null;
+  format_id: string | null;
+  series_name: string | null;
+  license: string | null;
+  age_range: string | null;
+  format?: {
+    id: string;
+    format_name: string | null;
+  } | null;
 }
 
 interface EditableProductTableContentProps {
@@ -89,12 +99,6 @@ const EditableProductTableContent = ({
     return sortDirection === 'asc' ? 
       <ChevronUp className="ml-1 h-4 w-4" /> : 
       <ChevronDown className="ml-1 h-4 w-4" />;
-  };
-
-  const handleCopyClick = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCopyingProductId(id);
-    setIsCopyDialogOpen(true);
   };
 
   const handleConfirmCopy = async () => {
@@ -175,17 +179,7 @@ const EditableProductTableContent = ({
                 </Button>
               </TableHead>
               <TableHead>ISBN</TableHead>
-              <TableHead>Format</TableHead>
-              <TableHead>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 px-1 -ml-3 font-medium flex items-center"
-                  onClick={() => onSort('publisher_name')}
-                >
-                  Publisher {renderSortIcon('publisher_name')}
-                </Button>
-              </TableHead>
+              <TableHead>Series</TableHead>
               <TableHead>
                 <Button 
                   variant="ghost" 
@@ -196,21 +190,15 @@ const EditableProductTableContent = ({
                   Pub Date {renderSortIcon('publication_date')}
                 </Button>
               </TableHead>
-              <TableHead>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 px-1 -ml-3 font-medium flex items-center"
-                  onClick={() => onSort('list_price')}
-                >
-                  RRP {renderSortIcon('list_price')}
-                </Button>
-              </TableHead>
-              <TableHead className="w-[160px]">Actions</TableHead>
+              <TableHead>Pub Month</TableHead>
+              <TableHead>License</TableHead>
+              <TableHead>Age Range</TableHead>
+              <TableHead>Format</TableHead>
+              <TableHead className="w-[60px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedProducts.map((product) => (
+            {paginatedProducts.map((product: Product) => (
               <TableRow 
                 key={product.id} 
                 className={`hover:bg-muted/70 ${isEditMode ? "" : "cursor-pointer"}`}
@@ -243,29 +231,16 @@ const EditableProductTableContent = ({
                 </TableCell>
                 <TableCell>
                   <EditableTextCell 
-                    value={product.isbn13 || ''} 
+                    value={product.isbn13 || product.isbn10 || ''} 
                     productId={product.id}
                     fieldName="isbn13"
                   />
                 </TableCell>
                 <TableCell>
-                  <EditableSelectCell
-                    value={product.product_form}
-                    productId={product.id}
-                    fieldName="product_form"
-                    options={productFormOptions}
-                    renderDisplay={(value) => (
-                      <Badge variant="secondary">
-                        {getProductFormLabel(value)}
-                      </Badge>
-                    )}
-                  />
-                </TableCell>
-                <TableCell>
                   <EditableTextCell 
-                    value={product.publisher_name || ''} 
+                    value={product.series_name || ''} 
                     productId={product.id}
-                    fieldName="publisher_name"
+                    fieldName="series_name"
                   />
                 </TableCell>
                 <TableCell>
@@ -276,42 +251,32 @@ const EditableProductTableContent = ({
                   />
                 </TableCell>
                 <TableCell>
-                  <EditablePriceCell
-                    value={product.default_price !== null 
-                      ? product.default_price
-                      : product.list_price}
+                  {formatMonthYear(product.publication_date)}
+                </TableCell>
+                <TableCell>
+                  <EditableTextCell 
+                    value={product.license || ''} 
                     productId={product.id}
-                    fieldName={product.default_price !== null ? "default_price" : "list_price"}
-                    currencyCode={product.default_currency}
+                    fieldName="license"
                   />
                 </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()} className="space-x-1">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleViewProduct(product.id)}
-                    title="View product"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleEditProduct(product.id)}
-                    title="Edit product"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  {handleCopyProduct && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={(e) => handleCopyClick(product.id, e)}
-                      title="Copy product"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  )}
+                <TableCell>
+                  <EditableTextCell 
+                    value={product.age_range || ''} 
+                    productId={product.id}
+                    fieldName="age_range"
+                  />
+                </TableCell>
+                <TableCell>
+                  {product.format?.format_name || 'N/A'}
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()} className="text-right">
+                  <ProductActionMenu 
+                    product={product}
+                    onViewProduct={handleViewProduct}
+                    onEditProduct={handleEditProduct}
+                    onCopyProduct={handleCopyProduct}
+                  />
                 </TableCell>
               </TableRow>
             ))}
