@@ -21,6 +21,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { PresentationActions } from './PresentationActions';
 import { UserInfo } from '@/services/userService';
+import { usePagination, PageSize } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 interface PresentationsTableProps {
   presentations: SalesPresentation[];
@@ -42,6 +44,21 @@ export function PresentationsTable({
   users
 }: PresentationsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [pageSize, setPageSize] = useState<PageSize>(10);
+
+  const {
+    currentPage,
+    totalPages,
+    currentData,
+    totalItems,
+    goToPage,
+    nextPage,
+    previousPage,
+    changePageSize,
+  } = usePagination({
+    data: presentations,
+    initialPageSize: pageSize
+  });
 
   const columns: ColumnDef<SalesPresentation>[] = [
     {
@@ -114,7 +131,7 @@ export function PresentationsTable({
   ];
 
   const table = useReactTable({
-    data: presentations,
+    data: currentData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -199,6 +216,19 @@ export function PresentationsTable({
           </TableBody>
         </Table>
       </div>
+      
+      {totalItems > 0 && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          onPageChange={goToPage}
+          onPreviousPage={previousPage}
+          onNextPage={nextPage}
+          onPageSizeChange={changePageSize}
+        />
+      )}
     </div>
   );
 }
