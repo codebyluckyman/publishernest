@@ -2,6 +2,23 @@
 import { supabase } from "@/integrations/supabase/client";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
+// Add this new function to export
+export async function supplierQuoteStatusUpdate(
+  id: string,
+  status: string,
+  userId: string
+): Promise<void> {
+  // Record audit entry
+  await recordSupplierQuoteAudit(
+    id,
+    userId,
+    status,
+    {
+      new: { status }
+    }
+  );
+}
+
 export async function acceptSupplierQuote(
   id: string,
   acceptedCost: number,
