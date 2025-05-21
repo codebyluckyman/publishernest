@@ -230,7 +230,7 @@ export function useSupplierQuotes() {
   /**
    * Hook to approve a supplier quote
    */
-  export const useApproveSupplierQuote = () => {
+  const useApproveSupplierQuote = () => {
     const queryClient = useQueryClient();
 
     return useMutation({

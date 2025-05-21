@@ -45,17 +45,21 @@ export async function fetchSharedPresentation(shareToken: string) {
       ? presentation.display_settings 
       : {};
     
+    // Type guard to check if displaySettings is an object and not an array
+    const isObject = (obj: any): obj is Record<string, any> => 
+      typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+    
     // Create a properly typed displaySettings object
     const processedDisplaySettings: PresentationDisplaySettings = {
-      cardColumns: Array.isArray(displaySettings?.cardColumns) 
+      cardColumns: isObject(displaySettings) && Array.isArray(displaySettings.cardColumns) 
         ? displaySettings.cardColumns as CardColumn[]
-        : (Array.isArray(displaySettings?.displayColumns) 
+        : (isObject(displaySettings) && Array.isArray(displaySettings.displayColumns) 
             ? displaySettings.displayColumns as CardColumn[] 
             : defaultCardColumns),
       
-      dialogColumns: Array.isArray(displaySettings?.dialogColumns) 
+      dialogColumns: isObject(displaySettings) && Array.isArray(displaySettings.dialogColumns) 
         ? displaySettings.dialogColumns as DialogColumn[]
-        : (Array.isArray(displaySettings?.displayColumns) 
+        : (isObject(displaySettings) && Array.isArray(displaySettings.displayColumns) 
             ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis'] 
             : defaultDialogColumns)
     };

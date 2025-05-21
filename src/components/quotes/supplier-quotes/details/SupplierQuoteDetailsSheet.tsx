@@ -1,71 +1,93 @@
 
-import React, { useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { QuoteRequest } from "@/types/quoteRequest";
+import { useState, useEffect } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormatDetailsPanel } from "./FormatDetailsPanel";
+import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
 import { SupplierQuote } from "@/types/supplierQuote";
-import { SupplierQuoteDetails } from "@/components/quotes/supplier-quotes/SupplierQuoteDetails";
-import { SupplierQuoteAuditHistory } from "../SupplierQuoteAuditHistory";
 
 interface SupplierQuoteDetailsSheetProps {
   quote: SupplierQuote | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onApprove?: (quote: SupplierQuote) => void;
-  onReject?: (quote: SupplierQuote, reason?: string) => void;
 }
 
-export function SupplierQuoteDetailsSheet({
-  quote,
-  open,
+export function SupplierQuoteDetailsSheet({ 
+  quote, 
+  open, 
   onOpenChange,
-  onApprove,
-  onReject
+  onApprove
 }: SupplierQuoteDetailsSheetProps) {
-  const [showAuditHistory, setShowAuditHistory] = useState(false);
-
-  const handleClose = (open: boolean) => {
-    // Reset audit history view when closing the sheet
-    if (!open) {
-      setShowAuditHistory(false);
+  const [activeTab, setActiveTab] = useState("details");
+  const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
+  
+  // Reset the active tab when opening the sheet
+  useEffect(() => {
+    if (open) {
+      setActiveTab("details");
+      // Select the first format by default if available
+      if (quote?.formats?.length > 0 && quote.formats[0]?.id) {
+        setSelectedFormatId(quote.formats[0].id);
+      } else {
+        setSelectedFormatId(null);
+      }
     }
-    onOpenChange(open);
-  };
+  }, [open, quote]);
 
+  if (!quote) return null;
+  
+  const canApprove = quote.status === 'submitted' && onApprove;
+  
   return (
-    <Sheet open={open && !!quote} onOpenChange={handleClose}>
-      <SheetContent className="w-[90%] sm:w-[550px] md:w-[650px] overflow-y-auto">
-        <SheetHeader className="flex flex-row items-center justify-between mb-6">
-          <SheetTitle className="text-xl">
-            {showAuditHistory ? "Audit History" : "Quote Details"}
-          </SheetTitle>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-3xl overflow-auto">
+        <SheetHeader>
+          <SheetTitle>Quote Details</SheetTitle>
+          <SheetDescription>
+            From <span className="font-semibold">{quote.supplier?.name}</span> for <span className="font-semibold">{quote.print_run?.title}</span>
+          </SheetDescription>
         </SheetHeader>
-
-        <ScrollArea className="h-[calc(100vh-5rem)] pr-4">
-          {quote && (
-            <>
-              {showAuditHistory ? (
-                <SupplierQuoteAuditHistory 
-                  supplierQuoteId={quote.id}
-                  onBack={() => setShowAuditHistory(false)}
-                />
-              ) : (
-                <SupplierQuoteDetails 
-                  quote={quote} 
-                  onClose={() => onOpenChange(false)}
-                  onApprove={onApprove ? () => onApprove(quote) : undefined}
-                  onReject={onReject ? (reason) => onReject(quote, reason) : undefined}
-                  onShowHistory={() => setShowAuditHistory(true)}
+        
+        <div className="py-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="details">Quote Details</TabsTrigger>
+              <TabsTrigger value="formats" disabled={!quote.formats || quote.formats.length === 0}>
+                {quote.formats && quote.formats.length > 0 ? `Formats (${quote.formats.length})` : "No Formats"}
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="details" className="space-y-4">
+              <SupplierQuoteDetails quote={quote} />
+            </TabsContent>
+            
+            <TabsContent value="formats" className="space-y-4">
+              {quote.formats && quote.formats.length > 0 && (
+                <FormatDetailsPanel 
+                  formats={quote.formats} 
+                  selectedFormatId={selectedFormatId}
+                  onFormatSelect={setSelectedFormatId}
                 />
               )}
-            </>
-          )}
-        </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        <SheetFooter>
+          <div className="flex justify-between w-full">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+            {canApprove && (
+              <Button 
+                onClick={() => onApprove(quote)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                Approve Quote
+              </Button>
+            )}
+          </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

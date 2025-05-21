@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -155,27 +156,35 @@ const SalesPresentations = () => {
   const deleteMutation = useDeletePresentation();
 
   useEffect(() => {
-    if (presentationsData?.data) {
-      setTotalCount(presentationsData.total);
+    if (presentationsData) {
+      if ('data' in presentationsData && Array.isArray(presentationsData.data)) {
+        setTotalCount(presentationsData.total || presentationsData.data.length);
+      } else if (Array.isArray(presentationsData)) {
+        setTotalCount(presentationsData.length);
+      }
     }
   }, [presentationsData]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       if (currentOrganization?.id) {
-        const { data: users, error } = await supabaseCustom
-          .from('users')
-          .select('id, first_name, last_name, email')
-          .eq('organization_id', currentOrganization.id);
+        try {
+          const { data: profiles, error } = await supabaseCustom
+            .from('profiles')
+            .select('id, first_name, last_name, email')
+            .eq('current_organization_id', currentOrganization.id);
 
-        if (error) {
-          console.error('Error fetching users:', error);
-        } else {
-          const userMap: Record<string, any> = {};
-          users.forEach(user => {
-            userMap[user.id] = user;
-          });
-          setUserMap(userMap);
+          if (error) {
+            console.error('Error fetching users:', error);
+          } else {
+            const userMap: Record<string, any> = {};
+            profiles.forEach(profile => {
+              userMap[profile.id] = profile;
+            });
+            setUserMap(userMap);
+          }
+        } catch (err) {
+          console.error('Failed to fetch profiles:', err);
         }
       }
     };
@@ -260,6 +269,10 @@ const SalesPresentations = () => {
     return <div>Error loading presentations</div>;
   }
 
+  const presentations = presentationsData && 'data' in presentationsData ? 
+    presentationsData.data : 
+    (Array.isArray(presentationsData) ? presentationsData : []);
+
   return (
     <div className="container mx-auto py-10">
       <div className="mb-8 flex items-center justify-between">
@@ -311,7 +324,7 @@ const SalesPresentations = () => {
         <div>Loading presentations...</div>
       ) : (
         <PresentationsTable
-          presentations={presentationsData?.data || []}
+          presentations={presentations}
           isLoading={isLoading}
           onDelete={handleDeletePresentation}
           onShare={handleSharePresentation}

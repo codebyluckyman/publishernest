@@ -1,3 +1,4 @@
+
 import { supabaseCustom } from "@/integrations/supabase/client-custom";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -47,7 +48,7 @@ export async function createSupplierQuote({
   try {
     const quoteId = supplier_quote_id || uuidv4();
 
-    // Insert the supplier quote - remove product_id and format_id
+    // Insert the supplier quote - removed product_id and format_id as they don't exist in the table schema
     const { data, error } = await supabaseCustom
       .from('supplier_quotes')
       .insert({

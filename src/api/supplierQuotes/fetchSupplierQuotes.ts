@@ -67,10 +67,14 @@ export async function fetchSupplierQuotes({
     }
 
     const supplierQuotes = data.map((sq) => {
-      const formats = sq.supplier_quote_formats?.map((sqf) => sqf.format);
-      const extraCosts = sq.supplier_quote_extra_costs?.map(
-        (sqec) => sqec.extra_cost
-      );
+      // Safely extract formats and extraCosts
+      const formats = sq.supplier_quote_formats && Array.isArray(sq.supplier_quote_formats)
+        ? sq.supplier_quote_formats.map(sqf => sqf?.format || {})
+        : [];
+        
+      const extraCosts = sq.supplier_quote_extra_costs && Array.isArray(sq.supplier_quote_extra_costs)
+        ? sq.supplier_quote_extra_costs.map(sqec => sqec?.extra_cost || {})
+        : [];
 
       return {
         ...sq,
@@ -116,10 +120,14 @@ export async function fetchSupplierQuoteById(id: string) {
       throw error;
     }
 
-    const formats = data.supplier_quote_formats?.map((sqf) => sqf.format);
-    const extraCosts = data.supplier_quote_extra_costs?.map(
-      (sqec) => sqec.extra_cost
-    );
+    // Safely extract formats and extraCosts
+    const formats = data.supplier_quote_formats && Array.isArray(data.supplier_quote_formats)
+      ? data.supplier_quote_formats.map(sqf => sqf?.format || {})
+      : [];
+      
+    const extraCosts = data.supplier_quote_extra_costs && Array.isArray(data.supplier_quote_extra_costs)
+      ? data.supplier_quote_extra_costs.map(sqec => sqec?.extra_cost || {})
+      : [];
 
     return {
       ...data,
