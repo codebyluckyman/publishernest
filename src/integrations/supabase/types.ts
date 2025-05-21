@@ -868,6 +868,7 @@ export type Database = {
           last_accessed: string | null
           presentation_id: string
           share_link: string
+          share_token: string
           shared_at: string
           shared_by: string
           shared_with: string | null
@@ -879,6 +880,7 @@ export type Database = {
           last_accessed?: string | null
           presentation_id: string
           share_link: string
+          share_token: string
           shared_at?: string
           shared_by: string
           shared_with?: string | null
@@ -890,6 +892,7 @@ export type Database = {
           last_accessed?: string | null
           presentation_id?: string
           share_link?: string
+          share_token?: string
           shared_at?: string
           shared_by?: string
           shared_with?: string | null

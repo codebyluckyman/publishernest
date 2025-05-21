@@ -44,16 +44,16 @@ export async function fetchSharedPresentation(shareToken: string) {
     
     // Create a properly typed displaySettings object
     const processedDisplaySettings: PresentationDisplaySettings = {
-      cardColumns: Array.isArray(displaySettings.cardColumns) 
-        ? displaySettings.cardColumns
-        : (Array.isArray(displaySettings.displayColumns) 
-            ? displaySettings.displayColumns 
+      cardColumns: Array.isArray(displaySettings?.cardColumns) 
+        ? displaySettings.cardColumns as CardColumn[]
+        : (Array.isArray(displaySettings?.displayColumns) 
+            ? displaySettings.displayColumns as CardColumn[] 
             : defaultCardColumns),
       
-      dialogColumns: Array.isArray(displaySettings.dialogColumns) 
-        ? displaySettings.dialogColumns
-        : (Array.isArray(displaySettings.displayColumns) 
-            ? [...displaySettings.displayColumns, 'synopsis'] 
+      dialogColumns: Array.isArray(displaySettings?.dialogColumns) 
+        ? displaySettings.dialogColumns as DialogColumn[]
+        : (Array.isArray(displaySettings?.displayColumns) 
+            ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis'] 
             : defaultDialogColumns)
     };
 

@@ -1,148 +1,176 @@
+import { supabaseCustom } from "@/integrations/supabase/client-custom";
 
-import { Organization } from "@/types/organization";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  SupplierQuote,
-  SupplierQuoteStatus,
-  SupplierQuoteFormat,
-} from "@/types/supplierQuote";
-
-interface FetchQuotesParams {
-  currentOrganization: Organization | null;
-  status?: string;
+interface Params {
+  currentOrganization: { id: string };
   supplierId?: string;
-  quoteRequestId?: string;
-  searchQuery?: string;
+  printRunId?: string;
   productId?: string;
-  formatId?: string;
-  supplier?: string;
-  selectedFormat?: string;
+  status?: string;
+  limit?: number;
+  page?: number;
 }
 
-export async function fetchSupplierQuotes(
-  params: FetchQuotesParams
-): Promise<SupplierQuote[]> {
-  const {
-    currentOrganization,
-    status,
-    supplierId,
-    quoteRequestId,
-    searchQuery,
-    productId,
-    formatId,
-    supplier,
-    selectedFormat,
-  } = params;
+export async function fetchSupplierQuotes({
+  currentOrganization,
+  supplierId,
+  printRunId,
+  productId,
+  status,
+  limit = 10,
+  page = 1,
+}: Params) {
+  try {
+    let query = supabaseCustom
+      .from("supplier_quotes")
+      .select(
+        `
+        *,
+        supplier:supplier_id (name),
+        print_run:print_run_id (title),
+        supplier_quote_extra_costs (
+          *,
+          extra_cost:extra_cost_id (name)
+        ),
+        supplier_quote_formats (
+          *,
+          format:format_id (
+            *,
+            product:product_id (*)
+          )
+        )
+      `,
+        { count: "exact" }
+      )
+      .eq("organization_id", currentOrganization.id);
 
-  if (!currentOrganization) {
-    return [];
-  }
+    if (supplierId) {
+      query = query.eq("supplier_id", supplierId);
+    }
 
-  // Prepare filters for the RPC
-  const search_title =
-    searchQuery && searchQuery.trim() !== "" ? searchQuery.trim() : null;
-  const filter_supplier_name =
-    supplier && supplier.trim() !== "" ? supplier.trim() : null;
-  // Use selectedFormat or formatId as your filter
-  const filter_format_id =
-    selectedFormat && selectedFormat.trim() !== ""
-      ? selectedFormat.trim()
-      : formatId && formatId.trim() !== ""
-      ? formatId.trim()
-      : null;
+    if (printRunId) {
+      query = query.eq("print_run_id", printRunId);
+    }
 
-  // Call the RPC function with filters
-  const { data, error } = await supabase.rpc("test_search_quotes", {
-    search_title,
-    filter_supplier_name,
-    filter_format_id,
-  });
+    if (status) {
+      query = query.eq("status", status);
+    }
 
-  if (error) {
-    console.error("Error fetching supplier quotes:", error);
+    const startIndex = (page - 1) * limit;
+    query = query.range(startIndex, startIndex + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error("Error fetching supplier quotes:", error);
+      throw error;
+    }
+
+    const supplierQuotes = data.map((sq) => {
+      const formats = sq.supplier_quote_formats?.map((sqf) => sqf.format);
+      const extraCosts = sq.supplier_quote_extra_costs?.map(
+        (sqec) => sqec.extra_cost
+      );
+
+      return {
+        ...sq,
+        formats,
+        extraCosts,
+      };
+    });
+
+    return { data: supplierQuotes, count: count || 0 };
+  } catch (error) {
+    console.error("Unexpected error fetching supplier quotes:", error);
     throw error;
   }
-
-  // Optionally, filter organization_id, quoteRequestId, supplierId, status in JS (or add to your RPC)
-  let filteredData = data || [];
-  if (currentOrganization?.id) {
-    filteredData = filteredData.filter(
-      (q) => q.organization_id === currentOrganization.id
-    );
-  }
-  if (status) {
-    const statuses = status.split(",");
-    filteredData = filteredData.filter((q) => statuses.includes(q.status));
-  }
-  if (supplierId) {
-    filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
-  }
-  if (quoteRequestId) {
-    // We need to update this to match the structure returned by the DB view
-    filteredData = filteredData.filter(
-      (q) => q.quote_request?.id === quoteRequestId
-    );
-  }
-
-  // Map the data from the view to match the SupplierQuote type
-  const formattedQuotes: SupplierQuote[] = filteredData.map((item: any) => {
-    return {
-      id: item.id,
-      organization_id: item.organization_id,
-      quote_request_id: item.quote_request?.id, // Map from nested object
-      supplier_id: item.supplier_id,
-      status: item.status as SupplierQuoteStatus,
-      total_cost: item.total_cost,
-      currency: item.currency,
-      notes: item.notes,
-      submitted_at: item.submitted_at,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-      reference_id: item.reference_id,
-      reference: item.reference,
-      supplier_name: item.supplier_name,
-      title: item.title,
-      valid_from: item.valid_from,
-      valid_to: item.valid_to,
-      terms: item.terms,
-      remarks: item.remarks,
-      production_schedule: item.production_schedule,
-      approved_at: item.approved_at,
-      approved_by: item.approved_by,
-      rejected_at: item.rejected_at,
-      rejected_by: item.rejected_by,
-      rejection_reason: item.rejection_reason,
-      packaging_carton_quantity: item.packaging_carton_quantity,
-      packaging_carton_weight: item.packaging_carton_weight,
-      packaging_carton_length: item.packaging_carton_length,
-      packaging_carton_width: item.packaging_carton_width,
-      packaging_carton_height: item.packaging_carton_height,
-      packaging_carton_volume: item.packaging_carton_volume,
-      packaging_cartons_per_pallet: item.packaging_cartons_per_pallet,
-      packaging_copies_per_20ft_palletized: item.packaging_copies_per_20ft_palletized,
-      packaging_copies_per_40ft_palletized: item.packaging_copies_per_40ft_palletized,
-      packaging_copies_per_20ft_unpalletized: item.packaging_copies_per_20ft_unpalletized,
-      packaging_copies_per_40ft_unpalletized: item.packaging_copies_per_40ft_unpalletized,
-      // Include quote_request and supplier with proper typing
-      quote_request: item.quote_request,
-      supplier: item.supplier || { supplier_name: item.supplier_name },
-      // Handle formats and other arrays if needed
-      formats: item.formats ? formatSupplierQuoteFormats(item.formats) : []
-    };
-  });
-
-  return formattedQuotes;
 }
 
-// Helper function to format supplier quote formats
-function formatSupplierQuoteFormats(formats: any[]): SupplierQuoteFormat[] {
-  if (!Array.isArray(formats)) return [];
-  
-  return formats.map(format => ({
-    id: format.id,
-    supplier_quote_id: format.supplier_quote_id,
-    format_id: format.format_id,
-    quote_request_format_id: format.quote_request_format_id,
-    format_name: format.format?.format_name || "Unknown Format",
-  }));
+export async function fetchSupplierQuoteById(id: string) {
+  try {
+    const { data, error } = await supabaseCustom
+      .from("supplier_quotes")
+      .select(
+        `
+        *,
+        supplier:supplier_id (name),
+        print_run:print_run_id (title),
+        supplier_quote_extra_costs (
+          *,
+          extra_cost:extra_cost_id (name, unit_of_measure_id)
+        ),
+        supplier_quote_formats (
+          *,
+          format:format_id (
+            *,
+            product:product_id (*)
+          )
+        )
+      `
+      )
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching supplier quote:", error);
+      throw error;
+    }
+
+    const formats = data.supplier_quote_formats?.map((sqf) => sqf.format);
+    const extraCosts = data.supplier_quote_extra_costs?.map(
+      (sqec) => sqec.extra_cost
+    );
+
+    return {
+      ...data,
+      formats,
+      extraCosts,
+    };
+  } catch (error) {
+    console.error("Unexpected error fetching supplier quote:", error);
+    throw error;
+  }
+}
+
+interface Formats {
+  format: {
+    id: string;
+  };
+}
+
+export async function fetchSupplierQuoteFormats(supplierQuoteId: string) {
+  try {
+    const { data, error } = await supabaseCustom
+      .from("supplier_quote_formats")
+      .select(
+        `
+        *,
+        format:format_id (
+          *,
+          product:product_id (*)
+        )
+      `
+      )
+      .eq("supplier_quote_id", supplierQuoteId);
+
+    if (error) {
+      console.error("Error fetching supplier quote formats:", error);
+      throw error;
+    }
+
+    // Fix the type error:
+    const formatIds = formats && Array.isArray(formats) 
+      ? formats.map(format => {
+          const formatObj = typeof format === 'object' && format !== null ? format : {};
+          const formatData = formatObj.format || {};
+          return typeof formatData === 'object' && formatData !== null && 'id' in formatData 
+            ? formatData.id 
+            : null;
+        }).filter(id => id !== null)
+      : [];
+
+    return formatIds;
+  } catch (error) {
+    console.error("Unexpected error fetching supplier quote formats:", error);
+    throw error;
+  }
 }
