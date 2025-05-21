@@ -1,360 +1,490 @@
-
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash } from 'lucide-react';
-import { usePresentationSections } from '@/hooks/usePresentationSections';
-import { PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
-import { recordItemView } from '@/api/salesPresentations/trackPresentationView';
-
-// We need to define proper types here for the data shapes we're working with
-type Product = {
-  id: string;
-  title: string;
-  subtitle?: string;
-  isbn13?: string;
-  isbn10?: string;
-  cover_image_url?: string;
-  publisher_name?: string;
-  price?: number;
-  publication_date?: string;
-  synopsis?: string;
-  format_id?: string;
-  format?: {
-    id: string;
-    format_name: string;
-  };
-};
-
-// Extended format fields needed for display
-interface FormatLight {
-  id: string;
-  format_name: string;
-  binding_type?: string;
-  cover_material?: string;
-  cover_stock_print?: string;
-  internal_material?: string;
-  internal_stock_print?: string;
-  orientation?: string;
-  extent?: string;
-  tps_height_mm?: number;
-  tps_width_mm?: number;
-  tps_depth_mm?: number;
-  tps_plc_height_mm?: number;
-  tps_plc_width_mm?: number;
-  tps_plc_depth_mm?: number;
-}
-
-// Product with a complete format
-interface ProductWithFormat extends Omit<Product, 'format'> {
-  format?: FormatLight;
-}
-
-interface ProductItemProps {
-  product: ProductWithFormat;
-  customPrice?: number;
-  customDescription?: string;
-}
-
+import { formatPrice } from '@/utils/productUtils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import Image from '@/components/ui/img';
+import { useFormatDetails } from '@/hooks/format/useFormatDetails';
+import { PresentationDisplaySettings, PresentationViewMode, PresentationFeatures, CardGridLayout, CardWidthType } from '@/types/salesPresentation';
+import { ViewToggle } from './ViewToggle';
+import { TableView } from './TableView';
+import { CarouselView } from './CarouselView';
+import { KanbanView } from './KanbanView';
+import { cn } from '@/lib/utils';
 interface ProductSectionProps {
-  sectionId: string;
-  presentationId: string;
-  items: PresentationItem[];
-  isLoading: boolean;
-  isEditable: boolean;
-  viewMode: 'card' | 'table' | 'carousel' | 'kanban';
-  displaySettings: PresentationDisplaySettings;
-  viewId?: string;
-  isPublicView?: boolean;
+  title: string;
+  description?: string;
+  displaySettings?: PresentationDisplaySettings;
+  products: Array<{
+    product: Product;
+    customPrice?: number;
+    customDescription?: string;
+  }>;
+  isEditable?: boolean;
+  onEdit?: () => void;
 }
-
-// Helper function to extract format details with proper typings
-const extractFormatDetails = (format: any): FormatLight => {
-  if (!format) return { id: '', format_name: 'No format' };
-  
-  return {
-    id: format.id || '',
-    format_name: format.format_name || 'Unknown Format',
-    binding_type: format.binding_type,
-    cover_material: format.cover_material,
-    cover_stock_print: format.cover_stock_print,
-    internal_material: format.internal_material,
-    internal_stock_print: format.internal_stock_print,
-    orientation: format.orientation,
-    extent: format.extent,
-    tps_height_mm: format.tps_height_mm,
-    tps_width_mm: format.tps_width_mm,
-    tps_depth_mm: format.tps_depth_mm,
-    tps_plc_height_mm: format.tps_plc_height_mm,
-    tps_plc_width_mm: format.tps_plc_width_mm,
-    tps_plc_depth_mm: format.tps_plc_depth_mm
-  };
-};
-
-// Helper to prepare product with properly typed format
-const prepareProduct = (product: any): ProductWithFormat => {
-  return {
-    ...product,
-    format: product.format ? extractFormatDetails(product.format) : undefined
-  };
-};
-
-export const ProductSection = ({
-  sectionId,
-  presentationId,
-  items,
-  isLoading,
-  isEditable,
-  viewMode,
+export function ProductSection({
+  title,
+  description,
+  products,
   displaySettings,
-  viewId,
-  isPublicView = false
-}: ProductSectionProps) => {
-  const { deleteSection } = usePresentationSections(presentationId);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
-  
-  // Function to track item views
-  const handleItemView = async (itemId: string) => {
-    if (viewId && isPublicView) {
-      await recordItemView(presentationId, viewId, itemId);
+  isEditable = false,
+  onEdit
+}: ProductSectionProps) {
+  const [selectedProduct, setSelectedProduct] = useState<{
+    product: Product;
+    customPrice?: number;
+    customDescription?: string;
+  } | null>(null);
+
+  // Extract features from displaySettings
+  const features = displaySettings?.features;
+  const enabledViews = features?.enabledViews || ['card', 'table', 'carousel', 'kanban'];
+  const allowViewToggle = features?.allowViewToggle !== false;
+  const showProductDetails = features?.showProductDetails !== false;
+  const showPricing = features?.showPricing !== false;
+  const cardWidthType: CardWidthType = features?.cardWidthType || 'responsive';
+  const fixedCardWidth = features?.fixedCardWidth || 320;
+
+  // Only use cardGridLayout if we're in responsive mode
+  const cardGridLayout = cardWidthType === 'responsive' ? features?.cardGridLayout || {
+    sm: 1,
+    md: 2,
+    lg: 3,
+    xl: 4,
+    xxl: 5
+  } : undefined;
+
+  // Use the defaultView from displaySettings, falling back to 'card' if not specified
+  // But ensure it's one of the enabled views
+  const defaultView = displaySettings?.defaultView && enabledViews.includes(displaySettings.defaultView) ? displaySettings.defaultView : enabledViews.length > 0 ? enabledViews[0] : 'card';
+  const [viewMode, setViewMode] = useState<PresentationViewMode>(defaultView);
+
+  // If current viewMode becomes disabled, switch to first available view
+  useEffect(() => {
+    if (!enabledViews.includes(viewMode) && enabledViews.length > 0) {
+      setViewMode(enabledViews[0]);
+    }
+  }, [enabledViews, viewMode]);
+  const cardColumns = displaySettings?.cardColumns || displaySettings?.displayColumns as Array<string> || ['price', 'isbn13'];
+  const dialogColumns = displaySettings?.dialogColumns || displaySettings?.displayColumns as Array<string> || ['price', 'isbn13', 'publisher', 'publication_date'];
+  const shouldShowFormatDetails = dialogColumns.includes("format");
+  const {
+    data: formatDetails,
+    isLoading: isLoadingFormat
+  } = useFormatDetails(shouldShowFormatDetails && showProductDetails ? selectedProduct?.product.format_id || null : null);
+
+  // Generate grid classes based on card grid layout configuration
+  const generateGridClasses = () => {
+    if (cardWidthType === 'fixed') {
+      return "flex flex-wrap gap-6";
+    }
+
+    // Use responsive grid for 'responsive' mode
+    if (!cardGridLayout) {
+      return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6";
+    }
+    const classes = ["grid", "gap-6"];
+
+    // Small screens (default)
+    classes.push(`grid-cols-${cardGridLayout.sm || 1}`);
+
+    // Medium screens (md: ≥768px)
+    if (cardGridLayout.md) classes.push(`md:grid-cols-${cardGridLayout.md}`);
+
+    // Large screens (lg: ≥1024px)
+    if (cardGridLayout.lg) classes.push(`lg:grid-cols-${cardGridLayout.lg}`);
+
+    // Extra large screens (xl: ≥1280px)
+    if (cardGridLayout.xl) classes.push(`xl:grid-cols-${cardGridLayout.xl}`);
+
+    // 2XL screens (2xl: ≥1536px)
+    if (cardGridLayout.xxl) classes.push(`2xl:grid-cols-${cardGridLayout.xxl}`);
+    return classes.join(" ");
+  };
+
+  // Helper to format dimensions
+  const formatDimensions = (height?: number | null, width?: number | null, depth?: number | null) => {
+    if (!height && !width) return 'N/A';
+    let dimensions = `${height || '-'}mm × ${width || '-'}mm`;
+    if (depth) dimensions += ` × ${depth}mm`;
+    return dimensions;
+  };
+  const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
+    // Don't show price if pricing is disabled
+    if (column === 'price' && !showPricing) {
+      return 'Contact for pricing';
+    }
+    switch (column) {
+      // Basic info
+      case 'title':
+        return product.title;
+      case 'price':
+        // First check if there's a custom price set
+        if (customPrice !== undefined) {
+          return formatPrice(customPrice, product.default_currency);
+        }
+        return formatPrice(product.list_price, product.default_currency);
+      case 'isbn13':
+        return product.isbn13 || 'N/A';
+      case 'isbn10':
+        return product.isbn10 || 'N/A';
+
+      // Product details
+      case 'publisher':
+      case 'publisher_name':
+        // Handle both column names
+        return product.publisher_name || 'N/A';
+      case 'publication_date':
+        return product.publication_date ? new Date(product.publication_date).toLocaleDateString() : 'N/A';
+      case 'product_form':
+        return product.product_form || 'N/A';
+      case 'product_form_detail':
+        return product.product_form_detail || 'N/A';
+      case 'status':
+        return product.status || 'N/A';
+
+      // Format information from formats table
+      case 'format_name':
+        return product.format?.format_name || 'N/A';
+      case 'binding_type':
+        return product.format?.binding_type || 'N/A';
+      case 'cover_material':
+        return product.format?.cover_material || 'N/A';
+      case 'cover_stock_print':
+        return product.format?.cover_stock_print || 'N/A';
+      case 'internal_material':
+        return product.format?.internal_material || 'N/A';
+      case 'internal_stock_print':
+        return product.format?.internal_stock_print || 'N/A';
+      case 'orientation':
+        return product.format?.orientation || 'N/A';
+      case 'extent':
+        return product.format?.extent || 'N/A';
+      case 'tps_dimensions':
+        return formatDimensions(product.format?.tps_height_mm, product.format?.tps_width_mm, product.format?.tps_depth_mm);
+      case 'plc_dimensions':
+        return formatDimensions(product.format?.tps_plc_height_mm, product.format?.tps_plc_width_mm, product.format?.tps_plc_depth_mm);
+
+      // Physical properties - individual
+      case 'height':
+        return product.height_measurement ? `${product.height_measurement}mm` : 'N/A';
+      case 'width':
+        return product.width_measurement ? `${product.width_measurement}mm` : 'N/A';
+      case 'thickness':
+        return product.thickness_measurement ? `${product.thickness_measurement}mm` : 'N/A';
+      case 'weight':
+        return product.weight_measurement ? `${product.weight_measurement}g` : 'N/A';
+
+      // Physical properties - grouped
+      case 'physical_properties':
+        return `${product.height_measurement || '-'}mm × ${product.width_measurement || '-'}mm × ${product.thickness_measurement || '-'}mm | ${product.weight_measurement || '-'}g`;
+
+      // Format details
+      case 'format':
+        return product.format_extra_comments || 'N/A';
+      case 'format_extras':
+        if (typeof product.format_extras === 'object' && product.format_extras !== null) {
+          // Check if it's the old format with boolean flags
+          if ('foil' in product.format_extras) {
+            const extras = product.format_extras as Record<string, boolean>;
+            return Object.entries(extras).filter(([_, value]) => value).map(([key]) => key.charAt(0).toUpperCase() + key.slice(1)).join(', ') || 'None';
+          }
+          // Handle new format with array of extras
+          else if (Array.isArray(product.format_extras)) {
+            return product.format_extras.map(extra => extra.name).join(', ') || 'None';
+          }
+        }
+        return 'N/A';
+      case 'format_extra_comments':
+        return product.format_extra_comments || 'N/A';
+
+      // Content details
+      case 'page_count':
+        return product.page_count ? `${product.page_count} pages` : 'N/A';
+      case 'edition_number':
+        return product.edition_number ? `${getOrdinal(product.edition_number)} edition` : 'N/A';
+
+      // Carton information - individual
+      case 'carton_quantity':
+        return product.carton_quantity ? `${product.carton_quantity} units` : 'N/A';
+      case 'carton_length':
+        return product.carton_length_mm ? `${product.carton_length_mm}mm` : 'N/A';
+      case 'carton_width':
+        return product.carton_width_mm ? `${product.carton_width_mm}mm` : 'N/A';
+      case 'carton_height':
+        return product.carton_height_mm ? `${product.carton_height_mm}mm` : 'N/A';
+      case 'carton_weight':
+        return product.carton_weight_kg ? `${product.carton_weight_kg}kg` : 'N/A';
+
+      // Carton information - grouped
+      case 'carton_dimensions':
+        const qty = product.carton_quantity ? `${product.carton_quantity} units` : 'N/A';
+        const dims = product.carton_length_mm && product.carton_width_mm && product.carton_height_mm ? `${product.carton_length_mm}mm × ${product.carton_width_mm}mm × ${product.carton_height_mm}mm` : 'N/A';
+        const weight = product.carton_weight_kg ? ` | ${product.carton_weight_kg}kg` : '';
+        return `${qty} | ${dims}${weight}`;
+
+      // Additional information
+      case 'synopsis':
+        return product.synopsis || 'N/A';
+      case 'subtitle':
+        return product.subtitle || 'N/A';
+      case 'series_name':
+        return product.series_name || 'N/A';
+      case 'age_range':
+        return product.age_range || 'N/A';
+      case 'license':
+        return product.license || 'N/A';
+
+      // Codes
+      case 'language_code':
+        return product.language_code || 'N/A';
+      case 'subject_code':
+        return product.subject_code || 'N/A';
+      case 'product_availability_code':
+        return product.product_availability_code || 'N/A';
+      default:
+        return 'N/A';
     }
   };
-  
-  // Process items to extract product data
-  const productItems: { product: ProductWithFormat; customPrice?: number; customDescription?: string }[] = 
-    items.filter(item => item.item_type === 'product' && item.custom_content)
-      .map(item => ({
-        product: prepareProduct(item.custom_content),
-        customPrice: item.custom_price,
-        customDescription: item.description,
-        id: item.id
-      }))
-      .sort((a, b) => (a.product.title || '').localeCompare(b.product.title || ''));
-  
-  // Render loading state
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i} className="h-64 animate-pulse">
-            <CardContent className="p-0 h-full flex items-center justify-center">
-              <div className="w-full h-full bg-muted"></div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-  
-  // Render empty state for editable sections
-  if (items.length === 0 && isEditable) {
-    return (
-      <Card className="border-dashed">
-        <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground mb-4">No products added to this section yet</p>
-          <Button onClick={() => setIsProductDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Products
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // Render empty state for non-editable sections
-  if (items.length === 0 && !isEditable) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">No products in this section</p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // Render appropriate view based on viewMode
-  switch (viewMode) {
-    case 'card':
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {productItems.map(({ product, customPrice, customDescription, id }) => (
-            <Card 
-              key={product.id} 
-              className="overflow-hidden"
-              onClick={() => handleItemView(id as string)}
-            >
-              <div className="aspect-[3/4] relative overflow-hidden">
-                {product.cover_image_url ? (
-                  <img 
-                    src={product.cover_image_url} 
-                    alt={product.title} 
-                    className="object-cover w-full h-full"
-                  />
-                ) : (
-                  <div className="bg-muted h-full w-full flex items-center justify-center">
-                    <span className="text-muted-foreground">No cover image</span>
-                  </div>
-                )}
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-bold truncate">{product.title}</h3>
-                {product.subtitle && (
-                  <p className="text-sm text-muted-foreground truncate">{product.subtitle}</p>
-                )}
-                <div className="mt-2 space-y-1">
-                  {displaySettings.cardColumns?.includes('price') && (
-                    <p className="text-sm">
-                      <span className="font-medium">Price:</span> ${customPrice || product.price || 'N/A'}
-                    </p>
-                  )}
-                  {displaySettings.cardColumns?.includes('isbn13') && product.isbn13 && (
-                    <p className="text-sm">
-                      <span className="font-medium">ISBN-13:</span> {product.isbn13}
-                    </p>
-                  )}
-                  {displaySettings.cardColumns?.includes('publisher') && product.publisher_name && (
-                    <p className="text-sm">
-                      <span className="font-medium">Publisher:</span> {product.publisher_name}
-                    </p>
-                  )}
-                  {displaySettings.cardColumns?.includes('publication_date') && product.publication_date && (
-                    <p className="text-sm">
-                      <span className="font-medium">Publication Date:</span> {product.publication_date}
-                    </p>
-                  )}
-                  {customDescription && (
-                    <p className="text-sm mt-2">{customDescription}</p>
-                  )}
-                </div>
+
+  // Helper function for ordinal numbers (1st, 2nd, 3rd, etc.)
+  const getOrdinal = (n: number): string => {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
+  // Get friendly display name for column
+  const getDisplayName = (column: string): string => {
+    const displayNameMap: Record<string, string> = {
+      'price': 'Price',
+      'isbn13': 'ISBN-13',
+      'isbn10': 'ISBN-10',
+      'publisher': 'Publisher',
+      'publisher_name': 'Publisher',
+      'publication_date': 'Publication Date',
+      'product_form': 'Format Type',
+      'product_form_detail': 'Format Detail',
+      'status': 'Status',
+      'height': 'Height',
+      'width': 'Width',
+      'thickness': 'Thickness',
+      'weight': 'Weight',
+      'physical_properties': 'Dimensions',
+      'format': 'Format',
+      'format_extras': 'Format Features',
+      'format_extra_comments': 'Format Comments',
+      'page_count': 'Pages',
+      'edition_number': 'Edition',
+      'carton_quantity': 'Carton Qty',
+      'carton_length': 'Carton Length',
+      'carton_width': 'Carton Width',
+      'carton_height': 'Carton Height',
+      'carton_weight': 'Carton Weight',
+      'carton_dimensions': 'Carton Info',
+      'synopsis': 'Synopsis',
+      'subtitle': 'Subtitle',
+      'series_name': 'Series',
+      'age_range': 'Age Range',
+      'license': 'License',
+      'language_code': 'Language',
+      'subject_code': 'Subject',
+      'product_availability_code': 'Availability'
+    };
+    return displayNameMap[column] || column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ');
+  };
+
+  // Handle product selection based on showProductDetails setting
+  const handleProductSelection = (product: {
+    product: Product;
+    customPrice?: number;
+    customDescription?: string;
+  }) => {
+    if (showProductDetails) {
+      setSelectedProduct(product);
+    }
+  };
+
+  // Get a more organized structure for dialog columns
+  const organizeDialogColumns = (columns: string[]): Record<string, string[]> => {
+    const groups: Record<string, string[]> = {
+      'Basic Information': [],
+      'Physical Properties': [],
+      'Format Details': [],
+      'Content Information': [],
+      'Carton Information': [],
+      'Additional Information': []
+    };
+    columns.forEach(column => {
+      if (['title', 'isbn13', 'isbn10', 'price', 'publisher', 'publication_date', 'status'].includes(column)) {
+        groups['Basic Information'].push(column);
+      } else if (['height', 'width', 'thickness', 'weight', 'physical_properties'].includes(column)) {
+        groups['Physical Properties'].push(column);
+      } else if (['format', 'format_extras', 'format_extra_comments'].includes(column)) {
+        groups['Format Details'].push(column);
+      } else if (['page_count', 'edition_number'].includes(column)) {
+        groups['Content Information'].push(column);
+      } else if (['carton_quantity', 'carton_length', 'carton_width', 'carton_height', 'carton_weight', 'carton_dimensions'].includes(column)) {
+        groups['Carton Information'].push(column);
+      } else {
+        groups['Additional Information'].push(column);
+      }
+    });
+
+    // Remove empty groups
+    Object.keys(groups).forEach(key => {
+      if (groups[key].length === 0) {
+        delete groups[key];
+      }
+    });
+    return groups;
+  };
+
+  // Render the card view (default)
+  const renderCardView = () => {
+    if (cardWidthType === 'fixed') {
+      return <div className={generateGridClasses()}>
+          {products.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)} style={{
+          width: `${fixedCardWidth}px`,
+          flexShrink: 0
+        }}>
+              {item.product.cover_image_url && <div className="w-full h-48 overflow-hidden">
+                  <Image src={item.product.cover_image_url} alt={item.product.title} className="w-full h-full object-contain" />
+                </div>}
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+                {item.product.subtitle && <p className="text-sm text-muted-foreground line-clamp-2">{item.product.subtitle}</p>}
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {cardColumns.map(column => <div key={column} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground font-medium">{getDisplayName(column)}:</span>
+                    <span className="text-right ml-2">{getDisplayValue(item.product, column, item.customPrice)}</span>
+                  </div>)}
               </CardContent>
-              {isEditable && (
-                <CardFooter className="p-4 pt-0 flex justify-end gap-2">
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4 mr-1" /> Edit
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Trash className="h-4 w-4 mr-1" /> Remove
-                  </Button>
-                </CardFooter>
-              )}
-            </Card>
-          ))}
-          {isEditable && (
-            <Card className="border-dashed flex items-center justify-center min-h-[300px]">
-              <CardContent className="text-center p-6">
-                <Button onClick={() => setIsProductDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Products
-                </Button>
+            </Card>)}
+        </div>;
+    } else {
+      return <div className={generateGridClasses()}>
+          {products.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)}>
+              {item.product.cover_image_url && <div className="w-full h-48 overflow-hidden">
+                  <Image src={item.product.cover_image_url} alt={item.product.title} className="w-full h-full object-contain" />
+                </div>}
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
+                {item.product.subtitle && <p className="text-sm text-muted-foreground line-clamp-2">{item.product.subtitle}</p>}
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {cardColumns.map(column => <div key={column} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground font-medium">{getDisplayName(column)}:</span>
+                    <span className="text-right ml-2">{getDisplayValue(item.product, column, item.customPrice)}</span>
+                  </div>)}
               </CardContent>
-            </Card>
-          )}
+            </Card>)}
+        </div>;
+    }
+  };
+  return <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">{title}</h2>
+          {description && <p className="text-muted-foreground mt-1">{description}</p>}
         </div>
-      );
-      
-    case 'table':
-      return (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-muted">
-                <th className="px-4 py-2 text-left">Title</th>
-                {displaySettings.cardColumns?.includes('publisher') && (
-                  <th className="px-4 py-2 text-left">Publisher</th>
-                )}
-                {displaySettings.cardColumns?.includes('isbn13') && (
-                  <th className="px-4 py-2 text-left">ISBN-13</th>
-                )}
-                {displaySettings.cardColumns?.includes('price') && (
-                  <th className="px-4 py-2 text-right">Price</th>
-                )}
-                {displaySettings.cardColumns?.includes('publication_date') && (
-                  <th className="px-4 py-2 text-left">Publication Date</th>
-                )}
-                {isEditable && <th className="px-4 py-2"></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {productItems.map(({ product, customPrice, id }) => (
-                <tr 
-                  key={product.id} 
-                  className="border-b hover:bg-muted/50"
-                  onClick={() => handleItemView(id as string)}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {product.cover_image_url && (
-                        <img 
-                          src={product.cover_image_url} 
-                          alt="" 
-                          className="h-12 w-9 object-cover"
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium">{product.title}</p>
-                        {product.subtitle && (
-                          <p className="text-sm text-muted-foreground">{product.subtitle}</p>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  {displaySettings.cardColumns?.includes('publisher') && (
-                    <td className="px-4 py-3">{product.publisher_name || 'N/A'}</td>
-                  )}
-                  {displaySettings.cardColumns?.includes('isbn13') && (
-                    <td className="px-4 py-3">{product.isbn13 || 'N/A'}</td>
-                  )}
-                  {displaySettings.cardColumns?.includes('price') && (
-                    <td className="px-4 py-3 text-right">${customPrice || product.price || 'N/A'}</td>
-                  )}
-                  {displaySettings.cardColumns?.includes('publication_date') && (
-                    <td className="px-4 py-3">{product.publication_date || 'N/A'}</td>
-                  )}
-                  {isEditable && (
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash className="h-4 w-4" />
-                          <span className="sr-only">Remove</span>
-                        </Button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        
+        <div className="flex items-center space-x-4">
+          {allowViewToggle && enabledViews.length > 1 && <ViewToggle viewMode={viewMode} setViewMode={setViewMode} features={displaySettings?.features} />}
           
-          {isEditable && (
-            <div className="mt-4 flex justify-center">
-              <Button onClick={() => setIsProductDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Products
-              </Button>
-            </div>
-          )}
+          {isEditable && onEdit && <Button variant="outline" onClick={onEdit}>
+              Edit Section
+            </Button>}
         </div>
-      );
+      </div>
       
-    // For simplicity, we're not implementing the carousel and kanban views yet
-    case 'carousel':
-    case 'kanban':
-    default:
-      return (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground mb-4">{viewMode} view coming soon</p>
-            <Button onClick={() => setIsProductDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Products
-            </Button>
-          </CardContent>
-        </Card>
-      );
-  }
-};
+      {products.length > 0 ? <div>
+          {viewMode === 'card' && enabledViews.includes('card') && renderCardView()}
+          
+          {viewMode === 'table' && enabledViews.includes('table') && <TableView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          
+          {viewMode === 'carousel' && enabledViews.includes('carousel') && <CarouselView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          
+          {viewMode === 'kanban' && enabledViews.includes('kanban') && <KanbanView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+        </div> : <div className="text-center py-12 bg-muted/20 rounded-lg">
+          <p className="text-muted-foreground">No products in this section</p>
+        </div>}
+      
+      <Dialog open={!!selectedProduct && showProductDetails} onOpenChange={open => !open && setSelectedProduct(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          {selectedProduct && showProductDetails && <>
+              <DialogHeader>
+                <DialogTitle>{selectedProduct.product.title}</DialogTitle>
+                {selectedProduct.product.subtitle && <p className="text-muted-foreground">{selectedProduct.product.subtitle}</p>}
+              </DialogHeader>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                {selectedProduct.product.cover_image_url && <div className="w-full h-64 overflow-hidden">
+                    <Image src={selectedProduct.product.cover_image_url} alt={selectedProduct.product.title} className="w-full h-full object-contain" />
+                  </div>}
+                
+                <div className="space-y-6">
+                  {Object.entries(organizeDialogColumns(dialogColumns)).map(([group, columns]) => <div key={group} className="space-y-2">
+                      <h3 className="text-sm font-semibold text-muted-foreground">{group}</h3>
+                      <div className="space-y-1">
+                        {columns.filter(column => column !== 'synopsis').map(column => <div key={column} className="grid grid-cols-2 gap-2">
+                            <span className="text-sm font-medium">{getDisplayName(column)}</span>
+                            <span className="text-sm">
+                              {getDisplayValue(selectedProduct.product, column, selectedProduct.customPrice)}
+                            </span>
+                          </div>)}
+                      </div>
+                    </div>)}
+                </div>
+              </div>
+              
+              {dialogColumns.includes('synopsis') && selectedProduct.product.synopsis && <div className="mt-6 border rounded-lg p-4 bg-slate-50">
+                  <h3 className="text-lg font-medium mb-3">Synopsis</h3>
+                  <p className="text-sm text-gray-600">{selectedProduct.product.synopsis}</p>
+                </div>}
+              
+              {shouldShowFormatDetails && selectedProduct.product.format_id && <div className="mt-6 border rounded-lg p-4 bg-slate-50">
+                  <h3 className="text-lg font-medium mb-3">Format Details</h3>
+                  {isLoadingFormat ? <p className="text-sm text-muted-foreground">Loading format details...</p> : formatDetails ? <div className="grid grid-cols-1 gap-3 text-sm">
+                      {formatDetails.extent && <div>
+                          <p className="font-medium">Extent:</p>
+                          <p>{formatDetails.extent}</p>
+                        </div>}
+                      
+                      {formatDetails.tps_height_mm && formatDetails.tps_width_mm && <div>
+                          <p className="font-medium">TPS Dimensions:</p>
+                          <p>{formatDetails.tps_height_mm}mm × {formatDetails.tps_width_mm}mm
+                            {formatDetails.tps_depth_mm && ` × ${formatDetails.tps_depth_mm}mm`}
+                          </p>
+                        </div>}
+                      
+                      <div>
+                        <p className="font-medium">PLC Dimensions:</p>
+                        <p>
+                          {formatDetails.tps_plc_height_mm && formatDetails.tps_plc_width_mm ? `${formatDetails.tps_plc_height_mm}mm × ${formatDetails.tps_plc_width_mm}mm${formatDetails.tps_plc_depth_mm ? ` × ${formatDetails.tps_plc_depth_mm}mm` : ''}` : 'N/A'}
+                        </p>
+                      </div>
+                      
+                      {formatDetails.cover_stock_print && <div>
+                          <p className="font-medium">Cover Stock/Print:</p>
+                          <p>{formatDetails.cover_stock_print}</p>
+                        </div>}
+                      
+                      {formatDetails.internal_stock_print && <div>
+                          <p className="font-medium">Internal Stock/Print:</p>
+                          <p>{formatDetails.internal_stock_print}</p>
+                        </div>}
+                    </div> : <p className="text-sm text-muted-foreground">No format details available</p>}
+                </div>}
+              
+              <div className="flex justify-end mt-4">
+                <Button onClick={() => setSelectedProduct(null)}>Close</Button>
+              </div>
+            </>}
+        </DialogContent>
+      </Dialog>
+    </div>;
+}
