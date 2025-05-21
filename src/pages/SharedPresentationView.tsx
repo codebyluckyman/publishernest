@@ -3,59 +3,81 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
-import { PresentationDisplaySettings, CardColumn, DialogColumn } from '@/types/salesPresentation';
+import { PresentationDisplaySettings } from '@/types/salesPresentation';
+import { fetchSharedPresentation } from '@/api/salesPresentations/fetchSharedPresentation';
+import { trackPresentationView } from '@/api/salesPresentations/trackPresentationView';
 
-// Assuming this is a simplified view of the presentation for shared links
 const SharedPresentationView = () => {
-  const { id } = useParams<{ id: string }>();
+  const { accessCode } = useParams<{ accessCode: string }>();
   const [presentation, setPresentation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewId, setViewId] = useState<string | null>(null);
   
   useEffect(() => {
-    // Fetch the shared presentation data
+    // Fetch the shared presentation data by access code
     const fetchPresentation = async () => {
       try {
-        // Replace with actual API call to fetch shared presentation
-        const response = await fetch(`/api/shared-presentations/${id}`);
-        const data = await response.json();
+        if (!accessCode) {
+          setError('Invalid access code');
+          setLoading(false);
+          return;
+        }
+        
+        const { data, error } = await fetchSharedPresentation(accessCode);
+        
+        if (error || !data) {
+          setError('Failed to load presentation');
+          setLoading(false);
+          return;
+        }
+        
         setPresentation(data);
+        
+        // Track the presentation view
+        const viewerId = await trackPresentationView({
+          presentationId: data.id,
+          viewerInfo: {
+            device: navigator.userAgent,
+          }
+        });
+        
+        setViewId(viewerId);
       } catch (err) {
-        setError('Failed to load presentation');
-        console.error(err);
+        console.error('Error in shared presentation view:', err);
+        setError('An unexpected error occurred');
       } finally {
         setLoading(false);
       }
     };
     
-    if (id) {
-      fetchPresentation();
-    }
-  }, [id]);
+    fetchPresentation();
+  }, [accessCode]);
   
-  if (loading) return <div>Loading shared presentation...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!presentation) return <div>Presentation not found</div>;
+  // Send periodic heartbeats to update last_activity for analytics
+  useEffect(() => {
+    if (!presentation?.id || !viewId) return;
+    
+    const heartbeatInterval = setInterval(async () => {
+      try {
+        await trackPresentationView({
+          presentationId: presentation.id,
+          viewId: viewId
+        });
+      } catch (err) {
+        console.error('Failed to update view activity:', err);
+      }
+    }, 60000); // Every minute
+    
+    return () => clearInterval(heartbeatInterval);
+  }, [presentation?.id, viewId]);
   
-  // Process display settings for backward compatibility
-  const displaySettings = presentation.display_settings || {};
-  
-  // Create a properly typed displaySettings object
-  const processedDisplaySettings: PresentationDisplaySettings = {
-    cardColumns: Array.isArray(displaySettings.cardColumns) 
-      ? displaySettings.cardColumns as CardColumn[]
-      : (Array.isArray(displaySettings.displayColumns) 
-          ? displaySettings.displayColumns as CardColumn[]
-          : ['price', 'isbn13', 'publisher']),
-    dialogColumns: Array.isArray(displaySettings.dialogColumns) 
-      ? displaySettings.dialogColumns as DialogColumn[]
-      : (Array.isArray(displaySettings.displayColumns) 
-          ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis' as DialogColumn] 
-          : ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'])
-  };
+  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading presentation...</div>;
+  if (error) return <div className="flex items-center justify-center min-h-screen">Error: {error}</div>;
+  if (!presentation) return <div className="flex items-center justify-center min-h-screen">Presentation not found</div>;
   
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-8 space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold">{presentation.title}</h1>
         {presentation.description && (
@@ -69,9 +91,9 @@ const SharedPresentationView = () => {
       
       <div className="mt-8">
         <PresentationSections
-          presentationId={id!}
+          presentationId={presentation.id}
           isEditable={false}
-          displaySettings={processedDisplaySettings}
+          displaySettings={presentation.display_settings as PresentationDisplaySettings}
         />
       </div>
     </div>
