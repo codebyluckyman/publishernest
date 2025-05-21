@@ -66,9 +66,9 @@ export function EditableProductTableHeader({
   };
 
   return (
-    { /* <div className="pb-6 border-b">
+    <div className="pb-6 border-b">
        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
+      {/*  <div>
           <h2 className="text-xl font-semibold">Products</h2>
           <p className="text-sm text-muted-foreground">
             {searchQuery
