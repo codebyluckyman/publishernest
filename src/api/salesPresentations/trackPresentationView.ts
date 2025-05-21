@@ -1,5 +1,4 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { supabaseCustom } from '@/integrations/supabase/client-custom';
 import { v4 as uuidv4 } from 'uuid';
 
