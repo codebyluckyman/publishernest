@@ -11,7 +11,7 @@ export async function fetchSharedPresentation(shareToken: string) {
     // First, find the share record by token
     const { data: shareData, error: shareError } = await supabaseCustom
       .from('presentation_shares')
-      .select('presentation_id, expires_at')
+      .select('presentation_id, expires_at, access_count')
       .eq('share_token', shareToken)
       .single();
     

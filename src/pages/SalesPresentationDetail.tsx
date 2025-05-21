@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSalesPresentations } from '@/hooks/useSalesPresentations';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
 import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardGridLayout, CarouselSettings } from '@/types/salesPresentation';
+import { ShareDialog } from '@/components/sales-presentations/ShareDialog';
+import { toast } from 'sonner';
+import { createPresentationShare } from '@/api/salesPresentations/createPresentationShare';
+import { supabaseCustom } from '@/integrations/supabase/client-custom';
 
 // Default values for display settings
 const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
@@ -72,6 +76,11 @@ const SalesPresentationDetail = () => {
   const { data: presentation, isLoading, isError } = usePresentation(id);
   const publishMutation = usePublishPresentation();
 
+  // Share dialog state
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
+
   const handleEdit = () => {
     navigate(`/sales-presentations/${id}/edit`);
   };
@@ -79,6 +88,58 @@ const SalesPresentationDetail = () => {
   const handlePublish = async () => {
     if (id) {
       await publishMutation.mutateAsync({ id });
+    }
+  };
+  
+  // Handle sharing the presentation
+  const handleShare = () => {
+    setShareDialogOpen(true);
+    setShareLink(null); // Reset any previous link
+  };
+
+  // Create share link
+  const confirmShare = async (recipientEmail?: string) => {
+    if (!id) return;
+    
+    setIsSharing(true);
+    try {
+      const currentUser = await supabaseCustom.auth.getUser();
+      const userId = currentUser.data.user?.id;
+      
+      if (!userId) {
+        toast.error('You must be logged in to share presentations');
+        return;
+      }
+      
+      let expiresAt: string | undefined = undefined;
+      if (recipientEmail) {
+        // Set expiration 30 days from now if sending to specific recipient
+        const expiration = new Date();
+        expiration.setDate(expiration.getDate() + 30);
+        expiresAt = expiration.toISOString();
+      }
+      
+      const link = await createPresentationShare({
+        presentationId: id,
+        sharedBy: userId,
+        sharedWith: recipientEmail,
+        expiresAt
+      });
+      
+      if (link) {
+        setShareLink(link);
+        // Only show toast if sharing without dialog
+        if (!shareDialogOpen) {
+          toast.success('Share link created successfully');
+        }
+      } else {
+        toast.error('Failed to create share link');
+      }
+    } catch (error) {
+      console.error('Error creating share link:', error);
+      toast.error('Failed to create share link');
+    } finally {
+      setIsSharing(false);
     }
   };
   
@@ -147,7 +208,7 @@ const SalesPresentationDetail = () => {
               {publishMutation.isPending ? 'Publishing...' : 'Publish'}
             </Button>
           ) : (
-            <Button>
+            <Button onClick={handleShare}>
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
@@ -192,6 +253,14 @@ const SalesPresentationDetail = () => {
           displaySettings={processedDisplaySettings}
         />
       </div>
+      
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        onShare={confirmShare}
+        shareLink={shareLink}
+        isSharing={isSharing}
+      />
     </div>
   );
 };

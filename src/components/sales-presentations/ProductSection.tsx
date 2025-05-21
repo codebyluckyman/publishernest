@@ -12,18 +12,44 @@ import { TableView } from './TableView';
 import { CarouselView } from './CarouselView';
 import { KanbanView } from './KanbanView';
 import { cn } from '@/lib/utils';
+
+// Define a type for the product with format that might have limited properties
+interface FormatLight {
+  id: string;
+  format_name: string;
+  binding_type?: string;
+  cover_material?: string;
+  cover_stock_print?: string;
+  internal_material?: string;
+  internal_stock_print?: string;
+  orientation?: string;
+  extent?: string;
+  tps_height_mm?: number;
+  tps_width_mm?: number;
+  tps_depth_mm?: number;
+  tps_plc_height_mm?: number;
+  tps_plc_width_mm?: number;
+  tps_plc_depth_mm?: number;
+}
+
+// Define a product type that includes the light format
+interface ProductWithFormat extends Product {
+  format?: FormatLight;
+}
+
 interface ProductSectionProps {
   title: string;
   description?: string;
   displaySettings?: PresentationDisplaySettings;
   products: Array<{
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }>;
   isEditable?: boolean;
   onEdit?: () => void;
 }
+
 export function ProductSection({
   title,
   description,
@@ -33,7 +59,7 @@ export function ProductSection({
   onEdit
 }: ProductSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<{
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   } | null>(null);
@@ -67,6 +93,7 @@ export function ProductSection({
       setViewMode(enabledViews[0]);
     }
   }, [enabledViews, viewMode]);
+
   const cardColumns = displaySettings?.cardColumns || displaySettings?.displayColumns as Array<string> || ['price', 'isbn13'];
   const dialogColumns = displaySettings?.dialogColumns || displaySettings?.displayColumns as Array<string> || ['price', 'isbn13', 'publisher', 'publication_date'];
   const shouldShowFormatDetails = dialogColumns.includes("format");
@@ -111,7 +138,8 @@ export function ProductSection({
     if (depth) dimensions += ` × ${depth}mm`;
     return dimensions;
   };
-  const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
+
+  const getDisplayValue = (product: ProductWithFormat, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
       return 'Contact for pricing';
@@ -298,7 +326,7 @@ export function ProductSection({
 
   // Handle product selection based on showProductDetails setting
   const handleProductSelection = (product: {
-    product: Product;
+    product: ProductWithFormat;
     customPrice?: number;
     customDescription?: string;
   }) => {
@@ -345,26 +373,45 @@ export function ProductSection({
   // Render the card view (default)
   const renderCardView = () => {
     if (cardWidthType === 'fixed') {
-      return <div className={generateGridClasses()}>
-          {products.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)} style={{
-          width: `${fixedCardWidth}px`,
-          flexShrink: 0
-        }}>
-              {item.product.cover_image_url && <div className="w-full h-48 overflow-hidden">
-                  <Image src={item.product.cover_image_url} alt={item.product.title} className="w-full h-full object-contain" />
-                </div>}
+      return (
+        <div className={generateGridClasses()}>
+          {products.map(item => (
+            <Card 
+              key={item.product.id} 
+              className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")}
+              onClick={() => handleProductSelection(item)}
+              style={{
+                width: `${fixedCardWidth}px`,
+                flexShrink: 0
+              }}
+            >
+              {item.product.cover_image_url && (
+                <div className="w-full h-48 overflow-hidden">
+                  <Image 
+                    src={item.product.cover_image_url} 
+                    alt={item.product.title} 
+                    className="w-full h-full object-contain" 
+                  />
+                </div>
+              )}
               <CardHeader className="pb-2">
                 <CardTitle className="text-xl line-clamp-2">{item.product.title}</CardTitle>
-                {item.product.subtitle && <p className="text-sm text-muted-foreground line-clamp-2">{item.product.subtitle}</p>}
+                {item.product.subtitle && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">{item.product.subtitle}</p>
+                )}
               </CardHeader>
               <CardContent className="space-y-2">
-                {cardColumns.map(column => <div key={column} className="flex justify-between text-sm">
+                {cardColumns.map(column => (
+                  <div key={column} className="flex justify-between text-sm">
                     <span className="text-muted-foreground font-medium">{getDisplayName(column)}:</span>
                     <span className="text-right ml-2">{getDisplayValue(item.product, column, item.customPrice)}</span>
-                  </div>)}
+                  </div>
+                ))}
               </CardContent>
-            </Card>)}
-        </div>;
+            </Card>
+          ))}
+        </div>
+      );
     } else {
       return <div className={generateGridClasses()}>
           {products.map(item => <Card key={item.product.id} className={cn("overflow-hidden", showProductDetails ? "hover:shadow-md transition-shadow cursor-pointer" : "")} onClick={() => handleProductSelection(item)}>
