@@ -19,7 +19,11 @@ export async function setDefaultView(id: string, organizationId: string): Promis
     throw new Error(error.message);
   }
 
-  return data as ProductSavedView;
+  // Convert the returned data to our ProductSavedView type
+  return {
+    ...data,
+    filters: data.filters as unknown as ProductSavedView['filters']
+  } as ProductSavedView;
 }
 
 async function unsetExistingDefaults(organizationId: string): Promise<void> {

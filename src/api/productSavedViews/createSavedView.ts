@@ -15,7 +15,7 @@ export async function createSavedView(
     .insert({
       name: params.name,
       description: params.description || null,
-      filters: params.filters,
+      filters: params.filters as any, // Cast to any to satisfy TypeScript
       search_query: params.search_query || null,
       is_default: params.is_default || false,
       organization_id: params.organization_id,
@@ -29,7 +29,11 @@ export async function createSavedView(
     throw new Error(error.message);
   }
 
-  return data as ProductSavedView;
+  // Convert the returned data to our ProductSavedView type
+  return {
+    ...data,
+    filters: data.filters as unknown as ProductSavedView['filters']
+  } as ProductSavedView;
 }
 
 async function unsetExistingDefaults(organization_id: string): Promise<void> {

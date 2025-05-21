@@ -21,5 +21,9 @@ export async function fetchSavedViews(
     throw new Error(error.message);
   }
 
-  return data as ProductSavedView[];
+  // Convert the returned data to our ProductSavedView type
+  return data.map(item => ({
+    ...item,
+    filters: item.filters as unknown as ProductSavedView['filters']
+  })) as ProductSavedView[];
 }

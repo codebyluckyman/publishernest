@@ -10,16 +10,17 @@ export async function updateSavedView(
     await unsetExistingDefaults();
   }
 
+  const updateData: any = {};
+  if (params.name !== undefined) updateData.name = params.name;
+  if (params.description !== undefined) updateData.description = params.description;
+  if (params.filters !== undefined) updateData.filters = params.filters as any;
+  if (params.search_query !== undefined) updateData.search_query = params.search_query;
+  if (params.is_default !== undefined) updateData.is_default = params.is_default;
+  updateData.updated_at = new Date().toISOString();
+
   const { data, error } = await supabase
     .from('product_saved_views')
-    .update({
-      name: params.name,
-      description: params.description,
-      filters: params.filters,
-      search_query: params.search_query,
-      is_default: params.is_default,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', params.id)
     .select()
     .single();
@@ -29,7 +30,11 @@ export async function updateSavedView(
     throw new Error(error.message);
   }
 
-  return data as ProductSavedView;
+  // Convert the returned data to our ProductSavedView type
+  return {
+    ...data,
+    filters: data.filters as unknown as ProductSavedView['filters']
+  } as ProductSavedView;
 }
 
 async function unsetExistingDefaults(): Promise<void> {
