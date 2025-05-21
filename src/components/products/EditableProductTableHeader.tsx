@@ -67,7 +67,7 @@ export function EditableProductTableHeader({
 
   return (
     <div className="pb-6 border-b">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      {/* <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-xl font-semibold">Products</h2>
           <p className="text-sm text-muted-foreground">
@@ -75,7 +75,7 @@ export function EditableProductTableHeader({
               ? `Search results for "${searchQuery}"`
               : "Manage your product catalog (editable)"}
           </p>
-        </div>
+        </div> */}
 
         <div className="flex flex-col gap-2 sm:flex-row">
           {isSearchActive ? (
