@@ -23,12 +23,14 @@ export function ProductTableContainer() {
     pub_month: string | string[] | null;
     license: string | string[] | null;
     format_id: string | string[] | null;
+    series_name: string | string[] | null;
   }>({
     product_form: FILTER_VALUES.ALL_FORMATS,
     publisher_name: FILTER_VALUES.ALL_PUBLISHERS,
     pub_month: FILTER_VALUES.ALL_PUB_MONTHS,
     license: FILTER_VALUES.ALL_LICENSES,
     format_id: FILTER_VALUES.ALL_FORMAT_NAMES,
+    series_name: FILTER_VALUES.ALL_SERIES,
   });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -66,9 +68,11 @@ export function ProductTableContainer() {
       filters.license !== FILTER_VALUES.ALL_LICENSES;
     const isFormatActive =
       filters.format_id !== FILTER_VALUES.ALL_FORMAT_NAMES;
+    const isSeriesActive = 
+      filters.series_name !== FILTER_VALUES.ALL_SERIES;
       
     return isProductFormActive || isPublisherNameActive || isPubMonthActive || 
-           isLicenseActive || isFormatActive;
+           isLicenseActive || isFormatActive || isSeriesActive;
   };
   
   const countActiveFilters = () => {
@@ -87,6 +91,7 @@ export function ProductTableContainer() {
     if (isFilterActive(filters.pub_month, FILTER_VALUES.ALL_PUB_MONTHS)) count++;
     if (isFilterActive(filters.license, FILTER_VALUES.ALL_LICENSES)) count++;
     if (isFilterActive(filters.format_id, FILTER_VALUES.ALL_FORMAT_NAMES)) count++;
+    if (isFilterActive(filters.series_name, FILTER_VALUES.ALL_SERIES)) count++;
     
     return count;
   };

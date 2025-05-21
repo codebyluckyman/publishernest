@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Product, SortDirection, SortField } from "@/types/product";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useProductEdit } from "@/context/ProductEditContext";
 
 interface EditableProductTableProps {
   searchQuery: string;
@@ -18,6 +19,7 @@ interface EditableProductTableProps {
     pub_month: string | string[] | null;
     license: string | string[] | null;
     format_id: string | string[] | null;
+    series_name: string | string[] | null;
   };
   currentOrganization: any;
   onViewProduct: (id: string) => void;
@@ -37,6 +39,7 @@ const EditableProductTable = ({
 }: EditableProductTableProps) => {
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const { setRefreshCallback } = useProductEdit();
 
   const {
     data: products,
@@ -55,6 +58,18 @@ const EditableProductTable = ({
     queryFn: () => fetchProducts(currentOrganization, searchQuery, filters, sortField, sortDirection),
     enabled: !!currentOrganization,
   });
+
+  // Register the refetch callback when component mounts
+  useEffect(() => {
+    if (refetch) {
+      setRefreshCallback(refetch);
+    }
+    
+    return () => {
+      // Clean up by setting refresh callback to undefined when component unmounts
+      setRefreshCallback(undefined);
+    };
+  }, [refetch, setRefreshCallback]);
 
   useEffect(() => {
     if (refreshTrigger > 0) {
