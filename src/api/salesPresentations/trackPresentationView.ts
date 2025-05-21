@@ -21,49 +21,32 @@ export async function trackPresentationView({
     // If no viewId is provided, create a new one
     const currentViewId = viewId || uuidv4();
     
-    // Check if this view already exists
-    const { data: existingView, error: fetchError } = await supabaseCustom
-      .from('presentation_analytics')
-      .select('id')
-      .eq('presentation_id', presentationId)
-      .eq('view_id', currentViewId)
-      .single();
-    
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned" which is expected if view is new
-      console.error('Error checking for existing view:', fetchError);
-    }
-    
-    const now = new Date().toISOString();
-    
-    if (existingView) {
-      // Update existing view record
-      const { error: updateError } = await supabaseCustom
-        .from('presentation_analytics')
-        .update({
-          last_activity: now,
-        })
-        .eq('id', existingView.id);
-        
-      if (updateError) {
-        console.error('Error updating presentation view:', updateError);
+    try {
+      // Use our new public function for tracking views
+      await supabaseCustom.rpc('track_presentation_public_access', {
+        p_presentation_id: presentationId,
+        p_view_id: currentViewId,
+      });
+      
+      // If we have additional viewer info and this isn't just a heartbeat update,
+      // we can update the analytics record with this extra information
+      if (viewerInfo && (viewerInfo.ip || viewerInfo.device || viewerInfo.location)) {
+        const { error: updateError } = await supabaseCustom
+          .from('presentation_analytics')
+          .update({
+            viewer_ip: viewerInfo?.ip,
+            viewer_device: viewerInfo?.device,
+            viewer_location: viewerInfo?.location,
+          })
+          .eq('presentation_id', presentationId)
+          .eq('view_id', currentViewId);
+          
+        if (updateError) {
+          console.error('Error updating presentation view details:', updateError);
+        }
       }
-    } else {
-      // Create new view record
-      const { error: insertError } = await supabaseCustom
-        .from('presentation_analytics')
-        .insert({
-          presentation_id: presentationId,
-          view_id: currentViewId,
-          viewer_ip: viewerInfo?.ip,
-          viewer_device: viewerInfo?.device,
-          viewer_location: viewerInfo?.location,
-          view_date: now,
-          last_activity: now,
-        });
-        
-      if (insertError) {
-        console.error('Error tracking presentation view:', insertError);
-      }
+    } catch (error) {
+      console.error('Error tracking presentation view:', error);
     }
     
     return currentViewId;

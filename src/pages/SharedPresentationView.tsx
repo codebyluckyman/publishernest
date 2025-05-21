@@ -24,25 +24,35 @@ const SharedPresentationView = () => {
           return;
         }
         
+        console.log('Fetching presentation with access code:', accessCode);
         const { data, error } = await fetchSharedPresentation(accessCode);
         
-        if (error || !data) {
+        if (error) {
+          console.error('Error fetching presentation:', error);
           setError('Failed to load presentation');
           setLoading(false);
           return;
         }
         
+        if (!data) {
+          console.error('No presentation data found');
+          setError('Presentation not found');
+          setLoading(false);
+          return;
+        }
+        
+        console.log('Presentation fetched successfully:', data);
         setPresentation(data);
         
         // Track the presentation view
-        const viewerId = await trackPresentationView({
+        const newViewId = await trackPresentationView({
           presentationId: data.id,
           viewerInfo: {
             device: navigator.userAgent,
           }
         });
         
-        setViewId(viewerId);
+        setViewId(newViewId);
       } catch (err) {
         console.error('Error in shared presentation view:', err);
         setError('An unexpected error occurred');
@@ -58,18 +68,23 @@ const SharedPresentationView = () => {
   useEffect(() => {
     if (!presentation?.id || !viewId) return;
     
+    console.log('Setting up heartbeat interval for view:', viewId);
     const heartbeatInterval = setInterval(async () => {
       try {
         await trackPresentationView({
           presentationId: presentation.id,
           viewId: viewId
         });
+        console.log('Heartbeat sent for view:', viewId);
       } catch (err) {
         console.error('Failed to update view activity:', err);
       }
     }, 60000); // Every minute
     
-    return () => clearInterval(heartbeatInterval);
+    return () => {
+      console.log('Cleaning up heartbeat interval');
+      clearInterval(heartbeatInterval);
+    };
   }, [presentation?.id, viewId]);
   
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading presentation...</div>;
