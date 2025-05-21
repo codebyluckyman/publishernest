@@ -1,12 +1,15 @@
-import { useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSalesPresentations } from '@/hooks/useSalesPresentations';
+import { useSalesPresentations, ShareOptions } from '@/hooks/useSalesPresentations';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Share2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { ArrowLeft, Edit, Share2, BarChart4 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PresentationSections } from '@/components/sales-presentations/PresentationSections';
+import { ShareDialog } from '@/components/sales-presentations/ShareDialog';
 import { PresentationDisplaySettings, CardColumn, DialogColumn, PresentationViewMode, PresentationFeatures, CardGridLayout, CarouselSettings } from '@/types/salesPresentation';
+import { toast } from '@/utils/toast-utils';
 
 // Default values for display settings
 const defaultCardColumns: CardColumn[] = ['price', 'isbn13', 'publisher'];
@@ -67,13 +70,22 @@ const defaultDisplaySettings: PresentationDisplaySettings = {
 const SalesPresentationDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { usePresentation, usePublishPresentation } = useSalesPresentations();
+  const { usePresentation, usePublishPresentation, useSharePresentation } = useSalesPresentations();
   
   const { data: presentation, isLoading, isError } = usePresentation(id);
   const publishMutation = usePublishPresentation();
+  const shareMutation = useSharePresentation();
+
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
 
   const handleEdit = () => {
     navigate(`/sales-presentations/${id}/edit`);
+  };
+  
+  const handleAnalytics = () => {
+    // Navigate to the analytics page for this presentation
+    navigate(`/sales-presentations/${id}/analytics`);
   };
 
   const handlePublish = async () => {
@@ -82,8 +94,34 @@ const SalesPresentationDetail = () => {
     }
   };
   
-  // Log what we got from the API for debugging
-  console.log("SalesPresentationDetail - raw presentation data:", presentation?.display_settings);
+  const handleShare = () => {
+    // If not published yet, show error
+    if (presentation && presentation.status !== 'published') {
+      toast.error('You must publish the presentation before sharing it');
+      return;
+    }
+    
+    setShareLink(null);
+    setShareDialogOpen(true);
+  };
+  
+  const handleShareSubmit = async (options: ShareOptions) => {
+    if (!id) return;
+    
+    try {
+      const link = await shareMutation.mutateAsync({
+        presentationId: id,
+        ...options
+      });
+      
+      if (link) {
+        setShareLink(link);
+      }
+    } catch (error) {
+      console.error('Error sharing presentation:', error);
+      toast.error('Failed to create share link');
+    }
+  };
 
   if (isLoading) {
     return <div>Loading presentation...</div>;
@@ -120,9 +158,6 @@ const SalesPresentationDetail = () => {
     }
   };
 
-  // Log processed display settings for debugging
-  console.log("SalesPresentationDetail - processed display settings:", processedDisplaySettings);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -142,12 +177,18 @@ const SalesPresentationDetail = () => {
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
+          {presentation.status === 'published' && (
+            <Button variant="outline" onClick={handleAnalytics}>
+              <BarChart4 className="h-4 w-4 mr-2" />
+              Analytics
+            </Button>
+          )}
           {presentation.status === 'draft' ? (
             <Button onClick={handlePublish} disabled={publishMutation.isPending}>
               {publishMutation.isPending ? 'Publishing...' : 'Publish'}
             </Button>
           ) : (
-            <Button>
+            <Button onClick={handleShare} disabled={shareMutation.isPending}>
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
@@ -192,6 +233,15 @@ const SalesPresentationDetail = () => {
           displaySettings={processedDisplaySettings}
         />
       </div>
+      
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        onShare={handleShareSubmit}
+        shareLink={shareLink}
+        isSharing={shareMutation.isPending}
+        presentationTitle={presentation.title}
+      />
     </div>
   );
 };

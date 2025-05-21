@@ -3548,6 +3548,8 @@ export type Database = {
           created_at: string
           published_at: string
           expires_at: string
+          organization_id: string
+          allow_downloads: boolean
         }[]
       }
       get_purchase_order_status_name: {

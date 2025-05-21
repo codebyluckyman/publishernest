@@ -43,12 +43,6 @@ export async function fetchSharedPresentation(accessCode: string) {
     // Update the display_settings with the processed version
     presentation.display_settings = processedDisplaySettings;
     
-    // Call the function to increment the access count
-    await supabaseCustom.rpc('track_presentation_public_access', {
-      p_presentation_id: presentation.id,
-      p_view_id: accessCode
-    }).catch(err => console.error('Failed to increment access count:', err));
-    
     return { data: presentation, error: null };
   } catch (error) {
     console.error('Error fetching shared presentation:', error);
