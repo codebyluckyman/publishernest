@@ -1,76 +1,52 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { supabaseCustom } from '@/integrations/supabase/client-custom';
-import { v4 as uuidv4 } from 'uuid';
 
-interface TrackPresentationViewParams {
-  presentationId: string;
-  viewId?: string;
-  viewerInfo?: {
-    ip?: string;
-    device?: string;
-    location?: string;
-  };
+interface DeviceInfo {
+  userAgent?: string;
+  language?: string;
+  screenSize?: string;
+  [key: string]: any;
 }
 
-export async function trackPresentationView({
-  presentationId,
-  viewId,
-  viewerInfo,
-}: TrackPresentationViewParams): Promise<string> {
+export async function trackPresentationView(
+  presentationId: string,
+  viewId: string,
+  deviceInfo: DeviceInfo = {}
+): Promise<boolean> {
   try {
-    // If no viewId is provided, create a new one
-    const currentViewId = viewId || uuidv4();
+    // Get the IP address from a free service (optional - can be removed if privacy concerns)
+    let ipAddress: string | null = null;
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      ipAddress = data.ip;
+    } catch (error) {
+      console.error('Failed to get IP address:', error);
+      // Continue without IP - non-critical
+    }
     
-    // Check if this view already exists
-    const { data: existingView, error: fetchError } = await supabaseCustom
+    // Insert a new view record
+    const { error } = await supabase
       .from('presentation_analytics')
-      .select('id')
-      .eq('presentation_id', presentationId)
-      .eq('view_id', currentViewId)
-      .single();
-    
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned" which is expected if view is new
-      console.error('Error checking for existing view:', fetchError);
+      .insert({
+        presentation_id: presentationId,
+        view_id: viewId,
+        viewer_ip: ipAddress,
+        viewer_device: deviceInfo.userAgent,
+        viewer_location: null, // Would require a separate geolocation service
+        items_viewed: [],
+        sections_viewed: [],
+        view_duration: 0 // Will be updated on page unload or via a timer
+      });
+      
+    if (error) {
+      console.error('Error tracking presentation view:', error);
+      return false;
     }
     
-    const now = new Date().toISOString();
-    
-    if (existingView) {
-      // Update existing view record
-      const { error: updateError } = await supabaseCustom
-        .from('presentation_analytics')
-        .update({
-          last_activity: now,
-        })
-        .eq('id', existingView.id);
-        
-      if (updateError) {
-        console.error('Error updating presentation view:', updateError);
-      }
-    } else {
-      // Create new view record
-      const { error: insertError } = await supabaseCustom
-        .from('presentation_analytics')
-        .insert({
-          presentation_id: presentationId,
-          view_id: currentViewId,
-          viewer_ip: viewerInfo?.ip,
-          viewer_device: viewerInfo?.device,
-          viewer_location: viewerInfo?.location,
-          view_date: now,
-          last_activity: now,
-        });
-        
-      if (insertError) {
-        console.error('Error tracking presentation view:', insertError);
-      }
-    }
-    
-    return currentViewId;
+    return true;
   } catch (error) {
     console.error('Failed to track presentation view:', error);
-    // Return the viewId even if tracking failed
-    return viewId || uuidv4();
+    return false;
   }
 }

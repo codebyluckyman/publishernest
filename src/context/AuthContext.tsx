@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +15,7 @@ type AuthContextType = {
     avatar_url: string | null;
     email: string | null;
     organizations: Organization;
-  };
+  } | null; // Make userProfile nullable
   isLoading: boolean;
   signOut: () => Promise<void>;
 };
@@ -25,9 +26,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState<any>();
+  const [userProfile, setUserProfile] = useState<any>(null); // Initialize as null
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string | undefined) => {
+    // Skip fetching if no userId is provided
+    if (!userId) {
+      setIsLoading(false);
+      return null;
+    }
+    
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -37,9 +44,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
       setUserProfile(data);
+      return data;
     } catch (error) {
       console.error("Error fetching user profile:", error);
       return null;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,8 +58,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsLoading(false);
-      fetchUserProfile(session?.user.id);
+      
+      // Only fetch profile if we have a user
+      if (session?.user?.id) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setIsLoading(false); // Make sure to set loading to false even if no user
+      }
     });
 
     // Listen for auth changes
