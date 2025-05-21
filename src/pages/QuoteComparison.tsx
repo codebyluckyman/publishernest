@@ -24,16 +24,20 @@ export default function QuoteComparison() {
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
   const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
   
-  const { data: quotes = [], isLoading } = useSupplierQuotesList(
+  const { data, isLoading } = useSupplierQuotesList(
     currentOrganization,
     undefined, // All statuses
     undefined, // All suppliers
     quoteRequestId || undefined
   );
   
+  // Extract the quotes array safely from the response
+  const quotes = Array.isArray(data) ? data : 
+    (data && 'data' in data && Array.isArray(data.data)) ? data.data : [];
+  
   // Extract the quote request title if quotes are available
   useEffect(() => {
-    if (quotes.length > 0 && quotes[0].quote_request) {
+    if (quotes && quotes.length > 0 && quotes[0].quote_request) {
       setQuoteRequestTitle(quotes[0].quote_request.title);
     }
   }, [quotes]);
@@ -101,7 +105,7 @@ export default function QuoteComparison() {
       ) : (
         <>
           <QuoteComparisonView 
-            quotes={quotes} 
+            quotes={quotes as SupplierQuote[]}
             quoteRequestTitle={quoteRequestTitle}
             onSelectQuote={handleSelectQuote}
           />

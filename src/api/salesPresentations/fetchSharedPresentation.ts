@@ -40,7 +40,10 @@ export async function fetchSharedPresentation(shareToken: string) {
     const presentation = presentations[0];
     
     // Ensure display_settings has both cardColumns and dialogColumns
-    const displaySettings = presentation.display_settings || {};
+    // First, make sure display_settings is an object
+    const displaySettings = typeof presentation.display_settings === 'object' && presentation.display_settings !== null 
+      ? presentation.display_settings 
+      : {};
     
     // Create a properly typed displaySettings object
     const processedDisplaySettings: PresentationDisplaySettings = {

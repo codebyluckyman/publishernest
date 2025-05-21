@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Product, Format } from "@/types";
+import { Product, Format } from '@/types';
 import { PresentationDisplaySettings, CardColumn, CarouselSettings } from "@/types/salesPresentation";
 import { cn } from "@/lib/utils";
 import { MoreHorizontal, Edit, ChevronDown, ChevronUp } from "lucide-react";
@@ -35,14 +35,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Carousel } from "@/components/ui/carousel"
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselPrevious, 
+  CarouselNext
+} from "@/components/ui/carousel";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,7 +59,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
 
@@ -154,7 +160,7 @@ const TableView: React.FC<{
   );
 };
 
-// Carousel View Component
+// Carousel View Component updated to use the correct Carousel components
 const CarouselView: React.FC<{
   products: ProductWithCustomizations[];
   onProductClick: (product: Product) => void;
@@ -240,24 +246,25 @@ const CarouselView: React.FC<{
       opts={{
         loop: true,
         slides: {
-          perView: slidesPerView,
+          perView: slidesPerView.lg || 3,
         },
-        autoplay: autoplay ? {
-          delay: autoplayDelay,
-          pauseOnMouseEnter: true,
-        } : false,
       }}
       className="w-full max-w-md"
     >
-      {products.map(({ product, customPrice, customDescription }, index) => (
-        <Carousel.Item key={index}>
-          <div className="p-1.5">
-            {renderProductCard(product, customPrice, customDescription)}
-          </div>
-        </Carousel.Item>
-      ))}
+      <CarouselContent>
+        {products.map(({ product, customPrice, customDescription }, index) => (
+          <CarouselItem key={index}>
+            <div className="p-1.5">
+              {renderProductCard(product, customPrice, customDescription)}
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
       {showIndicators && (
-        <Carousel.Navigation className="bottom-4" />
+        <>
+          <CarouselPrevious className="left-2" />
+          <CarouselNext className="right-2" />
+        </>
       )}
     </Carousel>
   );
@@ -310,40 +317,32 @@ const KanbanView: React.FC<{
 
 // Product Section Component
 interface ProductSectionProps {
-  sectionId: string;
-  presentationId: string;
-  items: any[];
-  isEditable: boolean;
-  displaySettings: PresentationDisplaySettings;
-  getSectionItems: (sectionId: string) => {
-    data: any;
-    isLoading: boolean;
-    isError: boolean;
-  };
-  updateItem: any;
-  deleteItem: any;
+  title?: string;
+  description?: string;
+  products: { 
+    product: any; 
+    customPrice?: number;
+    customDescription?: string;
+  }[];
+  isEditable?: boolean;
+  displaySettings?: PresentationDisplaySettings;
+  onEdit?: () => void;
 }
 
 const ProductSection: React.FC<ProductSectionProps> = ({
-  sectionId,
-  presentationId,
-  items,
-  isEditable,
-  displaySettings,
-  getSectionItems,
-  updateItem,
-  deleteItem
+  title,
+  description,
+  products,
+  isEditable = false,
+  displaySettings = { 
+    cardColumns: defaultCardColumns, 
+    dialogColumns: defaultCardColumns,
+    defaultView: 'card'
+  },
+  onEdit
 }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [customPrice, setCustomPrice] = useState<number | undefined>(undefined);
-  const [customDescription, setCustomDescription] = useState<string | undefined>(undefined);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-
-  const { data: sectionItems, isLoading, isError } = getSectionItems(sectionId);
 
   const viewMode = displaySettings.defaultView || 'card';
   const kanbanGroupByField = displaySettings.features?.kanbanGroupByField || 'publisher_name';
@@ -358,78 +357,24 @@ const ProductSection: React.FC<ProductSectionProps> = ({
     setSelectedProduct(null);
   };
 
-  const handleEditClick = (itemId: string) => {
-    const item = items.find(item => item.id === itemId);
-    if (item) {
-      setCustomPrice(item.custom_price);
-      setCustomDescription(item.description);
-      setIsEditMode(true);
-      toggleExpanded(itemId);
-    }
-  };
-
-  const handleSaveClick = async (itemId: string) => {
-    try {
-      await updateItem.mutateAsync({
-        itemId: itemId,
-        sectionId: sectionId,
-        itemData: {
-          custom_price: customPrice,
-          description: customDescription
-        }
-      });
-      setIsEditMode(false);
-      toast.success('Item updated successfully');
-    } catch (error) {
-      console.error('Error updating item:', error);
-      toast.error('Failed to update item');
-    }
-  };
-
-  const handleDeleteClick = (itemId: string) => {
-    setItemToDelete(itemId);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteItem = async () => {
-    if (itemToDelete) {
-      try {
-        await deleteItem.mutateAsync({
-          itemId: itemToDelete,
-          sectionId: sectionId
-        });
-        setIsDeleteDialogOpen(false);
-        setItemToDelete(null);
-        toast.success('Item deleted successfully');
-      } catch (error) {
-        console.error('Error deleting item:', error);
-        toast.error('Failed to delete item');
-      }
-    }
-  };
-
-  const toggleExpanded = (itemId: string) => {
-    setExpandedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  };
-
-  if (isLoading) {
-    return <Skeleton className="w-[200px] h-[40px]" />
-  }
-
-  if (isError) {
-    return <p>Error fetching items</p>;
-  }
-
+  
   return (
-    <div>
+    <div className="space-y-4">
+      {title && (
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-semibold">{title}</h2>
+            {description && <p className="text-muted-foreground">{description}</p>}
+          </div>
+          {isEditable && onEdit && (
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          )}
+        </div>
+      )}
+      
       {/* View Mode Toggle */}
       {displaySettings.features?.allowViewToggle && (
         <Select defaultValue={viewMode}>
@@ -437,16 +382,16 @@ const ProductSection: React.FC<ProductSectionProps> = ({
             <SelectValue placeholder="Select View Mode" />
           </SelectTrigger>
           <SelectContent>
-            {displaySettings.features?.enabledViews.includes('card') && (
+            {displaySettings.features?.enabledViews?.includes('card') && (
               <SelectItem value="card">Card View</SelectItem>
             )}
-            {displaySettings.features?.enabledViews.includes('table') && (
+            {displaySettings.features?.enabledViews?.includes('table') && (
               <SelectItem value="table">Table View</SelectItem>
             )}
-            {displaySettings.features?.enabledViews.includes('carousel') && (
+            {displaySettings.features?.enabledViews?.includes('carousel') && (
               <SelectItem value="carousel">Carousel View</SelectItem>
             )}
-            {displaySettings.features?.enabledViews.includes('kanban') && (
+            {displaySettings.features?.enabledViews?.includes('kanban') && (
               <SelectItem value="kanban">Kanban View</SelectItem>
             )}
           </SelectContent>
@@ -456,11 +401,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
       {/* Product Listing based on View Mode */}
       {viewMode === 'card' && (
         <CardView
-          products={items.map(item => ({
-            product: item.product as any, // Type assertion to resolve format compatibility
-            customPrice: item.custom_price,
-            customDescription: item.description,
-          }))}
+          products={products}
           onProductClick={handleProductClick}
           displayColumns={displaySettings.cardColumns || defaultCardColumns}
         />
@@ -468,11 +409,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
 
       {viewMode === 'table' && (
         <TableView
-          products={items.map(item => ({
-            product: item.product as any, // Type assertion to resolve format compatibility
-            customPrice: item.custom_price,
-            customDescription: item.description,
-          }))}
+          products={products}
           onProductClick={handleProductClick}
           displayColumns={displaySettings.cardColumns || defaultCardColumns}
         />
@@ -480,11 +417,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
 
       {viewMode === 'carousel' && (
         <CarouselView
-          products={items.map(item => ({
-            product: item.product as any, // Type assertion to resolve format compatibility
-            customPrice: item.custom_price,
-            customDescription: item.description,
-          }))}
+          products={products}
           onProductClick={handleProductClick}
           carouselSettings={displaySettings.features?.carouselSettings}
         />
@@ -492,11 +425,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({
 
       {viewMode === 'kanban' && (
         <KanbanView
-          products={items.map(item => ({
-            product: item.product as any, // Type assertion to resolve format compatibility
-            customPrice: item.custom_price,
-            customDescription: item.description,
-          }))}
+          products={products}
           onProductClick={handleProductClick}
           groupByField={kanbanGroupByField}
         />
@@ -511,82 +440,6 @@ const ProductSection: React.FC<ProductSectionProps> = ({
           displaySettings={displaySettings}
         />
       )}
-
-      {/* Editable Items */}
-      {isEditable && (
-        <div className="mt-4">
-          <h4 className="text-sm font-bold mb-2">Edit Items:</h4>
-          {items.map(item => (
-            <Card key={item.id} className="mb-4">
-              <CardHeader className="flex justify-between items-center">
-                <CardTitle>
-                  {item.product.title}
-                </CardTitle>
-                <div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleEditClick(item.id)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        <span>Edit</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDeleteClick(item.id)} className="text-red-600">
-                        {/*<Trash2 className="mr-2 h-4 w-4" />*/}
-                        <span>Delete</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              {/* Collapsible Edit Form */}
-              <CardContent className={cn("grid gap-4", expandedItems.has(item.id) ? "block" : "hidden")}>
-                <div className="grid gap-2">
-                  <Label htmlFor="customPrice">Custom Price</Label>
-                  <Input
-                    type="number"
-                    id="customPrice"
-                    value={customPrice !== undefined ? customPrice.toString() : ''}
-                    onChange={(e) => setCustomPrice(e.target.value ? parseFloat(e.target.value) : undefined)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="customDescription">Custom Description</Label>
-                  <Textarea
-                    id="customDescription"
-                    value={customDescription || ''}
-                    onChange={(e) => setCustomDescription(e.target.value)}
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end">
-                <Button onClick={() => handleSaveClick(item.id)}>Save</Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. Are you sure you want to delete this item?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteItem}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

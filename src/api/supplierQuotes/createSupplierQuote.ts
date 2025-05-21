@@ -20,13 +20,12 @@ interface ExtraCost {
 interface CreateSupplierQuoteParams {
   organization_id: string;
   supplier_id: string;
-  product_id: string;
-  format_id: string;
-  quantity: number;
-  unit_price: number;
+  quote_request_id: string;
+  quantity?: number;
+  unit_price?: number;
   currency: string;
-  lead_time: string;
-  moq: number;
+  lead_time?: string;
+  moq?: number;
   notes?: string;
   extraCostsWithPrices: ExtraCost[];
   supplier_quote_id?: string;
@@ -35,8 +34,7 @@ interface CreateSupplierQuoteParams {
 export async function createSupplierQuote({
   organization_id,
   supplier_id,
-  product_id,
-  format_id,
+  quote_request_id,
   quantity,
   unit_price,
   currency,
@@ -49,15 +47,14 @@ export async function createSupplierQuote({
   try {
     const quoteId = supplier_quote_id || uuidv4();
 
-    // Insert the supplier quote
+    // Insert the supplier quote - remove product_id and format_id
     const { data, error } = await supabaseCustom
       .from('supplier_quotes')
       .insert({
         id: quoteId,
         organization_id,
         supplier_id,
-        product_id,
-        format_id,
+        quote_request_id,
         quantity,
         unit_price,
         currency,
@@ -107,3 +104,10 @@ export async function createSupplierQuote({
     return null;
   }
 }
+
+export const insertSupplierQuoteExtraCostPriceBreaks = async () => {
+  // This is a placeholder function to fix import errors
+  // The actual implementation will be provided later if needed
+  console.warn('insertSupplierQuoteExtraCostPriceBreaks is not implemented yet');
+  return null;
+};

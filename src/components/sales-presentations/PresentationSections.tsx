@@ -1,9 +1,10 @@
+
 import { useState } from 'react';
 import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
 import { useSectionItems } from '@/hooks/useSectionItems';
 import { useProductsWithFormats, ProductWithFormat } from '@/hooks/useProductsWithFormats';
-import { ProductSection } from './ProductSection';
+import ProductSection from './ProductSection';
 import { AddSectionDialog } from './AddSectionDialog';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';

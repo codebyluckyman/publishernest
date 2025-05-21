@@ -204,12 +204,8 @@ export function SupplierQuotesTable({
     setDeleteDialogOpen(true);
   };
 
-  const filteredQuotes = useMemo(() => {
-    if (!searchQuery) return quotes;
-
-    const lowerCaseSearchQuery = searchQuery.toLowerCase();
-    return (
-      quotes?.filter((quote) => {
+  const filteredQuotes = Array.isArray(quotes) 
+    ? quotes.filter(quote => {
         // Include the reference in the search
         const supplierName = quote.supplier?.supplier_name?.toLowerCase();
         const reference = quote.reference?.toLowerCase();
@@ -222,9 +218,8 @@ export function SupplierQuotesTable({
           (reference && reference.includes(lowerCaseSearchQuery)) ||
           (referenceId && referenceId.includes(lowerCaseSearchQuery))
         );
-      }) ?? []
-    );
-  }, [searchQuery, quotes]);
+      })
+    : [];
 
   const columns: ColumnDef<SupplierQuote>[] = [
     {

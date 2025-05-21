@@ -1,3 +1,4 @@
+
 import { supabaseCustom } from "@/integrations/supabase/client-custom";
 
 interface Params {
@@ -131,15 +132,9 @@ export async function fetchSupplierQuoteById(id: string) {
   }
 }
 
-interface Formats {
-  format: {
-    id: string;
-  };
-}
-
 export async function fetchSupplierQuoteFormats(supplierQuoteId: string) {
   try {
-    const { data, error } = await supabaseCustom
+    const { data: supplierQuoteFormats, error } = await supabaseCustom
       .from("supplier_quote_formats")
       .select(
         `
@@ -158,9 +153,9 @@ export async function fetchSupplierQuoteFormats(supplierQuoteId: string) {
     }
 
     // Fix the type error:
-    const formatIds = formats && Array.isArray(formats) 
-      ? formats.map(format => {
-          const formatObj = typeof format === 'object' && format !== null ? format : {};
+    const formatIds = supplierQuoteFormats && Array.isArray(supplierQuoteFormats) 
+      ? supplierQuoteFormats.map(sqFormat => {
+          const formatObj = typeof sqFormat === 'object' && sqFormat !== null ? sqFormat : {};
           const formatData = formatObj.format || {};
           return typeof formatData === 'object' && formatData !== null && 'id' in formatData 
             ? formatData.id 

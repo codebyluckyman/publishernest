@@ -32,52 +32,24 @@ export function useSupplierQuotes() {
    * Hook to fetch supplier quotes
    */
   const useSupplierQuotesList = (
-    currentOrganization: Organization | null,
+    currentOrganization: { id: string },
     status?: string,
     supplierId?: string,
     quoteRequestId?: string,
-    searchQuery?: string,
-    supplier?: string,
-    selectedFormat?: string
+    limit?: number,
+    page?: number
   ) => {
     return useQuery({
-      queryKey: [
-        "supplierQuotes",
-        currentOrganization,
-        status,
-        supplierId,
-        quoteRequestId,
-        searchQuery,
-        supplier,
-        selectedFormat,
-      ],
-      queryFn: async () => {
-        if (!currentOrganization) {
-          throw new Error("Organization not selected");
-        }
-        try {
-          const data = await fetchSupplierQuotes({
-            currentOrganization,
-            status,
-            supplierId,
-            quoteRequestId,
-            searchQuery: searchQuery || undefined, // Ensure it doesn't send "null"
-            supplier: supplier || "",
-            selectedFormat: selectedFormat || "",
-          });
-          return data;
-        } catch (error) {
-          console.error("Fetch failed:", error);
-          throw error;
-        }
-      },
-      enabled: !!currentOrganization,
-      retry: false, // Optional: Disable retries if needed
-      meta: {
-        onError: (error: any) => {
-          toast.error(error.message || "Failed to load supplier quotes");
-        },
-      },
+      queryKey: ['supplier-quotes', currentOrganization.id, status, supplierId, quoteRequestId, page],
+      queryFn: () => fetchSupplierQuotes({ 
+        currentOrganization, 
+        status, 
+        supplierId, 
+        printRunId: quoteRequestId, // Use quoteRequestId as printRunId
+        limit, 
+        page: page || 1 
+      }),
+      enabled: !!currentOrganization.id
     });
   };
   /**
@@ -258,30 +230,15 @@ export function useSupplierQuotes() {
   /**
    * Hook to approve a supplier quote
    */
-  const useApproveSupplierQuote = () => {
+  export const useApproveSupplierQuote = () => {
+    const queryClient = useQueryClient();
+
     return useMutation({
-      mutationFn: ({
-        id,
-        approvedCost,
-      }: {
-        id: string;
-        approvedCost: number;
-      }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return approveSupplierQuote(id, approvedCost, user.id);
-      },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({
-          queryKey: ["supplierQuote", variables.id],
-        });
-        toast.success("Supplier quote approved successfully");
-      },
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to approve supplier quote");
-      },
+      mutationFn: (params: { id: string; approvedCost: number }) => 
+        approveSupplierQuote(params.id, params.approvedCost),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+      }
     });
   };
 
