@@ -11,7 +11,7 @@ const Products = () => {
         <p className="text-gray-600">Manage your product catalog and inventory</p>
       </div>
 
-      <ProductCategories />
+      {/* <ProductCategories /> */}
 
       <ProductEditProvider>
         <EditableProductTableContainer />
