@@ -1,8 +1,9 @@
 
 import ProductCategories from "@/components/products/ProductCategories";
 import { EditableProductTableContainer } from "@/components/products/EditableProductTableContainer";
+import { ProductEditProvider } from "@/context/ProductEditContext";
 
-const Products = () => {
+const SalesPresentations = () => {
   return (
     <div className="space-y-8">
       <div>
@@ -12,9 +13,11 @@ const Products = () => {
 
       <ProductCategories />
 
-      <EditableProductTableContainer />
+      <ProductEditProvider>
+        <EditableProductTableContainer />
+      </ProductEditProvider>
     </div>
   );
 };
 
-export default Products;
+export default SalesPresentations;
