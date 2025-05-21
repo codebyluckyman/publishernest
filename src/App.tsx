@@ -13,7 +13,7 @@ import Index from './pages/Index';
 import Auth from './pages/Auth';
 import NotFound from './pages/NotFound';
 import Products from './pages/Products';
-import ProductDetail from './pages/ProductDetail';
+// import ProductDetail from './pages/ProductDetail';
 import PrintRuns from './pages/PrintRuns';
 import PrintRunDetail from './pages/PrintRunDetail';
 import CreatePrintRun from './pages/CreatePrintRun';
@@ -63,7 +63,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Index />} />
               <Route path="/products" element={<Products />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
+              {/* <Route path="/products/:id" element={<ProductDetail />} /> */}
               <Route path="/print-runs" element={<PrintRuns />} />
               <Route path="/print-runs/create" element={<CreatePrintRun />} />
               <Route path="/print-runs/:id" element={<PrintRunDetail />} />
