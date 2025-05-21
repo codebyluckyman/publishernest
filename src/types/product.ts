@@ -1,4 +1,3 @@
-
 export interface FormatExtra {
   name: string;
   description?: string;
@@ -66,3 +65,12 @@ export interface Product {
 
 export type SortField = 'title' | 'publication_date' | 'publisher_name' | 'list_price' | 'series_name';
 export type SortDirection = 'asc' | 'desc';
+
+export interface ProductFilters {
+  product_form: string | string[];
+  publisher_name: string | string[];
+  pub_month: string | string[] | null;
+  license: string | string[] | null;
+  format_id: string | string[] | null;
+  series_name: string | string[] | null;
+}

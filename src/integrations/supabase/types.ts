@@ -964,6 +964,53 @@ export type Database = {
           },
         ]
       }
+      product_saved_views: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          filters: Json
+          id: string
+          is_default: boolean | null
+          name: string
+          organization_id: string
+          search_query: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          filters: Json
+          id?: string
+          is_default?: boolean | null
+          name: string
+          organization_id: string
+          search_query?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string
+          search_query?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_saved_views_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           age_range: string | null
