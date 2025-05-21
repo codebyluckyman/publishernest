@@ -1,4 +1,3 @@
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
@@ -155,7 +154,7 @@ const router = createBrowserRouter([
     ]
   },
   {
-    path: "/shared/presentation/:accessCode",
+    path: "/shared/presentation/:shareToken",
     element: <SharedPresentationView />
   },
   {

@@ -28,6 +28,7 @@ export async function createPresentationShare({
         shared_by: sharedBy,
         shared_with: sharedWith,
         share_link: shareLink,
+        share_token: shareToken, // Store token separately for easier lookup
         expires_at: expiresAt
       })
       .select('share_link')

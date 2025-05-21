@@ -8,26 +8,27 @@ import { fetchSharedPresentation } from '@/api/salesPresentations/fetchSharedPre
 import { trackPresentationView } from '@/api/salesPresentations/trackPresentationView';
 
 const SharedPresentationView = () => {
-  const { accessCode } = useParams<{ accessCode: string }>();
+  // Now we're using "shareToken" instead of "accessCode"
+  const { shareToken } = useParams<{ shareToken: string }>();
   const [presentation, setPresentation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewId, setViewId] = useState<string | null>(null);
   
   useEffect(() => {
-    // Fetch the shared presentation data by access code
+    // Fetch the shared presentation data by share token
     const fetchPresentation = async () => {
       try {
-        if (!accessCode) {
-          setError('Invalid access code');
+        if (!shareToken) {
+          setError('Invalid share link');
           setLoading(false);
           return;
         }
         
-        const { data, error } = await fetchSharedPresentation(accessCode);
+        const { data, error } = await fetchSharedPresentation(shareToken);
         
         if (error || !data) {
-          setError('Failed to load presentation');
+          setError(error?.message || 'Failed to load presentation');
           setLoading(false);
           return;
         }
@@ -52,7 +53,7 @@ const SharedPresentationView = () => {
     };
     
     fetchPresentation();
-  }, [accessCode]);
+  }, [shareToken]);
   
   // Send periodic heartbeats to update last_activity for analytics
   useEffect(() => {
