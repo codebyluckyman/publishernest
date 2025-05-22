@@ -13,6 +13,9 @@ import { debounce } from "lodash";
 import { SavedViewsDropdown } from "./SavedViewsDropdown";
 import { ProductSavedView } from "@/types/productSavedView";
 import { ProductFilters } from "@/types/product";
+import { Switch } from "@/components/ui/switch";
+import { useProductEdit } from "@/context/ProductEditContext";
+import { Label } from "@/components/ui/label";
 
 interface EditableProductTableHeaderProps {
   searchQuery: string;
@@ -53,6 +56,7 @@ export function EditableProductTableHeader({
 }: EditableProductTableHeaderProps) {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [inputValue, setInputValue] = useState(searchQuery);
+  const { isEditMode, setEditMode } = useProductEdit();
 
   const debouncedSetSearchQuery = useMemo(
     () => debounce((query: string) => setSearchQuery(query), 500),
@@ -67,15 +71,20 @@ export function EditableProductTableHeader({
 
   return (
     <div className="pb-6 border-b">
-       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
-      {/*  <div>
+       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center space-x-2">
           <h2 className="text-xl font-semibold">Products</h2>
-          <p className="text-sm text-muted-foreground">
-            {searchQuery
-              ? `Search results for "${searchQuery}"`
-              : "Manage your product catalog (editable)"}
-          </p>
-        </div> */}
+          <div className="flex items-center space-x-2 ml-4">
+            <Switch 
+              id="quick-edit-mode" 
+              checked={isEditMode}
+              onCheckedChange={setEditMode}
+            />
+            <Label htmlFor="quick-edit-mode" className="text-sm font-medium">
+              Quick Edit Mode {isEditMode ? "On" : "Off"}
+            </Label>
+          </div>
+        </div>
 
         <div className="flex flex-col gap-2 sm:flex-row">
           {isSearchActive ? (
