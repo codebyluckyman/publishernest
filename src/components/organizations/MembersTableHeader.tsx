@@ -23,14 +23,14 @@ export const MembersTableHeader = ({
   const [showFilters, setShowFilters] = useState(false);
 
   const roleOptions: FilterOption[] = [
-    { value: "", label: "All Roles" },
+    { value: "all", label: "All Roles" },
     { value: "owner", label: "Owner" },
     { value: "admin", label: "Admin" },
     { value: "member", label: "Member" }
   ];
 
   const memberTypeOptions: FilterOption[] = [
-    { value: "", label: "All Types" },
+    { value: "all", label: "All Types" },
     { value: "publisher", label: "Publisher" },
     { value: "customer", label: "Customer" },
     { value: "supplier", label: "Supplier" }
