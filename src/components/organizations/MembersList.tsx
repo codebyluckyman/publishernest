@@ -5,6 +5,8 @@ import { Users } from "lucide-react";
 import { MemberInviteForm } from "./MemberInviteForm";
 import { MemberItem } from "./MemberItem";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState, useEffect } from "react";
+import { MembersTableHeader } from "./MembersTableHeader";
 
 type UserProfile = {
   id: string;
@@ -33,9 +35,39 @@ export const MembersList = ({
   onRoleChange,
   onRemove
 }: MembersListProps) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [memberTypeFilter, setMemberTypeFilter] = useState("");
+  const [filteredMembers, setFilteredMembers] = useState(members);
+
   const handleInvite = async (email: string, role: "admin" | "member", memberType: MemberType) => {
     await onInvite(organizationId, email, role, memberType);
   };
+
+  useEffect(() => {
+    // Apply filters
+    const filtered = members.filter(member => {
+      // Filter by search query (name or email)
+      const memberName = member.profile?.first_name && member.profile?.last_name
+        ? `${member.profile.first_name} ${member.profile.last_name}`.toLowerCase()
+        : member.profile?.email?.toLowerCase() || "";
+      const memberEmail = member.profile?.email?.toLowerCase() || "";
+      
+      const searchMatch = !searchQuery || 
+        memberName.includes(searchQuery.toLowerCase()) || 
+        memberEmail.includes(searchQuery.toLowerCase());
+
+      // Filter by role
+      const roleMatch = !roleFilter || member.role === roleFilter;
+
+      // Filter by member type
+      const typeMatch = !memberTypeFilter || member.member_type === memberTypeFilter;
+
+      return searchMatch && roleMatch && typeMatch;
+    });
+
+    setFilteredMembers(filtered);
+  }, [members, searchQuery, roleFilter, memberTypeFilter]);
 
   return (
     <Card>
@@ -48,6 +80,14 @@ export const MembersList = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <MemberInviteForm onInvite={handleInvite} />
+
+        <MembersTableHeader 
+          onSearchChange={setSearchQuery}
+          onRoleFilterChange={setRoleFilter}
+          onMemberTypeFilterChange={setMemberTypeFilter}
+          roleFilter={roleFilter}
+          memberTypeFilter={memberTypeFilter}
+        />
 
         <Table>
           <TableHeader>
@@ -63,12 +103,14 @@ export const MembersList = ({
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-4">Loading members...</TableCell>
               </TableRow>
-            ) : members.length === 0 ? (
+            ) : filteredMembers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-4">No members found</TableCell>
+                <TableCell colSpan={4} className="text-center py-4">
+                  {members.length === 0 ? "No members found" : "No results match your search"}
+                </TableCell>
               </TableRow>
             ) : (
-              members.map((member) => (
+              filteredMembers.map((member) => (
                 <MemberItem
                   key={member.id}
                   member={member}

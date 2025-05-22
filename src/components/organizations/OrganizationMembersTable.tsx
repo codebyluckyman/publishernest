@@ -4,23 +4,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
 import { OrganizationMember, MemberType } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { MemberInviteForm } from "./MemberInviteForm";
-import { MemberItem } from "./MemberItem";
+import { MembersList } from "./MembersList";
 import { toast } from "sonner";
 
 type UserProfile = {
@@ -71,30 +55,45 @@ export function OrganizationMembersTable() {
     fetchMembers();
   }, [currentOrganization, getOrganizationMembers]);
 
-  const handleInviteMember = async (email: string, role: "admin" | "member", memberType: MemberType) => {
+  const handleInviteMember = async (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => {
     if (!currentOrganization) return;
     
-    await inviteMember(currentOrganization.id, email, role, memberType);
-    
-    // Refresh members list
-    const memberData = await getOrganizationMembers(currentOrganization.id);
-    setMembers(memberData);
+    try {
+      await inviteMember(organizationId, email, role, memberType);
+      toast.success("Member invited successfully");
+      
+      // Refresh members list
+      const memberData = await getOrganizationMembers(currentOrganization.id);
+      setMembers(memberData);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to invite member");
+    }
   };
 
   const handleRoleChange = async (memberId: string, role: "admin" | "member") => {
-    await updateMemberRole(memberId, role);
-    
-    setMembers(prev => 
-      prev.map(member => 
-        member.id === memberId ? { ...member, role } : member
-      )
-    );
+    try {
+      await updateMemberRole(memberId, role);
+      
+      setMembers(prev => 
+        prev.map(member => 
+          member.id === memberId ? { ...member, role } : member
+        )
+      );
+      toast.success("Member role updated successfully");
+    } catch (error) {
+      toast.error("Failed to update member role");
+    }
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    await removeMember(memberId);
-    
-    setMembers(prev => prev.filter(member => member.id !== memberId));
+    try {
+      await removeMember(memberId);
+      
+      setMembers(prev => prev.filter(member => member.id !== memberId));
+      toast.success("Member removed successfully");
+    } catch (error) {
+      toast.error("Failed to remove member");
+    }
   };
 
   if (!currentOrganization) {
@@ -102,54 +101,14 @@ export function OrganizationMembersTable() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Organization Members</CardTitle>
-        <CardDescription>
-          Manage members and their roles in your organization
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Member</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-4">
-                  Loading members...
-                </TableCell>
-              </TableRow>
-            ) : members.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-4">
-                  No members found
-                </TableCell>
-              </TableRow>
-            ) : (
-              members.map((member) => (
-                <MemberItem
-                  key={member.id}
-                  member={member}
-                  isCurrentUser={user?.id === member.auth_user_id}
-                  onRoleChange={handleRoleChange}
-                  onRemove={handleRemoveMember}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-
-        <div className="mt-6">
-          <MemberInviteForm onInvite={handleInviteMember} />
-        </div>
-      </CardContent>
-    </Card>
+    <MembersList
+      organizationId={currentOrganization.id}
+      members={members}
+      currentUserId={user?.id}
+      loading={loading}
+      onInvite={handleInviteMember}
+      onRoleChange={handleRoleChange}
+      onRemove={handleRemoveMember}
+    />
   );
 }
