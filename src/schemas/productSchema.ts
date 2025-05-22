@@ -94,3 +94,21 @@ export const productSchema = z.object({
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
+
+// Product form options for dropdown selections and other UI elements
+export const productFormOptions = {
+  currencyCodes: [
+    { value: "USD", label: "USD - US Dollar" },
+    { value: "EUR", label: "EUR - Euro" },
+    { value: "GBP", label: "GBP - British Pound" },
+    { value: "CAD", label: "CAD - Canadian Dollar" },
+    { value: "AUD", label: "AUD - Australian Dollar" },
+    { value: "NZD", label: "NZD - New Zeland Dollar"},
+    { value: "JPY", label: "JPY - Japanese Yen" },
+    { value: "CNY", label: "CNY - Chinese Yuan" },
+    { value: "INR", label: "INR - Indian Rupee" }
+    // Add more currencies as needed
+  ],
+  // You can add more form options here if needed in the future
+};
+
