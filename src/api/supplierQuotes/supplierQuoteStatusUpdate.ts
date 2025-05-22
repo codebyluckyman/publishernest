@@ -13,6 +13,19 @@ export async function supplierQuoteStatusUpdate(
   status: string,
   userId: string
 ): Promise<void> {
+  // Update the quote status in the database
+  const { error } = await supabase
+    .from("supplier_quotes")
+    .update({
+      status,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Error updating supplier quote status: ${error.message}`);
+  }
+
   // Record audit entry
   await recordSupplierQuoteAudit(
     id,

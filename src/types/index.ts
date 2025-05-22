@@ -12,5 +12,5 @@ export interface ExtendedProduct extends Product {
   publisher_name?: string;
   publication_date?: string | null;
   synopsis?: string;
-  format_id?: string; // Add this to fix type error
+  format_id?: string | undefined; // Make sure format_id is included
 }

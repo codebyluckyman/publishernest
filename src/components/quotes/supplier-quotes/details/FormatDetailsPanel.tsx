@@ -6,24 +6,29 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface FormatDetailsPanelProps {
-  formatList: SupplierQuoteFormat[];
+  formatList?: SupplierQuoteFormat[];
+  formats?: SupplierQuoteFormat[];
   selectedFormatId: string | null;
   onFormatSelect: (id: string | null) => void;
 }
 
 export function FormatDetailsPanel({
   formatList,
+  formats,
   selectedFormatId,
   onFormatSelect,
 }: FormatDetailsPanelProps) {
+  // Use either formatList or formats prop
+  const formatsToDisplay = formatList || formats || [];
+  
   // Find the currently selected format
-  const selectedFormat = formatList.find((f) => f.id === selectedFormatId) || null;
+  const selectedFormat = formatsToDisplay.find((f) => f.id === selectedFormatId) || null;
 
   return (
     <div className="space-y-4">
       <Tabs className="w-full">
         <TabsList className="w-full flex overflow-x-auto">
-          {formatList.map((format) => (
+          {formatsToDisplay.map((format) => (
             <TabsTrigger
               key={format.id}
               value={format.id}

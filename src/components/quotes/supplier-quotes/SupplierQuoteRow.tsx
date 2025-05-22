@@ -9,7 +9,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { formatDate } from '@/utils/date';
+import { formatDate } from '@/utils/formatters';
 import { Badge } from '@/components/ui/badge';
 import { SupplierQuote } from '@/types/supplierQuote';
 
@@ -40,7 +40,7 @@ export function SupplierQuoteRow({
         {quote.supplier?.supplier_name || quote.supplier_name || '-'}
       </TableCell>
       <TableCell>
-        {quote.print_run?.title || quote.title || '-'}
+        {quote.quote_request?.title || quote.title || '-'}
       </TableCell>
       <TableCell>
         <Badge className={`${statusColor} hover:${statusColor}`} variant="outline">
