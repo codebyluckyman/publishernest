@@ -4,6 +4,7 @@ import { OrganizationMember, MemberType } from "@/types/organization";
 import { Users } from "lucide-react";
 import { MemberInviteForm } from "./MemberInviteForm";
 import { MemberItem } from "./MemberItem";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type UserProfile = {
   id: string;
@@ -48,21 +49,37 @@ export const MembersList = ({
       <CardContent className="space-y-4">
         <MemberInviteForm onInvite={handleInvite} />
 
-        <div className="space-y-2">
-          {loading ? (
-            <p>Loading members...</p>
-          ) : (
-            members.map((member) => (
-              <MemberItem
-                key={member.id}
-                member={member}
-                isCurrentUser={member.auth_user_id === currentUserId}
-                onRoleChange={onRoleChange}
-                onRemove={onRemove}
-              />
-            ))
-          )}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Member</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">Loading members...</TableCell>
+              </TableRow>
+            ) : members.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">No members found</TableCell>
+              </TableRow>
+            ) : (
+              members.map((member) => (
+                <MemberItem
+                  key={member.id}
+                  member={member}
+                  isCurrentUser={member.auth_user_id === currentUserId}
+                  onRoleChange={onRoleChange}
+                  onRemove={onRemove}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

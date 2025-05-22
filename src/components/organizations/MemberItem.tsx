@@ -5,6 +5,7 @@ import { Shield, User } from "lucide-react";
 import { OrganizationMember, MemberType } from "@/types/organization";
 import UserAvatar from "@/components/UserAvatar";
 import { Badge } from "@/components/ui/badge";
+import { TableCell, TableRow } from "@/components/ui/table";
 
 type UserProfile = {
   id: string;
@@ -72,70 +73,81 @@ export const MemberItem = ({
   };
 
   return (
-    <div className="flex items-center justify-between py-2 border-b">
-      <div className="flex items-center gap-3">
-        {member.profile?.avatar_url ? (
-          <UserAvatar 
-            avatarUrl={member.profile.avatar_url}
-            fallback={getUserInitials()}
-            className="h-9 w-9"
-          />
-        ) : (
-          <div className={`p-1 rounded ${isOwner ? "bg-amber-100" : member.role === "admin" ? "bg-blue-100" : "bg-gray-100"}`}>
-            {isOwner ? (
-              <Shield className="h-4 w-4 text-amber-600" />
-            ) : member.role === "admin" ? (
-              <Shield className="h-4 w-4 text-blue-600" />
-            ) : (
-              <User className="h-4 w-4 text-gray-600" />
-            )}
-          </div>
-        )}
-        <div>
-          <div className="font-medium">{displayName}</div>
-          <div className="text-xs text-gray-500">
-            {member.profile?.email && displayName !== member.profile.email && (
-              <span className="block">{member.profile.email}</span>
-            )}
-            <span>
-              {isOwner ? "Owner" : member.role === "admin" ? "Admin" : "Member"}
-              {isCurrentUser && " (You)"}
-            </span>
+    <TableRow>
+      {/* Member Column */}
+      <TableCell>
+        <div className="flex items-center gap-3">
+          {member.profile?.avatar_url ? (
+            <UserAvatar 
+              avatarUrl={member.profile.avatar_url}
+              fallback={getUserInitials()}
+              className="h-9 w-9"
+            />
+          ) : (
+            <div className={`p-1 rounded ${isOwner ? "bg-amber-100" : member.role === "admin" ? "bg-blue-100" : "bg-gray-100"}`}>
+              {isOwner ? (
+                <Shield className="h-4 w-4 text-amber-600" />
+              ) : member.role === "admin" ? (
+                <Shield className="h-4 w-4 text-blue-600" />
+              ) : (
+                <User className="h-4 w-4 text-gray-600" />
+              )}
+            </div>
+          )}
+          <div>
+            <div className="font-medium">{displayName}</div>
+            <div className="text-xs text-gray-500">
+              {member.profile?.email && displayName !== member.profile.email && (
+                <span className="block">{member.profile.email}</span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </TableCell>
 
-      <div className="flex items-center gap-2">
+      {/* Role Column */}
+      <TableCell>
+        <span className="text-sm">
+          {isOwner ? "Owner" : member.role === "admin" ? "Admin" : "Member"}
+          {isCurrentUser && " (You)"}
+        </span>
+      </TableCell>
+
+      {/* Type Column */}
+      <TableCell>
         <Badge variant={getMemberTypeVariant(member.member_type)}>
           {getMemberTypeLabel(member.member_type)}
         </Badge>
-      </div>
+      </TableCell>
       
-      {!isOwner && !isCurrentUser && (
-        <div className="flex gap-2">
-          <Select 
-            value={member.role} 
-            onValueChange={(value) => onRoleChange(member.id, value as "admin" | "member")}
-            disabled={isOwner}
-          >
-            <SelectTrigger className="w-24">
-              <SelectValue placeholder="Role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => onRemove(member.id)}
-            disabled={isOwner}
-          >
-            Remove
-          </Button>
-        </div>
-      )}
-    </div>
+      {/* Actions Column */}
+      <TableCell className="text-right">
+        {!isOwner && !isCurrentUser && (
+          <div className="flex gap-2 justify-end">
+            <Select 
+              value={member.role} 
+              onValueChange={(value) => onRoleChange(member.id, value as "admin" | "member")}
+              disabled={isOwner}
+            >
+              <SelectTrigger className="w-24">
+                <SelectValue placeholder="Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => onRemove(member.id)}
+              disabled={isOwner}
+            >
+              Remove
+            </Button>
+          </div>
+        )}
+      </TableCell>
+    </TableRow>
   );
 };
