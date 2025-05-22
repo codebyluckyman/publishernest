@@ -3537,21 +3537,6 @@ export type Database = {
         }
         Returns: number
       }
-      get_public_presentation: {
-        Args: { access_code: string }
-        Returns: {
-          id: string
-          title: string
-          description: string
-          cover_image_url: string
-          display_settings: Json
-          created_at: string
-          published_at: string
-          expires_at: string
-          organization_id: string
-          allow_downloads: boolean
-        }[]
-      }
       get_purchase_order_status_name: {
         Args: { status_code: string }
         Returns: string
@@ -3721,10 +3706,6 @@ export type Database = {
           valid_from: string | null
           valid_to: string | null
         }[]
-      }
-      track_presentation_public_access: {
-        Args: { p_presentation_id: string; p_view_id: string }
-        Returns: undefined
       }
       update_format_price_breaks: {
         Args: { formatid: string; pricebreaks: Json; numproducts?: number }

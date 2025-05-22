@@ -8,8 +8,8 @@ const defaultDialogColumns: DialogColumn[] = ['price', 'isbn13', 'publisher', 'p
 
 export async function fetchSharedPresentation(accessCode: string) {
   try {
-    // Call the public function that doesn't require authentication
-    const { data, error } = await supabaseCustom.rpc('get_public_presentation', {
+    // First, call the stored function to fetch the presentation
+    const { data, error } = await supabaseCustom.rpc('fetch_shared_presentation', {
       access_code: accessCode
     });
 
@@ -20,10 +20,8 @@ export async function fetchSharedPresentation(accessCode: string) {
     
     const presentation = data[0];
 
-    // Ensure display_settings is treated as an object
-    const displaySettings = typeof presentation.display_settings === 'object' 
-      ? presentation.display_settings as Record<string, any>
-      : {};
+    // Ensure display_settings has both cardColumns and dialogColumns
+    const displaySettings = presentation.display_settings || {};
     
     // Create a properly typed displaySettings object
     const processedDisplaySettings: PresentationDisplaySettings = {
@@ -42,6 +40,11 @@ export async function fetchSharedPresentation(accessCode: string) {
 
     // Update the display_settings with the processed version
     presentation.display_settings = processedDisplaySettings;
+    
+    // Call the function to increment the access count
+    await supabaseCustom.rpc('increment_presentation_share_access', {
+      code: accessCode
+    }).catch(err => console.error('Failed to increment access count:', err));
     
     return { data: presentation, error: null };
   } catch (error) {

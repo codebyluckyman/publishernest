@@ -13,14 +13,6 @@ import {
   createPresentationShare
 } from '@/api/salesPresentations';
 import { PresentationDisplaySettings } from '@/types/salesPresentation';
-import { fetchPresentationAnalytics } from '@/api/salesPresentations/fetchPresentationAnalytics';
-
-export interface ShareOptions {
-  recipientEmail?: string;
-  message?: string;
-  expiresAt?: Date | null;
-  allowDownloads?: boolean;
-}
 
 export function useSalesPresentations() {
   const { currentOrganization } = useOrganization();
@@ -48,15 +40,6 @@ export function useSalesPresentations() {
     return useQuery({
       queryKey: ['salesPresentation', id],
       queryFn: () => fetchSalesPresentationById(id!),
-      enabled: !!id,
-    });
-  };
-  
-  // Get presentation analytics
-  const usePresentationAnalytics = (id?: string) => {
-    return useQuery({
-      queryKey: ['presentationAnalytics', id],
-      queryFn: () => fetchPresentationAnalytics(id!),
       enabled: !!id,
     });
   };
@@ -127,8 +110,7 @@ export function useSalesPresentations() {
     status?: 'draft' | 'published' | 'archived',
     coverImageUrl?: string,
     expiresAt?: string,
-    displaySettings?: PresentationDisplaySettings,
-    allowDownloads?: boolean
+    displaySettings?: PresentationDisplaySettings
   }) => {
     const result = await updateSalesPresentation({
       id,
@@ -228,38 +210,25 @@ export function useSalesPresentations() {
     });
   };
 
-  // Create share link with enhanced options
+  // Create share link
   const sharePresentation = async ({ 
     presentationId, 
-    recipientEmail,
-    message,
-    expiresAt,
-    allowDownloads
+    sharedWith, 
+    expiresAt 
   }: { 
-    presentationId: string;
-    recipientEmail?: string;
-    message?: string;
-    expiresAt?: Date | null;
-    allowDownloads?: boolean;
+    presentationId: string, 
+    sharedWith?: string, 
+    expiresAt?: string 
   }) => {
     if (!user) {
       throw new Error('User not authenticated');
-    }
-    
-    // First update the presentation with allowDownloads setting if provided
-    if (typeof allowDownloads === 'boolean') {
-      await updateSalesPresentation({
-        id: presentationId,
-        allowDownloads
-      });
     }
 
     const result = await createPresentationShare({
       presentationId,
       sharedBy: user.id,
-      sharedWith: recipientEmail,
-      customMessage: message,
-      expiresAt: expiresAt ? expiresAt.toISOString() : undefined
+      sharedWith,
+      expiresAt
     });
 
     if (!result) {
@@ -286,7 +255,6 @@ export function useSalesPresentations() {
   return {
     usePresentations,
     usePresentation,
-    usePresentationAnalytics,
     useCreatePresentation,
     useUpdatePresentation,
     useDeletePresentation,
