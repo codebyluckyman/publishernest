@@ -7,6 +7,7 @@ interface CreatePresentationShareParams {
   presentationId: string;
   sharedBy: string;
   sharedWith?: string;
+  customMessage?: string;
   expiresAt?: string;
 }
 
@@ -14,6 +15,7 @@ export async function createPresentationShare({
   presentationId,
   sharedBy,
   sharedWith,
+  customMessage,
   expiresAt,
 }: CreatePresentationShareParams): Promise<string | null> {
   try {
@@ -27,8 +29,8 @@ export async function createPresentationShare({
         presentation_id: presentationId,
         shared_by: sharedBy,
         shared_with: sharedWith,
+        custom_message: customMessage,
         share_link: shareLink,
-        share_token: shareToken, // Store token separately for easier lookup
         expires_at: expiresAt
       })
       .select('share_link')

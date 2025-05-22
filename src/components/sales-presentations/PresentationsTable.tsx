@@ -1,26 +1,11 @@
 
 import { useState } from 'react';
-import { 
-  ColumnDef, 
-  flexRender, 
-  getCoreRowModel, 
-  getSortedRowModel, 
-  SortingState, 
-  useReactTable 
-} from '@tanstack/react-table';
-import { SalesPresentation } from '@/types/salesPresentation';
-import { formatDate } from '@/utils/formatters';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PresentationActions } from './PresentationActions';
-import { UserInfo } from '@/services/userService';
+import { SalesPresentation } from '@/types/salesPresentation';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow } from 'date-fns';
 
 interface PresentationsTableProps {
   presentations: SalesPresentation[];
@@ -29,176 +14,94 @@ interface PresentationsTableProps {
   onShare: (id: string) => void;
   onView: (id: string) => void;
   onEdit: (id: string) => void;
-  users?: Map<string, UserInfo>;
+  users: Map<string, any>;
 }
 
-export function PresentationsTable({ 
-  presentations, 
-  isLoading, 
-  onDelete, 
+export const PresentationsTable = ({
+  presentations,
+  isLoading,
+  onDelete,
   onShare,
   onView,
   onEdit,
   users
-}: PresentationsTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-
-  const columns: ColumnDef<SalesPresentation>[] = [
-    {
-      id: 'title',
-      header: 'Title',
-      cell: ({ row }) => (
-        <div className="font-medium max-w-[200px] truncate">
-          {row.original.title}
-        </div>
-      ),
-    },
-    {
-      id: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const status = row.original.status;
-        return (
-          <Badge className={
-            status === 'published' 
-              ? 'bg-green-100 text-green-800' 
-              : status === 'draft'
-                ? 'bg-yellow-100 text-yellow-800'
-                : 'bg-gray-100 text-gray-800'
-          }>
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </Badge>
-        );
-      },
-    },
-    {
-      id: 'created_by',
-      header: 'Created By',
-      cell: ({ row }) => {
-        const userId = row.original.created_by;
-        const user = users?.get(userId);
-        return (
-          <div>
-            {user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email : 'Unknown User'}
-          </div>
-        );
-      },
-    },
-    {
-      id: 'created_at',
-      header: 'Created At',
-      cell: ({ row }) => <div>{formatDate(row.original.created_at)}</div>,
-    },
-    {
-      id: 'published_at',
-      header: 'Published At',
-      cell: ({ row }) => (
-        <div>
-          {row.original.published_at ? formatDate(row.original.published_at) : '-'}
-        </div>
-      ),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => (
-        <PresentationActions
-          presentation={row.original}
-          onView={onView}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onShare={onShare}
-        />
-      ),
-    },
-  ];
-
-  const table = useReactTable({
-    data: presentations,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {columns.map((column) => (
-                <TableHead key={column.id || String(column.id)}>
-                  {column.header as React.ReactNode}
-                </TableHead>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {[...Array(3)].map((_, i) => (
-                <TableRow key={i}>
-                  {columns.map((column, j) => (
-                    <TableCell key={j} className="h-12">
-                      <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
-  }
-
+}: PresentationsTableProps) => {
   return (
-    <div className="w-full">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <div
-                        className={header.column.getCanSort() ? 'cursor-pointer select-none' : ''}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </div>
-                    )}
-                  </TableHead>
-                ))}
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[300px]">Title</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created by</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Last updated</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={index}>
+                <TableCell><Skeleton className="h-6 w-[250px]" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-[120px]" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-[60px] ml-auto" /></TableCell>
               </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            ))
+          ) : (
+            presentations.length > 0 ? (
+              presentations.map((presentation) => {
+                const user = users.get(presentation.created_by);
+                const userName = user 
+                  ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email 
+                  : 'Unknown user';
+                  
+                return (
+                  <TableRow key={presentation.id}>
+                    <TableCell className="font-medium">{presentation.title}</TableCell>
+                    <TableCell>
+                      <Badge className={
+                        presentation.status === 'published' 
+                          ? 'bg-green-100 text-green-800' 
+                          : presentation.status === 'draft'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }>
+                        {presentation.status.charAt(0).toUpperCase() + presentation.status.slice(1)}
+                      </Badge>
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))
+                    <TableCell>{userName}</TableCell>
+                    <TableCell>
+                      {formatDistanceToNow(new Date(presentation.created_at), { addSuffix: true })}
+                    </TableCell>
+                    <TableCell>
+                      {formatDistanceToNow(new Date(presentation.updated_at), { addSuffix: true })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <PresentationActions
+                        presentation={presentation}
+                        onDelete={onDelete}
+                        onShare={onShare}
+                        onView={onView}
+                        onEdit={onEdit}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No presentations found
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            )
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
-}
+};

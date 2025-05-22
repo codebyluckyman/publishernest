@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useOrganization } from './useOrganization';
 import { useAuth } from '@/context/AuthContext';
@@ -12,6 +13,14 @@ import {
   createPresentationShare
 } from '@/api/salesPresentations';
 import { PresentationDisplaySettings } from '@/types/salesPresentation';
+import { fetchPresentationAnalytics } from '@/api/salesPresentations/fetchPresentationAnalytics';
+
+export interface ShareOptions {
+  recipientEmail?: string;
+  message?: string;
+  expiresAt?: Date | null;
+  allowDownloads?: boolean;
+}
 
 export function useSalesPresentations() {
   const { currentOrganization } = useOrganization();
@@ -39,6 +48,15 @@ export function useSalesPresentations() {
     return useQuery({
       queryKey: ['salesPresentation', id],
       queryFn: () => fetchSalesPresentationById(id!),
+      enabled: !!id,
+    });
+  };
+  
+  // Get presentation analytics
+  const usePresentationAnalytics = (id?: string) => {
+    return useQuery({
+      queryKey: ['presentationAnalytics', id],
+      queryFn: () => fetchPresentationAnalytics(id!),
       enabled: !!id,
     });
   };
@@ -109,7 +127,8 @@ export function useSalesPresentations() {
     status?: 'draft' | 'published' | 'archived',
     coverImageUrl?: string,
     expiresAt?: string,
-    displaySettings?: PresentationDisplaySettings
+    displaySettings?: PresentationDisplaySettings,
+    allowDownloads?: boolean
   }) => {
     const result = await updateSalesPresentation({
       id,
@@ -209,25 +228,38 @@ export function useSalesPresentations() {
     });
   };
 
-  // Create share link
+  // Create share link with enhanced options
   const sharePresentation = async ({ 
     presentationId, 
-    sharedWith, 
-    expiresAt 
+    recipientEmail,
+    message,
+    expiresAt,
+    allowDownloads
   }: { 
-    presentationId: string, 
-    sharedWith?: string, 
-    expiresAt?: string 
+    presentationId: string;
+    recipientEmail?: string;
+    message?: string;
+    expiresAt?: Date | null;
+    allowDownloads?: boolean;
   }) => {
     if (!user) {
       throw new Error('User not authenticated');
+    }
+    
+    // First update the presentation with allowDownloads setting if provided
+    if (typeof allowDownloads === 'boolean') {
+      await updateSalesPresentation({
+        id: presentationId,
+        allowDownloads
+      });
     }
 
     const result = await createPresentationShare({
       presentationId,
       sharedBy: user.id,
-      sharedWith,
-      expiresAt
+      sharedWith: recipientEmail,
+      customMessage: message,
+      expiresAt: expiresAt ? expiresAt.toISOString() : undefined
     });
 
     if (!result) {
@@ -254,6 +286,7 @@ export function useSalesPresentations() {
   return {
     usePresentations,
     usePresentation,
+    usePresentationAnalytics,
     useCreatePresentation,
     useUpdatePresentation,
     useDeletePresentation,

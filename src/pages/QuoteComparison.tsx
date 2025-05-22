@@ -24,25 +24,21 @@ export default function QuoteComparison() {
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
   const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
   
-  const { data, isLoading } = useSupplierQuotesList(
+  const { data: quotes = [], isLoading } = useSupplierQuotesList(
     currentOrganization,
     undefined, // All statuses
     undefined, // All suppliers
     quoteRequestId || undefined
   );
   
-  // Extract the quotes array safely from the response
-  const quotes = Array.isArray(data) ? data : 
-    (data && 'data' in data && Array.isArray(data.data)) ? data.data : [];
-  
   // Extract the quote request title if quotes are available
   useEffect(() => {
-    if (quotes && quotes.length > 0 && quotes[0].quote_request) {
+    if (quotes.length > 0 && quotes[0].quote_request) {
       setQuoteRequestTitle(quotes[0].quote_request.title);
     }
   }, [quotes]);
   
-  const handleApproveQuote = (quote: SupplierQuote) => {
+  const handleSelectQuote = (quote: SupplierQuote) => {
     if (quote.status !== 'submitted') {
       toast.error("Only submitted quotes can be approved");
       return;
@@ -51,6 +47,11 @@ export default function QuoteComparison() {
     approveMutation.mutate({
       id: quote.id,
       approvedCost: quote.total_cost || 0
+    }, {
+      onSuccess: () => {
+        toast.success("Quote approved successfully");
+        setDetailsSheetOpen(false);
+      }
     });
   };
 
@@ -100,10 +101,9 @@ export default function QuoteComparison() {
       ) : (
         <>
           <QuoteComparisonView 
-            quotes={quotes as SupplierQuote[]}
+            quotes={quotes} 
             quoteRequestTitle={quoteRequestTitle}
-            onSelectQuote={handleApproveQuote}
-            onViewDetails={handleViewDetails}
+            onSelectQuote={handleSelectQuote}
           />
           
           {/* Supplier Quote Details Sheet */}
@@ -111,7 +111,7 @@ export default function QuoteComparison() {
             quote={selectedQuote}
             open={detailsSheetOpen}
             onOpenChange={setDetailsSheetOpen}
-            onApprove={handleApproveQuote}
+            onApprove={handleSelectQuote}
           />
         </>
       )}

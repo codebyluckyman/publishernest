@@ -54,35 +54,6 @@ export type Database = {
           },
         ]
       }
-      communications: {
-        Row: {
-          created_at: string
-          id: string
-          message: string | null
-          sender_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          message?: string | null
-          sender_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          message?: string | null
-          sender_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "communications_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       customer_delivery_locations: {
         Row: {
           address: string
@@ -508,7 +479,6 @@ export type Database = {
           auth_user_id: string
           created_at: string
           id: string
-          member_type: string | null
           organization_id: string
           role: string
           updated_at: string
@@ -517,7 +487,6 @@ export type Database = {
           auth_user_id: string
           created_at?: string
           id?: string
-          member_type?: string | null
           organization_id: string
           role: string
           updated_at?: string
@@ -526,7 +495,6 @@ export type Database = {
           auth_user_id?: string
           created_at?: string
           id?: string
-          member_type?: string | null
           organization_id?: string
           role?: string
           updated_at?: string
@@ -871,7 +839,6 @@ export type Database = {
           last_accessed: string | null
           presentation_id: string
           share_link: string
-          share_token: string
           shared_at: string
           shared_by: string
           shared_with: string | null
@@ -883,7 +850,6 @@ export type Database = {
           last_accessed?: string | null
           presentation_id: string
           share_link: string
-          share_token: string
           shared_at?: string
           shared_by: string
           shared_with?: string | null
@@ -895,7 +861,6 @@ export type Database = {
           last_accessed?: string | null
           presentation_id?: string
           share_link?: string
-          share_token?: string
           shared_at?: string
           shared_by?: string
           shared_with?: string | null

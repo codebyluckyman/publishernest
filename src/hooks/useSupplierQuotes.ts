@@ -32,27 +32,54 @@ export function useSupplierQuotes() {
    * Hook to fetch supplier quotes
    */
   const useSupplierQuotesList = (
-    currentOrganization: { id: string },
+    currentOrganization: Organization | null,
     status?: string,
     supplierId?: string,
     quoteRequestId?: string,
-    limit?: number,
-    page?: number
+    searchQuery?: string,
+    supplier?: string,
+    selectedFormat?: string
   ) => {
     return useQuery({
-      queryKey: ['supplier-quotes', currentOrganization.id, status, supplierId, quoteRequestId, page],
-      queryFn: () => fetchSupplierQuotes({ 
-        currentOrganization, 
-        status, 
-        supplierId, 
-        printRunId: quoteRequestId, // Use quoteRequestId as printRunId
-        limit, 
-        page: page || 1 
-      }),
-      enabled: !!currentOrganization.id
+      queryKey: [
+        "supplierQuotes",
+        currentOrganization,
+        status,
+        supplierId,
+        quoteRequestId,
+        searchQuery,
+        supplier,
+        selectedFormat,
+      ],
+      queryFn: async () => {
+        if (!currentOrganization) {
+          throw new Error("Organization not selected");
+        }
+        try {
+          const data = await fetchSupplierQuotes({
+            currentOrganization,
+            status,
+            supplierId,
+            quoteRequestId,
+            searchQuery: searchQuery || undefined, // Ensure it doesn't send "null"
+            supplier: supplier || "",
+            selectedFormat: selectedFormat || "",
+          });
+          return data;
+        } catch (error) {
+          console.error("Fetch failed:", error);
+          throw error;
+        }
+      },
+      enabled: !!currentOrganization,
+      retry: false, // Optional: Disable retries if needed
+      meta: {
+        onError: (error: any) => {
+          toast.error(error.message || "Failed to load supplier quotes");
+        },
+      },
     });
   };
-  
   /**
    * Hook to fetch a specific supplier quote by ID
    */
@@ -232,18 +259,29 @@ export function useSupplierQuotes() {
    * Hook to approve a supplier quote
    */
   const useApproveSupplierQuote = () => {
-    const queryClientLocal = useQueryClient();
-
     return useMutation({
-      mutationFn: (params: { id: string; approvedCost: number }) => 
-        approveSupplierQuote(params.id, params.approvedCost),
-      onSuccess: () => {
-        queryClientLocal.invalidateQueries({ queryKey: ['supplier-quotes'] });
-        toast.success("Quote approved successfully");
+      mutationFn: ({
+        id,
+        approvedCost,
+      }: {
+        id: string;
+        approvedCost: number;
+      }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return approveSupplierQuote(id, approvedCost, user.id);
+      },
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
+        queryClient.invalidateQueries({
+          queryKey: ["supplierQuote", variables.id],
+        });
+        toast.success("Supplier quote approved successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to approve supplier quote");
-      }
+      },
     });
   };
 
@@ -252,8 +290,12 @@ export function useSupplierQuotes() {
    */
   const useRejectSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, reason }: { id: string; reason: string }) => 
-        rejectSupplierQuote(id, reason),
+      mutationFn: ({ id, reason }: { id: string; reason: string }) => {
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        return rejectSupplierQuote(id, user.id, reason);
+      },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
         queryClient.invalidateQueries({

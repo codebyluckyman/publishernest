@@ -1,196 +1,190 @@
 
-import { useState } from 'react';
-import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
+import { useState, useEffect } from 'react';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
 import { useSectionItems } from '@/hooks/useSectionItems';
-import { useProductsWithFormats, ProductWithFormat } from '@/hooks/useProductsWithFormats';
-import ProductSection from './ProductSection';
+import { PresentationDisplaySettings, PresentationViewMode } from '@/types/salesPresentation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProductSection } from './ProductSection';
+import { ViewToggle } from './ViewToggle';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AddSectionDialog } from './AddSectionDialog';
-import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Trash2 } from 'lucide-react';
+import { recordSectionView } from '@/api/salesPresentations/trackPresentationView';
 
 interface PresentationSectionsProps {
   presentationId: string;
-  isEditable?: boolean;
-  displaySettings?: PresentationDisplaySettings;
+  isEditable: boolean;
+  displaySettings: PresentationDisplaySettings;
+  viewId?: string;
+  isPublicView?: boolean;
 }
 
-export function PresentationSections({ 
+export const PresentationSections = ({ 
   presentationId, 
-  isEditable = false,
-  displaySettings 
-}: PresentationSectionsProps) {
-  const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
+  isEditable,
+  displaySettings, 
+  viewId,
+  isPublicView = false
+}: PresentationSectionsProps) => {
+  const { sections } = usePresentationSections(presentationId);
+  const [currentViewMode, setCurrentViewMode] = useState<PresentationViewMode>(
+    displaySettings.defaultView || 'card'
+  );
   
-  const { 
-    sections, 
-    createSection,
-    deleteSection,
-    addItem
-  } = usePresentationSections(presentationId);
+  const [addSectionDialogOpen, setAddSectionDialogOpen] = useState(false);
   
-  // Changed from useProducts to useProductsWithFormats to get format data
-  const { products } = useProductsWithFormats();
+  // Get all section IDs for fetching items
+  const sectionIds = sections.data ? sections.data.map(section => section.id) : [];
   
-  const sectionIds = sections.data?.map(section => section.id) || [];
-  const { data: sectionItemsMap, isLoading: isLoadingItems } = useSectionItems(sectionIds);
+  // Fetch all items at once
+  const { data: itemsBySection, isLoading: isLoadingItems } = useSectionItems(sectionIds);
   
-  const handleAddSection = async (sectionData: {
-    title: string;
-    description?: string;
-    section_type: 'products' | 'text' | 'media' | 'formats' | 'custom';
-    content?: any;
-    products?: Array<{
-      productId: string;
-      customPrice?: number;
-      customDescription?: string;
-    }>;
-  }) => {
-    const sectionOrder = sections.data?.length ? sections.data.length : 0;
-    
-    const sectionId = await createSection.mutateAsync({
-      title: sectionData.title,
-      description: sectionData.description,
-      section_type: sectionData.section_type,
-      content: sectionData.content,
-      section_order: sectionOrder
-    });
-    
-    if (sectionId && sectionData.products && sectionData.products.length > 0) {
-      for (let i = 0; i < sectionData.products.length; i++) {
-        const product = sectionData.products[i];
-        
-        await addItem.mutateAsync({
-          sectionId,
-          itemData: {
-            item_type: 'product',
-            item_id: product.productId,
-            custom_price: product.customPrice,
-            description: product.customDescription,
-            display_order: i
-          }
-        });
-      }
+  // Function to track section views
+  const trackSectionView = async (sectionId: string) => {
+    if (viewId && isPublicView) {
+      await recordSectionView(presentationId, viewId, sectionId);
     }
   };
-  
-  const handleDeleteSection = async (sectionId: string) => {
-    await deleteSection.mutateAsync(sectionId);
-    setSectionToDelete(null);
-  };
-  
-  // Create a map of product IDs to products with format data
-  const productMap = new Map<string, ProductWithFormat>();
-  if (products) {
-    products.forEach(product => {
-      productMap.set(product.id, product);
-    });
+
+  if (sections.isLoading) {
+    return (
+      <div className="space-y-8">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, j) => (
+                <Skeleton key={j} className="h-64" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
-  
-  const processedSections = sections.data?.map(section => {
-    if (section.section_type === 'products') {
-      const sectionItems = sectionItemsMap?.get(section.id) || [];
-      
-      const productsWithData = sectionItems.map(item => {
-        const product = item.item_id ? productMap.get(item.item_id) : undefined;
-        
-        return {
-          product: product as ProductWithFormat,
-          customPrice: item.custom_price,
-          customDescription: item.description
-        };
-      }).filter(item => item.product) || [];
-      
-      return {
-        ...section,
-        productsWithData
-      };
-    }
-    
-    return section;
-  });
-  
-  if (sections.isLoading || isLoadingItems) {
-    return <div>Loading sections...</div>;
+
+  if (sections.isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          Failed to load presentation sections.
+        </AlertDescription>
+      </Alert>
+    );
   }
-  
+
+  if (sections.data && sections.data.length === 0 && !isEditable) {
+    return (
+      <Alert>
+        <AlertDescription>
+          This presentation has no content sections.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
-    <div className="space-y-10">
-      {isEditable && (
-        <div className="flex justify-end">
-          <AddSectionDialog onAddSection={handleAddSection} />
-        </div>
-      )}
-      
-      {processedSections && processedSections.length > 0 ? (
-        processedSections.map(section => {
-          if (section.section_type === 'products' && 'productsWithData' in section) {
-            return (
-              <div key={section.id} className="relative">
-                {isEditable && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="absolute right-0 top-0"
-                    onClick={() => setSectionToDelete(section.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-                
-                <ProductSection
-                  title={section.title}
-                  description={section.description}
-                  products={section.productsWithData || []}
-                  displaySettings={displaySettings}
-                  isEditable={isEditable}
-                  onEdit={() => {/* Edit functionality will be added later */}}
-                />
-              </div>
-            );
-          }
+    <div className="space-y-8">
+      {!isPublicView && (
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-medium">Presentation Content</h2>
+            <p className="text-sm text-muted-foreground">
+              {sections.data?.length || 0} section{sections.data && sections.data.length !== 1 ? 's' : ''}
+            </p>
+          </div>
           
-          return null;
-        })
-      ) : (
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium">No sections found</h3>
-          <p className="text-muted-foreground mt-1">
-            {isEditable ? (
-              "Add sections to your presentation to showcase your products."
-            ) : (
-              "This presentation doesn't have any content yet."
-            )}
-          </p>
           {isEditable && (
-            <div className="mt-4">
-              <AddSectionDialog onAddSection={handleAddSection} />
+            <div className="flex space-x-4 items-center">
+              <ViewToggle 
+                viewMode={currentViewMode}
+                setViewMode={setCurrentViewMode}
+                features={displaySettings.features || {
+                  enabledViews: ['card', 'table'],
+                  allowViewToggle: true,
+                  showProductDetails: true
+                }}
+              />
             </div>
           )}
         </div>
       )}
       
-      <AlertDialog open={!!sectionToDelete} onOpenChange={(open) => !open && setSectionToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the section
-              and all its contents.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => sectionToDelete && handleDeleteSection(sectionToDelete)}
-              className="bg-destructive text-destructive-foreground"
+      {isEditable && (
+        <AddSectionDialog
+          open={addSectionDialogOpen}
+          onOpenChange={setAddSectionDialogOpen}
+          presentationId={presentationId}
+          currentSectionCount={sections.data?.length || 0}
+        />
+      )}
+      
+      {isPublicView && (
+        <div className="flex justify-end">
+          <ViewToggle 
+            viewMode={currentViewMode}
+            setViewMode={setCurrentViewMode}
+            features={displaySettings.features || {
+              enabledViews: ['card', 'table'],
+              allowViewToggle: true,
+              showProductDetails: true
+            }}
+          />
+        </div>
+      )}
+      
+      <div className="space-y-12">
+        {sections.data?.map((section) => {
+          const sectionItems = itemsBySection?.get(section.id) || [];
+          
+          // Track section view when it's viewed
+          useEffect(() => {
+            trackSectionView(section.id);
+          }, [section.id]);
+          
+          return (
+            <div 
+              key={section.id} 
+              className="space-y-4"
+              id={`section-${section.id}`}
             >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <div className="space-y-1">
+                <h2 className="text-2xl font-bold">{section.title}</h2>
+                {section.description && (
+                  <p className="text-muted-foreground">{section.description}</p>
+                )}
+              </div>
+              
+              <ProductSection
+                sectionId={section.id}
+                presentationId={presentationId}
+                items={sectionItems}
+                isLoading={isLoadingItems}
+                isEditable={isEditable}
+                viewMode={currentViewMode}
+                displaySettings={displaySettings}
+                viewId={viewId}
+                isPublicView={isPublicView}
+              />
+            </div>
+          );
+        })}
+        
+        {isEditable && sections.data && sections.data.length === 0 && (
+          <div className="text-center py-12 border border-dashed rounded-lg">
+            <h3 className="text-lg font-medium">No sections yet</h3>
+            <p className="text-muted-foreground mt-1">
+              Start by adding a section to your presentation.
+            </p>
+            <button 
+              onClick={() => setAddSectionDialogOpen(true)}
+              className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
+            >
+              Add Section
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
