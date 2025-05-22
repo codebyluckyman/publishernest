@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,8 @@ import { NumberInput } from "@/components/NumberInput";
 import { SavingsTable } from "@/components/quotes/form/savings/SavingsTable";
 import { ExtraCostsTable } from "@/components/quotes/form/extra-costs/ExtraCostsTable";
 import { ProductionStepsTable } from "@/components/organizations/ProductionStepsTable";
-import { Library, Settings, Users, Ruler, ListChecks, GitMerge } from "lucide-react";
+import { CustomFieldsTab } from "@/components/organizations/CustomFieldsTab";
+import { Library, Settings, Users, Ruler, ListChecks, GitMerge, Database } from "lucide-react";
 
 export default function OrganizationSettings() {
   const { currentOrganization, updateOrganizationSetting } = useOrganization();
@@ -81,6 +81,10 @@ export default function OrganizationSettings() {
           <TabsTrigger value="production" className="flex items-center gap-1">
             <GitMerge className="h-4 w-4" />
             <span>Production Process</span>
+          </TabsTrigger>
+          <TabsTrigger value="customfields" className="flex items-center gap-1">
+            <Database className="h-4 w-4" />
+            <span>Custom Fields</span>
           </TabsTrigger>
           <TabsTrigger value="libraries" className="flex items-center gap-1 font-semibold">
             <Library className="h-4 w-4" />
@@ -165,6 +169,10 @@ export default function OrganizationSettings() {
         
         <TabsContent value="production" className="space-y-6">
           <ProductionStepsTable />
+        </TabsContent>
+        
+        <TabsContent value="customfields" className="space-y-6">
+          <CustomFieldsTab />
         </TabsContent>
         
         <TabsContent value="libraries" className="space-y-6">

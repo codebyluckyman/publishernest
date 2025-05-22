@@ -6,11 +6,16 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { productSchema, defaultProductValues, ProductFormValues } from "@/schemas/productSchema";
+import { useOrganizationProductFields } from "./useOrganizationProductFields";
+import { useProductCustomFieldValues } from "./useProductCustomFieldValues";
 
 export function useProductForm(productId: string | undefined, onSuccess: () => void) {
   const { currentOrganization } = useOrganization();
   const [isLoading, setIsLoading] = useState(false);
   const isEditMode = !!productId;
+  
+  const { customFields } = useOrganizationProductFields();
+  const { customFieldValues, saveCustomFieldValues } = useProductCustomFieldValues(productId);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -46,6 +51,10 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
                   : data.format_extras)
               : defaultProductValues.format_extras;
               
+            // Initialize custom_fields object if we have custom fields
+            const customFieldsObj: Record<string, any> = {};
+              
+            // Set form values from database data
             form.reset({
               ...data,
               publication_date: publicationDate,
@@ -69,6 +78,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               license: data.license || "",
               format_extras: formatExtras,
               format_extra_comments: data.format_extra_comments || null,
+              custom_fields: customFieldsObj
             });
           }
         } catch (err: any) {
@@ -82,6 +92,22 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     }
   }, [isEditMode, productId, form]);
 
+  // Load custom field values when available
+  useEffect(() => {
+    if (customFieldValues.length > 0 && customFields.length > 0) {
+      const customFieldsObj: Record<string, any> = {};
+      
+      customFieldValues.forEach(value => {
+        const field = customFields.find(f => f.id === value.field_id);
+        if (field) {
+          customFieldsObj[field.field_key] = value.field_value;
+        }
+      });
+      
+      form.setValue('custom_fields', customFieldsObj);
+    }
+  }, [customFieldValues, customFields, form]);
+
   async function onSubmit(values: ProductFormValues) {
     if (!currentOrganization) {
       toast.error("No organization selected");
@@ -94,8 +120,11 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       // Clean up the format_id field - if it's an empty string, set it to null
       const cleanedFormatId = values.format_id === "" ? null : values.format_id;
       
+      // Extract custom fields data
+      const { custom_fields, ...productValues } = values;
+      
       const formattedValues = {
-        ...values,
+        ...productValues,
         title: values.title,
         publication_date: values.publication_date ? formatDateToYYYYMMDD(values.publication_date) : null,
         organization_id: currentOrganization.id,
@@ -125,6 +154,26 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       
       if (result.error) {
         throw result.error;
+      }
+      
+      // Save custom fields if we have a product ID
+      if (submittedProductId && custom_fields && customFields.length > 0) {
+        // Create array of field values to upsert
+        const fieldValues = customFields.map(field => {
+          // Find any existing value
+          const existingValue = customFieldValues.find(v => v.field_id === field.id);
+          
+          return {
+            id: existingValue?.id, // Will be undefined for new values
+            product_id: submittedProductId!,
+            field_id: field.id,
+            field_value: custom_fields[field.field_key] || null
+          };
+        });
+        
+        if (fieldValues.length > 0) {
+          await saveCustomFieldValues.mutateAsync(fieldValues);
+        }
       }
       
       toast.success(isEditMode ? "Product updated successfully" : "Product created successfully");

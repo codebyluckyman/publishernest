@@ -13,6 +13,7 @@ import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSe
 import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
 import { PricingSection } from "./products/form-sections/PricingSection";
 import { StockTable } from "./products/form-sections/StockTable";
+import { CustomFieldsSection } from "./products/form-sections/CustomFieldsSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type ProductReadOnlyFormProps = {
@@ -45,6 +46,7 @@ export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormPr
         <CartonSection form={form} readOnly />
         <AdditionalInfoSection form={form} readOnly />
         <InternalImagesSection form={form} readOnly />
+        <CustomFieldsSection form={form} productId={productId} readOnly />
         
         {/* Add the Pricing Section */}
         <PricingSection form={form} productId={productId} readOnly />

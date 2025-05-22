@@ -59,18 +59,21 @@ export type Database = {
           created_at: string
           id: string
           message: string | null
+          receiver_id: string | null
           sender_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           message?: string | null
+          receiver_id?: string | null
           sender_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           message?: string | null
+          receiver_id?: string | null
           sender_id?: string | null
         }
         Relationships: [
@@ -541,6 +544,53 @@ export type Database = {
           },
         ]
       }
+      organization_product_fields: {
+        Row: {
+          created_at: string
+          display_order: number
+          field_key: string
+          field_name: string
+          field_type: string
+          id: string
+          is_required: boolean
+          options: Json | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          field_key: string
+          field_name: string
+          field_type: string
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          field_key?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_product_fields_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_production_steps: {
         Row: {
           created_at: string
@@ -951,6 +1001,48 @@ export type Database = {
           },
         ]
       }
+      product_custom_field_values: {
+        Row: {
+          created_at: string
+          field_id: string
+          field_value: Json | null
+          id: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          field_value?: Json | null
+          id?: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          field_value?: Json | null
+          id?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_custom_field_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "organization_product_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_custom_field_values_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_prices: {
         Row: {
           created_at: string
@@ -1076,7 +1168,7 @@ export type Database = {
           product_form_detail: string | null
           publication_date: string | null
           publisher_name: string | null
-          selling_points: Json | null
+          selling_points: string | null
           series_name: string | null
           status: string
           subject_code: string | null
@@ -1117,7 +1209,7 @@ export type Database = {
           product_form_detail?: string | null
           publication_date?: string | null
           publisher_name?: string | null
-          selling_points?: Json | null
+          selling_points?: string | null
           series_name?: string | null
           status?: string
           subject_code?: string | null
@@ -1158,7 +1250,7 @@ export type Database = {
           product_form_detail?: string | null
           publication_date?: string | null
           publisher_name?: string | null
-          selling_points?: Json | null
+          selling_points?: string | null
           series_name?: string | null
           status?: string
           subject_code?: string | null
@@ -3309,7 +3401,15 @@ export type Database = {
           updated_at?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       unit_of_measures: {
         Row: {
