@@ -4,20 +4,22 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus } from "lucide-react";
 import { useState } from "react";
+import { MemberType } from "@/types/organization";
 
 interface MemberInviteFormProps {
-  onInvite: (email: string, role: "admin" | "member") => Promise<void>;
+  onInvite: (email: string, role: "admin" | "member", memberType: MemberType) => Promise<void>;
 }
 
 export const MemberInviteForm = ({ onInvite }: MemberInviteFormProps) => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
+  const [memberType, setMemberType] = useState<MemberType>("publisher");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
     
-    await onInvite(inviteEmail, inviteRole);
+    await onInvite(inviteEmail, inviteRole, memberType);
     setInviteEmail("");
   };
 
@@ -42,6 +44,19 @@ export const MemberInviteForm = ({ onInvite }: MemberInviteFormProps) => {
           <SelectContent>
             <SelectItem value="admin">Admin</SelectItem>
             <SelectItem value="member">Member</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="w-28 space-y-2">
+        <label className="text-sm font-medium">Type</label>
+        <Select value={memberType} onValueChange={(value) => setMemberType(value as MemberType)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="publisher">Publisher</SelectItem>
+            <SelectItem value="customer">Customer</SelectItem>
+            <SelectItem value="supplier">Supplier</SelectItem>
           </SelectContent>
         </Select>
       </div>

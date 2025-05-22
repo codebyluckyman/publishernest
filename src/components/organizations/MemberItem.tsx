@@ -2,8 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, User } from "lucide-react";
-import { OrganizationMember } from "@/context/OrganizationContext";
+import { OrganizationMember, MemberType } from "@/types/organization";
 import UserAvatar from "@/components/UserAvatar";
+import { Badge } from "@/components/ui/badge";
 
 type UserProfile = {
   id: string;
@@ -38,6 +39,38 @@ export const MemberItem = ({
     return member.profile?.email ? member.profile.email[0].toUpperCase() : "?";
   };
 
+  // Get member type display name
+  const getMemberTypeLabel = (memberType?: MemberType) => {
+    if (!memberType) return 'User';
+    
+    switch (memberType.toLowerCase()) {
+      case 'publisher':
+        return 'Publisher';
+      case 'customer':
+        return 'Customer';
+      case 'supplier':
+        return 'Supplier';
+      default:
+        return 'User';
+    }
+  };
+
+  // Get badge variant based on member type
+  const getMemberTypeVariant = (memberType?: MemberType) => {
+    if (!memberType) return 'secondary';
+    
+    switch (memberType.toLowerCase()) {
+      case 'publisher':
+        return 'default';
+      case 'customer':
+        return 'success';
+      case 'supplier':
+        return 'blue';
+      default:
+        return 'secondary';
+    }
+  };
+
   return (
     <div className="flex items-center justify-between py-2 border-b">
       <div className="flex items-center gap-3">
@@ -70,6 +103,12 @@ export const MemberItem = ({
             </span>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Badge variant={getMemberTypeVariant(member.member_type)}>
+          {getMemberTypeLabel(member.member_type)}
+        </Badge>
       </div>
       
       {!isOwner && !isCurrentUser && (

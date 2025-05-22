@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { OrganizationMember } from "@/context/OrganizationContext";
+import { OrganizationMember, MemberType } from "@/types/organization";
 import { Users } from "lucide-react";
 import { MemberInviteForm } from "./MemberInviteForm";
 import { MemberItem } from "./MemberItem";
@@ -18,7 +18,7 @@ interface MembersListProps {
   members: (OrganizationMember & { profile?: UserProfile })[];
   currentUserId: string | undefined;
   loading: boolean;
-  onInvite: (organizationId: string, email: string, role: "admin" | "member") => Promise<void>;
+  onInvite: (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => Promise<void>;
   onRoleChange: (memberId: string, role: "admin" | "member") => Promise<void>;
   onRemove: (memberId: string) => Promise<void>;
 }
@@ -32,8 +32,8 @@ export const MembersList = ({
   onRoleChange,
   onRemove
 }: MembersListProps) => {
-  const handleInvite = async (email: string, role: "admin" | "member") => {
-    await onInvite(organizationId, email, role);
+  const handleInvite = async (email: string, role: "admin" | "member", memberType: MemberType) => {
+    await onInvite(organizationId, email, role, memberType);
   };
 
   return (

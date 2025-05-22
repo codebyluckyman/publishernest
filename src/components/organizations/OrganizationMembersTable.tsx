@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
-import { OrganizationMember } from "@/types/organization";
+import { OrganizationMember, MemberType } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
@@ -71,10 +71,10 @@ export function OrganizationMembersTable() {
     fetchMembers();
   }, [currentOrganization, getOrganizationMembers]);
 
-  const handleInviteMember = async (email: string, role: "admin" | "member") => {
+  const handleInviteMember = async (email: string, role: "admin" | "member", memberType: MemberType) => {
     if (!currentOrganization) return;
     
-    await inviteMember(currentOrganization.id, email, role);
+    await inviteMember(currentOrganization.id, email, role, memberType);
     
     // Refresh members list
     const memberData = await getOrganizationMembers(currentOrganization.id);
@@ -115,19 +115,20 @@ export function OrganizationMembersTable() {
             <TableRow>
               <TableHead>Member</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-4">
+                <TableCell colSpan={4} className="text-center py-4">
                   Loading members...
                 </TableCell>
               </TableRow>
             ) : members.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-4">
+                <TableCell colSpan={4} className="text-center py-4">
                   No members found
                 </TableCell>
               </TableRow>
