@@ -2,23 +2,27 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, RefreshCw } from "lucide-react";
 import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
 
 interface MembersTableHeaderProps {
   onSearchChange: (value: string) => void;
   onRoleFilterChange: (value: string) => void;
   onMemberTypeFilterChange: (value: string) => void;
+  onResetFilters: () => void;
   roleFilter: string;
   memberTypeFilter: string;
+  searchQuery: string;
 }
 
 export const MembersTableHeader = ({
   onSearchChange,
   onRoleFilterChange,
   onMemberTypeFilterChange,
+  onResetFilters,
   roleFilter,
   memberTypeFilter,
+  searchQuery
 }: MembersTableHeaderProps) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -36,6 +40,8 @@ export const MembersTableHeader = ({
     { value: "supplier", label: "Supplier" }
   ];
 
+  const hasActiveFilters = searchQuery || roleFilter !== "all" || memberTypeFilter !== "all";
+
   return (
     <div className="mb-4 space-y-4">
       <div className="flex items-center gap-2">
@@ -45,6 +51,7 @@ export const MembersTableHeader = ({
             type="search"
             placeholder="Search members..."
             className="pl-8"
+            value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
@@ -57,6 +64,18 @@ export const MembersTableHeader = ({
           <Filter className="h-4 w-4" />
           <span className="hidden sm:inline">Filters</span>
         </Button>
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onResetFilters}
+            className="flex items-center gap-1"
+            title="Reset all filters"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Reset</span>
+          </Button>
+        )}
       </div>
       
       {showFilters && (
