@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -231,13 +232,13 @@ export function useSupplierQuotes() {
    * Hook to approve a supplier quote
    */
   const useApproveSupplierQuote = () => {
-    const queryClient = useQueryClient();
+    const queryClientLocal = useQueryClient();
 
     return useMutation({
       mutationFn: (params: { id: string; approvedCost: number }) => 
         approveSupplierQuote(params.id, params.approvedCost),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        queryClientLocal.invalidateQueries({ queryKey: ['supplier-quotes'] });
       }
     });
   };

@@ -12,4 +12,5 @@ export interface ExtendedProduct extends Product {
   publisher_name?: string;
   publication_date?: string | null;
   synopsis?: string;
+  format_id?: string; // Add this to fix type error
 }

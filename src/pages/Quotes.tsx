@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+
+import { useState, useEffect, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -201,64 +202,44 @@ const Quotes = () => {
                 className="space-y-4 w-full scroll-auto"
               >
                 <SupplierQuotesTable
-                  statusFilter={getStatusFilter("active")}
-                  searchQuery={searchQuery}
-                  quoteRequestId={quoteRequestId}
-                  supplier={supplier}
-                  selectedFormat={selectedFormat}
+                  limitToSubmitted={false}
+                  printRunId={quoteRequestId || undefined}
                 />
               </TabsContent>
               <TabsContent value="draft" className="space-y-4">
                 <SupplierQuotesTable
-                  statusFilter={getStatusFilter("draft")}
-                  searchQuery={searchQuery}
-                  quoteRequestId={quoteRequestId}
-                  supplier={supplier}
-                  selectedFormat={selectedFormat}
+                  limitToSubmitted={false}
+                  printRunId={quoteRequestId || undefined}
                 />
               </TabsContent>
               <TabsContent value="submitted" className="space-y-4">
                 <SupplierQuotesTable
-                  statusFilter={getStatusFilter("submitted")}
-                  searchQuery={searchQuery}
-                  quoteRequestId={quoteRequestId}
-                  supplier={supplier}
-                  selectedFormat={selectedFormat}
+                  limitToSubmitted={true}
+                  printRunId={quoteRequestId || undefined}
                 />
               </TabsContent>
               <TabsContent value="approved" className="space-y-4">
                 <SupplierQuotesTable
-                  statusFilter={getStatusFilter("approved")}
-                  searchQuery={searchQuery}
-                  quoteRequestId={quoteRequestId}
-                  supplier={supplier}
-                  selectedFormat={selectedFormat}
+                  limitToSubmitted={false}
+                  printRunId={quoteRequestId || undefined}
                 />
               </TabsContent>
               <TabsContent value="rejected" className="space-y-4">
                 <SupplierQuotesTable
-                  statusFilter={getStatusFilter("rejected")}
-                  searchQuery={searchQuery}
-                  quoteRequestId={quoteRequestId}
-                  supplier={supplier}
-                  selectedFormat={selectedFormat}
+                  limitToSubmitted={false}
+                  printRunId={quoteRequestId || undefined}
                 />
               </TabsContent>
               <TabsContent value="completed" className="space-y-4">
                 <SupplierQuotesTable
-                  statusFilter={getStatusFilter("completed")}
-                  searchQuery={searchQuery}
-                  quoteRequestId={quoteRequestId}
-                  supplier={supplier}
-                  selectedFormat={selectedFormat}
+                  limitToSubmitted={false}
+                  printRunId={quoteRequestId || undefined}
                 />
               </TabsContent>
               <TabsContent value="all" className="space-y-4">
                 <SupplierQuotesTable
-                  searchQuery={searchQuery}
-                  quoteRequestId={quoteRequestId}
-                  supplier={supplier}
-                  selectedFormat={selectedFormat}
+                  limitToSubmitted={false}
+                  printRunId={quoteRequestId || undefined}
                 />
               </TabsContent>
             </Tabs>

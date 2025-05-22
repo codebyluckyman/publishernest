@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormatDetailsPanel } from "./FormatDetailsPanel";
 import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
-import { SupplierQuote } from "@/types/supplierQuote";
+import { SupplierQuote, SupplierQuoteFormat } from "@/types/supplierQuote";
 
 interface SupplierQuoteDetailsSheetProps {
   quote: SupplierQuote | null;
@@ -46,7 +46,7 @@ export function SupplierQuoteDetailsSheet({
         <SheetHeader>
           <SheetTitle>Quote Details</SheetTitle>
           <SheetDescription>
-            From <span className="font-semibold">{quote.supplier?.name}</span> for <span className="font-semibold">{quote.print_run?.title}</span>
+            From <span className="font-semibold">{quote.supplier?.supplier_name || quote.supplier_name}</span> for <span className="font-semibold">{quote.title || (quote.print_run && quote.print_run.title)}</span>
           </SheetDescription>
         </SheetHeader>
         
@@ -66,7 +66,7 @@ export function SupplierQuoteDetailsSheet({
             <TabsContent value="formats" className="space-y-4">
               {quote.formats && quote.formats.length > 0 && (
                 <FormatDetailsPanel 
-                  formats={quote.formats} 
+                  formatList={quote.formats as SupplierQuoteFormat[]} 
                   selectedFormatId={selectedFormatId}
                   onFormatSelect={setSelectedFormatId}
                 />

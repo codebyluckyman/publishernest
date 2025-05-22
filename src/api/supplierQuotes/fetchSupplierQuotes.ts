@@ -26,7 +26,7 @@ export async function fetchSupplierQuotes({
       .select(
         `
         *,
-        supplier:supplier_id (name),
+        supplier:supplier_id (name, supplier_name),
         print_run:print_run_id (title),
         supplier_quote_extra_costs (
           *,
@@ -67,17 +67,24 @@ export async function fetchSupplierQuotes({
     }
 
     const supplierQuotes = data.map((sq) => {
-      // Safely extract formats and extraCosts
-      const formats = sq.supplier_quote_formats && Array.isArray(sq.supplier_quote_formats)
-        ? sq.supplier_quote_formats.map(sqf => sqf?.format || {})
-        : [];
+      // Safely extract formats using optional chaining and nullish checks
+      const formats = sq.supplier_quote_formats?.filter(sqf => sqf && typeof sqf === 'object')
+        .map(sqf => {
+          if (!sqf || !sqf.format) return {};
+          return sqf.format;
+        }) || [];
         
-      const extraCosts = sq.supplier_quote_extra_costs && Array.isArray(sq.supplier_quote_extra_costs)
-        ? sq.supplier_quote_extra_costs.map(sqec => sqec?.extra_cost || {})
-        : [];
+      const extraCosts = sq.supplier_quote_extra_costs?.filter(sqec => sqec && typeof sqec === 'object')
+        .map(sqec => {
+          if (!sqec || !sqec.extra_cost) return {};
+          return sqec.extra_cost;
+        }) || [];
 
       return {
         ...sq,
+        // Make sure we have supplier_name and title to satisfy SupplierQuote type
+        supplier_name: sq.supplier?.supplier_name || sq.supplier?.name || null,
+        title: sq.print_run?.title || null,
         formats,
         extraCosts,
       };
@@ -97,7 +104,7 @@ export async function fetchSupplierQuoteById(id: string) {
       .select(
         `
         *,
-        supplier:supplier_id (name),
+        supplier:supplier_id (name, supplier_name),
         print_run:print_run_id (title),
         supplier_quote_extra_costs (
           *,
@@ -120,17 +127,24 @@ export async function fetchSupplierQuoteById(id: string) {
       throw error;
     }
 
-    // Safely extract formats and extraCosts
-    const formats = data.supplier_quote_formats && Array.isArray(data.supplier_quote_formats)
-      ? data.supplier_quote_formats.map(sqf => sqf?.format || {})
-      : [];
+    // Safely extract formats using optional chaining and nullish checks
+    const formats = data.supplier_quote_formats?.filter(sqf => sqf && typeof sqf === 'object')
+      .map(sqf => {
+        if (!sqf || !sqf.format) return {};
+        return sqf.format;
+      }) || [];
       
-    const extraCosts = data.supplier_quote_extra_costs && Array.isArray(data.supplier_quote_extra_costs)
-      ? data.supplier_quote_extra_costs.map(sqec => sqec?.extra_cost || {})
-      : [];
+    const extraCosts = data.supplier_quote_extra_costs?.filter(sqec => sqec && typeof sqec === 'object')
+      .map(sqec => {
+        if (!sqec || !sqec.extra_cost) return {};
+        return sqec.extra_cost;
+      }) || [];
 
     return {
       ...data,
+      // Make sure we have supplier_name and title to satisfy SupplierQuote type
+      supplier_name: data.supplier?.supplier_name || data.supplier?.name || null,
+      title: data.print_run?.title || null,
       formats,
       extraCosts,
     };
@@ -162,13 +176,15 @@ export async function fetchSupplierQuoteFormats(supplierQuoteId: string) {
 
     // Fix the type error:
     const formatIds = supplierQuoteFormats && Array.isArray(supplierQuoteFormats) 
-      ? supplierQuoteFormats.map(sqFormat => {
-          const formatObj = typeof sqFormat === 'object' && sqFormat !== null ? sqFormat : {};
-          const formatData = formatObj.format || {};
-          return typeof formatData === 'object' && formatData !== null && 'id' in formatData 
-            ? formatData.id 
-            : null;
-        }).filter(id => id !== null)
+      ? supplierQuoteFormats
+          .filter(sqFormat => sqFormat && typeof sqFormat === 'object')
+          .map(sqFormat => {
+            const format = sqFormat.format || {};
+            return typeof format === 'object' && format !== null && 'id' in format 
+              ? format.id 
+              : null;
+          })
+          .filter(Boolean) as string[]
       : [];
 
     return formatIds;

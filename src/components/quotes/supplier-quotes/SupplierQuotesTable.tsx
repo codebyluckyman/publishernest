@@ -16,13 +16,19 @@ import { SupplierQuoteRow } from './SupplierQuoteRow';
 import { SupplierQuotesEmptyState } from './SupplierQuotesEmptyState';
 import { useOrganization } from '@/context/OrganizationContext';
 import { useSupplierQuotes } from '@/hooks/useSupplierQuotes';
-import { SupplierQuote } from '@/types/supplierQuote';
+import { SupplierQuote, SupplierQuoteStatus } from '@/types/supplierQuote';
 
 interface SupplierQuotesTableProps {
   printRunId?: string;
   onDetailClick?: (quote: SupplierQuote) => void;
   onApprove?: (quote: SupplierQuote) => void;
   limitToSubmitted?: boolean;
+  // Add these props to match usage in Quotes.tsx
+  statusFilter?: SupplierQuoteStatus[];
+  searchQuery?: string;
+  quoteRequestId?: string;
+  supplier?: string;
+  selectedFormat?: any;
 }
 
 export function SupplierQuotesTable({
@@ -30,22 +36,29 @@ export function SupplierQuotesTable({
   onDetailClick,
   onApprove,
   limitToSubmitted = false,
+  statusFilter,
+  searchQuery,
+  supplier,
+  selectedFormat,
 }: SupplierQuotesTableProps) {
   const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const { useSupplierQuotesList } = useSupplierQuotes();
 
-  const status = limitToSubmitted ? 'submitted' : undefined;
+  // Use the first status from statusFilter if provided, otherwise use limitToSubmitted logic
+  const status = statusFilter && statusFilter.length === 1 
+    ? statusFilter[0] 
+    : (limitToSubmitted ? 'submitted' : undefined);
 
   const { data: response, isLoading } = useSupplierQuotesList(
     currentOrganization,
     status,
-    undefined,
-    printRunId,
+    supplier,
+    printRunId || searchQuery?.quoteRequestId,
     pageSize,
     page
   );
@@ -87,16 +100,17 @@ export function SupplierQuotesTable({
   }
   
   // Filter quotes based on search query
+  const effectiveSearchQuery = searchQuery || localSearchQuery;
   const filteredQuotes = supplierQuotes.filter((quote) => {
-    if (!searchQuery) return true;
+    if (!effectiveSearchQuery) return true;
     
-    const lowerCaseSearchQuery = searchQuery.toLowerCase();
+    const lowerCaseSearchQuery = effectiveSearchQuery.toLowerCase();
     
     return (
-      (quote.supplier?.name && quote.supplier.name.toLowerCase().includes(lowerCaseSearchQuery)) ||
+      (quote.supplier?.supplier_name && quote.supplier.supplier_name.toLowerCase().includes(lowerCaseSearchQuery)) ||
       (quote.reference_id && quote.reference_id.toLowerCase().includes(lowerCaseSearchQuery)) ||
       (quote.status && quote.status.toLowerCase().includes(lowerCaseSearchQuery)) ||
-      (quote.print_run?.title && quote.print_run.title.toLowerCase().includes(lowerCaseSearchQuery))
+      (quote.title && quote.title.toLowerCase().includes(lowerCaseSearchQuery))
     );
   });
 
@@ -114,8 +128,8 @@ export function SupplierQuotesTable({
             type="search"
             placeholder="Search quotes..."
             className="w-full pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={localSearchQuery}
+            onChange={(e) => setLocalSearchQuery(e.target.value)}
           />
         </div>
         

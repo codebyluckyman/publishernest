@@ -2,7 +2,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
-// Add this new function to export
+/**
+ * Updates the status of a supplier quote and records an audit entry
+ * @param id - The ID of the supplier quote
+ * @param status - The new status
+ * @param userId - The ID of the user making the change
+ */
 export async function supplierQuoteStatusUpdate(
   id: string,
   status: string,

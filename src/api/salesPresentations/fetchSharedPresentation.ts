@@ -40,28 +40,25 @@ export async function fetchSharedPresentation(shareToken: string) {
     const presentation = presentations[0];
     
     // Ensure display_settings has both cardColumns and dialogColumns
-    // First, make sure display_settings is an object
-    const displaySettings = typeof presentation.display_settings === 'object' && presentation.display_settings !== null 
-      ? presentation.display_settings 
-      : {};
+    const displaySettings = presentation.display_settings || {};
     
-    // Type guard to check if displaySettings is an object and not an array
-    const isObject = (obj: any): obj is Record<string, any> => 
-      typeof obj === 'object' && obj !== null && !Array.isArray(obj);
-    
-    // Create a properly typed displaySettings object
+    // Create a properly typed displaySettings object with safer type checks
     const processedDisplaySettings: PresentationDisplaySettings = {
-      cardColumns: isObject(displaySettings) && Array.isArray(displaySettings.cardColumns) 
+      cardColumns: Array.isArray(displaySettings.cardColumns) 
         ? displaySettings.cardColumns as CardColumn[]
-        : (isObject(displaySettings) && Array.isArray(displaySettings.displayColumns) 
+        : (Array.isArray(displaySettings.displayColumns) 
             ? displaySettings.displayColumns as CardColumn[] 
             : defaultCardColumns),
       
-      dialogColumns: isObject(displaySettings) && Array.isArray(displaySettings.dialogColumns) 
+      dialogColumns: Array.isArray(displaySettings.dialogColumns) 
         ? displaySettings.dialogColumns as DialogColumn[]
-        : (isObject(displaySettings) && Array.isArray(displaySettings.displayColumns) 
+        : (Array.isArray(displaySettings.displayColumns) 
             ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis'] 
-            : defaultDialogColumns)
+            : defaultDialogColumns),
+      
+      // Add any other required properties from PresentationDisplaySettings
+      defaultView: displaySettings.defaultView || 'card',
+      features: displaySettings.features || {}
     };
 
     // Update the display_settings with the processed version

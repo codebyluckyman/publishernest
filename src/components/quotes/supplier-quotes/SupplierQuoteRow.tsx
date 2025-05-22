@@ -1,155 +1,88 @@
 
-import { format } from "date-fns";
-import { SupplierQuote } from "@/types/supplierQuote";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { StatusBadge } from "../table/StatusBadge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { formatCurrency } from "@/utils/formatters";
-import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { TableRow, TableCell } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Eye, Check } from 'lucide-react';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { formatDate } from '@/utils/date';
+import { Badge } from '@/components/ui/badge';
+import { SupplierQuote } from '@/types/supplierQuote';
 
-type SupplierQuoteRowProps = {
+export interface SupplierQuoteRowProps {
   quote: SupplierQuote;
-  onViewDetails: (quote: SupplierQuote) => void;
-  onSelectQuote?: (quote: SupplierQuote) => void;
-  isSelected?: boolean;
-  onSelectRow?: (id: string, selected: boolean) => void;
-};
+  onDetailClick: () => void;
+  onApprove?: () => void;
+}
 
-export const SupplierQuoteRow = ({
-  quote,
-  onViewDetails,
-  onSelectQuote,
-  isSelected,
-  onSelectRow
-}: SupplierQuoteRowProps) => {
-  const isExpired = quote.valid_to ? new Date(quote.valid_to) < new Date() : false;
-  const isDraft = quote.status === 'draft';
-  const canBeSelected = quote.status === 'submitted' && !isExpired;
-
-  // Status icon based on quote status
-  const getStatusIcon = () => {
-    if (isExpired) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <XCircle size={16} className="text-red-500" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Expired quote</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-    
-    if (isDraft) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <AlertTriangle size={16} className="text-amber-500" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Draft quote - not submitted</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-    
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <CheckCircle2 size={16} className="text-green-500" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Valid quote</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
+export function SupplierQuoteRow({ 
+  quote, 
+  onDetailClick,
+  onApprove
+}: SupplierQuoteRowProps) {
+  const statusColors: Record<string, string> = {
+    draft: 'bg-gray-200 text-gray-800',
+    submitted: 'bg-blue-100 text-blue-800',
+    approved: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800'
   };
   
+  const statusColor = statusColors[quote.status] || 'bg-gray-200 text-gray-800';
+  
   return (
-    <TableRow 
-      key={quote.id}
-      className={cn(
-        "hover:bg-gray-50 cursor-pointer",
-        (isExpired || isDraft) && "opacity-80"
-      )}
-      onClick={() => onViewDetails(quote)}
-    >
-      {onSelectRow && (
-        <TableCell className="w-12" onClick={(e) => e.stopPropagation()}>
-          <Checkbox 
-            checked={isSelected}
-            onCheckedChange={(checked) => onSelectRow(quote.id, !!checked)}
-            disabled={!canBeSelected}
-            className="mr-2"
-          />
-        </TableCell>
-      )}
-      <TableCell className="font-medium">
-        <div className="flex items-center gap-2">
-          {getStatusIcon()}
-          <div className="flex flex-col">
-            <span>{quote.supplier?.supplier_name || "Unknown Supplier"}</span>
-            <span className="text-xs text-muted-foreground font-mono">
-              {quote.reference || quote.reference_id || "No reference"}
-            </span>
-          </div>
+    <TableRow>
+      <TableCell>{quote.reference_id || '-'}</TableCell>
+      <TableCell>
+        {quote.supplier?.supplier_name || quote.supplier_name || '-'}
+      </TableCell>
+      <TableCell>
+        {quote.print_run?.title || quote.title || '-'}
+      </TableCell>
+      <TableCell>
+        <Badge className={`${statusColor} hover:${statusColor}`} variant="outline">
+          {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
+        </Badge>
+      </TableCell>
+      <TableCell>{formatDate(quote.created_at)}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          {quote.status === 'submitted' && onApprove && (
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={onApprove}
+              title="Approve Quote"
+            >
+              <Check className="h-4 w-4 text-green-600" />
+            </Button>
+          )}
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={onDetailClick}
+            title="View Details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onDetailClick}>View Details</DropdownMenuItem>
+              {quote.status === 'submitted' && onApprove && (
+                <DropdownMenuItem onClick={onApprove}>Approve</DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </TableCell>
-      <TableCell>
-        <StatusBadge status={quote.status} />
-      </TableCell>
-      <TableCell>
-        <span className={cn(isExpired && "line-through text-gray-500")}>
-          {quote.total_cost 
-            ? formatCurrency(quote.total_cost, quote.currency || 'USD') 
-            : "Not specified"}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={cn(isExpired && "text-gray-500")}>
-          {quote.valid_to 
-            ? format(new Date(quote.valid_to), "MMM d, yyyy") 
-            : "Not specified"}
-        </span>
-      </TableCell>
-      <TableCell>
-        {quote.submitted_at 
-          ? format(new Date(quote.submitted_at), "MMM d, yyyy") 
-          : "Not submitted"}
-      </TableCell>
-      {onSelectQuote && (
-        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-          <div className="flex justify-end space-x-2">
-            <button
-              className={cn(
-                "px-3 py-1 rounded text-sm font-medium",
-                canBeSelected 
-                  ? "bg-primary text-white hover:bg-primary/90" 
-                  : "bg-gray-200 text-gray-500 cursor-not-allowed"
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (canBeSelected && onSelectQuote) {
-                  onSelectQuote(quote);
-                }
-              }}
-              disabled={!canBeSelected}
-            >
-              {quote.status === 'submitted' ? "Select" : "View"}
-            </button>
-          </div>
-        </TableCell>
-      )}
     </TableRow>
   );
-};
+}

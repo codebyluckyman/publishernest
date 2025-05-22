@@ -1,37 +1,35 @@
 
-import { CircleDollarSign } from "lucide-react";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
-interface SupplierQuotesEmptyStateProps {
-  statusFilter?: string[] | undefined;
+export interface SupplierQuotesEmptyStateProps {
+  printRunId?: string;
+  onCreateNew?: () => void;
 }
 
-export function SupplierQuotesEmptyState({ statusFilter }: SupplierQuotesEmptyStateProps) {
-  let message = "No quotes found";
-  let description = "Create a quote request to get started";
-  
-  if (statusFilter) {
-    if (statusFilter.includes('draft') || statusFilter.includes('submitted')) {
-      message = "No active quotes";
-      description = "All supplier quotes that are in draft or submitted status will appear here";
-    } else if (statusFilter.includes('accepted') || statusFilter.includes('declined')) {
-      message = "No completed quotes";
-      description = "Quotes will appear here once they are accepted or declined";
-    }
-  }
-  
+export function SupplierQuotesEmptyState({ 
+  printRunId, 
+  onCreateNew 
+}: SupplierQuotesEmptyStateProps) {
   return (
-    <div className="flex items-center justify-center h-64 border border-dashed rounded-lg">
-      <div className="text-center">
-        <div className="flex justify-center mb-4">
-          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <CircleDollarSign className="h-6 w-6 text-primary" />
-          </div>
-        </div>
-        <h3 className="text-lg font-medium">{message}</h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          {description}
-        </p>
+    <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+      <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center">
+        <Plus className="h-8 w-8 text-gray-400" />
       </div>
+      <h3 className="text-lg font-medium">No Supplier Quotes</h3>
+      <p className="text-sm text-gray-500 max-w-md">
+        {printRunId 
+          ? "No supplier quotes have been created for this print run yet."
+          : "No supplier quotes match your current filters."
+        }
+      </p>
+      {onCreateNew && (
+        <Button onClick={onCreateNew}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Supplier Quote
+        </Button>
+      )}
     </div>
   );
 }

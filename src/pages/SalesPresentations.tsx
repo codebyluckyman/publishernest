@@ -157,10 +157,13 @@ const SalesPresentations = () => {
 
   useEffect(() => {
     if (presentationsData) {
-      if ('data' in presentationsData && Array.isArray(presentationsData.data)) {
-        setTotalCount(presentationsData.total || presentationsData.data.length);
-      } else if (Array.isArray(presentationsData)) {
+      // Safely handle different response formats
+      if (Array.isArray(presentationsData)) {
         setTotalCount(presentationsData.length);
+      } else if ('data' in presentationsData && Array.isArray(presentationsData.data)) {
+        setTotalCount(presentationsData.count || presentationsData.data.length || 0);
+      } else {
+        setTotalCount(0);
       }
     }
   }, [presentationsData]);
@@ -269,9 +272,20 @@ const SalesPresentations = () => {
     return <div>Error loading presentations</div>;
   }
 
-  const presentations = presentationsData && 'data' in presentationsData ? 
-    presentationsData.data : 
-    (Array.isArray(presentationsData) ? presentationsData : []);
+  // Safely parse presentations data from different possible formats
+  const presentations: SalesPresentation[] = (() => {
+    if (!presentationsData) return [];
+    
+    if (Array.isArray(presentationsData)) {
+      return presentationsData;
+    }
+    
+    if (typeof presentationsData === 'object' && 'data' in presentationsData) {
+      return Array.isArray(presentationsData.data) ? presentationsData.data : [];
+    }
+    
+    return [];
+  })();
 
   return (
     <div className="container mx-auto py-10">
@@ -341,13 +355,15 @@ const SalesPresentations = () => {
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious href="#" onClick={() => setPage(page - 1)} disabled={page === 1} />
+              <PaginationPrevious 
+                onClick={() => setPage(page - 1)} 
+                className={page === 1 ? 'pointer-events-none opacity-50' : ''}
+              />
             </PaginationItem>
             <PaginationItem>
               <PaginationNext
-                href="#"
                 onClick={() => setPage(page + 1)}
-                disabled={page * limit >= totalCount}
+                className={(page * limit >= totalCount) ? 'pointer-events-none opacity-50' : ''}
               />
             </PaginationItem>
           </PaginationContent>
