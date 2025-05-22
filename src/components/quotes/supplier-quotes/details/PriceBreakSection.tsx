@@ -1,17 +1,18 @@
 
-import React from "react";
-import { SupplierQuote } from "@/types/supplierQuote";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import { SupplierQuote, SupplierQuotePriceBreak } from '@/types/supplierQuote';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface PriceBreakSectionProps {
   quote: SupplierQuote;
 }
 
 export function PriceBreakSection({ quote }: PriceBreakSectionProps) {
-  // Safely extract price breaks
-  const priceBreaks = quote.price_breaks || [];
+  // Safely get price breaks from quote
+  const priceBreaks: SupplierQuotePriceBreak[] = quote.price_breaks || [];
   
+  // If no price breaks, show a message
   if (priceBreaks.length === 0) {
     return (
       <Card>
@@ -19,12 +20,12 @@ export function PriceBreakSection({ quote }: PriceBreakSectionProps) {
           <CardTitle>Price Breaks</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center">No price break information available</p>
+          <p className="text-muted-foreground">No price breaks available for this quote.</p>
         </CardContent>
       </Card>
     );
   }
-
+  
   return (
     <Card>
       <CardHeader>
@@ -34,34 +35,27 @@ export function PriceBreakSection({ quote }: PriceBreakSectionProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Format</TableHead>
               <TableHead>Quantity</TableHead>
-              <TableHead className="text-right">Unit Cost</TableHead>
-              <TableHead className="text-right">Total Cost</TableHead>
+              <TableHead>Unit Cost</TableHead>
+              <TableHead>Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {priceBreaks.map((priceBreak) => {
-              // Find the format for this price break if available
-              const formatId = priceBreak.format_id;
-              const formatName = formatId && quote.formats ? 
-                quote.formats.find(f => f.format_id === formatId)?.format_name : 'N/A';
-                
-              return (
-                <TableRow key={priceBreak.id}>
-                  <TableCell>{formatName || 'N/A'}</TableCell>
-                  <TableCell>{priceBreak.quantity.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">
-                    {priceBreak.unit_cost ? 
-                      `${quote.currency} ${priceBreak.unit_cost.toFixed(2)}` : 'N/A'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {priceBreak.unit_cost ? 
-                      `${quote.currency} ${(priceBreak.unit_cost * priceBreak.quantity).toFixed(2)}` : 'N/A'}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {priceBreaks.map((priceBreak) => (
+              <TableRow key={priceBreak.id}>
+                <TableCell>{priceBreak.quantity.toLocaleString()}</TableCell>
+                <TableCell>
+                  {priceBreak.unit_cost 
+                    ? `${quote.currency} ${priceBreak.unit_cost.toFixed(2)}`
+                    : 'Not available'}
+                </TableCell>
+                <TableCell>
+                  {priceBreak.unit_cost 
+                    ? `${quote.currency} ${(priceBreak.unit_cost * priceBreak.quantity).toFixed(2)}`
+                    : 'Not available'}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </CardContent>

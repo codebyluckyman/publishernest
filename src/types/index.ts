@@ -1,16 +1,28 @@
 
-import { Product } from '@/components/format/types/ProductTypes';
-import { Format } from '@/components/format/types/FormatTypes';
+import { PresentationDisplaySettings } from './salesPresentation';
 
-export type { Product, Format };
-
-// Add extended product type with presentation display properties
-export interface ExtendedProduct extends Product {
-  price?: number;
+export interface ExtendedProduct {
+  id: string;
+  title: string;
+  subtitle: string;
+  synopsis: string;
+  isbn13?: string;
+  isbn10?: string;
+  publisher_name: string;
+  publication_date: string | null;
+  price: number | null;
   currency?: string;
-  subtitle?: string;
-  publisher_name?: string;
-  publication_date?: string | null;
-  synopsis?: string;
-  format_id?: string | undefined; // Make sure format_id is included
+  format?: {
+    id: string;
+    format_name: string;
+    binding_type?: string;
+    dimensions?: string;
+  } | null;
+  format_extras: {
+    id?: string;
+    name: string;
+    description?: string;
+    unit_of_measure_id?: string;
+  }[];
+  [key: string]: any;
 }

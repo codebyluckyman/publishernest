@@ -17,6 +17,7 @@ export interface SupplierQuotesTableProps {
   loading?: boolean;
   printRunId?: string;
   quoteRequestId?: string;
+  limitToSubmitted?: boolean; // Add this prop to fix the error
   onCreateNew?: () => void;
   onApprove?: (quoteId: string) => void;
   className?: string;
@@ -27,6 +28,7 @@ export const SupplierQuotesTable: React.FC<SupplierQuotesTableProps> = ({
   loading = false,
   printRunId,
   quoteRequestId,
+  limitToSubmitted = false, // Default value
   onCreateNew,
   onApprove,
   className = '',

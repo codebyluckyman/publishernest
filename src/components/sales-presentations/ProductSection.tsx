@@ -29,7 +29,7 @@ export default function ProductSection({
   onEdit
 }: ProductSectionProps) {
   // Use the displaySettings if provided, otherwise use defaults
-  const settings = displaySettings || {
+  const settings: PresentationDisplaySettings = displaySettings || {
     cardColumns: ['price', 'isbn13', 'publisher'],
     dialogColumns: ['price', 'isbn13', 'publisher', 'publication_date', 'synopsis'],
     defaultView: 'card',
@@ -40,7 +40,7 @@ export default function ProductSection({
       showPricing: true
     }
   };
-
+  
   // Get the active view from settings or use the default
   const [activeView, setActiveView] = React.useState(settings.defaultView);
   
@@ -56,9 +56,11 @@ export default function ProductSection({
       price: item.customPrice !== undefined ? item.customPrice : product.list_price,
       subtitle: product.subtitle || '',
       synopsis: item.customDescription || product.synopsis || '',
-      currency: product.currency_code,
+      currency: product.currency_code || 'USD',
       publisher_name: product.publisher_name || '',
       publication_date: product.publication_date ? new Date(product.publication_date).toISOString() : null,
+      // Ensure format extras is an array
+      format_extras: []
     };
   };
 

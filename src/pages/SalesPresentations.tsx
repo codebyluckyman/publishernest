@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, React } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
@@ -156,23 +156,26 @@ const SalesPresentations = () => {
   useEffect(() => {
     if (presentationsData) {
       // Safely handle different response formats
-      if (Array.isArray(presentationsData)) {
-        setTotalCount(presentationsData.length);
-      } else if (presentationsData && typeof presentationsData === 'object') {
-        // Check if data property exists and is an array
-        if ('data' in presentationsData && Array.isArray(presentationsData.data)) {
-          // Use count if available, otherwise use array length
-          setTotalCount(
-            'count' in presentationsData && typeof presentationsData.count === 'number'
-              ? presentationsData.count
-              : presentationsData.data.length
-          );
-        } else {
-          setTotalCount(0);
+      const count = (() => {
+        if (Array.isArray(presentationsData)) {
+          return presentationsData.length;
         }
-      } else {
-        setTotalCount(0);
-      }
+        
+        if (typeof presentationsData === 'object' && presentationsData !== null) {
+          // Check if data property exists and is an array
+          if ('data' in presentationsData && Array.isArray(presentationsData.data)) {
+            // Use count if available, otherwise use array length
+            if ('count' in presentationsData && typeof presentationsData.count === 'number') {
+              return presentationsData.count;
+            }
+            return presentationsData.data.length;
+          }
+        }
+        
+        return 0;
+      })();
+      
+      setTotalCount(count);
     }
   }, [presentationsData]);
 
@@ -281,20 +284,20 @@ const SalesPresentations = () => {
   }
 
   // Safely parse presentations data from different possible formats
-  const presentations: SalesPresentation[] = (() => {
+  const presentations: SalesPresentation[] = React.useMemo(() => {
     if (!presentationsData) return [];
     
     if (Array.isArray(presentationsData)) {
       return presentationsData;
     }
     
-    if (typeof presentationsData === 'object' && 'data' in presentationsData) {
+    if (typeof presentationsData === 'object' && presentationsData !== null && 'data' in presentationsData) {
       const dataProperty = presentationsData.data;
       return Array.isArray(dataProperty) ? dataProperty : [];
     }
     
     return [];
-  })();
+  }, [presentationsData]);
 
   return (
     <div className="container mx-auto py-10">
