@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Organization } from "@/types/organization";
@@ -53,6 +52,7 @@ export function useSupplierQuotes() {
       enabled: !!currentOrganization.id
     });
   };
+  
   /**
    * Hook to fetch a specific supplier quote by ID
    */

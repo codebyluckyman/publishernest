@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -30,7 +29,6 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
@@ -160,8 +158,9 @@ const SalesPresentations = () => {
       // Safely handle different response formats
       if (Array.isArray(presentationsData)) {
         setTotalCount(presentationsData.length);
-      } else if ('data' in presentationsData && Array.isArray(presentationsData.data)) {
-        setTotalCount(presentationsData.count || presentationsData.data.length || 0);
+      } else if (presentationsData && typeof presentationsData === 'object' && 'data' in presentationsData) {
+        const data = presentationsData as { data: any[], count?: number };
+        setTotalCount(data.count || (Array.isArray(data.data) ? data.data.length : 0));
       } else {
         setTotalCount(0);
       }
@@ -281,7 +280,8 @@ const SalesPresentations = () => {
     }
     
     if (typeof presentationsData === 'object' && 'data' in presentationsData) {
-      return Array.isArray(presentationsData.data) ? presentationsData.data : [];
+      const data = presentationsData as { data: any[] };
+      return Array.isArray(data.data) ? data.data : [];
     }
     
     return [];
@@ -356,14 +356,16 @@ const SalesPresentations = () => {
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious 
-                onClick={() => setPage(page - 1)} 
+                onClick={() => page > 1 && setPage(page - 1)} 
                 className={page === 1 ? 'pointer-events-none opacity-50' : ''}
+                aria-disabled={page === 1}
               />
             </PaginationItem>
             <PaginationItem>
               <PaginationNext
-                onClick={() => setPage(page + 1)}
+                onClick={() => (page * limit < totalCount) && setPage(page + 1)}
                 className={(page * limit >= totalCount) ? 'pointer-events-none opacity-50' : ''}
+                aria-disabled={page * limit >= totalCount}
               />
             </PaginationItem>
           </PaginationContent>

@@ -1,205 +1,100 @@
 
-import React, { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import React from 'react';
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableHead, 
+  TableRow 
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { SearchIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { SupplierQuote } from '@/types/supplierQuote';
 import { SupplierQuoteRow } from './SupplierQuoteRow';
 import { SupplierQuotesEmptyState } from './SupplierQuotesEmptyState';
-import { useOrganization } from '@/context/OrganizationContext';
-import { useSupplierQuotes } from '@/hooks/useSupplierQuotes';
-import { SupplierQuote, SupplierQuoteStatus } from '@/types/supplierQuote';
+import { Sheet } from '@/components/ui/sheet';
+import { SupplierQuoteDetailsSheet } from './details/SupplierQuoteDetailsSheet';
 
-interface SupplierQuotesTableProps {
+export interface SupplierQuotesTableProps {
+  quotes?: SupplierQuote[];
+  loading?: boolean;
   printRunId?: string;
-  onDetailClick?: (quote: SupplierQuote) => void;
-  onApprove?: (quote: SupplierQuote) => void;
-  limitToSubmitted?: boolean;
-  // Add these props to match usage in Quotes.tsx
-  statusFilter?: SupplierQuoteStatus[];
-  searchQuery?: string;
-  quoteRequestId?: string;
-  supplier?: string;
-  selectedFormat?: any;
+  quoteRequestId?: string; // Add this prop to match what's being passed
+  onCreateNew?: () => void;
+  onApprove?: (quoteId: string) => void;
+  className?: string;
 }
 
-export function SupplierQuotesTable({
+export const SupplierQuotesTable: React.FC<SupplierQuotesTableProps> = ({
+  quotes = [],
+  loading = false,
   printRunId,
-  onDetailClick,
+  quoteRequestId, // Accept the prop
+  onCreateNew,
   onApprove,
-  limitToSubmitted = false,
-  statusFilter,
-  searchQuery,
-  supplier,
-  selectedFormat,
-}: SupplierQuotesTableProps) {
-  const navigate = useNavigate();
-  const { currentOrganization } = useOrganization();
-  const [localSearchQuery, setLocalSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  className = '',
+}) => {
+  const [selectedQuote, setSelectedQuote] = React.useState<SupplierQuote | null>(null);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
 
-  const { useSupplierQuotesList } = useSupplierQuotes();
+  const handleDetailClick = (quote: SupplierQuote) => {
+    setSelectedQuote(quote);
+    setDetailsOpen(true);
+  };
 
-  // Use the first status from statusFilter if provided, otherwise use limitToSubmitted logic
-  const status = statusFilter && statusFilter.length === 1 
-    ? statusFilter[0] 
-    : (limitToSubmitted ? 'submitted' : undefined);
+  const handleApproveClick = (quote: SupplierQuote) => {
+    if (onApprove) {
+      onApprove(quote.id);
+    }
+  };
+  
+  // Determine if we have any results to display
+  const hasQuotes = Array.isArray(quotes) && quotes.length > 0;
 
-  const { data: response, isLoading } = useSupplierQuotesList(
-    currentOrganization,
-    status,
-    supplier,
-    printRunId || searchQuery?.quoteRequestId,
-    pageSize,
-    page
-  );
-
-  if (!response) {
-    return <div>No supplier quotes available</div>;
+  // Show loading state
+  if (loading) {
+    return <div>Loading supplier quotes...</div>;
   }
 
-  // Safely extract the data and count from the response
-  const supplierQuotes: SupplierQuote[] = Array.isArray(response) ? response : 
-    (response && 'data' in response && Array.isArray(response.data)) ? response.data : [];
-    
-  const totalCount = (response && 'count' in response) ? response.count || 0 : supplierQuotes.length;
-
-  // If no quotes and loading, show loading state
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-48">
-        <div className="text-center">
-          <div className="h-8 w-8 mx-auto mb-4 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="text-sm text-gray-500">Loading supplier quotes...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If no quotes and not loading, show empty state
-  if (supplierQuotes.length === 0 && !isLoading) {
+  // Show empty state if no quotes
+  if (!hasQuotes) {
     return (
       <SupplierQuotesEmptyState 
         printRunId={printRunId}
-        onCreateNew={() => {
-          if (printRunId) {
-            navigate(`/quotes/request/${printRunId}/supplier/new`);
-          }
-        }}
+        quoteRequestId={quoteRequestId}
+        onCreateNew={onCreateNew} 
       />
     );
   }
-  
-  // Filter quotes based on search query
-  const effectiveSearchQuery = searchQuery || localSearchQuery;
-  const filteredQuotes = supplierQuotes.filter((quote) => {
-    if (!effectiveSearchQuery) return true;
-    
-    const lowerCaseSearchQuery = effectiveSearchQuery.toLowerCase();
-    
-    return (
-      (quote.supplier?.supplier_name && quote.supplier.supplier_name.toLowerCase().includes(lowerCaseSearchQuery)) ||
-      (quote.reference_id && quote.reference_id.toLowerCase().includes(lowerCaseSearchQuery)) ||
-      (quote.status && quote.status.toLowerCase().includes(lowerCaseSearchQuery)) ||
-      (quote.title && quote.title.toLowerCase().includes(lowerCaseSearchQuery))
-    );
-  });
-
-  // Calculate pagination details
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const startItem = (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, totalCount);
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between">
-        <div className="relative max-w-sm">
-          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Search quotes..."
-            className="w-full pl-8"
-            value={localSearchQuery}
-            onChange={(e) => setLocalSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        {printRunId && (
-          <Button
-            onClick={() => navigate(`/quotes/request/${printRunId}/supplier/new`)}
-          >
-            Create Supplier Quote
-          </Button>
-        )}
-      </div>
-      
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Reference</TableHead>
-              <TableHead>Supplier</TableHead>
-              <TableHead>Print Run</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredQuotes.map((quote) => (
-              <SupplierQuoteRow
-                key={quote.id}
-                quote={quote}
-                onDetailClick={() => {
-                  if (onDetailClick) {
-                    onDetailClick(quote);
-                  } else {
-                    navigate(`/quotes/supplier/${quote.id}`);
-                  }
-                }}
-                onApprove={onApprove ? () => onApprove(quote) : undefined}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      
-      {/* Pagination controls */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          Showing {startItem} to {endItem} of {totalCount} results
-        </p>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page - 1)}
-            disabled={page <= 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm">
-            Page {page} of {totalPages || 1}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page + 1)}
-            disabled={page >= totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+    <>
+      <Table className={className}>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Reference</TableHead>
+            <TableHead>Supplier</TableHead>
+            <TableHead>Print Run</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {quotes.map((quote) => (
+            <SupplierQuoteRow
+              key={quote.id}
+              quote={quote}
+              onDetailClick={() => handleDetailClick(quote)}
+              onApprove={onApprove ? () => handleApproveClick(quote) : undefined}
+            />
+          ))}
+        </TableBody>
+      </Table>
+
+      <SupplierQuoteDetailsSheet
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        quote={selectedQuote}
+      />
+    </>
   );
-}
+};

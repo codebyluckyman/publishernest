@@ -1,93 +1,91 @@
 
-import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FormatDetailsPanel } from "./FormatDetailsPanel";
-import { SupplierQuoteDetails } from "./SupplierQuoteDetails";
-import { SupplierQuote, SupplierQuoteFormat } from "@/types/supplierQuote";
+import React, { useState } from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { SupplierQuote, SupplierQuoteFormat } from '@/types/supplierQuote';
+import { PriceBreakSection } from './PriceBreakSection';
+import { FormatDetailsPanel } from './FormatDetailsPanel';
+import { MetadataSection } from './MetadataSection';
 
 interface SupplierQuoteDetailsSheetProps {
-  quote: SupplierQuote | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onApprove?: (quote: SupplierQuote) => void;
+  quote: SupplierQuote | null;
 }
 
 export function SupplierQuoteDetailsSheet({ 
-  quote, 
   open, 
-  onOpenChange,
-  onApprove
+  onOpenChange, 
+  quote 
 }: SupplierQuoteDetailsSheetProps) {
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState("price-breaks");
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
   
-  // Reset the active tab when opening the sheet
-  useEffect(() => {
-    if (open) {
-      setActiveTab("details");
-      // Select the first format by default if available
-      if (quote?.formats?.length > 0 && quote.formats[0]?.id) {
-        setSelectedFormatId(quote.formats[0].id);
-      } else {
-        setSelectedFormatId(null);
-      }
+  // Safely extract formats from the quote
+  const formats: SupplierQuoteFormat[] = (quote?.formats || []).map(format => ({
+    id: format.id || '',
+    format_id: format.format_id || '',
+    supplier_quote_id: format.supplier_quote_id || '',
+    quote_request_format_id: format.quote_request_format_id || '',
+    format_name: format.format?.format_name || '',
+    dimensions: `${format.format?.tps_height_mm || 0}×${format.format?.tps_width_mm || 0}×${format.format?.tps_depth_mm || 0} mm`,
+    extent: format.format?.extent || '',
+    binding_type: format.format?.binding_type || '',
+    format: format.format || null
+  }));
+  
+  // Set the first format as selected by default when the sheet opens or the quote changes
+  React.useEffect(() => {
+    if (formats.length > 0 && open) {
+      setSelectedFormatId(formats[0].id);
+    } else {
+      setSelectedFormatId(null);
     }
-  }, [open, quote]);
+  }, [open, quote, formats]);
 
-  if (!quote) return null;
-  
-  const canApprove = quote.status === 'submitted' && onApprove;
-  
+  if (!quote) {
+    return null;
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-3xl overflow-auto">
+      <SheetContent className="w-full md:max-w-[900px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Quote Details</SheetTitle>
-          <SheetDescription>
-            From <span className="font-semibold">{quote.supplier?.supplier_name || quote.supplier_name}</span> for <span className="font-semibold">{quote.title || (quote.print_run && quote.print_run.title)}</span>
-          </SheetDescription>
+          <SheetTitle className="flex items-center justify-between">
+            <span>Quote Details: {quote.reference_id}</span>
+            <div className="flex items-center gap-2">
+              <Badge>{quote.supplier?.supplier_name}</Badge>
+              <Badge variant="outline">{quote.quote_request?.title}</Badge>
+            </div>
+          </SheetTitle>
         </SheetHeader>
         
-        <div className="py-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="details">Quote Details</TabsTrigger>
-              <TabsTrigger value="formats" disabled={!quote.formats || quote.formats.length === 0}>
-                {quote.formats && quote.formats.length > 0 ? `Formats (${quote.formats.length})` : "No Formats"}
-              </TabsTrigger>
+        <div className="mt-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="price-breaks">Price Breaks</TabsTrigger>
+              <TabsTrigger value="formats">Formats</TabsTrigger>
+              <TabsTrigger value="metadata">Metadata</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="details" className="space-y-4">
-              <SupplierQuoteDetails quote={quote} />
+            <TabsContent value="price-breaks">
+              <PriceBreakSection quote={quote} />
             </TabsContent>
             
-            <TabsContent value="formats" className="space-y-4">
-              {quote.formats && quote.formats.length > 0 && (
-                <FormatDetailsPanel 
-                  formatList={quote.formats as SupplierQuoteFormat[]} 
-                  selectedFormatId={selectedFormatId}
-                  onFormatSelect={setSelectedFormatId}
-                />
-              )}
+            <TabsContent value="formats">
+              <FormatDetailsPanel
+                formats={formats}
+                selectedFormatId={selectedFormatId}
+                onFormatSelect={setSelectedFormatId}
+              />
+            </TabsContent>
+            
+            <TabsContent value="metadata">
+              <MetadataSection quote={quote} />
             </TabsContent>
           </Tabs>
         </div>
-        
-        <SheetFooter>
-          <div className="flex justify-between w-full">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-            {canApprove && (
-              <Button 
-                onClick={() => onApprove(quote)}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Approve Quote
-              </Button>
-            )}
-          </div>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
