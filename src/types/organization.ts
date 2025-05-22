@@ -17,6 +17,7 @@ export type Organization = {
     description?: string;
     unit_of_measure_id?: string;
   }[];
+  userMemberType?: string; // To store the user's member type for this organization
 };
 
 export type OrganizationMember = {
@@ -25,6 +26,7 @@ export type OrganizationMember = {
   auth_user_id: string;
   role: "owner" | "admin" | "member";
   created_at: string;
+  member_type?: string; // Added member_type field to specify the type of member the user is relating to the associated organization
 };
 
 export type OrganizationProductionStep = {

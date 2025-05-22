@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Building } from "lucide-react";
 import { useOrganizationApi } from "@/hooks/useOrganizationApi";
 import { AvatarUpload } from "@/components/profile/AvatarUpload";
+import { Badge } from "@/components/ui/badge";
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -23,6 +24,38 @@ const ProfilePage = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const { updateOrganizationSetting } = useOrganizationApi(user?.id);
+
+  // Get member type display name function
+  const getMemberTypeLabel = (memberType?: string) => {
+    if (!memberType) return 'User';
+    
+    switch (memberType.toLowerCase()) {
+      case 'publisher':
+        return 'Publisher';
+      case 'customer':
+        return 'Customer';
+      case 'supplier':
+        return 'Supplier';
+      default:
+        return 'User';
+    }
+  };
+
+  // Get badge variant based on member type
+  const getMemberTypeVariant = (memberType?: string) => {
+    if (!memberType) return 'secondary';
+    
+    switch (memberType.toLowerCase()) {
+      case 'publisher':
+        return 'default';
+      case 'customer':
+        return 'success';
+      case 'supplier':
+        return 'blue';
+      default:
+        return 'secondary';
+    }
+  };
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -238,7 +271,7 @@ const ProfilePage = () => {
         {/* Organizations */}
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Your Organizations</CardTitle>
+            <CardTitle className="text-lg font-medium">Your Organizations</CardTitle>
             <CardDescription>Organizations you are a member of</CardDescription>
           </CardHeader>
           <CardContent>
@@ -249,13 +282,18 @@ const ProfilePage = () => {
                 {organizations.map((org) => (
                   <div 
                     key={org.id} 
-                    className="flex items-center p-4 border rounded-lg"
+                    className="flex items-center justify-between p-4 border rounded-lg"
                   >
-                    <Building className="h-5 w-5 mr-3 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{org.name}</p>
-                      <p className="text-sm text-muted-foreground">Slug: {org.slug}</p>
+                    <div className="flex items-center">
+                      <Building className="h-5 w-5 mr-3 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{org.name}</p>
+                        <p className="text-sm text-muted-foreground">Slug: {org.slug}</p>
+                      </div>
                     </div>
+                    <Badge variant={getMemberTypeVariant(org.userMemberType)}>
+                      {getMemberTypeLabel(org.userMemberType)}
+                    </Badge>
                   </div>
                 ))}
               </div>
