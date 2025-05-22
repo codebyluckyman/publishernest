@@ -10,14 +10,13 @@ import {
 import { SupplierQuote } from '@/types/supplierQuote';
 import { SupplierQuoteRow } from './SupplierQuoteRow';
 import { SupplierQuotesEmptyState } from './SupplierQuotesEmptyState';
-import { Sheet } from '@/components/ui/sheet';
 import { SupplierQuoteDetailsSheet } from './details/SupplierQuoteDetailsSheet';
 
 export interface SupplierQuotesTableProps {
   quotes?: SupplierQuote[];
   loading?: boolean;
   printRunId?: string;
-  quoteRequestId?: string; // Add this prop to match what's being passed
+  quoteRequestId?: string;
   onCreateNew?: () => void;
   onApprove?: (quoteId: string) => void;
   className?: string;
@@ -27,7 +26,7 @@ export const SupplierQuotesTable: React.FC<SupplierQuotesTableProps> = ({
   quotes = [],
   loading = false,
   printRunId,
-  quoteRequestId, // Accept the prop
+  quoteRequestId,
   onCreateNew,
   onApprove,
   className = '',

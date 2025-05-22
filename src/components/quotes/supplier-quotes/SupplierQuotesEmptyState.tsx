@@ -3,38 +3,35 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 
-export interface SupplierQuotesEmptyStateProps {
+interface SupplierQuotesEmptyStateProps {
   printRunId?: string;
-  quoteRequestId?: string;
+  quoteRequestId?: string; 
   onCreateNew?: () => void;
 }
 
-export function SupplierQuotesEmptyState({ 
-  printRunId, 
+export const SupplierQuotesEmptyState: React.FC<SupplierQuotesEmptyStateProps> = ({ 
+  printRunId,
   quoteRequestId,
   onCreateNew 
-}: SupplierQuotesEmptyStateProps) {
-  // Use either printRunId or quoteRequestId (they refer to the same thing)
-  const hasQuoteRequest = printRunId || quoteRequestId;
+}) => {
+  // Use either printRunId or quoteRequestId (they represent the same thing)
+  const requestId = printRunId || quoteRequestId;
   
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
-      <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center">
-        <Plus className="h-8 w-8 text-gray-400" />
-      </div>
-      <h3 className="text-lg font-medium">No Supplier Quotes</h3>
-      <p className="text-sm text-gray-500 max-w-md">
-        {hasQuoteRequest 
-          ? "No supplier quotes have been created for this print run yet."
-          : "No supplier quotes match your current filters."
-        }
+    <div className="flex flex-col items-center justify-center p-10 bg-gray-50 border border-dashed rounded-lg text-center">
+      <h3 className="text-lg font-medium mb-2">No Supplier Quotes Found</h3>
+      <p className="text-gray-500 mb-6 max-w-md">
+        {requestId 
+          ? "There are no supplier quotes yet for this request. Create a new one to get started."
+          : "No supplier quotes found. Create a new quote request first, then add quotes from suppliers."}
       </p>
-      {onCreateNew && (
+      
+      {onCreateNew && requestId && (
         <Button onClick={onCreateNew}>
           <Plus className="h-4 w-4 mr-2" />
-          Create Supplier Quote
+          Create New Quote
         </Button>
       )}
     </div>
   );
-}
+};

@@ -39,31 +39,62 @@ export async function fetchSharedPresentation(shareToken: string) {
     
     const presentation = presentations[0];
     
-    // Ensure display_settings has both cardColumns and dialogColumns
-    const displaySettings = presentation.display_settings ? 
-      (typeof presentation.display_settings === 'object' ? presentation.display_settings : {}) : {};
-    
-    // Create a properly typed displaySettings object with safer type checks
-    const processedDisplaySettings: PresentationDisplaySettings = {
-      cardColumns: Array.isArray(displaySettings.cardColumns) 
-        ? displaySettings.cardColumns as CardColumn[]
-        : (Array.isArray(displaySettings.displayColumns) 
-            ? displaySettings.displayColumns as CardColumn[] 
-            : defaultCardColumns),
-      
-      dialogColumns: Array.isArray(displaySettings.dialogColumns) 
-        ? displaySettings.dialogColumns as DialogColumn[]
-        : (Array.isArray(displaySettings.displayColumns) 
-            ? [...(displaySettings.displayColumns as DialogColumn[]), 'synopsis'] 
-            : defaultDialogColumns),
-      
-      // Add any other required properties from PresentationDisplaySettings
-      defaultView: displaySettings.defaultView || 'card',
-      features: displaySettings.features || {}
+    // Create default display settings
+    const defaultDisplaySettings: PresentationDisplaySettings = {
+      cardColumns: defaultCardColumns,
+      dialogColumns: defaultDialogColumns,
+      defaultView: 'card',
+      features: {}
     };
+    
+    // Type check and safely extract display settings
+    let processedSettings: PresentationDisplaySettings = { ...defaultDisplaySettings };
+    
+    if (presentation.display_settings) {
+      // Ensure display_settings is an object before proceeding
+      const displaySettings = 
+        typeof presentation.display_settings === 'object' && presentation.display_settings !== null
+          ? presentation.display_settings 
+          : {};
+      
+      // Try to extract cardColumns
+      if (displaySettings && 'cardColumns' in displaySettings && 
+          Array.isArray(displaySettings.cardColumns) && displaySettings.cardColumns.length > 0) {
+        processedSettings.cardColumns = displaySettings.cardColumns as CardColumn[];
+      } else if (displaySettings && 'displayColumns' in displaySettings && 
+                Array.isArray(displaySettings.displayColumns)) {
+        // Fall back to displayColumns (legacy field)
+        processedSettings.cardColumns = displaySettings.displayColumns as CardColumn[];
+      }
+
+      // Try to extract dialogColumns
+      if (displaySettings && 'dialogColumns' in displaySettings && 
+          Array.isArray(displaySettings.dialogColumns) && displaySettings.dialogColumns.length > 0) {
+        processedSettings.dialogColumns = displaySettings.dialogColumns as DialogColumn[];
+      } else if (displaySettings && 'displayColumns' in displaySettings && 
+                Array.isArray(displaySettings.displayColumns)) {
+        // Fall back to displayColumns + synopsis (legacy field)
+        processedSettings.dialogColumns = [
+          ...(displaySettings.displayColumns as DialogColumn[]),
+          'synopsis' as DialogColumn
+        ];
+      }
+      
+      // Extract defaultView if it exists
+      if (displaySettings && 'defaultView' in displaySettings && 
+          typeof displaySettings.defaultView === 'string') {
+        processedSettings.defaultView = displaySettings.defaultView;
+      }
+      
+      // Extract features if they exist
+      if (displaySettings && 'features' in displaySettings && 
+          typeof displaySettings.features === 'object' && displaySettings.features !== null) {
+        processedSettings.features = displaySettings.features;
+      }
+    }
 
     // Update the display_settings with the processed version
-    presentation.display_settings = processedDisplaySettings;
+    presentation.display_settings = processedSettings;
     
     // Call the function to increment the access count
     await supabaseCustom

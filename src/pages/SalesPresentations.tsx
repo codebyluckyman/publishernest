@@ -158,9 +158,18 @@ const SalesPresentations = () => {
       // Safely handle different response formats
       if (Array.isArray(presentationsData)) {
         setTotalCount(presentationsData.length);
-      } else if (presentationsData && typeof presentationsData === 'object' && 'data' in presentationsData) {
-        const data = presentationsData as { data: any[], count?: number };
-        setTotalCount(data.count || (Array.isArray(data.data) ? data.data.length : 0));
+      } else if (presentationsData && typeof presentationsData === 'object') {
+        // Check if data property exists and is an array
+        if ('data' in presentationsData && Array.isArray(presentationsData.data)) {
+          // Use count if available, otherwise use array length
+          setTotalCount(
+            'count' in presentationsData && typeof presentationsData.count === 'number'
+              ? presentationsData.count
+              : presentationsData.data.length
+          );
+        } else {
+          setTotalCount(0);
+        }
       } else {
         setTotalCount(0);
       }
@@ -280,8 +289,8 @@ const SalesPresentations = () => {
     }
     
     if (typeof presentationsData === 'object' && 'data' in presentationsData) {
-      const data = presentationsData as { data: any[] };
-      return Array.isArray(data.data) ? data.data : [];
+      const dataProperty = presentationsData.data;
+      return Array.isArray(dataProperty) ? dataProperty : [];
     }
     
     return [];

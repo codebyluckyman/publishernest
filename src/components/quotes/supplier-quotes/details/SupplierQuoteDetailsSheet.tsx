@@ -12,28 +12,41 @@ interface SupplierQuoteDetailsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   quote: SupplierQuote | null;
+  onApprove?: (quote: SupplierQuote) => void;
 }
 
 export function SupplierQuoteDetailsSheet({ 
   open, 
   onOpenChange, 
-  quote 
+  quote,
+  onApprove 
 }: SupplierQuoteDetailsSheetProps) {
   const [activeTab, setActiveTab] = useState("price-breaks");
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
   
   // Safely extract formats from the quote
-  const formats: SupplierQuoteFormat[] = (quote?.formats || []).map(format => ({
-    id: format.id || '',
-    format_id: format.format_id || '',
-    supplier_quote_id: format.supplier_quote_id || '',
-    quote_request_format_id: format.quote_request_format_id || '',
-    format_name: format.format?.format_name || '',
-    dimensions: `${format.format?.tps_height_mm || 0}×${format.format?.tps_width_mm || 0}×${format.format?.tps_depth_mm || 0} mm`,
-    extent: format.format?.extent || '',
-    binding_type: format.format?.binding_type || '',
-    format: format.format || null
-  }));
+  const formats: SupplierQuoteFormat[] = (quote?.formats || []).map(format => {
+    // Safely access format properties, accounting for potentially missing format object
+    const formatName = format.format_name || format.format?.format_name || '';
+    const dimensions = format.dimensions || 
+      (format.format ? 
+        `${format.format.tps_height_mm || 0}×${format.format.tps_width_mm || 0}×${format.format.tps_depth_mm || 0} mm` : 
+        '');
+    const extent = format.extent || format.format?.extent || '';
+    const bindingType = format.binding_type || format.format?.binding_type || '';
+
+    return {
+      id: format.id || '',
+      format_id: format.format_id || '',
+      supplier_quote_id: format.supplier_quote_id || '',
+      quote_request_format_id: format.quote_request_format_id || '',
+      format_name: formatName,
+      dimensions,
+      extent,
+      binding_type: bindingType,
+      format: format.format || null
+    };
+  });
   
   // Set the first format as selected by default when the sheet opens or the quote changes
   React.useEffect(() => {
@@ -47,6 +60,13 @@ export function SupplierQuoteDetailsSheet({
   if (!quote) {
     return null;
   }
+
+  // If onApprove is provided, we can handle approval directly from the sheet
+  const handleApprove = () => {
+    if (onApprove && quote) {
+      onApprove(quote);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -86,6 +106,18 @@ export function SupplierQuoteDetailsSheet({
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Show approve button if callback is provided */}
+        {onApprove && quote.status === 'submitted' && (
+          <div className="mt-6 flex justify-end">
+            <button 
+              onClick={handleApprove} 
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            >
+              Approve Quote
+            </button>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

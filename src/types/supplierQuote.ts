@@ -159,6 +159,28 @@ export interface SupplierQuoteFormat {
   format_name: string;
   dimensions?: string | null;
   extent?: string | null;
+  binding_type?: string | null;
+  cover_material?: string | null; 
+  cover_stock_print?: string | null;
+  internal_material?: string | null;
+  internal_stock_print?: string | null;
+  orientation?: string | null;
+  // Reference to the full format object
+  format?: {
+    id: string;
+    format_name: string;
+    binding_type?: string | null;
+    tps_height_mm?: number | null;
+    tps_width_mm?: number | null;
+    tps_depth_mm?: number | null;
+    cover_material?: string | null;
+    cover_stock_print?: string | null;
+    internal_material?: string | null;
+    internal_stock_print?: string | null;
+    orientation?: string | null;
+    extent?: string | null;
+    [key: string]: any;
+  } | null;
 }
 
 export interface SupplierQuoteAttachment {

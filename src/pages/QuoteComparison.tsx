@@ -42,7 +42,7 @@ export default function QuoteComparison() {
     }
   }, [quotes]);
   
-  const handleSelectQuote = (quote: SupplierQuote) => {
+  const handleApproveQuote = (quote: SupplierQuote) => {
     if (quote.status !== 'submitted') {
       toast.error("Only submitted quotes can be approved");
       return;
@@ -51,11 +51,6 @@ export default function QuoteComparison() {
     approveMutation.mutate({
       id: quote.id,
       approvedCost: quote.total_cost || 0
-    }, {
-      onSuccess: () => {
-        toast.success("Quote approved successfully");
-        setDetailsSheetOpen(false);
-      }
     });
   };
 
@@ -107,7 +102,8 @@ export default function QuoteComparison() {
           <QuoteComparisonView 
             quotes={quotes as SupplierQuote[]}
             quoteRequestTitle={quoteRequestTitle}
-            onSelectQuote={handleSelectQuote}
+            onSelectQuote={handleApproveQuote}
+            onViewDetails={handleViewDetails}
           />
           
           {/* Supplier Quote Details Sheet */}
@@ -115,7 +111,7 @@ export default function QuoteComparison() {
             quote={selectedQuote}
             open={detailsSheetOpen}
             onOpenChange={setDetailsSheetOpen}
-            onApprove={handleSelectQuote}
+            onApprove={handleApproveQuote}
           />
         </>
       )}

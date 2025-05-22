@@ -239,6 +239,10 @@ export function useSupplierQuotes() {
         approveSupplierQuote(params.id, params.approvedCost),
       onSuccess: () => {
         queryClientLocal.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        toast.success("Quote approved successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to approve supplier quote");
       }
     });
   };
@@ -248,12 +252,8 @@ export function useSupplierQuotes() {
    */
   const useRejectSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, reason }: { id: string; reason: string }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return rejectSupplierQuote(id, user.id, reason);
-      },
+      mutationFn: ({ id, reason }: { id: string; reason: string }) => 
+        rejectSupplierQuote(id, reason),
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
         queryClient.invalidateQueries({

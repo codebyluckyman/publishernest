@@ -508,6 +508,7 @@ export type Database = {
           auth_user_id: string
           created_at: string
           id: string
+          member_type: string | null
           organization_id: string
           role: string
           updated_at: string
@@ -516,6 +517,7 @@ export type Database = {
           auth_user_id: string
           created_at?: string
           id?: string
+          member_type?: string | null
           organization_id: string
           role: string
           updated_at?: string
@@ -524,6 +526,7 @@ export type Database = {
           auth_user_id?: string
           created_at?: string
           id?: string
+          member_type?: string | null
           organization_id?: string
           role?: string
           updated_at?: string
