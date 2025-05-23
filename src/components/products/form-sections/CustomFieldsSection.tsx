@@ -139,7 +139,8 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
             <Select
               value={form.getValues(fieldPath as any) || ""}
               onValueChange={(value) => {
-                form.setValue(fieldPath as any, value);
+                // Convert "none" to null for the actual form value
+                form.setValue(fieldPath as any, value === "none" ? null : value);
               }}
               disabled={readOnly}
             >
@@ -149,7 +150,7 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {field.options?.values?.map((option: string) => (
                   <SelectItem key={option} value={option}>{option}</SelectItem>
                 ))}
