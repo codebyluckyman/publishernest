@@ -1,3 +1,4 @@
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   User,
@@ -96,7 +97,7 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
 
   return (
     <Sidebar
-      className="border-r border-gray-200 hidden md:flex"
+      className="border-r border-gray-200 hidden md:flex bg-white"
       collapsible={isMobile ? "offcanvas" : "icon"}
     >
       <SidebarContent>
