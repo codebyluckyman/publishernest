@@ -35,13 +35,17 @@ export function EditableSelectCell({
   
   useEffect(() => {
     setLocalValue(value);
-  }, [value]);
+    console.log(`EditableSelectCell - Field ${fieldName} value updated:`, value);
+  }, [value, fieldName]);
 
   const isCurrentlySaving = isSaving && currentlySavingProduct === productId && currentlySavingField === fieldName;
 
   const handleChange = (newValue: string) => {
-    setLocalValue(newValue);
-    updateProductField(productId, fieldName, newValue === "none" ? null : newValue);
+    // Convert "none" to null
+    const valueToSave = newValue === "none" ? null : newValue;
+    setLocalValue(valueToSave);
+    updateProductField(productId, fieldName, valueToSave);
+    console.log(`EditableSelectCell - Field ${fieldName} changed to:`, valueToSave);
   };
 
   if (!isEditMode) {
@@ -52,10 +56,13 @@ export function EditableSelectCell({
     return <span>{option ? option.label : 'N/A'}</span>;
   }
 
+  // Ensure we have a safe value for the Select component
+  const safeValue = localValue !== null && localValue !== undefined ? localValue : "none";
+  
   return (
     <div className="relative">
       <Select
-        value={localValue || "none"}
+        value={safeValue}
         onValueChange={handleChange}
       >
         <SelectTrigger className="h-8 min-w-[120px]">

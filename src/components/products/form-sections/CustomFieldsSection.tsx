@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +18,7 @@ import { ProductFormValues } from '@/schemas/productSchema';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProductCustomFieldValues } from '@/hooks/useProductCustomFieldValues';
 import { ProductCustomField } from '@/types/customFields';
+import { Controller, useWatch } from 'react-hook-form';
 
 interface CustomFieldsSectionProps {
   form: UseFormReturn<ProductFormValues>;
@@ -28,10 +30,12 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
   const { customFields, isLoading: isFieldsLoading } = useOrganizationProductFields();
   const { 
     customFieldValues, 
-    isLoading: isValuesLoading 
+    isLoading: isValuesLoading,
+    formatValueForDisplay
   } = useProductCustomFieldValues(productId);
   
   const [initialized, setInitialized] = useState(false);
+  const customFieldsFromForm = useWatch({ control: form.control, name: 'custom_fields' });
 
   // Debug logging
   useEffect(() => {
@@ -40,9 +44,15 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
     }
   }, [customFieldValues]);
 
+  useEffect(() => {
+    if (customFieldsFromForm) {
+      console.log('Custom fields in form:', customFieldsFromForm);
+    }
+  }, [customFieldsFromForm]);
+
   // Initialize form values from database when custom fields and values are loaded
   useEffect(() => {
-    if (customFields.length > 0 && !initialized) {
+    if (customFields.length > 0 && customFieldValues.length > 0 && !initialized) {
       // Create a map of custom field values by field_key for easier lookup
       const valuesMap: Record<string, any> = {};
       
@@ -71,7 +81,13 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
                 }
               }
               break;
-            // For text and select, keep as is
+            // For text and select, ensure we have a string (or null)
+            case 'select':
+            case 'text':
+              typedValue = typedValue === null ? null :
+                          typeof typedValue === 'string' ? typedValue :
+                          String(typedValue);
+              break;
           }
           
           console.log(`Setting ${field.field_key} to:`, typedValue);
@@ -147,11 +163,35 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
     }
   }
 
+  const renderReadOnlyFieldValue = (field: ProductCustomField) => {
+    const fieldPath = `custom_fields.${field.field_key}`;
+    const fieldValue = form.watch(fieldPath as any);
+    
+    console.log(`ReadOnly field ${field.field_key} value:`, fieldValue);
+
+    switch (field.field_type) {
+      case 'boolean':
+        return <div className="p-2 bg-gray-50 border rounded">{fieldValue ? 'Yes' : 'No'}</div>;
+      case 'select':
+        if (!fieldValue) return <div className="p-2 bg-gray-50 border rounded">None</div>;
+        
+        // Find the option label for the selected value
+        const selectedOption = field.options?.values?.find((option: string) => option === fieldValue);
+        return <div className="p-2 bg-gray-50 border rounded">{selectedOption || fieldValue}</div>;
+      default:
+        return <div className="p-2 bg-gray-50 border rounded">{formatValueForDisplay(fieldValue, field.field_type)}</div>;
+    }
+  };
+
   const renderFieldInput = (field: ProductCustomField) => {
     const fieldPath = `custom_fields.${field.field_key}`;
     const fieldValue = form.watch(fieldPath as any);
     
     console.log(`Field ${field.field_key} value:`, fieldValue);
+
+    if (readOnly) {
+      return renderReadOnlyFieldValue(field);
+    }
 
     switch (field.field_type) {
       case 'text':
@@ -223,26 +263,32 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
         return (
           <FormItem>
             <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
-            <Select
-              value={fieldValue || "none"}
-              onValueChange={(value) => {
-                // Convert "none" to null for the actual form value
-                form.setValue(fieldPath as any, value === "none" ? null : value);
-              }}
-              disabled={readOnly}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder={`Select ${field.field_name.toLowerCase()}`} />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {field.options?.values?.map((option: string) => (
-                  <SelectItem key={option} value={option}>{option}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              name={fieldPath as any}
+              control={form.control}
+              render={({ field: controllerField }) => (
+                <Select
+                  value={controllerField.value !== null && controllerField.value !== undefined ? controllerField.value : "none"}
+                  onValueChange={(value) => {
+                    // Convert "none" to null for the actual form value
+                    controllerField.onChange(value === "none" ? null : value);
+                  }}
+                  disabled={readOnly}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={`Select ${field.field_name.toLowerCase()}`} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {field.options?.values?.map((option: string) => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
             <FormMessage />
           </FormItem>
         );

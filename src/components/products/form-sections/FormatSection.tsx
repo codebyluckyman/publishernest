@@ -1,16 +1,16 @@
-
 import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Edit, FileText } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, Controller } from "react-hook-form";
 import { ProductFormValues } from "@/schemas/productSchema";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { toast } from "sonner";
 import FormatDialog from "../../FormatDialog";
 import { CreateQuoteRequestFromFormat } from "../../quotes/CreateQuoteRequestFromFormat";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Format {
   id: string;
@@ -57,6 +57,12 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
       }
       
       setFormats(data || []);
+      
+      // If we have a formatId, find and set the selected format
+      if (formatId) {
+        const format = data?.find(f => f.id === formatId);
+        setSelectedFormat(format || null);
+      }
     } catch (error: any) {
       toast.error("Failed to load formats: " + error.message);
     } finally {
@@ -73,6 +79,7 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
     if (formatId) {
       const format = formats.find(f => f.id === formatId);
       setSelectedFormat(format || null);
+      console.log("Format selected:", format);
     } else {
       setSelectedFormat(null);
     }
@@ -131,6 +138,18 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
     return `${height} × ${width}`;
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <h3 className="text-lg font-medium">Format</h3>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
@@ -155,25 +174,36 @@ export function FormatSection({ form, readOnly = false }: FormatSectionProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Select Format</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value || undefined}
-                value={field.value || undefined}
-                disabled={readOnly}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a format" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {formats.map((format) => (
-                    <SelectItem key={format.id} value={format.id}>
-                      {format.format_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {readOnly ? (
+                <div className="p-2 bg-gray-50 border rounded">
+                  {selectedFormat?.format_name || 'None'}
+                </div>
+              ) : (
+                <Controller
+                  name="format_id"
+                  control={form.control}
+                  render={({ field: controllerField }) => (
+                    <Select
+                      value={controllerField.value || ""}
+                      onValueChange={controllerField.onChange}
+                      disabled={readOnly}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a format" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {formats.map((format) => (
+                          <SelectItem key={format.id} value={format.id}>
+                            {format.format_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              )}
               <FormMessage />
             </FormItem>
           )}

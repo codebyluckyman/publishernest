@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -111,10 +110,15 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
           // Process values based on field type to ensure proper type
           switch (field.field_type) {
             case 'number':
-              processedValue = processedValue === null ? null : Number(processedValue);
+              processedValue = processedValue === null ? null : 
+                               typeof processedValue === 'number' ? processedValue :
+                               Number(processedValue) || null;
               break;
             case 'boolean':
-              processedValue = Boolean(processedValue);
+              processedValue = typeof processedValue === 'boolean' ? processedValue :
+                               processedValue === 'true' ? true :
+                               processedValue === 'false' ? false :
+                               !!processedValue;
               break;
             case 'date':
               if (processedValue && typeof processedValue === 'string') {
@@ -125,9 +129,17 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
                 }
               }
               break;
+            // For select and text, ensure we have a string (or null)
+            case 'select':
+            case 'text':
+              processedValue = processedValue === null ? null :
+                              typeof processedValue === 'string' ? processedValue :
+                              String(processedValue);
+              break;
           }
           
           customFieldsObj[field.field_key] = processedValue;
+          console.log(`Set field ${field.field_key} to ${processedValue} (type: ${typeof processedValue})`);
         }
       });
       

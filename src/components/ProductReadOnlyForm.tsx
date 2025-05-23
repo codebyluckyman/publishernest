@@ -15,6 +15,7 @@ import { PricingSection } from "./products/form-sections/PricingSection";
 import { StockTable } from "./products/form-sections/StockTable";
 import { CustomFieldsSection } from "./products/form-sections/CustomFieldsSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
 type ProductReadOnlyFormProps = {
   productId: string;
@@ -22,16 +23,38 @@ type ProductReadOnlyFormProps = {
 
 export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormProps) {
   const { form, isLoading } = useProductForm(productId, () => {});
+  const [formReady, setFormReady] = useState(false);
 
-  // Set all fields to readOnly
-  const allFields = form.getValues();
-  Object.keys(allFields).forEach(fieldName => {
-    form.getFieldState(fieldName as any);
-    const field = form.getValues(fieldName as any);
-    if (field !== undefined) {
-      form.register(fieldName as any, { disabled: true });
+  // Wait for form to be loaded with values before showing
+  useEffect(() => {
+    if (!isLoading) {
+      // Allow some time for all hooks to populate the form
+      const timer = setTimeout(() => {
+        setFormReady(true);
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  });
+  }, [isLoading]);
+
+  if (!formReady) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Card key={i}>
+            <CardHeader>
+              <CardTitle className="h-6 w-48 bg-gray-200 animate-pulse rounded"></CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+              <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  console.log("ProductReadOnlyForm - form values:", form.getValues());
 
   return (
     <Form {...form}>
@@ -48,7 +71,6 @@ export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormPr
         <InternalImagesSection form={form} readOnly />
         <CustomFieldsSection form={form} productId={productId} readOnly />
         
-        {/* Add the Pricing Section */}
         <PricingSection form={form} productId={productId} readOnly />
         
         <Card>

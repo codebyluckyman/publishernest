@@ -34,7 +34,57 @@ export function useProductCustomFieldValues(productId?: string) {
       }
       
       console.log(`Retrieved ${data?.length} custom field values:`, data);
-      return data as ProductCustomFieldValue[];
+      
+      // Process the values to ensure they're in the correct format
+      const processedValues = data.map(value => {
+        const fieldType = value.field?.field_type;
+        let processedValue = value.field_value;
+        
+        // Ensure the field_value is in the correct type based on field_type
+        if (fieldType) {
+          switch (fieldType) {
+            case 'number':
+              processedValue = processedValue === null ? null : 
+                               typeof processedValue === 'number' ? processedValue :
+                               Number(processedValue) || null;
+              break;
+            case 'boolean':
+              processedValue = typeof processedValue === 'boolean' ? processedValue :
+                               processedValue === 'true' ? true :
+                               processedValue === 'false' ? false :
+                               !!processedValue;
+              break;
+            case 'date':
+              if (processedValue && typeof processedValue === 'string') {
+                try {
+                  const date = new Date(processedValue);
+                  if (!isNaN(date.getTime())) {
+                    processedValue = date;
+                  } else {
+                    processedValue = null;
+                  }
+                } catch (e) {
+                  processedValue = null;
+                }
+              }
+              break;
+            // For select and text, ensure we have a string (or null)
+            case 'select':
+            case 'text':
+              processedValue = processedValue === null ? null :
+                               typeof processedValue === 'string' ? processedValue :
+                               String(processedValue);
+              break;
+          }
+        }
+        
+        return {
+          ...value,
+          field_value: processedValue
+        };
+      });
+      
+      return processedValues as ProductCustomFieldValue[];
     },
     enabled: !!productId,
   });
@@ -129,12 +179,39 @@ export function useProductCustomFieldValues(productId?: string) {
     }
   };
 
+  // Helper function to format value for display
+  const formatValueForDisplay = (value: any, fieldType: string) => {
+    if (value === null || value === undefined) return '';
+    
+    switch (fieldType) {
+      case 'boolean':
+        return value ? 'Yes' : 'No';
+      case 'date':
+        if (value instanceof Date) {
+          return value.toISOString().split('T')[0];
+        }
+        if (typeof value === 'string') {
+          try {
+            const date = new Date(value);
+            return date.toISOString().split('T')[0];
+          } catch (e) {
+            return value;
+          }
+        }
+        return String(value);
+      default:
+        return String(value);
+    }
+  };
+
   return {
     customFieldValues: customFieldValues || [],
     isLoading,
     error,
     refetch,
     saveCustomFieldValues,
-    prepareCustomFieldValues
+    prepareCustomFieldValues,
+    formatValueForDisplay,
+    getDefaultValueForType
   };
 }
