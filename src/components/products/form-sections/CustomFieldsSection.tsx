@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -276,7 +277,7 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
               control={form.control}
               render={({ field: controllerField }) => (
                 <Select
-                  value={controllerField.value !== null && controllerField.value !== undefined ? controllerField.value : "none"}
+                  value={controllerField.value || ""}
                   onValueChange={(value) => {
                     // Convert "none" to null for the actual form value
                     controllerField.onChange(value === "none" ? null : value);
