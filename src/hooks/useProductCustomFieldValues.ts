@@ -45,12 +45,22 @@ export function useProductCustomFieldValues(productId?: string) {
     }>) => {
       if (!values.length) return [];
 
-      const upserts = values.map(value => ({
-        id: value.id, // Will be undefined for new values
-        product_id: value.product_id,
-        field_id: value.field_id,
-        field_value: value.field_value
-      }));
+      // Map each value, only including id if it actually exists
+      const upserts = values.map(value => {
+        // Create a base object with the required fields
+        const upsertRecord: Record<string, any> = {
+          product_id: value.product_id,
+          field_id: value.field_id,
+          field_value: value.field_value
+        };
+        
+        // Only add id to the record if it exists
+        if (value.id) {
+          upsertRecord.id = value.id;
+        }
+
+        return upsertRecord;
+      });
 
       const { data, error } = await supabase
         .from('product_custom_field_values')
