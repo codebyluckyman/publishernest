@@ -1,5 +1,4 @@
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -16,7 +15,8 @@ import {
 import { useOrganizationProductFields } from '@/hooks/useOrganizationProductFields';
 import { ProductFormValues } from '@/schemas/productSchema';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parse } from 'date-fns';
+import { useProductCustomFieldValues } from '@/hooks/useProductCustomFieldValues';
+import { ProductCustomField } from '@/types/customFields';
 
 interface CustomFieldsSectionProps {
   form: UseFormReturn<ProductFormValues>;
@@ -25,21 +25,87 @@ interface CustomFieldsSectionProps {
 }
 
 export function CustomFieldsSection({ form, productId, readOnly = false }: CustomFieldsSectionProps) {
-  const { customFields, isLoading } = useOrganizationProductFields();
+  const { customFields, isLoading: isFieldsLoading } = useOrganizationProductFields();
+  const { 
+    customFieldValues, 
+    isLoading: isValuesLoading 
+  } = useProductCustomFieldValues(productId);
   
+  const [initialized, setInitialized] = useState(false);
+
+  // Debug logging
   useEffect(() => {
-    // Register custom fields in the form
+    if (customFieldValues.length > 0) {
+      console.log('Custom field values from DB:', customFieldValues);
+    }
+  }, [customFieldValues]);
+
+  // Initialize form values from database when custom fields and values are loaded
+  useEffect(() => {
+    if (customFields.length > 0 && !initialized) {
+      // Create a map of custom field values by field_key for easier lookup
+      const valuesMap: Record<string, any> = {};
+      
+      // For each custom field value, find the corresponding field and map it
+      customFieldValues.forEach(valueObj => {
+        const field = customFields.find(f => f.id === valueObj.field_id);
+        if (field) {
+          // Convert the value to the appropriate type based on field_type
+          let typedValue = valueObj.field_value;
+          
+          switch (field.field_type) {
+            case 'number':
+              typedValue = typeof typedValue === 'number' ? typedValue : 
+                           typedValue === null ? null : 
+                           Number(typedValue) || null;
+              break;
+            case 'boolean':
+              typedValue = Boolean(typedValue);
+              break;
+            case 'date':
+              if (typedValue && typeof typedValue === 'string') {
+                try {
+                  typedValue = new Date(typedValue);
+                } catch (e) {
+                  typedValue = null;
+                }
+              }
+              break;
+            // For text and select, keep as is
+          }
+          
+          console.log(`Setting ${field.field_key} to:`, typedValue);
+          valuesMap[field.field_key] = typedValue;
+        }
+      });
+      
+      // Update the form's custom_fields object
+      if (Object.keys(valuesMap).length > 0) {
+        form.setValue('custom_fields', {
+          ...form.getValues('custom_fields'),
+          ...valuesMap
+        });
+        console.log('Set form values:', valuesMap);
+      }
+      
+      setInitialized(true);
+    }
+  }, [customFields, customFieldValues, form, initialized]);
+
+  // Also register any fields that don't have values yet
+  useEffect(() => {
     if (customFields.length > 0) {
       customFields.forEach(field => {
-        const fieldPath = `custom_fields.${field.field_key}` as any;
-        if (!form.getValues(fieldPath)) {
-          form.setValue(fieldPath, null);
+        const fieldPath = `custom_fields.${field.field_key}` as const;
+        if (form.getValues(fieldPath) === undefined) {
+          const defaultValue = getDefaultValueForType(field.field_type);
+          form.setValue(fieldPath, defaultValue);
         }
       });
     }
   }, [customFields, form]);
 
-  if (isLoading) {
+  if (isFieldsLoading || isValuesLoading) {
     return (
       <Card>
         <CardHeader>
@@ -63,8 +129,29 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
     return null; // Don't show the section if there are no custom fields
   }
 
-  const renderFieldInput = (field: any) => {
+  // Helper to get default value based on field type
+  function getDefaultValueForType(fieldType: string) {
+    switch (fieldType) {
+      case 'text':
+        return '';
+      case 'number':
+        return null;
+      case 'date':
+        return null;
+      case 'boolean':
+        return false;
+      case 'select':
+        return null;
+      default:
+        return null;
+    }
+  }
+
+  const renderFieldInput = (field: ProductCustomField) => {
     const fieldPath = `custom_fields.${field.field_key}`;
+    const fieldValue = form.watch(fieldPath as any);
+    
+    console.log(`Field ${field.field_key} value:`, fieldValue);
 
     switch (field.field_type) {
       case 'text':
@@ -119,7 +206,7 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
           <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
             <FormControl>
               <Checkbox 
-                checked={form.getValues(fieldPath as any)}
+                checked={fieldValue}
                 onCheckedChange={(checked) => {
                   form.setValue(fieldPath as any, checked);
                 }}
@@ -137,7 +224,7 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
           <FormItem>
             <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
             <Select
-              value={form.getValues(fieldPath as any) || ""}
+              value={fieldValue || "none"}
               onValueChange={(value) => {
                 // Convert "none" to null for the actual form value
                 form.setValue(fieldPath as any, value === "none" ? null : value);

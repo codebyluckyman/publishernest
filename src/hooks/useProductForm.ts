@@ -14,6 +14,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
   const [isLoading, setIsLoading] = useState(false);
   const isEditMode = !!productId;
   
+  // Get custom fields definitions and any existing custom field values
   const { customFields } = useOrganizationProductFields();
   const { customFieldValues, saveCustomFieldValues } = useProductCustomFieldValues(productId);
 
@@ -22,6 +23,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     defaultValues: defaultProductValues,
   });
 
+  // Load product data when editing an existing product
   useEffect(() => {
     if (isEditMode && productId) {
       setIsLoading(true);
@@ -51,8 +53,10 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
                   : data.format_extras)
               : defaultProductValues.format_extras;
               
-            // Initialize custom_fields object if we have custom fields
+            // Initialize custom_fields object
             const customFieldsObj: Record<string, any> = {};
+            
+            console.log('Loaded product data:', data);
               
             // Set form values from database data
             form.reset({
@@ -78,7 +82,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               license: data.license || "",
               format_extras: formatExtras,
               format_extra_comments: data.format_extra_comments || null,
-              custom_fields: customFieldsObj
+              custom_fields: customFieldsObj // This will be populated in another useEffect
             });
           }
         } catch (err: any) {
@@ -92,22 +96,49 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     }
   }, [isEditMode, productId, form]);
 
-  // Load custom field values when available
+  // When we have custom field values from the database, set them in the form
   useEffect(() => {
     if (customFieldValues.length > 0 && customFields.length > 0) {
+      console.log('Setting custom field values in form from useEffect:', customFieldValues);
+      
       const customFieldsObj: Record<string, any> = {};
       
       customFieldValues.forEach(value => {
         const field = customFields.find(f => f.id === value.field_id);
         if (field) {
-          customFieldsObj[field.field_key] = value.field_value;
+          let processedValue = value.field_value;
+          
+          // Process values based on field type to ensure proper type
+          switch (field.field_type) {
+            case 'number':
+              processedValue = processedValue === null ? null : Number(processedValue);
+              break;
+            case 'boolean':
+              processedValue = Boolean(processedValue);
+              break;
+            case 'date':
+              if (processedValue && typeof processedValue === 'string') {
+                try {
+                  processedValue = new Date(processedValue);
+                } catch (e) {
+                  processedValue = null;
+                }
+              }
+              break;
+          }
+          
+          customFieldsObj[field.field_key] = processedValue;
         }
       });
       
-      form.setValue('custom_fields', customFieldsObj);
+      if (Object.keys(customFieldsObj).length > 0) {
+        console.log('Setting custom_fields in form:', customFieldsObj);
+        form.setValue('custom_fields', customFieldsObj);
+      }
     }
   }, [customFieldValues, customFields, form]);
 
+  // Submit handler for creating or updating products
   async function onSubmit(values: ProductFormValues) {
     if (!currentOrganization) {
       toast.error("No organization selected");
@@ -122,6 +153,8 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
       
       // Extract custom fields data
       const { custom_fields, ...productValues } = values;
+      
+      console.log("Custom fields to save:", custom_fields);
       
       const formattedValues = {
         ...productValues,
@@ -163,11 +196,16 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
           // Find any existing value
           const existingValue = customFieldValues.find(v => v.field_id === field.id);
           
+          const fieldValue = custom_fields[field.field_key];
+          
+          console.log(`Preparing to save field '${field.field_key}' with value:`, fieldValue, 
+                    `(existing value id: ${existingValue?.id || 'none'})`);
+          
           return {
             id: existingValue?.id, // Will be undefined for new values
             product_id: submittedProductId!,
             field_id: field.id,
-            field_value: custom_fields[field.field_key] || null
+            field_value: fieldValue
           };
         });
         
@@ -211,7 +249,17 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     console.log("Delete Product function called with productId:", productId);
     
     try {
-      // First delete associated stock records
+      // First delete associated custom field values
+      const { error: customFieldsError } = await supabase
+        .from("product_custom_field_values")
+        .delete()
+        .eq("product_id", productId);
+        
+      if (customFieldsError) {
+        console.error("Error deleting custom field values:", customFieldsError);
+      }
+      
+      // Then delete associated stock records
       const { error: stockError } = await supabase
         .from("stock_on_hand")
         .delete()

@@ -18,6 +18,8 @@ export function useProductCustomFieldValues(productId?: string) {
     queryFn: async () => {
       if (!productId) return [];
       
+      console.log(`Fetching custom field values for product: ${productId}`);
+      
       const { data, error } = await supabase
         .from('product_custom_field_values')
         .select(`
@@ -27,9 +29,11 @@ export function useProductCustomFieldValues(productId?: string) {
         .eq('product_id', productId);
         
       if (error) {
+        console.error(`Error fetching custom field values: ${error.message}`);
         throw new Error(`Error fetching custom field values: ${error.message}`);
       }
       
+      console.log(`Retrieved ${data?.length} custom field values:`, data);
       return data as ProductCustomFieldValue[];
     },
     enabled: !!productId,
@@ -44,6 +48,8 @@ export function useProductCustomFieldValues(productId?: string) {
       id?: string;
     }>) => {
       if (!values.length) return [];
+
+      console.log('Saving custom field values:', values);
 
       // Map each value, only including id if it actually exists
       const upserts = values.map(value => {
@@ -68,9 +74,11 @@ export function useProductCustomFieldValues(productId?: string) {
         .select();
 
       if (error) {
+        console.error('Error saving custom field values:', error);
         throw error;
       }
       
+      console.log('Successfully saved custom field values, response:', data);
       return data;
     },
     onSuccess: (data, variables) => {
@@ -78,6 +86,7 @@ export function useProductCustomFieldValues(productId?: string) {
       toast.success('Custom field values saved successfully');
     },
     onError: (error: any) => {
+      console.error('Mutation error:', error);
       toast.error(`Failed to save custom field values: ${error.message}`);
     }
   });
