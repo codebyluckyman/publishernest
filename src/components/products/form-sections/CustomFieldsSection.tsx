@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -169,18 +168,27 @@ export function CustomFieldsSection({ form, productId, readOnly = false }: Custo
     
     console.log(`ReadOnly field ${field.field_key} value:`, fieldValue);
 
-    switch (field.field_type) {
-      case 'boolean':
-        return <div className="p-2 bg-gray-50 border rounded">{fieldValue ? 'Yes' : 'No'}</div>;
-      case 'select':
-        if (!fieldValue) return <div className="p-2 bg-gray-50 border rounded">None</div>;
-        
-        // Find the option label for the selected value
-        const selectedOption = field.options?.values?.find((option: string) => option === fieldValue);
-        return <div className="p-2 bg-gray-50 border rounded">{selectedOption || fieldValue}</div>;
-      default:
-        return <div className="p-2 bg-gray-50 border rounded">{formatValueForDisplay(fieldValue, field.field_type)}</div>;
-    }
+    // Add a wrapper div that includes both the label and the value
+    return (
+      <div className="space-y-2">
+        <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
+        <div className="p-2 bg-gray-50 border rounded">
+          {(() => {
+            switch (field.field_type) {
+              case 'boolean':
+                return fieldValue ? 'Yes' : 'No';
+              case 'select':
+                if (!fieldValue) return 'None';
+                // Find the option label for the selected value
+                const selectedOption = field.options?.values?.find((option: string) => option === fieldValue);
+                return selectedOption || fieldValue;
+              default:
+                return formatValueForDisplay(fieldValue, field.field_type) || 'N/A';
+            }
+          })()}
+        </div>
+      </div>
+    );
   };
 
   const renderFieldInput = (field: ProductCustomField) => {

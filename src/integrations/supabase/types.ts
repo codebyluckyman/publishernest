@@ -56,6 +56,7 @@ export type Database = {
       }
       communications: {
         Row: {
+          attachment: string | null
           created_at: string
           id: string
           message: string | null
@@ -63,6 +64,7 @@ export type Database = {
           sender_id: string | null
         }
         Insert: {
+          attachment?: string | null
           created_at?: string
           id?: string
           message?: string | null
@@ -70,6 +72,7 @@ export type Database = {
           sender_id?: string | null
         }
         Update: {
+          attachment?: string | null
           created_at?: string
           id?: string
           message?: string | null
@@ -80,6 +83,38 @@ export type Database = {
           {
             foreignKeyName: "communications_sender_id_fkey"
             columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_id: string | null
+          last_message_read_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_id?: string | null
+          last_message_read_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_id?: string | null
+          last_message_read_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_conversations_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2501,41 +2536,6 @@ export type Database = {
             columns: ["purchase_order_id"]
             isOneToOne: false
             referencedRelation: "purchase_orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      supplier_conversations: {
-        Row: {
-          created_at: string
-          id: string
-          last_message_id: string | null
-          last_message_read_id: string | null
-          purchase_order_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_message_id?: string | null
-          last_message_read_id?: string | null
-          purchase_order_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_message_id?: string | null
-          last_message_read_id?: string | null
-          purchase_order_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "supplier_conversations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
