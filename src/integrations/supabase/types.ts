@@ -61,6 +61,7 @@ export type Database = {
           id: string
           message: string | null
           receiver_id: string | null
+          room_id: string | null
           sender_id: string | null
         }
         Insert: {
@@ -69,6 +70,7 @@ export type Database = {
           id?: string
           message?: string | null
           receiver_id?: string | null
+          room_id?: string | null
           sender_id?: string | null
         }
         Update: {
@@ -77,6 +79,7 @@ export type Database = {
           id?: string
           message?: string | null
           receiver_id?: string | null
+          room_id?: string | null
           sender_id?: string | null
         }
         Relationships: [
@@ -1327,6 +1330,7 @@ export type Database = {
           id: string
           job_title: string | null
           last_name: string | null
+          online_status: string | null
           updated_at: string
         }
         Insert: {
@@ -1338,6 +1342,7 @@ export type Database = {
           id: string
           job_title?: string | null
           last_name?: string | null
+          online_status?: string | null
           updated_at?: string
         }
         Update: {
@@ -1349,6 +1354,7 @@ export type Database = {
           id?: string
           job_title?: string | null
           last_name?: string | null
+          online_status?: string | null
           updated_at?: string
         }
         Relationships: [

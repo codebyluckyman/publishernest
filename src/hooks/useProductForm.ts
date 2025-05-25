@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -213,8 +214,20 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
           console.log(`Preparing to save field '${field.field_key}' with value:`, fieldValue, 
                     `(existing value id: ${existingValue?.id || 'none'})`);
           
+          // Helper function to safely extract ID value
+          const getSafeId = (value: any): string | undefined => {
+            if (!value) return undefined;
+            if (typeof value === 'string') return value;
+            // Handle React Hook Form proxy objects
+            if (typeof value === 'object' && value._type === 'undefined') return undefined;
+            if (typeof value === 'object' && value.value !== undefined) return value.value;
+            return undefined;
+          };
+          
+          const safeId = getSafeId(existingValue?.id);
+          
           return {
-            id: existingValue?.id, // Will be undefined for new values
+            id: safeId, // Will be undefined for new values, string for existing ones
             product_id: submittedProductId!,
             field_id: field.id,
             field_value: fieldValue
@@ -222,6 +235,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
         });
         
         if (fieldValues.length > 0) {
+          console.log('Field values to save:', fieldValues);
           await saveCustomFieldValues.mutateAsync(fieldValues);
         }
       }
