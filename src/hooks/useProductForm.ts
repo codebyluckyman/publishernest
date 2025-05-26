@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,12 +39,24 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               ? new Date(data.publication_date) 
               : null;
               
-            // Parse format_extras from JSON if it exists, otherwise use default
-            const formatExtras = data.format_extras 
-              ? (typeof data.format_extras === 'string' 
-                  ? JSON.parse(data.format_extras) 
-                  : data.format_extras)
-              : defaultProductValues.format_extras;
+            // Parse format_extras from JSON with proper error handling
+            let formatExtras = defaultProductValues.format_extras;
+            
+            if (data.format_extras) {
+              try {
+                if (typeof data.format_extras === 'string') {
+                  const parsed = JSON.parse(data.format_extras);
+                  if (Array.isArray(parsed)) {
+                    formatExtras = parsed;
+                  }
+                } else if (Array.isArray(data.format_extras)) {
+                  formatExtras = data.format_extras;
+                }
+              } catch (error) {
+                console.warn('Failed to parse format_extras:', error);
+                // Keep the default empty array
+              }
+            }
               
             console.log('Loaded product data:', data);
               

@@ -37,11 +37,15 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
 
   const formatExtras = form.watch("format_extras") || [];
 
+  // Ensure formatExtras is always an array before using .map()
+  const validFormatExtras = Array.isArray(formatExtras) ? formatExtras : [];
+
   const addFormatExtra = () => {
     if (readOnly) return;
     const currentExtras = form.getValues("format_extras") || [];
+    const validCurrentExtras = Array.isArray(currentExtras) ? currentExtras : [];
     form.setValue("format_extras", [
-      ...currentExtras,
+      ...validCurrentExtras,
       { name: "", description: "", unit_of_measure_id: "" }
     ]);
   };
@@ -49,7 +53,8 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
   const removeFormatExtra = (index: number) => {
     if (readOnly) return;
     const currentExtras = form.getValues("format_extras") || [];
-    const newExtras = currentExtras.filter((_, i) => i !== index);
+    const validCurrentExtras = Array.isArray(currentExtras) ? currentExtras : [];
+    const newExtras = validCurrentExtras.filter((_, i) => i !== index);
     form.setValue("format_extras", newExtras);
   };
 
@@ -72,10 +77,10 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {formatExtras.length === 0 ? (
+        {validFormatExtras.length === 0 ? (
           <p className="text-muted-foreground text-sm">No format extras added.</p>
         ) : (
-          formatExtras.map((extra: any, index: number) => (
+          validFormatExtras.map((extra: any, index: number) => (
             <div key={index} className="border rounded-lg p-4 space-y-4">
               <div className="flex justify-between items-start">
                 <h4 className="font-medium">Extra {index + 1}</h4>
@@ -114,7 +119,7 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
                       <FormLabel>Unit of Measure</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
-                        value={field.value || ""} 
+                        value={field.value || "none"} 
                         disabled={readOnly}
                       >
                         <FormControl>
@@ -123,7 +128,7 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {unitOfMeasures?.map((unit) => (
                             <SelectItem key={unit.id} value={unit.id}>
                               {unit.name} ({unit.abbreviation})
