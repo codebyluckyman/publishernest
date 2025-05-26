@@ -7,6 +7,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { queryClient } from "./lib/react-query";
 import { Toaster } from "@/components/ui/sonner";
+import { OnlineStatusProvider } from "./context/OnlineStatusContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
@@ -24,7 +25,9 @@ createRoot(document.getElementById("root")!).render(
     />
     <AuthProvider>
       <OrganizationProvider>
-        <App />
+        <OnlineStatusProvider>
+          <App />
+        </OnlineStatusProvider>
       </OrganizationProvider>
     </AuthProvider>
     <ReactQueryDevtools initialIsOpen={false} />

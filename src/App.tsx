@@ -32,6 +32,7 @@ import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
 import Organizations from "./pages/Organizations";
 import Stock from "./pages/Stock";
 import EditPurchaseOrder from "./pages/EditPurchaseOrder";
+import ChatComponent from "./components/chat/ChtaComponent";
 
 const router = createBrowserRouter([
   {
@@ -41,126 +42,259 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ProtectedRoute><Index /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Index />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "formats",
-        element: <ProtectedRoute><Formats /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Formats />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "products",
-        element: <ProtectedRoute><Products /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Products />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "stock",
-        element: <ProtectedRoute><Stock /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Stock />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "publishing-program",
-        element: <ProtectedRoute><PublishingProgram /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <PublishingProgram />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "quote-requests",
-        element: <ProtectedRoute><QuoteRequests /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <QuoteRequests />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "quotes",
-        element: <ProtectedRoute><Quotes /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Quotes />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "quotes/compare",
-        element: <ProtectedRoute><QuoteComparison /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <QuoteComparison />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "purchase-orders",
-        element: <ProtectedRoute><PurchaseOrders /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <PurchaseOrders />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "purchase-orders/:id",
-        element: <ProtectedRoute><PurchaseOrderDetail /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <PurchaseOrderDetail />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "purchase-orders/create",
-        element: <ProtectedRoute><CreatePurchaseOrder /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <CreatePurchaseOrder />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "purchase-orders/edit/:id",
-        element: <ProtectedRoute><EditPurchaseOrder /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <EditPurchaseOrder />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "sales-orders",
-        element: <ProtectedRoute><SalesOrders /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <SalesOrders />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "sales-orders/:id",
-        element: <ProtectedRoute><SalesOrderDetail /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <SalesOrderDetail />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "create-sales-order",
-        element: <ProtectedRoute><CreateSalesOrder /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <CreateSalesOrder />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "organization-settings",
-        element: <ProtectedRoute><OrganizationSettings /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <OrganizationSettings />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "profile",
-        element: <ProtectedRoute><Profile /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "sales-presentations",
-        element: <ProtectedRoute><SalesPresentations /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <SalesPresentations />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "sales-presentations/create",
-        element: <ProtectedRoute><CreateSalesPresentation /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <CreateSalesPresentation />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "sales-presentations/:id",
-        element: <ProtectedRoute><SalesPresentationDetail /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <SalesPresentationDetail />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "sales-presentations/:id/edit",
-        element: <ProtectedRoute><EditSalesPresentation /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <EditSalesPresentation />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "print-runs",
-        element: <ProtectedRoute><PrintRuns /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <PrintRuns />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "suppliers",
-        element: <ProtectedRoute><Suppliers /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Suppliers />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "customers",
-        element: <ProtectedRoute><Customers /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <Customers />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "customers/:id",
-        element: <ProtectedRoute><CustomerDetail /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <CustomerDetail />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "customers/create",
-        element: <ProtectedRoute><CreateCustomer /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <CreateCustomer />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "supplier-quotes/:id",
-        element: <ProtectedRoute><SupplierQuoteDetail /></ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <SupplierQuoteDetail />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "organizations",
-        element: <ProtectedRoute><Organizations /></ProtectedRoute>
-      }
-    ]
+        element: (
+          <ProtectedRoute>
+            <Organizations />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "chat",
+        children: [
+          {
+            index: true,
+            element: (
+              <ProtectedRoute>
+                <ChatComponent />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ":room_id",
+            element: (
+              <ProtectedRoute>
+                <ChatComponent />
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+    ],
   },
   {
     path: "/shared/presentation/:accessCode",
-    element: <SharedPresentationView />
+    element: <SharedPresentationView />,
   },
   {
     path: "/auth",
-    element: <Auth />
-  }
+    element: <Auth />,
+  },
 ]);
 
 const App = () => {
