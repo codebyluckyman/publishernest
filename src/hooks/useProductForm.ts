@@ -220,7 +220,11 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
             if (typeof value === 'string') return value;
             // Handle React Hook Form proxy objects
             if (typeof value === 'object' && value._type === 'undefined') return undefined;
-            if (typeof value === 'object' && value.value !== undefined) return value.value;
+            if (typeof value === 'object' && value.value !== undefined) {
+              // Check if value.value is the string "undefined"
+              if (value.value === "undefined") return undefined;
+              return value.value;
+            }
             return undefined;
           };
           
