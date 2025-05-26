@@ -1,328 +1,197 @@
 
-import { useEffect, useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { useOrganizationProductFields } from '@/hooks/useOrganizationProductFields';
-import { ProductFormValues } from '@/schemas/productSchema';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useProductCustomFieldValues } from '@/hooks/useProductCustomFieldValues';
-import { ProductCustomField } from '@/types/customFields';
-import { Controller, useWatch } from 'react-hook-form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useOrganizationProductFields } from "@/hooks/useOrganizationProductFields";
+import { CustomFieldBadge } from "../CustomFieldBadge";
 
 interface CustomFieldsSectionProps {
-  form: UseFormReturn<ProductFormValues>;
+  form: any;
   productId?: string;
-  readOnly?: boolean;
 }
 
-export function CustomFieldsSection({ form, productId, readOnly = false }: CustomFieldsSectionProps) {
-  const { customFields, isLoading: isFieldsLoading } = useOrganizationProductFields();
-  const { 
-    customFieldValues, 
-    isLoading: isValuesLoading,
-    formatValueForDisplay
-  } = useProductCustomFieldValues(productId);
-  
-  const [initialized, setInitialized] = useState(false);
-  const customFieldsFromForm = useWatch({ control: form.control, name: 'custom_fields' });
+export function CustomFieldsSection({ form, productId }: CustomFieldsSectionProps) {
+  const { customFields } = useOrganizationProductFields();
 
-  // Debug logging
-  useEffect(() => {
-    if (customFieldValues.length > 0) {
-      console.log('Custom field values from DB:', customFieldValues);
-    }
-  }, [customFieldValues]);
-
-  useEffect(() => {
-    if (customFieldsFromForm) {
-      console.log('Custom fields in form:', customFieldsFromForm);
-    }
-  }, [customFieldsFromForm]);
-
-  // Initialize form values from database when custom fields and values are loaded
-  useEffect(() => {
-    if (customFields.length > 0 && customFieldValues.length > 0 && !initialized) {
-      // Create a map of custom field values by field_key for easier lookup
-      const valuesMap: Record<string, any> = {};
-      
-      // For each custom field value, find the corresponding field and map it
-      customFieldValues.forEach(valueObj => {
-        const field = customFields.find(f => f.id === valueObj.field_id);
-        if (field) {
-          // Convert the value to the appropriate type based on field_type
-          let typedValue = valueObj.field_value;
-          
-          switch (field.field_type) {
-            case 'number':
-              typedValue = typeof typedValue === 'number' ? typedValue : 
-                           typedValue === null ? null : 
-                           Number(typedValue) || null;
-              break;
-            case 'boolean':
-              typedValue = Boolean(typedValue);
-              break;
-            case 'date':
-              if (typedValue && typeof typedValue === 'string') {
-                try {
-                  typedValue = new Date(typedValue);
-                } catch (e) {
-                  typedValue = null;
-                }
-              }
-              break;
-            // For text and select, ensure we have a string (or null)
-            case 'select':
-            case 'text':
-              typedValue = typedValue === null ? null :
-                          typeof typedValue === 'string' ? typedValue :
-                          String(typedValue);
-              break;
-          }
-          
-          console.log(`Setting ${field.field_key} to:`, typedValue);
-          valuesMap[field.field_key] = typedValue;
-        }
-      });
-      
-      // Update the form's custom_fields object
-      if (Object.keys(valuesMap).length > 0) {
-        form.setValue('custom_fields', {
-          ...form.getValues('custom_fields'),
-          ...valuesMap
-        });
-        console.log('Set form values:', valuesMap);
-      }
-      
-      setInitialized(true);
-    }
-  }, [customFields, customFieldValues, form, initialized]);
-
-  // Also register any fields that don't have values yet
-  useEffect(() => {
-    if (customFields.length > 0) {
-      customFields.forEach(field => {
-        const fieldPath = `custom_fields.${field.field_key}` as const;
-        if (form.getValues(fieldPath) === undefined) {
-          const defaultValue = getDefaultValueForType(field.field_type);
-          form.setValue(fieldPath, defaultValue);
-        }
-      });
-    }
-  }, [customFields, form]);
-
-  if (isFieldsLoading || isValuesLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Custom Fields</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  if (customFields.length === 0) {
-    return null; // Don't show the section if there are no custom fields
+  if (!customFields || customFields.length === 0) {
+    return null;
   }
 
-  // Helper to get default value based on field type
-  function getDefaultValueForType(fieldType: string) {
-    switch (fieldType) {
-      case 'text':
-        return '';
-      case 'number':
-        return null;
-      case 'date':
-        return null;
-      case 'boolean':
-        return false;
-      case 'select':
-        return null;
-      default:
-        return null;
-    }
-  }
-
-  const renderReadOnlyFieldValue = (field: ProductCustomField) => {
-    const fieldPath = `custom_fields.${field.field_key}`;
-    const fieldValue = form.watch(fieldPath as any);
+  const renderCustomField = (field: any) => {
+    const fieldPath = `custom_fields.${field.field_key}` as const;
     
-    console.log(`ReadOnly field ${field.field_key} value:`, fieldValue);
-
-    // Add a wrapper div that includes both the label and the value
-    return (
-      <div className="space-y-2">
-        <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
-        <div className="p-2 bg-gray-50 border rounded">
-          {(() => {
-            switch (field.field_type) {
-              case 'boolean':
-                return fieldValue ? 'Yes' : 'No';
-              case 'select':
-                if (!fieldValue) return 'None';
-                // Find the option label for the selected value
-                const selectedOption = field.options?.values?.find((option: string) => option === fieldValue);
-                return selectedOption || fieldValue;
-              default:
-                return formatValueForDisplay(fieldValue, field.field_type) || 'N/A';
-            }
-          })()}
-        </div>
-      </div>
-    );
-  };
-
-  const renderFieldInput = (field: ProductCustomField) => {
-    const fieldPath = `custom_fields.${field.field_key}`;
-    const fieldValue = form.watch(fieldPath as any);
-    
-    console.log(`Field ${field.field_key} value:`, fieldValue);
-
-    if (readOnly) {
-      return renderReadOnlyFieldValue(field);
-    }
-
     switch (field.field_type) {
       case 'text':
         return (
-          <FormItem>
-            <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
-            <FormControl>
-              <Input
-                {...form.register(fieldPath as any)}
-                disabled={readOnly}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          <FormField
+            control={form.control}
+            name={fieldPath}
+            render={({ field: formField }) => (
+              <FormItem>
+                <FormLabel>{field.field_name} {field.is_required && '*'}</FormLabel>
+                <FormControl>
+                  <Input {...formField} value={formField.value || ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         );
-        
+
       case 'number':
         return (
-          <FormItem>
-            <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
-            <FormControl>
-              <Input
-                type="number"
-                {...form.register(fieldPath as any, {
-                  valueAsNumber: true,
-                  setValueAs: v => v === '' ? null : parseFloat(v)
-                })}
-                disabled={readOnly}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          <FormField
+            control={form.control}
+            name={fieldPath}
+            render={({ field: formField }) => (
+              <FormItem>
+                <FormLabel>{field.field_name} {field.is_required && '*'}</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    {...formField} 
+                    value={formField.value || ''} 
+                    onChange={(e) => formField.onChange(e.target.value ? Number(e.target.value) : null)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         );
-        
-      case 'date':
-        return (
-          <FormItem>
-            <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
-            <FormControl>
-              <Input
-                type="date"
-                {...form.register(fieldPath as any)}
-                disabled={readOnly}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        );
-        
+
       case 'boolean':
         return (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-            <FormControl>
-              <Checkbox 
-                checked={fieldValue}
-                onCheckedChange={(checked) => {
-                  form.setValue(fieldPath as any, checked);
-                }}
-                disabled={readOnly}
-              />
-            </FormControl>
-            <div className="space-y-1 leading-none">
-              <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
-            </div>
-          </FormItem>
+          <FormField
+            control={form.control}
+            name={fieldPath}
+            render={({ field: formField }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>{field.field_name} {field.is_required && '*'}</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={formField.value || false}
+                    onCheckedChange={formField.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         );
-        
+
+      case 'date':
+        return (
+          <FormField
+            control={form.control}
+            name={fieldPath}
+            render={({ field: formField }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>{field.field_name} {field.is_required && '*'}</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !formField.value && "text-muted-foreground"
+                        )}
+                      >
+                        {formField.value ? (
+                          format(formField.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formField.value}
+                      onSelect={formField.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+
       case 'select':
         return (
-          <FormItem>
-            <FormLabel>{field.field_name}{field.is_required ? ' *' : ''}</FormLabel>
-            <Controller
-              name={fieldPath as any}
-              control={form.control}
-              render={({ field: controllerField }) => (
-                <Select
-                  value={controllerField.value || ""}
-                  onValueChange={(value) => {
-                    // Convert "none" to null for the actual form value
-                    controllerField.onChange(value === "none" ? null : value);
-                  }}
-                  disabled={readOnly}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder={`Select ${field.field_name.toLowerCase()}`} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {field.options?.values?.map((option: string) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <FormMessage />
-          </FormItem>
+          <FormField
+            control={form.control}
+            name={fieldPath}
+            render={({ field: formField }) => (
+              <FormItem>
+                <FormLabel>{field.field_name} {field.is_required && '*'}</FormLabel>
+                <div className="space-y-2">
+                  <Select 
+                    onValueChange={(value) => formField.onChange(value === "none" ? null : value)} 
+                    value={formField.value || "none"}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an option" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {field.options?.values?.map((option: string) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Show badge preview when a value is selected */}
+                  {formField.value && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Preview:</span>
+                      <CustomFieldBadge value={formField.value} field={field} />
+                    </div>
+                  )}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         );
-        
+
       default:
         return null;
     }
   };
-  
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Custom Fields</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {customFields.map((field) => (
-            <FormField
-              key={field.id}
-              control={form.control}
-              name={`custom_fields.${field.field_key}` as any}
-              render={() => renderFieldInput(field)}
-            />
-          ))}
-        </div>
+      <CardContent className="space-y-4">
+        {customFields.map((field) => (
+          <div key={field.id}>
+            {renderCustomField(field)}
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

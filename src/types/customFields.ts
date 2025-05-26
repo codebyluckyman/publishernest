@@ -9,6 +9,7 @@ export interface ProductCustomField {
   field_type: FieldType;
   options?: {
     values?: string[];
+    colors?: Record<string, string>; // Maps option value to color/variant
     [key: string]: any;
   };
   is_required: boolean;

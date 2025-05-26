@@ -9,6 +9,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { CustomFieldBadge } from "../CustomFieldBadge";
+import { ProductCustomField } from "@/types/customFields";
 
 interface Option {
   value: string;
@@ -21,6 +23,7 @@ interface EditableSelectCellProps {
   fieldName: string;
   options: Option[];
   renderDisplay?: (value: string | null) => React.ReactNode;
+  customField?: ProductCustomField; // Add custom field for badge rendering
 }
 
 export function EditableSelectCell({ 
@@ -28,7 +31,8 @@ export function EditableSelectCell({
   productId, 
   fieldName, 
   options,
-  renderDisplay 
+  renderDisplay,
+  customField
 }: EditableSelectCellProps) {
   const { isEditMode, updateProductField, isSaving, currentlySavingProduct, currentlySavingField } = useProductEdit();
   const [localValue, setLocalValue] = useState<string | null>(value);
@@ -52,6 +56,12 @@ export function EditableSelectCell({
     if (renderDisplay) {
       return <>{renderDisplay(value)}</>;
     }
+    
+    // Use badge for custom fields, otherwise use default display
+    if (customField && customField.field_type === 'select') {
+      return <CustomFieldBadge value={value} field={customField} />;
+    }
+    
     const option = options.find(opt => opt.value === value);
     return <span>{option ? option.label : 'N/A'}</span>;
   }

@@ -15,12 +15,23 @@ import {
 import { ProductCustomField, FieldType } from '@/types/customFields';
 import { useOrganizationProductFields } from '@/hooks/useOrganizationProductFields';
 import { Loader2, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface ProductFieldFormProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   editingField: ProductCustomField | null;
 }
+
+const colorOptions = [
+  { value: 'default', label: 'Default (Gray)', color: 'bg-gray-500' },
+  { value: 'red', label: 'Red', color: 'bg-red-500' },
+  { value: 'green', label: 'Green', color: 'bg-green-500' },
+  { value: 'blue', label: 'Blue', color: 'bg-blue-500' },
+  { value: 'yellow', label: 'Yellow', color: 'bg-yellow-500' },
+  { value: 'cyan', label: 'Cyan', color: 'bg-cyan-500' },
+  { value: 'purple', label: 'Purple', color: 'bg-purple-500' },
+];
 
 export function ProductFieldForm({ 
   isOpen, 
@@ -34,6 +45,7 @@ export function ProductFieldForm({
   const [fieldType, setFieldType] = useState<FieldType>('text');
   const [isRequired, setIsRequired] = useState(false);
   const [selectOptions, setSelectOptions] = useState<string[]>(['']);
+  const [optionColors, setOptionColors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -46,8 +58,10 @@ export function ProductFieldForm({
       
       if (editingField.field_type === 'select' && editingField.options?.values) {
         setSelectOptions(editingField.options.values);
+        setOptionColors(editingField.options.colors || {});
       } else {
         setSelectOptions(['']);
+        setOptionColors({});
       }
     } else {
       resetForm();
@@ -60,6 +74,7 @@ export function ProductFieldForm({
     setFieldType('text');
     setIsRequired(false);
     setSelectOptions(['']);
+    setOptionColors({});
     setErrors({});
   };
 
@@ -85,13 +100,51 @@ export function ProductFieldForm({
 
   const updateSelectOption = (index: number, value: string) => {
     const newOptions = [...selectOptions];
+    const oldValue = newOptions[index];
     newOptions[index] = value;
     setSelectOptions(newOptions);
+
+    // Update color mapping if the option value changed
+    if (oldValue !== value && oldValue in optionColors) {
+      const newColors = { ...optionColors };
+      if (value) {
+        newColors[value] = newColors[oldValue];
+      }
+      delete newColors[oldValue];
+      setOptionColors(newColors);
+    }
   };
 
   const removeSelectOption = (index: number) => {
     if (selectOptions.length > 1) {
+      const optionToRemove = selectOptions[index];
       setSelectOptions(selectOptions.filter((_, i) => i !== index));
+      
+      // Remove color for this option
+      if (optionToRemove in optionColors) {
+        const newColors = { ...optionColors };
+        delete newColors[optionToRemove];
+        setOptionColors(newColors);
+      }
+    }
+  };
+
+  const updateOptionColor = (option: string, color: string) => {
+    setOptionColors(prev => ({
+      ...prev,
+      [option]: color
+    }));
+  };
+
+  const getVariantForColor = (color?: string) => {
+    switch (color) {
+      case 'red': return 'destructive';
+      case 'green': return 'success';
+      case 'blue': return 'blue';
+      case 'yellow': return 'warning';
+      case 'cyan': return 'info';
+      case 'purple': return 'secondary';
+      default: return 'default';
     }
   };
 
@@ -139,8 +192,10 @@ export function ProductFieldForm({
       };
       
       if (fieldType === 'select') {
+        const validOptions = selectOptions.filter(opt => opt.trim() !== '');
         fieldData.options = {
-          values: selectOptions.filter(opt => opt.trim() !== '')
+          values: validOptions,
+          colors: optionColors
         };
       }
       
@@ -162,7 +217,7 @@ export function ProductFieldForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{editingField ? 'Edit' : 'Add'} Custom Product Field</DialogTitle>
         </DialogHeader>
@@ -225,15 +280,41 @@ export function ProductFieldForm({
 
           {fieldType === 'select' && (
             <div className="space-y-2">
-              <Label>Options</Label>
-              <div className="space-y-2">
+              <Label>Options & Colors</Label>
+              <div className="space-y-3">
                 {selectOptions.map((option, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex gap-2 items-center">
                     <Input
                       value={option}
                       onChange={(e) => updateSelectOption(index, e.target.value)}
                       placeholder={`Option ${index + 1}`}
+                      className="flex-1"
                     />
+                    {option.trim() && (
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={optionColors[option] || 'default'}
+                          onValueChange={(color) => updateOptionColor(option, color)}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {colorOptions.map((colorOption) => (
+                              <SelectItem key={colorOption.value} value={colorOption.value}>
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-3 h-3 rounded-full ${colorOption.color}`} />
+                                  {colorOption.label}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Badge variant={getVariantForColor(optionColors[option])}>
+                          {option}
+                        </Badge>
+                      </div>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
