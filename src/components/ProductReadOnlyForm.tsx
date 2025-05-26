@@ -13,6 +13,7 @@ import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSe
 import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
 import { PricingSection } from "./products/form-sections/PricingSection";
 import { StockTable } from "./products/form-sections/StockTable";
+import { CustomFieldsSection } from "./products/custom-fields/CustomFieldsSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 
