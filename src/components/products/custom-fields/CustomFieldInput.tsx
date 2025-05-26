@@ -100,13 +100,10 @@ export function CustomFieldInput({ field, value, onChange, readOnly = false }: C
       case 'select':
         const options = field.options?.values || [];
         
-        // In read-only mode, display as a badge if there's a value
+        // In read-only mode, don't render an input field - just return null
+        // The badge will be rendered separately below
         if (readOnly) {
-          return value ? (
-            <CustomFieldBadge field={field} value={value} />
-          ) : (
-            <span className="text-muted-foreground text-sm">-</span>
-          );
+          return null;
         }
         
         return (
@@ -147,6 +144,16 @@ export function CustomFieldInput({ field, value, onChange, readOnly = false }: C
         {field.is_required && <span className="text-red-500 ml-1">*</span>}
       </label>
       {renderInput()}
+      {/* For read-only select fields, display the badge below the label */}
+      {readOnly && field.field_type === 'select' && (
+        <div className="mt-2">
+          {value ? (
+            <CustomFieldBadge field={field} value={value} />
+          ) : (
+            <span className="text-muted-foreground text-sm">-</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

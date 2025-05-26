@@ -3447,6 +3447,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_suppliers_organization"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "suppliers_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
