@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { CustomFieldBadge } from './CustomFieldBadge';
 
 interface CustomFieldInputProps {
   field: ProductCustomField;
@@ -98,6 +99,15 @@ export function CustomFieldInput({ field, value, onChange, readOnly = false }: C
 
       case 'select':
         const options = field.options?.values || [];
+        
+        // In read-only mode, display as a badge if there's a value
+        if (readOnly) {
+          return value ? (
+            <CustomFieldBadge field={field} value={value} />
+          ) : (
+            <span className="text-muted-foreground text-sm">-</span>
+          );
+        }
         
         return (
           <Select

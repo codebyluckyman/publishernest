@@ -3364,6 +3364,41 @@ export type Database = {
           },
         ]
       }
+      supplier_users: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          supplier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          supplier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          supplier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_users_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -3715,6 +3750,14 @@ export type Database = {
         }[]
       }
       get_user_organizations: {
+        Args: { user_id?: string }
+        Returns: string[]
+      }
+      get_user_supplier_organizations: {
+        Args: { user_id?: string }
+        Returns: string[]
+      }
+      get_user_suppliers: {
         Args: { user_id?: string }
         Returns: string[]
       }
