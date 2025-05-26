@@ -50,20 +50,22 @@ export function CustomFieldsSection({ productId, readOnly = false }: CustomField
       <CardHeader>
         <CardTitle>Custom Fields</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {customFields.map((field) => {
-          const currentValue = getFieldValue(field.id);
-          
-          return (
-            <CustomFieldInput
-              key={field.id}
-              field={field}
-              value={currentValue}
-              onChange={(value) => handleFieldChange(field.id, value)}
-              readOnly={readOnly}
-            />
-          );
-        })}
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {customFields.map((field) => {
+            const currentValue = getFieldValue(field.id);
+            
+            return (
+              <CustomFieldInput
+                key={field.id}
+                field={field}
+                value={currentValue}
+                onChange={(value) => handleFieldChange(field.id, value)}
+                readOnly={readOnly}
+              />
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
