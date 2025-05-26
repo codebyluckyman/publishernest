@@ -9,6 +9,24 @@ interface CustomFieldBadgeProps {
   value: any;
 }
 
+// Map common color names to Badge variants
+const getColorVariant = (color: string): any => {
+  const colorMap: Record<string, string> = {
+    red: 'destructive',
+    green: 'success',
+    blue: 'blue',
+    yellow: 'warning',
+    amber: 'warning',
+    cyan: 'info',
+    orange: 'warning',
+    emerald: 'success',
+    gray: 'secondary',
+    grey: 'secondary'
+  };
+
+  return colorMap[color.toLowerCase()] || 'outline';
+};
+
 export function CustomFieldBadge({ field, value }: CustomFieldBadgeProps) {
   if (value === null || value === undefined) {
     return <span className="text-muted-foreground text-sm">-</span>;
@@ -31,13 +49,18 @@ export function CustomFieldBadge({ field, value }: CustomFieldBadgeProps) {
         const color = colors?.[value];
         
         if (color) {
+          const variant = getColorVariant(color);
           return (
-            <Badge variant={color as any}>
+            <Badge variant={variant}>
               {value}
             </Badge>
           );
         }
-        return value;
+        return (
+          <Badge variant="outline">
+            {value}
+          </Badge>
+        );
       
       default:
         return value;
