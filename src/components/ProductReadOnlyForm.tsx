@@ -70,6 +70,8 @@ export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormPr
         <AdditionalInfoSection form={form} readOnly />
         <InternalImagesSection form={form} readOnly />
         
+        <CustomFieldsSection productId={productId} readOnly />
+        
         <PricingSection form={form} productId={productId} readOnly />
         
         <Card>
