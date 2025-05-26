@@ -13,7 +13,6 @@ import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSe
 import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
 import { PricingSection } from "./products/form-sections/PricingSection";
 import { FormatExtrasSection } from "./products/form-sections/FormatExtrasSection";
-import { CustomFieldsSection } from "./products/form-sections/CustomFieldsSection";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -156,7 +155,6 @@ const ProductForm = forwardRef<
           <CartonSection form={form} />
           <AdditionalInfoSection form={form} />
           <InternalImagesSection form={form} />
-          <CustomFieldsSection form={form} productId={productId} />
 
           {productId && <PricingSection form={form} productId={productId} />}
 

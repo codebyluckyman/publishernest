@@ -1,167 +1,157 @@
 
-import { useState } from "react";
-import { UseFormReturn, useFieldArray } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
-import { ProductFormValues } from "@/schemas/productSchema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Library } from "lucide-react";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
-import { ExtraCostLibraryDialog } from "@/components/quotes/form/extra-costs/ExtraCostLibraryDialog";
-import { ExtraCostTableItem } from "@/types/extraCost";
-import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 
 interface FormatExtrasSectionProps {
-  form: UseFormReturn<ProductFormValues>;
+  form: any;
   readOnly?: boolean;
 }
 
 export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSectionProps) {
   const { currentOrganization } = useOrganization();
-  const [libraryOpen, setLibraryOpen] = useState(false);
-  
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "format_extras"
+
+  const { data: unitOfMeasures } = useQuery({
+    queryKey: ['unit-of-measures', currentOrganization?.id],
+    queryFn: async () => {
+      if (!currentOrganization?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('unit_of_measures')
+        .select('*')
+        .eq('organization_id', currentOrganization.id)
+        .order('name');
+        
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!currentOrganization?.id,
   });
 
-  const handleLibraryOpen = () => {
-    setLibraryOpen(true);
+  const formatExtras = form.watch("format_extras") || [];
+
+  const addFormatExtra = () => {
+    if (readOnly) return;
+    const currentExtras = form.getValues("format_extras") || [];
+    form.setValue("format_extras", [
+      ...currentExtras,
+      { name: "", description: "", unit_of_measure_id: "" }
+    ]);
   };
 
-  const handleAddFromLibrary = (extraCost: ExtraCostTableItem) => {
-    append({
-      id: extraCost.id,
-      name: extraCost.name,
-      description: extraCost.description || "",
-      unit_of_measure_id: extraCost.unit_of_measure_id || undefined
-    });
-    setLibraryOpen(false);
-    toast.success(`Added "${extraCost.name}" to format extras`);
-  };
-
-  const handleAddFormatExtra = () => {
-    append({ 
-      name: "",
-      description: "",
-      unit_of_measure_id: undefined
-    });
-    toast.success("New format extra field added");
+  const removeFormatExtra = (index: number) => {
+    if (readOnly) return;
+    const currentExtras = form.getValues("format_extras") || [];
+    const newExtras = currentExtras.filter((_, i) => i !== index);
+    form.setValue("format_extras", newExtras);
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Format Extras</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {fields.length === 0 ? (
-          <div className="text-center p-4 border border-dashed rounded-md">
-            <p className="text-muted-foreground text-sm">
-              No format extras added yet. 
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
-                <div className="col-span-4">
-                  <FormField
-                    control={form.control}
-                    name={`format_extras.${index}.name`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input 
-                            placeholder="Extra name" 
-                            {...field} 
-                            disabled={readOnly}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-5">
-                  <FormField
-                    control={form.control}
-                    name={`format_extras.${index}.description`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Description (optional)" 
-                            {...field} 
-                            className="h-10 min-h-10 resize-none"
-                            disabled={readOnly}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <FormField
-                    control={form.control}
-                    name={`format_extras.${index}.unit_of_measure_id`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <UnitOfMeasureSelect
-                            value={field.value || ''}
-                            onChange={field.onChange}
-                            placeholder="Unit"
-                            className="w-full"
-                            disabled={readOnly}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-1 flex justify-center">
-                  {!readOnly && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => remove(index)} 
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!readOnly && (
-          <div className="flex space-x-2">
-            <Button 
-              variant="success"  
-              size="sm" 
-              onClick={handleAddFormatExtra} 
-              className="w-full"
-              disabled={readOnly}
+        <div className="flex justify-between items-center">
+          <CardTitle>Format Extras</CardTitle>
+          {!readOnly && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addFormatExtra}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Format Extra
+              <Plus className="mr-2 h-4 w-4" />
+              Add Extra
             </Button>
-            <ExtraCostLibraryDialog 
-              open={libraryOpen} 
-              onOpenChange={setLibraryOpen}
-              onAddFromLibrary={handleAddFromLibrary}
-              onOpen={handleLibraryOpen}
-              organizationId={currentOrganization?.id}
-            />
-          </div>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {formatExtras.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No format extras added.</p>
+        ) : (
+          formatExtras.map((extra: any, index: number) => (
+            <div key={index} className="border rounded-lg p-4 space-y-4">
+              <div className="flex justify-between items-start">
+                <h4 className="font-medium">Extra {index + 1}</h4>
+                {!readOnly && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFormatExtra(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name={`format_extras.${index}.name` as any}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={readOnly} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`format_extras.${index}.unit_of_measure_id` as any}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Unit of Measure</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value || ""} 
+                        disabled={readOnly}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select unit" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">None</SelectItem>
+                          {unitOfMeasures?.map((unit) => (
+                            <SelectItem key={unit.id} value={unit.id}>
+                              {unit.name} ({unit.abbreviation})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name={`format_extras.${index}.description` as any}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} disabled={readOnly} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          ))
         )}
 
         <FormField
@@ -171,17 +161,13 @@ export function FormatExtrasSection({ form, readOnly = false }: FormatExtrasSect
             <FormItem>
               <FormLabel>Format Extra Comments</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Describe extra requirements or specifications"
-                  className="min-h-20"
-                  {...field}
-                  value={field.value || ""}
+                <Textarea 
+                  {...field} 
+                  value={field.value || ""} 
                   disabled={readOnly}
+                  placeholder="Additional comments about format extras..."
                 />
               </FormControl>
-              <FormDescription>
-                Use this field to provide specific details about your format extras.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

@@ -1,8 +1,51 @@
 
 import { z } from "zod";
 
-// Default values for the product form
-export const defaultProductValues = {
+export const productSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  subtitle: z.string().optional(),
+  isbn13: z.string().optional(),
+  isbn10: z.string().optional(),
+  publication_date: z.date().nullable().optional(),
+  publisher_name: z.string().optional(),
+  product_form: z.string().optional(),
+  product_form_detail: z.string().optional(),
+  list_price: z.number().nullable().optional(),
+  currency_code: z.string().optional(),
+  series_name: z.string().optional(),
+  language_code: z.string().optional(),
+  product_availability_code: z.string().optional(),
+  subject_code: z.string().optional(),
+  synopsis: z.string().optional(),
+  selling_points: z.string().optional(),
+  age_range: z.string().optional(),
+  page_count: z.number().nullable().optional(),
+  edition_number: z.number().nullable().optional(),
+  cover_image_url: z.string().optional(),
+  internal_images: z.array(z.string()).optional(),
+  height_measurement: z.number().nullable().optional(),
+  width_measurement: z.number().nullable().optional(),
+  thickness_measurement: z.number().nullable().optional(),
+  weight_measurement: z.number().nullable().optional(),
+  format_id: z.string().nullable().optional(),
+  carton_quantity: z.number().nullable().optional(),
+  carton_length_mm: z.number().nullable().optional(),
+  carton_width_mm: z.number().nullable().optional(),
+  carton_height_mm: z.number().nullable().optional(),
+  carton_weight_kg: z.number().nullable().optional(),
+  license: z.string().optional(),
+  format_extras: z.array(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    unit_of_measure_id: z.string().optional(),
+  })).optional(),
+  format_extra_comments: z.string().nullable().optional(),
+  status: z.string().optional(),
+});
+
+export type ProductFormValues = z.infer<typeof productSchema>;
+
+export const defaultProductValues: ProductFormValues = {
   title: "",
   subtitle: "",
   isbn13: "",
@@ -10,105 +53,32 @@ export const defaultProductValues = {
   publication_date: null,
   publisher_name: "",
   product_form: "",
-  list_price: null,
-  series_name: null,
-  synopsis: "",
-  age_range: "",
-  language_code: "",
-  license: "",
-  subject_code: "",
-  product_availability_code: "",
   product_form_detail: "",
-  status: "active",
-  format_id: null,
+  list_price: null,
+  currency_code: "USD",
+  series_name: "",
+  language_code: "",
+  product_availability_code: "",
+  subject_code: "",
+  synopsis: "",
+  selling_points: "",
+  age_range: "",
   page_count: null,
   edition_number: null,
+  cover_image_url: "",
+  internal_images: [],
   height_measurement: null,
   width_measurement: null,
   thickness_measurement: null,
   weight_measurement: null,
-  cover_image_url: null,
+  format_id: null,
   carton_quantity: null,
   carton_length_mm: null,
   carton_width_mm: null,
   carton_height_mm: null,
   carton_weight_kg: null,
-  internal_images: [],
-  format_extras: {
-    foil: false,
-    spot_uv: false,
-    glitter: false,
-    embossing: false,
-    die_cut: false,
-    holographic: false
-  },
+  license: "",
+  format_extras: [],
   format_extra_comments: null,
-  // Added custom fields
-  custom_fields: {}
+  status: "active",
 };
-
-// Define the schema for product form validation
-export const productSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  subtitle: z.string().nullable().optional(),
-  isbn13: z.string().nullable().optional(),
-  isbn10: z.string().nullable().optional(),
-  publication_date: z.date().nullable().optional(),
-  publisher_name: z.string().nullable().optional(),
-  product_form: z.string().nullable().optional(),
-  list_price: z.number().nullable().optional(),
-  series_name: z.string().nullable().optional(),
-  synopsis: z.string().nullable().optional(),
-  age_range: z.string().nullable().optional(),
-  language_code: z.string().nullable().optional(),
-  license: z.string().nullable().optional(),
-  subject_code: z.string().nullable().optional(),
-  product_availability_code: z.string().nullable().optional(),
-  product_form_detail: z.string().nullable().optional(),
-  status: z.string(),
-  format_id: z.string().nullable().optional(),
-  page_count: z.number().nullable().optional(),
-  edition_number: z.number().nullable().optional(),
-  height_measurement: z.number().nullable().optional(),
-  width_measurement: z.number().nullable().optional(),
-  thickness_measurement: z.number().nullable().optional(),
-  weight_measurement: z.number().nullable().optional(),
-  cover_image_url: z.string().nullable().optional(),
-  carton_quantity: z.number().nullable().optional(),
-  carton_length_mm: z.number().nullable().optional(),
-  carton_width_mm: z.number().nullable().optional(),
-  carton_height_mm: z.number().nullable().optional(),
-  carton_weight_kg: z.number().nullable().optional(),
-  internal_images: z.array(z.string()).optional(),
-  format_extras: z.object({
-    foil: z.boolean().optional(),
-    spot_uv: z.boolean().optional(),
-    glitter: z.boolean().optional(),
-    embossing: z.boolean().optional(),
-    die_cut: z.boolean().optional(),
-    holographic: z.boolean().optional()
-  }).optional(),
-  format_extra_comments: z.string().nullable().optional(),
-  // Added custom fields - we use record for dynamic fields
-  custom_fields: z.record(z.string(), z.any()).optional()
-});
-
-export type ProductFormValues = z.infer<typeof productSchema>;
-
-// Product form options for dropdown selections and other UI elements
-export const productFormOptions = {
-  currencyCodes: [
-    { value: "USD", label: "USD - US Dollar" },
-    { value: "EUR", label: "EUR - Euro" },
-    { value: "GBP", label: "GBP - British Pound" },
-    { value: "CAD", label: "CAD - Canadian Dollar" },
-    { value: "AUD", label: "AUD - Australian Dollar" },
-    { value: "NZD", label: "NZD - New Zeland Dollar"},
-    { value: "JPY", label: "JPY - Japanese Yen" },
-    { value: "CNY", label: "CNY - Chinese Yuan" },
-    { value: "INR", label: "INR - Indian Rupee" }
-    // Add more currencies as needed
-  ],
-  // You can add more form options here if needed in the future
-};
-
