@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import { SavingsTable } from "@/components/quotes/form/savings/SavingsTable";
 import { ExtraCostsTable } from "@/components/quotes/form/extra-costs/ExtraCostsTable";
 import { ProductionStepsTable } from "@/components/organizations/ProductionStepsTable";
 import { CustomFieldsTab } from "@/components/organizations/CustomFieldsTab";
-import { Library, Settings, Users, Ruler, ListChecks, GitMerge, Database } from "lucide-react";
+import { OrganizationReminderSettings } from "@/components/organizations/OrganizationReminderSettings";
+import { Library, Settings, Users, Ruler, ListChecks, GitMerge, Database, Bell } from "lucide-react";
 
 export default function OrganizationSettings() {
   const { currentOrganization, updateOrganizationSetting } = useOrganization();
@@ -77,6 +79,10 @@ export default function OrganizationSettings() {
           <TabsTrigger value="defaults" className="flex items-center gap-1">
             <ListChecks className="h-4 w-4" />
             <span>Default Values</span>
+          </TabsTrigger>
+          <TabsTrigger value="reminders" className="flex items-center gap-1">
+            <Bell className="h-4 w-4" />
+            <span>Reminders</span>
           </TabsTrigger>
           <TabsTrigger value="production" className="flex items-center gap-1">
             <GitMerge className="h-4 w-4" />
@@ -165,6 +171,10 @@ export default function OrganizationSettings() {
           <DefaultExtraCosts />
           
           <DefaultSavings />
+        </TabsContent>
+
+        <TabsContent value="reminders" className="space-y-6">
+          <OrganizationReminderSettings />
         </TabsContent>
         
         <TabsContent value="production" className="space-y-6">

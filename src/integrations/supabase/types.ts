@@ -60,6 +60,7 @@ export type Database = {
           created_at: string
           id: string
           message: string | null
+          read_by: string[] | null
           receiver_id: string | null
           room_id: string | null
           sender_id: string | null
@@ -69,6 +70,7 @@ export type Database = {
           created_at?: string
           id?: string
           message?: string | null
+          read_by?: string[] | null
           receiver_id?: string | null
           room_id?: string | null
           sender_id?: string | null
@@ -78,6 +80,7 @@ export type Database = {
           created_at?: string
           id?: string
           message?: string | null
+          read_by?: string[] | null
           receiver_id?: string | null
           room_id?: string | null
           sender_id?: string | null
@@ -515,6 +518,84 @@ export type Database = {
           },
         ]
       }
+      message_reads: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_id: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reads_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_delivery_log: {
+        Row: {
+          delivered_at: string
+          id: string
+          quote_request_id: string
+          reminder_type: string
+          supplier_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          id?: string
+          quote_request_id: string
+          reminder_type: string
+          supplier_id: string
+        }
+        Update: {
+          delivered_at?: string
+          id?: string
+          quote_request_id?: string
+          reminder_type?: string
+          supplier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_delivery_log_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_delivery_log_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_default_price_breaks: {
         Row: {
           created_at: string
@@ -738,6 +819,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "organization_quote_request_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_reminder_settings: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          reminder_days_before: number[]
+          reminder_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          reminder_days_before?: number[]
+          reminder_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          reminder_days_before?: number[]
+          reminder_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_reminder_settings_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: true
             referencedRelation: "organizations"
@@ -1328,8 +1444,10 @@ export type Database = {
           email: string
           first_name: string | null
           id: string
+          is_online: boolean | null
           job_title: string | null
           last_name: string | null
+          last_seen: string | null
           online_status: string | null
           updated_at: string
         }
@@ -1340,8 +1458,10 @@ export type Database = {
           email: string
           first_name?: string | null
           id: string
+          is_online?: boolean | null
           job_title?: string | null
           last_name?: string | null
+          last_seen?: string | null
           online_status?: string | null
           updated_at?: string
         }
@@ -1352,8 +1472,10 @@ export type Database = {
           email?: string
           first_name?: string | null
           id?: string
+          is_online?: boolean | null
           job_title?: string | null
           last_name?: string | null
+          last_seen?: string | null
           online_status?: string | null
           updated_at?: string
         }
@@ -2549,6 +2671,63 @@ export type Database = {
           },
         ]
       }
+      supplier_notifications: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_dismissed: boolean
+          is_read: boolean
+          message: string
+          notification_type: string
+          quote_request_id: string | null
+          supplier_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          message: string
+          notification_type: string
+          quote_request_id?: string | null
+          supplier_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          quote_request_id?: string | null
+          supplier_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_notifications_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_notifications_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_quote_attachments: {
         Row: {
           created_at: string
@@ -3686,12 +3865,32 @@ export type Database = {
         }
         Returns: string
       }
+      cleanup_expired_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_supplier_notification: {
+        Args: {
+          p_supplier_id: string
+          p_user_id: string
+          p_notification_type: string
+          p_title: string
+          p_message: string
+          p_quote_request_id?: string
+          p_expires_at?: string
+        }
+        Returns: string
+      }
       delete_quote_attachment: {
         Args: { attachment_id: string }
         Returns: undefined
       }
       delete_unused_price_breaks: {
         Args: { format_id: string; preserved_ids: string[] }
+        Returns: undefined
+      }
+      dismiss_notification: {
+        Args: { notification_id: string }
         Returns: undefined
       }
       fetch_shared_presentation: {
@@ -3756,6 +3955,10 @@ export type Database = {
           uploaded_by: string | null
         }[]
       }
+      get_unread_notification_count: {
+        Args: { user_id?: string }
+        Returns: number
+      }
       get_user_organizations: {
         Args: { user_id?: string }
         Returns: string[]
@@ -3787,6 +3990,14 @@ export type Database = {
       is_organization_member: {
         Args: { org_id: string; user_id?: string }
         Returns: boolean
+      }
+      mark_message_as_read: {
+        Args: { msg_id: string; usr_id: string }
+        Returns: undefined
+      }
+      mark_notification_read: {
+        Args: { notification_id: string }
+        Returns: undefined
       }
       record_purchase_order_audit: {
         Args: {
@@ -3927,6 +4138,10 @@ export type Database = {
       update_quote_request_format_products: {
         Args: { format_id: string; products_data: Json }
         Returns: undefined
+      }
+      user_has_read_message: {
+        Args: { message_read_by: string[]; user_id: string }
+        Returns: boolean
       }
       validate_api_key: {
         Args: { key: string }

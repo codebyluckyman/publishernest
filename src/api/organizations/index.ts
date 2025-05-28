@@ -3,3 +3,4 @@
 export * from "./defaultPriceBreaks";
 export * from "./productionSteps";
 export * from "./currencySymbols";
+export * from "./reminderSettings";
