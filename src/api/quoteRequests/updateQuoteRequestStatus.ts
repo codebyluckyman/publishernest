@@ -46,8 +46,8 @@ export async function updateQuoteRequestStatus(
       'status_change'
     );
 
-    // Create organization notification for status change
-    if (status !== currentRequest.status) {
+    // Create organization notification for status change (only for approved/declined)
+    if (status !== currentRequest.status && (status === 'approved' || status === 'declined')) {
       await createQuoteRequestStatusNotification(
         id,
         currentRequest.organization_id,

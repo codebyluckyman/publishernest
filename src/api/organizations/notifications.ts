@@ -18,7 +18,23 @@ export const fetchOrganizationNotifications = async (
     throw error;
   }
 
-  return data || [];
+  // Transform the data to match our type
+  const notifications: OrganizationNotification[] = (data || []).map((item: any) => ({
+    id: item.id,
+    organization_id: item.organization_id,
+    user_id: item.user_id,
+    notification_type: item.notification_type,
+    title: item.title,
+    message: item.message,
+    data: typeof item.data === 'object' ? item.data : {},
+    is_read: item.is_read,
+    is_dismissed: item.is_dismissed,
+    created_at: item.created_at,
+    expires_at: item.expires_at,
+    priority: item.priority
+  }));
+
+  return notifications;
 };
 
 export const createOrganizationNotification = async (
