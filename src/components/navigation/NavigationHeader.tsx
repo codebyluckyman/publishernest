@@ -1,9 +1,7 @@
 
-import OrganizationSwitcher from "@/components/OrganizationSwitcher";
-import UserAvatar from "@/components/UserAvatar";
-import NotificationsPopover from "@/components/NotificationsPopover";
 import { OrganizationNotificationsPopover } from "@/components/organizations/OrganizationNotificationsPopover";
 import HelpCenterPopover from "@/components/HelpCenterPopover";
+import UserAvatar from "@/components/UserAvatar";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,8 +25,6 @@ export function NavigationHeader({ onMobileMenuToggle }: NavigationHeaderProps) 
         <div className="flex-1" />
         
         <div className="flex items-center gap-2">
-          <OrganizationSwitcher />
-          <NotificationsPopover />
           <OrganizationNotificationsPopover />
           <HelpCenterPopover />
           <UserAvatar />

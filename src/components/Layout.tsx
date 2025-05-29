@@ -40,7 +40,7 @@ const Layout = () => {
           <DesktopSidebar menuItems={menuItems} />
           
           <main className="flex-1 flex flex-col p-4 md:p-8 animate-fadeIn">
-            <NavigationHeader currentPageLabel={currentPageLabel} menuItems={menuItems} />
+            <NavigationHeader onMobileMenuToggle={() => {}} />
             <BreadcrumbNavigation />
             <div className="flex-1">
               <Outlet />
