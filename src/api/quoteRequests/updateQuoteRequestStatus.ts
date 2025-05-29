@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
+import { sendQuoteRequestApprovalNotifications } from "./sendQuoteRequestApprovalNotifications";
 
 /**
  * Updates the status of a quote request
@@ -15,7 +16,7 @@ export async function updateQuoteRequestStatus(
     // Get the current state before updating
     const { data: currentRequest, error: fetchError } = await supabase
       .from("quote_requests")
-      .select()
+      .select("*")
       .eq("id", id)
       .single();
 
@@ -42,6 +43,16 @@ export async function updateQuoteRequestStatus(
       { status } as Partial<QuoteRequest>,
       'status_change'
     );
+
+    // If the status is being set to approved, send notifications to suppliers
+    if (status === 'approved' && currentRequest.status !== 'approved') {
+      console.log("Quote request approved, sending notifications to suppliers");
+      // Fire and forget - don't block the status update if notifications fail
+      sendQuoteRequestApprovalNotifications(id, currentRequest.organization_id)
+        .catch(error => {
+          console.error("Failed to send approval notifications:", error);
+        });
+    }
 
     return data as QuoteRequest;
   } catch (error: any) {

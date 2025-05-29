@@ -3641,6 +3641,38 @@ export type Database = {
           },
         ]
       }
+      typing_status: {
+        Row: {
+          id: string
+          is_typing: boolean | null
+          room_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_typing?: boolean | null
+          room_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_typing?: boolean | null
+          room_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_status_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unit_of_measures: {
         Row: {
           abbreviation: string | null
@@ -3869,6 +3901,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_typing_status: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_supplier_notification: {
         Args: {
           p_supplier_id: string
@@ -3955,9 +3991,26 @@ export type Database = {
           uploaded_by: string | null
         }[]
       }
+      get_unread_count: {
+        Args: { p_room_id: string; p_user_id: string }
+        Returns: number
+      }
       get_unread_notification_count: {
         Args: { user_id?: string }
         Returns: number
+      }
+      get_user_notifications: {
+        Args: { p_user_id?: string }
+        Returns: {
+          id: string
+          title: string
+          message: string
+          notification_type: string
+          quote_request_id: string
+          is_read: boolean
+          is_dismissed: boolean
+          created_at: string
+        }[]
       }
       get_user_organizations: {
         Args: { user_id?: string }
@@ -3993,6 +4046,10 @@ export type Database = {
       }
       mark_message_as_read: {
         Args: { msg_id: string; usr_id: string }
+        Returns: undefined
+      }
+      mark_messages_as_read: {
+        Args: { p_room_id: string; p_user_id: string }
         Returns: undefined
       }
       mark_notification_read: {
@@ -4137,6 +4194,10 @@ export type Database = {
       }
       update_quote_request_format_products: {
         Args: { format_id: string; products_data: Json }
+        Returns: undefined
+      }
+      update_typing_status: {
+        Args: { p_room_id: string; p_user_id: string; p_is_typing: boolean }
         Returns: undefined
       }
       user_has_read_message: {
