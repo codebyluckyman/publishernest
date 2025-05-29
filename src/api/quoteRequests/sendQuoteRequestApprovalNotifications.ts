@@ -76,7 +76,7 @@ export async function sendQuoteRequestApprovalNotifications(
           p_user_id: supplierUser.user_id,
           p_notification_type: 'new_quote_request',
           p_title: notificationTitle,
-          p_message: `Quote request "${quoteRequest.title}" has been approved and is now available for your response.`,
+          p_message: `Quote request "${quoteRequest.title}" has been issued and is now available for your response. We look forward to your response.`,
           p_quote_request_id: quoteRequestId,
           p_expires_at: expiresAt.toISOString()
         });
