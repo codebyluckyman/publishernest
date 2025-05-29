@@ -19,12 +19,14 @@ export function OrganizationReminderSettings() {
     isUpdating 
   } = useOrganizationReminderSettings();
 
+  const [issueQuoteNotificationsEnabled, setIssueQuoteNotificationsEnabled] = useState(true);
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [reminderDays, setReminderDays] = useState<number[]>([5, 1]);
   const [newReminderDay, setNewReminderDay] = useState<string>('');
 
   useEffect(() => {
     if (reminderSettings) {
+      setIssueQuoteNotificationsEnabled(reminderSettings.issue_quote_notifications_enabled);
       setReminderEnabled(reminderSettings.reminder_enabled);
       setReminderDays(reminderSettings.reminder_days_before);
     }
@@ -32,6 +34,7 @@ export function OrganizationReminderSettings() {
 
   const handleSave = () => {
     const settings = {
+      issue_quote_notifications_enabled: issueQuoteNotificationsEnabled,
       reminder_enabled: reminderEnabled,
       reminder_days_before: reminderDays,
     };
@@ -66,7 +69,7 @@ export function OrganizationReminderSettings() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Supplier Reminder Settings</CardTitle>
+          <CardTitle>Supplier Notification Settings</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
@@ -81,18 +84,33 @@ export function OrganizationReminderSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Supplier Reminder Settings</CardTitle>
+        <CardTitle>Supplier Notification Settings</CardTitle>
         <CardDescription>
-          Configure automatic reminders to suppliers about upcoming quote deadlines
+          Configure notifications to suppliers for quote requests and reminders
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Enable/Disable Toggle */}
+        {/* Quote Request Notifications Toggle */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <Label htmlFor="reminder-enabled">Enable Reminders</Label>
+            <Label htmlFor="issue-quote-notifications">Enable Issue Quote Request Notifications</Label>
             <p className="text-sm text-muted-foreground">
-              Send automatic reminder notifications to suppliers
+              Send notifications to suppliers when quote requests are approved and issued
+            </p>
+          </div>
+          <Switch
+            id="issue-quote-notifications"
+            checked={issueQuoteNotificationsEnabled}
+            onCheckedChange={setIssueQuoteNotificationsEnabled}
+          />
+        </div>
+
+        {/* Reminder Settings */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <Label htmlFor="reminder-enabled">Enable Deadline Reminders</Label>
+            <p className="text-sm text-muted-foreground">
+              Send automatic reminder notifications to suppliers about upcoming deadlines
             </p>
           </div>
           <Switch

@@ -24,7 +24,12 @@ export const fetchOrganizationReminderSettings = async (organizationId: string):
 export const createOrganizationReminderSettings = async (settings: CreateOrganizationReminderSettings): Promise<OrganizationReminderSettings> => {
   const { data, error } = await supabase
     .from('organization_reminder_settings')
-    .insert(settings)
+    .insert({
+      ...settings,
+      reminder_enabled: settings.reminder_enabled ?? true,
+      issue_quote_notifications_enabled: settings.issue_quote_notifications_enabled ?? true,
+      reminder_days_before: settings.reminder_days_before ?? [5, 1]
+    })
     .select()
     .single();
 

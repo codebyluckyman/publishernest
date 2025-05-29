@@ -830,6 +830,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          issue_quote_notifications_enabled: boolean
           organization_id: string
           reminder_days_before: number[]
           reminder_enabled: boolean
@@ -838,6 +839,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          issue_quote_notifications_enabled?: boolean
           organization_id: string
           reminder_days_before?: number[]
           reminder_enabled?: boolean
@@ -846,6 +848,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          issue_quote_notifications_enabled?: boolean
           organization_id?: string
           reminder_days_before?: number[]
           reminder_enabled?: boolean

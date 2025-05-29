@@ -46,7 +46,11 @@ export const useOrganizationReminderSettings = () => {
     },
   });
 
-  const createSettings = (settings: { reminder_days_before?: number[]; reminder_enabled?: boolean }) => {
+  const createSettings = (settings: { 
+    reminder_days_before?: number[]; 
+    reminder_enabled?: boolean;
+    issue_quote_notifications_enabled?: boolean;
+  }) => {
     if (!currentOrganization?.id) return;
     
     createMutation.mutate({

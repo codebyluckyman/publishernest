@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
 import { sendQuoteRequestApprovalNotifications } from "./sendQuoteRequestApprovalNotifications";
+import { fetchOrganizationReminderSettings } from "@/api/organizations/reminderSettings";
 
 /**
  * Updates the status of a quote request
@@ -44,14 +45,30 @@ export async function updateQuoteRequestStatus(
       'status_change'
     );
 
-    // If the status is being set to approved, send notifications to suppliers
+    // If the status is being set to approved, check organization settings and send notifications
     if (status === 'approved' && currentRequest.status !== 'approved') {
-      console.log("Quote request approved, sending notifications to suppliers");
-      // Fire and forget - don't block the status update if notifications fail
-      sendQuoteRequestApprovalNotifications(id, currentRequest.organization_id)
-        .catch(error => {
-          console.error("Failed to send approval notifications:", error);
-        });
+      console.log("Quote request approved, checking notification settings");
+      
+      try {
+        // Fetch organization reminder settings to check if notifications are enabled
+        const reminderSettings = await fetchOrganizationReminderSettings(currentRequest.organization_id);
+        
+        // Only send notifications if the setting is enabled (defaults to true if no settings found)
+        const shouldSendNotifications = reminderSettings?.issue_quote_notifications_enabled ?? true;
+        
+        if (shouldSendNotifications) {
+          console.log("Sending approval notifications to suppliers");
+          // Fire and forget - don't block the status update if notifications fail
+          sendQuoteRequestApprovalNotifications(id, currentRequest.organization_id)
+            .catch(error => {
+              console.error("Failed to send approval notifications:", error);
+            });
+        } else {
+          console.log("Quote request notifications are disabled for this organization");
+        }
+      } catch (settingsError) {
+        console.error("Error fetching notification settings, skipping notifications:", settingsError);
+      }
     }
 
     return data as QuoteRequest;
