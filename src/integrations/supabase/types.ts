@@ -666,6 +666,100 @@ export type Database = {
           },
         ]
       }
+      organization_notification_preferences: {
+        Row: {
+          created_at: string
+          delivery_method: string
+          enabled: boolean
+          id: string
+          notification_type: string
+          organization_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          delivery_method?: string
+          enabled?: boolean
+          id?: string
+          notification_type: string
+          organization_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          delivery_method?: string
+          enabled?: boolean
+          id?: string
+          notification_type?: string
+          organization_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_notification_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          expires_at: string | null
+          id: string
+          is_dismissed: boolean
+          is_read: boolean
+          message: string
+          notification_type: string
+          organization_id: string
+          priority: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          message: string
+          notification_type: string
+          organization_id: string
+          priority?: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_dismissed?: boolean
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          organization_id?: string
+          priority?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_product_fields: {
         Row: {
           created_at: string
@@ -3904,9 +3998,26 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_expired_organization_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_typing_status: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      create_organization_notification: {
+        Args: {
+          p_organization_id: string
+          p_notification_type: string
+          p_title: string
+          p_message: string
+          p_user_id?: string
+          p_data?: Json
+          p_expires_at?: string
+          p_priority?: string
+        }
+        Returns: string
       }
       create_supplier_notification: {
         Args: {
@@ -3932,6 +4043,10 @@ export type Database = {
         Args: { notification_id: string }
         Returns: undefined
       }
+      dismiss_organization_notification: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
       fetch_shared_presentation: {
         Args: { access_code: string }
         Returns: {
@@ -3952,6 +4067,31 @@ export type Database = {
       generate_presentation_access_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_organization_notifications: {
+        Args: {
+          p_organization_id: string
+          p_user_id?: string
+          p_limit?: number
+        }
+        Returns: {
+          id: string
+          organization_id: string
+          user_id: string
+          notification_type: string
+          title: string
+          message: string
+          data: Json
+          is_read: boolean
+          is_dismissed: boolean
+          created_at: string
+          expires_at: string
+          priority: string
+        }[]
+      }
+      get_organization_unread_notification_count: {
+        Args: { p_organization_id: string; p_user_id?: string }
+        Returns: number
       }
       get_price_break_for_quantity: {
         Args: {
@@ -4057,6 +4197,10 @@ export type Database = {
       }
       mark_notification_read: {
         Args: { notification_id: string }
+        Returns: undefined
+      }
+      mark_organization_notification_read: {
+        Args: { p_notification_id: string }
         Returns: undefined
       }
       record_purchase_order_audit: {

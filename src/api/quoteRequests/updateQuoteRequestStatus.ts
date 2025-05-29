@@ -4,6 +4,7 @@ import { QuoteRequest } from "@/types/quoteRequest";
 import { recordQuoteRequestAudit } from "./quoteRequestAudit";
 import { sendQuoteRequestApprovalNotifications } from "./sendQuoteRequestApprovalNotifications";
 import { fetchOrganizationReminderSettings } from "@/api/organizations/reminderSettings";
+import { createQuoteRequestStatusNotification } from "./createQuoteRequestNotifications";
 
 /**
  * Updates the status of a quote request
@@ -44,6 +45,16 @@ export async function updateQuoteRequestStatus(
       { status } as Partial<QuoteRequest>,
       'status_change'
     );
+
+    // Create organization notification for status change
+    if (status !== currentRequest.status) {
+      await createQuoteRequestStatusNotification(
+        id,
+        currentRequest.organization_id,
+        status,
+        userId
+      );
+    }
 
     // If the status is being set to approved, check organization settings and send notifications
     if (status === 'approved' && currentRequest.status !== 'approved') {
