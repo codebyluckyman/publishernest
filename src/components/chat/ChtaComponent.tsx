@@ -1,24 +1,21 @@
 import type React from "react";
-import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { Contact, Conversation, Message } from "./type";
-import Header from "./ChatHeader";
-import Sidebar from "./ChatSidebar";
-import ChatView from "./Chatview";
-import { useOrganization } from "@/hooks/useOrganization";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuid } from "uuid";
+import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
-import addNotification from "react-push-notification";
-import { useProfilesPolling } from "@/hooks/fetchOnlineStatus";
-import { useOrganizationMembers } from "@/hooks/organization/useOrganizationMembers";
+import ChatSidebar from "./ChatSidebar";
+import { Contact, Conversation, Message } from "./type";
+import ChatView from "./Chatview";
 
 const ChatComponent: React.FC = () => {
   const { currentOrganization } = useOrganization();
   const { user } = useAuth();
   const { room_id } = useParams();
+  const navigate = useNavigate();
 
-  const { profiles, loading, error } = useProfilesPolling(3 * 60 * 1000); // 3 minutes
-
+  // State
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState<
@@ -28,9 +25,8 @@ const ChatComponent: React.FC = () => {
   const [contact, setContact] = useState<Contact | null>(null);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Set selected conversation from URL parameter
+  // Set selected conversation from URL
   useEffect(() => {
     if (room_id) {
       setSelectedConversation(room_id);
@@ -39,289 +35,619 @@ const ChatComponent: React.FC = () => {
 
   // Fetch current user role
   useEffect(() => {
-    if (currentOrganization?.id && user?.id) {
-      const getCurrentUserRole = async () => {
-        const { data: organizationData, error: organizationError } =
-          await supabase
-            .from("organization_members")
-            .select("member_type")
-            .eq("organization_id", currentOrganization?.id)
-            .eq("auth_user_id", user?.id)
-            .single();
+    if (!currentOrganization?.id || !user?.id) return;
 
-        if (organizationError) {
-          console.error("Error fetching user role:", organizationError);
+    const getCurrentUserRole = async () => {
+      try {
+        const { data: organizationData, error } = await supabase
+          .from("organization_members")
+          .select("member_type")
+          .eq("organization_id", currentOrganization.id)
+          .eq("auth_user_id", user.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user role:", error);
           return;
         }
 
         if (organizationData) {
-          setCurrentUserRole(organizationData?.member_type);
+          setCurrentUserRole(organizationData.member_type);
         }
-      };
+      } catch (error) {
+        console.error("Error in getCurrentUserRole:", error);
+      }
+    };
 
-      getCurrentUserRole();
-    }
+    getCurrentUserRole();
   }, [user?.id, currentOrganization?.id]);
 
-  // Fetch conversations
-  const fetchConversations = async () => {
-    if (!currentOrganization?.id || !currentUserRole) return;
-    setIsLoadingConversations(true);
-    try {
-      const conversations: any[] = [];
+  // Calculate unread count
+  const calculateUnreadCount = useCallback(
+    async (roomId: string, userId: string): Promise<number> => {
+      try {
+        const { data: unreadMessages, error } = await supabase
+          .from("communications")
+          .select("id")
+          .eq("room_id", roomId)
+          .neq("sender_id", userId);
 
-      // Helper function to fetch members by type
-      const fetchMembers = async (memberType: string) => {
-        const { data: memberData, error: memberError } = await supabase
-          .from("organization_members")
-          .select("auth_user_id")
-          .eq("organization_id", currentOrganization.id)
-          .eq("member_type", memberType);
+        if (error) {
+          console.error("Error fetching messages:", error);
+          return 0;
+        }
 
-        if (memberError) throw memberError;
+        if (!unreadMessages?.length) return 0;
 
-        if (memberData && memberData.length > 0) {
-          const userIds = memberData.map((member) => member.auth_user_id);
-          const { data: profilesData, error: profilesError } = await supabase
-            .from("profiles")
-            .select(
-              `*, conversations(*), ${
-                memberType === "supplier" ? "suppliers(*)" : "*"
-              }`
-            )
-            .in("id", userIds);
+        const messageIds = unreadMessages.map((m) => m.id);
 
-          if (profilesError) throw profilesError;
+        const { data: readMessages, error: readError } = await supabase
+          .from("message_reads")
+          .select("message_id")
+          .eq("user_id", userId)
+          .in("message_id", messageIds);
 
-          if (profilesData) {
-            console.log("Profiles Data:", profilesData);
-            return profilesData.map((profile) => ({
-              id: profile.id,
-              name: `${profile.first_name}` + " " + `${profile.last_name}`,
-              lastMessage: "",
-              time: profile.created_at,
-              online_status: profiles.find(
-                (profiles) => profiles.id === profile.id
-              )?.online_status,
-              unread: 0,
-              role: memberType,
-              type: memberType,
-              email: profile.email,
-              // phone: profile.phone || "",
-              avatar_url: profile.avatar_url,
-              room_id: profile.conversations.find(
-                (conv) => profile.id === conv.user_id
-              )?.room_id,
-            }));
+        if (readError) {
+          console.error("Error fetching read messages:", readError);
+          return 0;
+        }
+
+        const readMessageIds = new Set(
+          readMessages?.map((r) => r.message_id) || []
+        );
+        return unreadMessages.filter((m) => !readMessageIds.has(m.id)).length;
+      } catch (error) {
+        console.error("Error calculating unread count:", error);
+        return 0;
+      }
+    },
+    []
+  );
+
+  // Mark messages as read
+  const markMessagesAsRead = useCallback(
+    async (roomId: string) => {
+      if (!user?.id) return;
+
+      try {
+        // Get all unread messages in this room
+        const { data: roomMessages } = await supabase
+          .from("communications")
+          .select("id")
+          .eq("room_id", roomId)
+          .neq("sender_id", user.id);
+
+        if (!roomMessages?.length) return;
+
+        // Get already read messages
+        const { data: readMessages } = await supabase
+          .from("message_reads")
+          .select("message_id")
+          .eq("user_id", user.id)
+          .in(
+            "message_id",
+            roomMessages.map((m) => m.id)
+          );
+
+        const readMessageIds = new Set(
+          readMessages?.map((r) => r.message_id) || []
+        );
+        const unreadMessages = roomMessages.filter(
+          (m) => !readMessageIds.has(m.id)
+        );
+
+        if (!unreadMessages.length) return;
+
+        // Mark unread messages as read using upsert
+        for (const message of unreadMessages) {
+          try {
+            await supabase.from("message_reads").upsert({
+              message_id: message.id,
+              user_id: user.id,
+              read_at: new Date().toISOString(),
+            });
+          } catch (error) {
+            console.error(
+              `Error marking message ${message.id} as read:`,
+              error
+            );
           }
         }
-        return [];
-      };
 
-      // Fetch appropriate conversations based on user role
-      if (currentUserRole !== "supplier") {
-        const suppliers = await fetchMembers("supplier");
-        if (suppliers) conversations.push(...suppliers);
+        // Update conversations table with last read message
+        if (unreadMessages.length > 0) {
+          const latestMessageId = unreadMessages[0].id;
+          await supabase
+            .from("conversations")
+            .update({ last_message_read_id: latestMessageId })
+            .eq("room_id", roomId)
+            .eq("user_id", user.id);
+        }
+
+        // Update local state
+        setConversations((prev) =>
+          prev.map((conv) =>
+            conv.room_id === roomId ? { ...conv, unread: 0 } : conv
+          )
+        );
+
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (unreadMessages.some((m) => m.id === msg.id)) {
+              return {
+                ...msg,
+                read_by: [...(msg.read_by || []), user.id],
+                status: msg.sender === user.id ? "read" : msg.status,
+              };
+            }
+            return msg;
+          })
+        );
+      } catch (error) {
+        console.error("Error in markMessagesAsRead:", error);
+      }
+    },
+    [user?.id]
+  );
+
+  // Fetch conversations with optimized queries
+  const fetchConversations = useCallback(async () => {
+    if (!currentOrganization?.id || !currentUserRole || !user?.id) return;
+
+    setIsLoadingConversations(true);
+    try {
+      // Get organization members (excluding current user)
+      const { data: memberData } = await supabase
+        .from("organization_members")
+        .select("auth_user_id, member_type")
+        .eq("organization_id", currentOrganization.id)
+        .neq("auth_user_id", user.id);
+
+      if (!memberData?.length) {
+        setConversations([]);
+        return;
       }
 
-      if (currentUserRole !== "customer") {
-        const customers = await fetchMembers("customer");
-        if (customers) conversations.push(...customers);
-      }
+      const userIds = memberData.map((member) => member.auth_user_id);
 
-      if (currentUserRole !== "publisher") {
-        const publishers = await fetchMembers("publisher");
-        if (publishers) conversations.push(...publishers);
-      }
-      setConversations(conversations);
+      // Fetch profiles and conversations in parallel
+      const [profilesResponse, allConversationsResponse] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select(
+            "id, first_name, last_name, email, avatar_url, online_status, created_at"
+          )
+          .in("id", userIds),
+        supabase
+          .from("conversations")
+          .select("room_id, user_id, last_message_id, created_at"),
+      ]);
+
+      const profileData = profilesResponse.data || [];
+      const allConversations = allConversationsResponse.data || [];
+
+      // Find rooms where current user participates
+      const userRooms = allConversations
+        .filter((conv) => conv.user_id === user.id)
+        .map((conv) => conv.room_id);
+
+      // Group conversations by room
+      const roomParticipants: Record<string, string[]> = {};
+      allConversations.forEach((conv) => {
+        if (userRooms.includes(conv.room_id)) {
+          if (!roomParticipants[conv.room_id]) {
+            roomParticipants[conv.room_id] = [];
+          }
+          roomParticipants[conv.room_id].push(conv.user_id);
+        }
+      });
+
+      // Get last messages and unread counts in parallel
+      const [lastMessages, unreadCounts] = await Promise.all([
+        Promise.all(
+          userRooms.map(async (roomId) => {
+            const { data: messageData } = await supabase
+              .from("communications")
+              .select("message, created_at, sender_id")
+              .eq("room_id", roomId)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .single();
+
+            return {
+              roomId,
+              message: messageData?.message || "",
+              created_at: messageData?.created_at,
+              sender_id: messageData?.sender_id,
+            };
+          })
+        ),
+        Promise.all(
+          userRooms.map(async (roomId) => ({
+            roomId,
+            unreadCount: await calculateUnreadCount(roomId, user.id),
+          }))
+        ),
+      ]);
+
+      // Build conversations list
+      const formattedConversations: Conversation[] = memberData
+        .filter((member) => member.member_type !== currentUserRole)
+        .map((member) => {
+          const profile = profileData.find((p) => p.id === member.auth_user_id);
+          if (!profile) return null;
+
+          // Find room between current user and this member
+          const roomId = Object.entries(roomParticipants).find(
+            ([, participants]) =>
+              participants.includes(user.id) &&
+              participants.includes(member.auth_user_id)
+          )?.[0];
+
+          const lastMessage = lastMessages.find((msg) => msg.roomId === roomId);
+          const unreadData = unreadCounts.find((uc) => uc.roomId === roomId);
+
+          const online_status: "online" | "away" | "offline" =
+            (profile.online_status as "online" | "away" | "offline") ||
+            "offline";
+
+          return {
+            id: member.auth_user_id,
+            name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
+            avatar_url: profile.avatar_url,
+            email: profile.email,
+            type: member.member_type as "customer" | "supplier" | "publisher",
+            online_status,
+            room_id: roomId,
+            lastMessage: lastMessage?.message || "",
+            time: lastMessage?.created_at
+              ? new Date(lastMessage.created_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "",
+            unread: unreadData?.unreadCount || 0,
+            joinedDate: profile.created_at
+              ? new Date(profile.created_at).toLocaleDateString()
+              : undefined,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => {
+          const aTime = lastMessages.find(
+            (msg) => msg.roomId === a.room_id
+          )?.created_at;
+          const bTime = lastMessages.find(
+            (msg) => msg.roomId === b.room_id
+          )?.created_at;
+
+          if (!aTime && !bTime) return 0;
+          if (!aTime) return 1;
+          if (!bTime) return -1;
+
+          return new Date(bTime).getTime() - new Date(aTime).getTime();
+        });
+
+      setConversations(formattedConversations);
     } catch (error) {
       console.error("Error fetching conversations:", error);
     } finally {
       setIsLoadingConversations(false);
     }
-  };
+  }, [
+    currentOrganization?.id,
+    currentUserRole,
+    user?.id,
+    calculateUnreadCount,
+  ]);
 
   useEffect(() => {
     fetchConversations();
-  }, [currentOrganization?.id, currentUserRole]);
+  }, [fetchConversations]);
 
-  // Handle sending a message
-  const handleSendMessage = async (content: string, attachments?: File[]) => {
-    if (!selectedConversation || !content.trim() || !user?.id || !room_id)
-      return;
+  // Load contact info when room_id changes or when conversations are loaded
+  useEffect(() => {
+    if (room_id && conversations.length > 0) {
+      const conversation = conversations.find(
+        (conv) => conv.room_id === room_id
+      );
+      if (conversation) {
+        setContact({
+          id: conversation.id,
+          name: conversation.name,
+          online: conversation.online_status === "online",
+          type: conversation.type,
+          email: conversation.email,
+          avatar_url: conversation.avatar_url,
+          joinedDate: conversation.joinedDate,
+        });
+      }
+    }
+  }, [room_id, conversations]);
 
-    // Create temporary message for optimistic UI update
-    const tempMessage: Message = {
-      id: `temp-${Date.now()}`,
-      date: new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-      content: content.trim(),
-      sender: user.id,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      attachments: attachments?.map((file) => ({
-        type: file.type.startsWith("image/") ? "image" : "file",
-        name: file.name,
-        size: file.size,
-        url: file.type.startsWith("image/")
-          ? URL.createObjectURL(file)
-          : undefined,
-      })),
-    };
+  // Handle conversation selection
+  const handleSelectConversation = useCallback(
+    async (conversation: Conversation) => {
+      if (!user?.id) return;
 
-    setMessages((prev) => [...prev, tempMessage]);
+      try {
+        let roomId = conversation.room_id;
 
-    try {
-      // Upload attachments if any
-      let attachmentUrls = [];
-      if (attachments && attachments.length > 0) {
-        for (const file of attachments) {
-          const fileExt = file.name.split(".").pop();
-          const uniqueId = Math.random().toString(36).substring(2);
-          const fileName = `${uniqueId}_${file.name}`;
-          // Changed filepath to include 'attachments' folder
-          const filePath = `attachments/${fileName}`;
+        // Create room if it doesn't exist
+        if (!roomId) {
+          // Check for existing room
+          const { data: existingConversations } = await supabase
+            .from("conversations")
+            .select("room_id, user_id")
+            .in("user_id", [user.id, conversation.id]);
 
-          const { data: uploadData, error: uploadError } =
-            await supabase.storage
-              .from("chatting-attachment")
-              .upload(filePath, file, {
-                cacheControl: "3600",
-                upsert: false,
-              });
+          // Find room with both users
+          const roomUserCount: Record<string, Set<string>> = {};
+          existingConversations?.forEach(({ room_id, user_id }) => {
+            if (!roomUserCount[room_id]) roomUserCount[room_id] = new Set();
+            roomUserCount[room_id].add(user_id);
+          });
 
-          if (uploadError) {
-            console.error("Error uploading file:", uploadError);
-            continue;
+          const existingRoomId = Object.entries(roomUserCount).find(
+            ([, users]) => users.has(user.id) && users.has(conversation.id)
+          )?.[0];
+
+          if (existingRoomId) {
+            roomId = existingRoomId;
+          } else {
+            // Create new room
+            roomId = uuid();
+            const { error: insertError } = await supabase
+              .from("conversations")
+              .insert([
+                {
+                  room_id: roomId,
+                  user_id: user.id,
+                  last_message_id: null,
+                  last_message_read_id: null,
+                },
+                {
+                  room_id: roomId,
+                  user_id: conversation.id,
+                  last_message_id: null,
+                  last_message_read_id: null,
+                },
+              ]);
+
+            if (insertError) {
+              console.error("Error creating conversations:", insertError);
+              return;
+            }
           }
 
-          const { data: publicUrlData } = supabase.storage
-            .from("chatting-attachment")
-            .getPublicUrl(filePath);
-
-          attachmentUrls.push({
-            type: file.type.startsWith("image/") ? "image" : "file",
-            name: file.name,
-            size: file.size,
-            url: publicUrlData.publicUrl,
-          });
+          // Update conversation in state
+          setConversations((prev) =>
+            prev.map((conv) =>
+              conv.id === conversation.id ? { ...conv, room_id: roomId } : conv
+            )
+          );
         }
+
+        // Set contact info
+        setContact({
+          id: conversation.id,
+          name: conversation.name,
+          online: conversation.online_status === "online",
+          type: conversation.type,
+          email: conversation.email,
+          avatar_url: conversation.avatar_url,
+          joinedDate: conversation.joinedDate,
+        });
+
+        // Navigate and mark as read
+        navigate(`/chat/${roomId}`);
+        setSelectedConversation(roomId);
+
+        if (roomId) {
+          await markMessagesAsRead(roomId);
+        }
+      } catch (error) {
+        console.error("Error handling conversation selection:", error);
       }
+    },
+    [user?.id, navigate, markMessagesAsRead]
+  );
 
-      // Insert message into database
-      const { data: messageData, error: messageError } = await supabase
-        .from("communications")
-        .insert({
-          sender_id: user.id,
-          receiver_id: selectedConversation,
-          message: content.trim(),
-          room_id: room_id,
-          attachment:
-            attachmentUrls.length > 0 ? JSON.stringify(attachmentUrls) : null,
-          created_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
+  // Handle sending message (supports file-only messages)
+  const handleSendMessage = useCallback(
+    async (content: string, attachments?: File[]) => {
+      if (
+        !selectedConversation ||
+        (!content.trim() && !attachments?.length) ||
+        !user?.id ||
+        !room_id
+      )
+        return;
 
-      if (messageError) throw messageError;
-
-      // Check if conversation exists for sender
-      const { data: senderConversation, error: senderConvError } =
-        await supabase
-          .from("conversations")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("room_id", room_id)
-          .maybeSingle();
-
-      if (senderConvError) throw senderConvError;
-
-      // Update or create conversation for sender
-      if (senderConversation) {
-        const { error: senderUpdateError } = await supabase
-          .from("conversations")
-          .update({
-            last_message_id: messageData.id,
-            created_at: new Date().toISOString(),
-          })
-          .eq("user_id", user.id)
-          .eq("room_id", room_id);
-
-        if (senderUpdateError) throw senderUpdateError;
-      }
-
-      // Check if conversation exists for receiver
-      const { data: receiverConversation, error: receiverConvError } =
-        await supabase
-          .from("conversations")
-          .select("*")
-          .eq("user_id", selectedConversation)
-          .eq("room_id", room_id)
-          .maybeSingle();
-
-      if (receiverConvError) throw receiverConvError;
-
-      // Update or create conversation for receiver
-      if (receiverConversation) {
-        const { error: receiverUpdateError } = await supabase
-          .from("conversations")
-          .update({
-            last_message_id: messageData.id,
-            created_at: new Date().toISOString(),
-          })
-          .eq("user_id", selectedConversation)
-          .eq("room_id", room_id);
-
-        if (receiverUpdateError) throw receiverUpdateError;
-      }
-
-      // Replace temporary message with actual message from database
-      setMessages((prev) => [
-        ...prev.filter((msg) => msg.id !== tempMessage.id),
-        {
-          id: messageData.id,
-          date: new Date(messageData.created_at).toLocaleDateString("en-US", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          }),
-          content: messageData.message,
-          sender: messageData.sender_id,
-          time: new Date(messageData.created_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          status: "sent",
-          attachments: messageData.attachment
-            ? JSON.parse(messageData.attachment)
+      // Optimistic UI update
+      const tempMessage: Message = {
+        id: `temp-${Date.now()}`,
+        date: new Date().toLocaleDateString("en-US", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+        content: content.trim() || "", // Allow empty content for file-only messages
+        sender: user.id,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        status: "sent",
+        attachments: attachments?.map((file) => ({
+          type: file.type.startsWith("image/") ? "image" : "file",
+          name: file.name,
+          size: file.size,
+          url: file.type.startsWith("image/")
+            ? URL.createObjectURL(file)
             : undefined,
-        },
-      ]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      // Remove temporary message if there was an error
-      setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
-    }
-  };
+        })),
+      };
+
+      setMessages((prev) => [...prev, tempMessage]);
+
+      try {
+        // Upload attachments
+        const attachmentUrls = [];
+        if (attachments?.length) {
+          for (const file of attachments) {
+            const uniqueId = Math.random().toString(36).substring(2);
+            const fileName = `${uniqueId}_${file.name}`;
+            const filePath = `attachments/${fileName}`;
+
+            const { data: uploadData, error: uploadError } =
+              await supabase.storage
+                .from("chatting-attachment")
+                .upload(filePath, file, {
+                  cacheControl: "3600",
+                  upsert: false,
+                });
+
+            if (uploadError) {
+              console.error("Error uploading file:", uploadError);
+              continue;
+            }
+
+            const { data: publicUrlData } = supabase.storage
+              .from("chatting-attachment")
+              .getPublicUrl(filePath);
+
+            attachmentUrls.push({
+              type: file.type.startsWith("image/") ? "image" : "file",
+              name: file.name,
+              size: file.size,
+              url: publicUrlData.publicUrl,
+            });
+          }
+        }
+
+        // Find receiver
+        const otherUserId = conversations.find(
+          (conv) => conv.room_id === room_id
+        )?.id;
+
+        // Insert message (allow empty content for file-only messages)
+        const { data: messageData, error: messageError } = await supabase
+          .from("communications")
+          .insert({
+            sender_id: user.id,
+            receiver_id: otherUserId,
+            message:
+              content.trim() ||
+              (attachments?.length ? `Sent ${attachments.length} file(s)` : ""),
+            room_id: room_id,
+            attachment:
+              attachmentUrls.length > 0 ? JSON.stringify(attachmentUrls) : null,
+            created_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (messageError) throw messageError;
+
+        // Update conversations table for both users
+        const conversationUpdates = [
+          {
+            room_id: room_id,
+            user_id: user.id,
+            last_message_id: messageData.id,
+            last_message_read_id: messageData.id, // Sender has read their own message
+          },
+          {
+            room_id: room_id,
+            user_id: otherUserId,
+            last_message_id: messageData.id,
+            last_message_read_id: null, // Receiver hasn't read it yet
+          },
+        ];
+
+        // Update both conversation records
+        for (const update of conversationUpdates) {
+          await supabase
+            .from("conversations")
+            .update({
+              last_message_id: update.last_message_id,
+              last_message_read_id: update.last_message_read_id,
+              created_at: new Date().toISOString(),
+            })
+            .eq("room_id", update.room_id)
+            .eq("user_id", update.user_id);
+        }
+
+        // Mark message as read by sender
+        await supabase.from("message_reads").upsert({
+          message_id: messageData.id,
+          user_id: user.id,
+          read_at: new Date().toISOString(),
+        });
+
+        // Replace temp message with real message
+        setMessages((prev) => [
+          ...prev.filter((msg) => msg.id !== tempMessage.id),
+          {
+            id: messageData.id,
+            date: new Date(messageData.created_at).toLocaleDateString("en-US", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+            content: messageData.message,
+            sender: messageData.sender_id,
+            time: new Date(messageData.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            status: "sent",
+            attachments: messageData.attachment
+              ? JSON.parse(messageData.attachment)
+              : undefined,
+            read_by: [user.id],
+          },
+        ]);
+
+        // Update conversation list
+        setConversations((prev) =>
+          prev.map((conv) => {
+            if (conv.room_id === room_id) {
+              return {
+                ...conv,
+                lastMessage:
+                  content.trim() || `Sent ${attachments?.length || 0} file(s)`,
+                time: new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              };
+            }
+            return conv;
+          })
+        );
+      } catch (error) {
+        console.error("Error sending message:", error);
+        // Remove temp message on error
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
+      }
+    },
+    [selectedConversation, user?.id, room_id, conversations]
+  );
 
   // Fetch messages and set up real-time subscription
   useEffect(() => {
     if (!selectedConversation || !room_id || !user?.id) {
       setMessages([]);
-      setContact(null);
       return;
     }
 
     setIsLoadingMessages(true);
 
-    const fetchMessagesAndContact = async () => {
+    const fetchMessages = async () => {
       try {
         // Fetch messages
         const { data: messagesData, error: messagesError } = await supabase
@@ -332,58 +658,62 @@ const ChatComponent: React.FC = () => {
 
         if (messagesError) throw messagesError;
 
-        // Format messages with correct status (sent/received)
-        const formattedMessages = messagesData.map((msg) => ({
-          id: msg.id,
-          date: new Date(msg.created_at).toLocaleDateString("en-US", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          }),
-          content: msg.message,
-          sender: msg.sender_id,
-          time: new Date(msg.created_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          status: msg.sender_id === user.id ? "sent" : "received",
-          attachments: msg.attachment ? JSON.parse(msg.attachment) : undefined,
-        }));
+        // Get read status for all messages
+        const messageIds = messagesData.map((m) => m.id);
+        const { data: readData } = await supabase
+          .from("message_reads")
+          .select("message_id, user_id")
+          .in("message_id", messageIds);
+
+        // Group read data by message_id
+        const readByMessage: Record<string, string[]> = {};
+        readData?.forEach((read) => {
+          if (!readByMessage[read.message_id]) {
+            readByMessage[read.message_id] = [];
+          }
+          readByMessage[read.message_id].push(read.user_id);
+        });
+
+        // Format messages
+        const formattedMessages = messagesData.map((msg) => {
+          const readBy = readByMessage[msg.id] || [];
+          const isRead =
+            readBy.length > 1 ||
+            (readBy.length === 1 && readBy[0] !== msg.sender_id);
+
+          let status: "sent" | "delivered" | "read" = "sent";
+          if (msg.sender_id === user.id) {
+            status = isRead ? "read" : "delivered"; // Show delivered immediately for own messages
+          } else {
+            status = isRead ? "read" : "delivered";
+          }
+
+          return {
+            id: msg.id,
+            date: new Date(msg.created_at).toLocaleDateString("en-US", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+            content: msg.message,
+            sender: msg.sender_id,
+            time: new Date(msg.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            status,
+            attachments: msg.attachment
+              ? JSON.parse(msg.attachment)
+              : undefined,
+            read_by: readBy,
+          };
+        });
 
         setMessages(formattedMessages);
 
-        // Update last read message
-        if (messagesData.length > 0) {
-          const lastMessage = messagesData[messagesData.length - 1];
-          if (lastMessage.sender_id !== user.id) {
-            await supabase
-              .from("conversations")
-              .update({
-                last_message_read_id: lastMessage.id,
-                created_at: new Date().toISOString(),
-              })
-              .eq("user_id", user.id)
-              .eq("room_id", room_id);
-          }
-        }
-
-        // Set contact info
-        const contactConversation = conversations.find(
-          (c) => c.id === selectedConversation
-        );
-        // if (contactConversation) {
-        //   setContact({
-        //     id: contactConversation.id,
-        //     name: contactConversation.name,
-        //     online: contactConversation.online,
-        //     type: contactConversation.type,
-        //     email: contactConversation.email,
-        //     phone: contactConversation.phone,
-        //     location: contactConversation.location,
-        //     role: contactConversation.role,
-        //   });
-        // }
+        // Mark messages as read when loading the conversation
+        await markMessagesAsRead(room_id);
       } catch (error) {
         console.error("Error fetching messages:", error);
       } finally {
@@ -391,15 +721,15 @@ const ChatComponent: React.FC = () => {
       }
     };
 
-    fetchMessagesAndContact();
+    fetchMessages();
 
     // Set up real-time subscription for new messages
-    const subscription = supabase
+    const messageSubscription = supabase
       .channel(`room:${room_id}`)
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "communications",
           filter: `room_id=eq.${room_id}`,
@@ -407,32 +737,46 @@ const ChatComponent: React.FC = () => {
         async (payload) => {
           const newMsg = payload.new as any;
 
-          const { data: senderProfile, error: profileError } = await supabase
+          // Don't add message if it's from current user (already added optimistically)
+          if (newMsg.sender_id === user.id) return;
+
+          // Get sender profile for notification
+          const { data: senderProfile } = await supabase
             .from("profiles")
             .select("first_name, last_name, avatar_url")
             .eq("id", newMsg.sender_id)
             .single();
 
-          if (profileError) {
-            console.error("Error fetching sender profile:", profileError);
-            return;
+          // Show push notification with navigation - only if not currently viewing this room
+          if (senderProfile && document.hidden) {
+            const senderName =
+              `${senderProfile.first_name} ${senderProfile.last_name}`.trim();
+
+            // Request notification permission if not granted
+            if (Notification.permission === "default") {
+              await Notification.requestPermission();
+            }
+
+            if (Notification.permission === "granted") {
+              const notification = new Notification("New Message", {
+                body: `${senderName}: ${newMsg.message}`,
+                icon: senderProfile.avatar_url || "/user_logo.png",
+                tag: `chat-${room_id}`, // Prevent duplicate notifications
+                requireInteraction: true,
+              });
+
+              notification.onclick = () => {
+                window.focus();
+                navigate(`/chat/${room_id}`);
+                notification.close();
+              };
+
+              // Auto close after 5 seconds
+              setTimeout(() => notification.close(), 5000);
+            }
           }
 
-          addNotification({
-            title: "Direct Message",
-            message: `${
-              senderProfile.first_name + " " + senderProfile.last_name
-            }: ${newMsg.message}`,
-            native: true,
-            duration: 2500,
-            icon: senderProfile.avatar_url
-              ? senderProfile.avatar_url
-              : "/user_logo.png",
-          });
-
-          if (newMsg.sender_id === user.id) return;
-
-          const formattedMessage = {
+          const formattedMessage: Message = {
             id: newMsg.id,
             date: new Date(newMsg.created_at).toLocaleDateString("en-US", {
               weekday: "long",
@@ -446,57 +790,61 @@ const ChatComponent: React.FC = () => {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            status: "received",
+            status: "delivered",
             attachments: newMsg.attachment
               ? JSON.parse(newMsg.attachment)
               : undefined,
+            read_by: [],
           };
 
           setMessages((prev) => [...prev, formattedMessage]);
 
-          await supabase
-            .from("conversations")
-            .update({
-              last_message_read_id: newMsg.id,
-              created_at: new Date().toISOString(),
+          // Update conversation list with new message and increment unread count
+          setConversations((prev) =>
+            prev.map((conv) => {
+              if (conv.room_id === room_id) {
+                return {
+                  ...conv,
+                  lastMessage: newMsg.message,
+                  time: new Date(newMsg.created_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  unread: conv.unread + 1,
+                };
+              }
+              return conv;
             })
-            .eq("user_id", user.id)
-            .eq("room_id", room_id);
+          );
 
-          // scrollToBottom();
+          // Mark as read immediately since user is viewing this conversation
+          await markMessagesAsRead(room_id);
         }
       )
       .subscribe();
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [selectedConversation, room_id, user?.id, conversations, profiles]);
-
-  useEffect(() => {
-    const subscription = supabase
-      .channel(`profiles-realtime`)
+    // Set up real-time subscription for read receipts
+    const readReceiptSubscription = supabase
+      .channel(`read_receipts:${room_id}`)
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
-          table: "profiles",
-          filter: `current_organization_id=eq.${currentOrganization?.id}`,
+          table: "message_reads",
         },
-        async (payload) => {
-          setConversations((prevConversations) =>
-            prevConversations.map((conversation) => {
-              const updatedProfile = profiles.find(
-                (profile) => profile.id === conversation.id
-              );
-              if (updatedProfile) {
+        (payload) => {
+          const newReadReceipt = payload.new as any;
+          setMessages((prev) =>
+            prev.map((msg) => {
+              if (msg.id === newReadReceipt.message_id) {
                 return {
-                  ...conversation,
-                  online_status: updatedProfile.online_status,
+                  ...msg,
+                  read_by: [...(msg.read_by || []), newReadReceipt.user_id],
+                  status: msg.sender === user.id ? "read" : msg.status,
                 };
               }
-              return conversation;
+              return msg;
             })
           );
         }
@@ -504,241 +852,69 @@ const ChatComponent: React.FC = () => {
       .subscribe();
 
     return () => {
+      messageSubscription.unsubscribe();
+      readReceiptSubscription.unsubscribe();
+    };
+  }, [selectedConversation, room_id, user?.id, markMessagesAsRead, navigate]);
+
+  // Set up real-time subscription for online status changes (improved)
+  useEffect(() => {
+    if (!conversations.length) return;
+
+    const userIds = conversations.map((c) => c.id);
+
+    const subscription = supabase
+      .channel("online_status_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `id=in.(${userIds.join(",")})`,
+        },
+        (payload) => {
+          const updatedProfile = payload.new as any;
+
+          // Update conversations immediately
+          setConversations((prev) =>
+            prev.map((conv) =>
+              conv.id === updatedProfile.id
+                ? { ...conv, online_status: updatedProfile.online_status }
+                : conv
+            )
+          );
+
+          // Update contact info if it's the current contact
+          if (contact && contact.id === updatedProfile.id) {
+            setContact((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    online: updatedProfile.online_status === "online",
+                  }
+                : null
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
       subscription.unsubscribe();
     };
-  }, [selectedConversation, room_id, user?.id, conversations, profiles]);
-
-  // Scroll to bottom when messages change
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // const [members, setMembers] = useState<any[]>([]);
-  // const { fetchOrganizationMembers } = useOrganizationMembers(
-  //   currentOrganization?.id
-  // );
-  // const fetchMembers = async () => {
-  //   const { data: membersData, error: membersError } = await supabase
-  //     .from("organization_members")
-  //     .select(`*, profiles(*)`)
-  //     .eq("organization_id", currentOrganization?.id);
-  //   if (membersError) {
-  //     console.error("Error fetching members:", membersError);
-  //     return;
-  //   }
-
-  //   if()
-
-  //   console.log("Members Data:", membersData);
-  // };
-
-  // Helper function to fetch and format member data based on type
-  const fetchMembersByType = async (
-    memberType: string,
-    organizationId: string,
-    supabase: any
-  ) => {
-    // First get organization members
-    const { data: members, error } = await supabase
-      .from("organization_members")
-      .select(
-        `
-      auth_user_id,
-      member_type
-    `
-      )
-      .eq("organization_id", organizationId)
-      .eq("member_type", memberType);
-
-    if (error) {
-      console.error(`Error fetching ${memberType} members:`, error);
-      return [];
-    }
-
-    const authUserIds = members.map((member) => member.auth_user_id);
-
-    // Fetch profiles
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select(
-        `
-      id,
-      first_name,
-      last_name,
-      email,
-      avatar_url,
-      created_at,
-      online_status
-    `
-      )
-      .in("id", authUserIds);
-
-    if (profilesError) {
-      console.error(`Error fetching profiles:`, profilesError);
-      return [];
-    }
-
-    // Fetch company info based on member type
-    let companyData = [];
-    if (memberType !== "publisher") {
-      const { data: companies, error: companiesError } = await supabase
-        .from(memberType === "supplier" ? "suppliers" : "customers")
-        .select(
-          `
-        id,
-      `
-        )
-        .in("auth_user_id", authUserIds);
-
-      if (companiesError) {
-        console.error(
-          `Error fetching ${memberType} companies:`,
-          companiesError
-        );
-      } else {
-        companyData = companies || [];
-      }
-    }
-
-    // Fetch conversations
-    const { data: conversations, error: conversationsError } = await supabase
-      .from("conversations")
-      .select(
-        `
-      room_id,
-      last_message_id,
-      last_message_read_id,
-      user_id
-    `
-      )
-      .in("user_id", authUserIds);
-
-    if (conversationsError) {
-      console.error(`Error fetching conversations:`, conversationsError);
-      return [];
-    }
-
-    // Fetch last messages for conversations
-    const roomIds = conversations.map((conv) => conv.room_id).filter(Boolean);
-    const lastMessages =
-      roomIds.length > 0
-        ? await Promise.all(
-            roomIds.map(async (roomId) => {
-              const { data: messageData } = await supabase
-                .from("communications")
-                .select("*")
-                .eq("room_id", roomId)
-                .order("created_at", { ascending: false })
-                .limit(1)
-                .single();
-
-              return {
-                roomId,
-                message: messageData?.message || "",
-                created_at: messageData?.created_at,
-              };
-            })
-          )
-        : [];
-
-    // Combine all data
-    return members.map((member: any) => {
-      const profile = profiles.find((p) => p.id === member.auth_user_id);
-      const company = companyData.find(
-        (c) => c.auth_user_id === member.auth_user_id
-      );
-      const conversation = conversations.find(
-        (c) => c.user_id === member.auth_user_id
-      );
-      const lastMessage = lastMessages.find(
-        (msg) => msg?.roomId === conversation?.room_id
-      );
-
-      return {
-        id: member.auth_user_id,
-        name: `${profile?.first_name || ""} ${profile?.last_name || ""}`,
-        avatar_url: profile?.avatar_url,
-        email: profile?.email,
-        type: memberType,
-        online_status: profile?.online_status,
-        room_id: conversation?.room_id,
-        lastMessage: lastMessage?.message || "",
-        lastMessageTime: lastMessage?.created_at || profile?.created_at,
-        unreadCount: 0,
-      };
-    });
-  };
-
-  const fetchAllRelevantMembers = async () => {
-    if (!currentOrganization?.id || !user?.id) return [];
-
-    try {
-      // First, get current user's member type
-      const { data: currentUserData, error: currentUserError } = await supabase
-        .from("organization_members")
-        .select("member_type")
-        .eq("organization_id", currentOrganization.id)
-        .eq("auth_user_id", user.id)
-        .single();
-
-      if (currentUserError) throw currentUserError;
-
-      const currentUserType = currentUserData.member_type;
-      const memberTypes = ["publisher", "customer", "supplier"];
-      const relevantTypes = memberTypes.filter(
-        (type) => type !== currentUserType
-      );
-
-      // Fetch members for each relevant type
-      const allMembers = await Promise.all(
-        relevantTypes.map((type) =>
-          fetchMembersByType(type, currentOrganization.id, supabase)
-        )
-      );
-
-      // Flatten and sort by last message time
-      const flattenedMembers = allMembers
-        .flat()
-        .sort(
-          (a, b) =>
-            new Date(b.lastMessageTime).getTime() -
-            new Date(a.lastMessageTime).getTime()
-        );
-
-      return flattenedMembers;
-    } catch (error) {
-      console.error("Error fetching members:", error);
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    if (currentOrganization?.id) {
-      const fetchData = async () => {
-        const members = await fetchAllRelevantMembers();
-
-        console.log("Fetched Members:", members);
-        // setMembers(members);
-      };
-
-      fetchData();
-    }
-  }, [currentOrganization?.id]);
+  }, [conversations, contact]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-13rem)] bg-white">
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
+        <ChatSidebar
           conversations={conversations}
           isLoading={isLoadingConversations}
           selectedConversation={selectedConversation}
-          onSelectConversation={setSelectedConversation}
+          onSelectConversation={handleSelectConversation}
           currentOrganizationRole={currentUserRole}
-          currentUser={user?.id}
+          currentUser={user?.id || ""}
         />
         <ChatView
           selectedConversation={selectedConversation}
@@ -746,8 +922,8 @@ const ChatComponent: React.FC = () => {
           contact={contact}
           isLoading={isLoadingMessages}
           onSendMessage={handleSendMessage}
-          currentUserId={user?.id}
-          // messagesEndRef={messagesEndRef}
+          currentUserId={user?.id || ""}
+          roomId={room_id || null}
         />
       </div>
     </div>

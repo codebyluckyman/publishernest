@@ -1,24 +1,22 @@
 import type React from "react";
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { Conversation } from "./type";
-import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuid } from "uuid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Conversation } from "./type";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 
 interface SidebarProps {
   conversations: Conversation[];
   isLoading: boolean;
   selectedConversation: string | null;
-  onSelectConversation: (id: string) => void;
+  onSelectConversation: (conversation: Conversation) => void;
   currentOrganizationRole: string;
   currentUser: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
+const ChatSidebar: React.FC<SidebarProps> = ({
   conversations,
   isLoading,
   selectedConversation,
@@ -33,39 +31,58 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [activeTab, setActiveTab] = useState<
     "customer" | "supplier" | "publisher"
   >(availableTabs[0]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter conversations based on active tab
+  // Filter conversations based on active tab and search query
   const filteredConversations = conversations.filter((conversation) => {
-    return conversation.type === activeTab;
+    const matchesTab = conversation.type === activeTab;
+    const matchesSearch =
+      conversation.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conversation.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
   });
 
   const unreadCounts = {
-    customers: conversations
+    customer: conversations
       .filter((c) => c.type === "customer")
       .reduce((total, conversation) => total + conversation.unread, 0),
-    suppliers: conversations
+    supplier: conversations
       .filter((c) => c.type === "supplier")
       .reduce((total, conversation) => total + conversation.unread, 0),
-    publishers: conversations
+    publisher: conversations
       .filter((c) => c.type === "publisher")
       .reduce((total, conversation) => total + conversation.unread, 0),
   };
 
   return (
-    <div className="w-80 border-r border-gray-200 flex flex-col">
-      <div className="flex flex-col w-full">
-        <Tabs defaultValue={availableTabs[0]} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 p-0 bg-transparent border-gray-200 rounded-none">
+    <div className="w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-200/80 flex flex-col h-full shadow-sm">
+      <div className="flex flex-col w-full h-full">
+        {/* Search */}
+        <div className="relative p-5 border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+          <Search className="absolute left-8 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search conversations..."
+            className="w-full pl-10 pr-4 py-3 bg-white/90 border border-gray-200/60 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all duration-300 shadow-sm hover:shadow-md backdrop-blur-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <Tabs
+          defaultValue={availableTabs[0]}
+          className="w-full flex-1 flex flex-col"
+        >
+          <TabsList className="grid w-full grid-cols-2 p-1.5 bg-gray-50/80 border-b border-gray-100 rounded-none h-auto backdrop-blur-sm">
             {availableTabs.map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="text-center text-md p-2 data-[state=active]:text-indigo-600 border-b data-[state=active]:border-b-2 data-[state=active]:border-indigo-500 data-[state=active]:shadow-none text-gray-500 hover:text-gray-700 rounded-none"
+                className="relative text-center text-sm font-semibold py-3.5 px-4 data-[state=active]:text-indigo-700 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/10 text-gray-600 hover:text-gray-800 rounded-lg transition-all duration-300 data-[state=active]:border data-[state=active]:border-indigo-100 hover:bg-white/60"
                 onClick={() => setActiveTab(tab)}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 {unreadCounts[tab] > 0 && (
-                  <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full bg-indigo-500 text-white min-w-[20px]">
+                  <span className="ml-2 inline-flex items-center justify-center px-2.5 py-1 text-xs font-bold leading-none rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white min-w-[20px] h-[20px] shadow-lg shadow-rose-500/25">
                     {unreadCounts[tab]}
                   </span>
                 )}
@@ -73,10 +90,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             ))}
           </TabsList>
           {availableTabs.map((tab) => (
-            <TabsContent key={tab} value={tab}>
-              <div className="flex-1 overflow-auto">
+            <TabsContent key={tab} value={tab} className="flex-1 mt-0">
+              <div className="flex-1 overflow-auto h-full">
                 {isLoading ? (
-                  <div className="p-3 space-y-4">
+                  <div className="p-3 space-y-2">
                     {[1, 2, 3, 4].map((i) => (
                       <ConversationSkeleton key={i} />
                     ))}
@@ -87,9 +104,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <ConversationItem
                         key={conversation.id}
                         conversation={conversation}
-                        isSelected={selectedConversation === conversation.id}
-                        onClick={() => onSelectConversation(conversation.id)}
-                        id={conversation.id}
+                        isSelected={
+                          selectedConversation === conversation.room_id
+                        }
+                        onClick={() => onSelectConversation(conversation)}
                         currentUser={currentUser}
                       />
                     ))}
@@ -97,161 +115,118 @@ const Sidebar: React.FC<SidebarProps> = ({
                 ) : (
                   <EmptyState
                     icon={<Search className="h-8 w-8 text-gray-400" />}
-                    title={`No ${activeTab} yet`}
-                    description={`When ${activeTab} message you, they'll appear here.`}
+                    title={`No ${activeTab}s found`}
+                    description={
+                      searchQuery
+                        ? `No ${activeTab}s match your search.`
+                        : `When ${activeTab}s message you, they'll appear here.`
+                    }
                   />
                 )}
               </div>
             </TabsContent>
           ))}
         </Tabs>
-        {/* Search */}
-        <div className="relative p-2 border-b border-gray-200">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search by contact or IP"
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
       </div>
     </div>
   );
 };
 
-// Conversation Item Component
+// Conversation Item Component with typing indicator
 const ConversationItem: React.FC<{
   conversation: Conversation;
   isSelected: boolean;
-  id: string;
   onClick: () => void;
   currentUser: string;
-}> = ({ conversation, isSelected, onClick, id, currentUser }) => {
-  const navigate = useNavigate();
+}> = ({ conversation, isSelected, onClick, currentUser }) => {
+  const { typingUsers } = useTypingIndicator(
+    conversation.room_id || null,
+    currentUser
+  );
+  const isTyping = typingUsers.length > 0;
 
-  const room_id = uuid();
-
-  const ensureConversationPair = async (
-    currentUserId: string,
-    memberId: string,
-    conversationId: string
+  const getOnlineStatusColor = (
+    status: "online" | "away" | "offline" | null
   ) => {
-    const { data, error } = await supabase
-      .from("conversations")
-      .select("room_id, user_id")
-      .in("user_id", [currentUserId, memberId]);
-
-    if (error) {
-      console.error("Error checking conversations:", error);
-      return;
-    }
-
-    const roomUserCount: Record<string, Set<string>> = {};
-    data.forEach(({ room_id, user_id }) => {
-      if (!roomUserCount[room_id]) roomUserCount[room_id] = new Set();
-      roomUserCount[room_id].add(user_id);
-    });
-
-    const existingRoomId = Object.entries(roomUserCount).find(
-      ([, users]) => users.has(currentUserId) && users.has(memberId)
-    )?.[0];
-
-    let room_id: string;
-
-    if (existingRoomId) {
-      room_id = existingRoomId;
-    } else {
-      room_id = uuid();
-
-      const { error: insertError } = await supabase
-        .from("conversations")
-        .insert([
-          {
-            room_id,
-            user_id: currentUserId,
-            last_message_id: null,
-            last_message_read_id: null,
-          },
-          {
-            room_id,
-            user_id: memberId,
-            last_message_id: null,
-            last_message_read_id: null,
-          },
-        ]);
-
-      if (insertError) {
-        console.error("Error creating conversations:", insertError);
-        return;
-      }
-    }
-
-    navigate(`/chat/${room_id}`);
-  };
-
-  const handleClick = async () => {
-    try {
-      await ensureConversationPair(currentUser, conversation.id, id);
-      onClick();
-    } catch (error) {
-      console.error("Error handling conversation click:", error);
+    switch (status) {
+      case "online":
+        return "bg-gradient-to-r from-emerald-400 to-green-500";
+      case "away":
+        return "bg-gradient-to-r from-amber-400 to-orange-500";
+      case "offline":
+      default:
+        return "bg-gradient-to-r from-gray-400 to-gray-500";
     }
   };
 
   return (
     <div
-      className={`flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-        isSelected ? "bg-indigo-50" : ""
-      } ${conversation.unread > 0 ? "bg-indigo-50/50" : ""}`}
-      onClick={handleClick}
+      className={`flex items-center gap-4 p-4 mx-3 my-1.5 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden ${
+        isSelected
+          ? "bg-gradient-to-r from-indigo-50 via-white to-indigo-50 border border-indigo-200/60 shadow-lg shadow-indigo-500/10 transform scale-[1.02]"
+          : conversation.unread > 0
+            ? "bg-gradient-to-r from-blue-50/80 to-white hover:from-blue-50 hover:to-blue-50/50 border border-blue-100/60 hover:border-blue-200/80 hover:shadow-md hover:shadow-blue-500/10"
+            : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-white border border-transparent hover:border-gray-200/60 hover:shadow-md hover:shadow-gray-500/10"
+      }`}
+      onClick={onClick}
     >
-      <div className="relative">
-        <Avatar>
+      <div className="relative flex-shrink-0">
+        <Avatar className="h-12 w-12 ring-2 ring-white shadow-lg">
           <AvatarImage
-            src={conversation?.avatar_url}
+            src={conversation?.avatar_url || "/placeholder.svg"}
             alt={conversation.name}
-            className="bg-indigo-100"
+            className="object-cover"
           />
-          <AvatarFallback>
+          <AvatarFallback className="bg-gradient-to-br from-indigo-100 via-purple-50 to-blue-100 text-indigo-700 font-bold text-sm border border-indigo-200/30">
             {conversation.name
               .split(" ")
               .map((n) => n[0])
-              .join("")}
+              .join("")
+              .toUpperCase()}
           </AvatarFallback>
         </Avatar>
         {conversation.online_status && (
           <span
-            className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ${
-              conversation.online_status === "online"
-                ? "bg-green-500"
-                : conversation.online_status === "away"
-                ? "bg-yellow-500"
-                : "bg-gray-500"
-            }  border-2 border-white`}
+            className={`absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-3 border-white shadow-lg ${getOnlineStatusColor(
+              conversation.online_status
+            )}`}
           />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex flex-col items-start justify-between">
+        <div className="flex items-center justify-between mb-1.5">
           <h3
-            className={`font-medium text-sm ${
-              conversation.unread > 0 ? "font-semibold text-gray-900" : ""
-            }`}
+            className={`font-semibold text-sm truncate ${conversation.unread > 0 ? "text-gray-900" : "text-gray-700"}`}
           >
             {conversation.name}
           </h3>
-          {/* <span className="text-xs text-gray-500">{conversation.time}</span> */}
+          <span
+            className={`text-xs flex-shrink-0 ml-2 font-medium ${
+              conversation.unread > 0 ? "text-indigo-600" : "text-gray-500"
+            }`}
+          >
+            {conversation.time}
+          </span>
         </div>
         <p
-          className={`text-xs truncate mt-1 ${
-            conversation.unread > 0 ? "text-gray-900" : "text-gray-500"
+          className={`text-xs truncate leading-relaxed ${
+            conversation.unread > 0
+              ? "text-gray-700 font-medium"
+              : "text-gray-500"
           }`}
         >
-          {conversation.lastMessage}
+          {isTyping ? (
+            <span className="text-indigo-600 font-medium italic">
+              {typingUsers[0].name} is typing...
+            </span>
+          ) : (
+            conversation.lastMessage || "No messages yet"
+          )}
         </p>
       </div>
       {conversation.unread > 0 && (
-        <div className="flex-shrink-0 flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white">
-          <span className="text-xs font-medium">{conversation.unread}</span>
+        <div className="flex-shrink-0 flex items-center justify-center h-6 min-w-[24px] px-2 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30">
+          <span className="text-xs font-bold">{conversation.unread}</span>
         </div>
       )}
     </div>
@@ -261,13 +236,15 @@ const ConversationItem: React.FC<{
 // Conversation Skeleton Component
 const ConversationSkeleton: React.FC = () => {
   return (
-    <div className="flex items-center gap-3 p-4">
-      <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse" />
-      <div className="space-y-2 flex-1">
-        <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse" />
-        <div className="h-3 w-3/4 bg-gray-200 rounded animate-pulse" />
+    <div className="flex items-center gap-4 p-4 mx-3 my-1.5 rounded-xl bg-gradient-to-r from-gray-50 to-white">
+      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse flex-shrink-0" />
+      <div className="space-y-2.5 flex-1">
+        <div className="flex items-center justify-between">
+          <div className="h-4 w-28 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse" />
+          <div className="h-3 w-14 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse" />
+        </div>
+        <div className="h-3 w-36 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg animate-pulse" />
       </div>
-      <div className="h-3 w-12 bg-gray-200 rounded animate-pulse" />
     </div>
   );
 };
@@ -279,12 +256,16 @@ const EmptyState: React.FC<{
   description: string;
 }> = ({ icon, title, description }) => {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4">
-      <div className="bg-gray-100 rounded-full p-6 mb-4">{icon}</div>
-      <h3 className="font-medium text-gray-700">{title}</h3>
-      <p className="text-sm text-gray-500 text-center mt-2">{description}</p>
+    <div className="flex flex-col items-center justify-center h-full p-8">
+      <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl p-8 mb-6 shadow-inner">
+        {icon}
+      </div>
+      <h3 className="font-bold text-gray-800 text-lg mb-3">{title}</h3>
+      <p className="text-sm text-gray-600 text-center leading-relaxed max-w-52 font-medium">
+        {description}
+      </p>
     </div>
   );
 };
 
-export default Sidebar;
+export default ChatSidebar;

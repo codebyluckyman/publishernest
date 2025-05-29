@@ -51,7 +51,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       communications: {
@@ -60,6 +60,7 @@ export type Database = {
           created_at: string;
           id: string;
           message: string | null;
+          read_by: string[] | null;
           receiver_id: string | null;
           room_id: string | null;
           sender_id: string | null;
@@ -69,6 +70,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           message?: string | null;
+          read_by?: string[] | null;
           receiver_id?: string | null;
           room_id?: string | null;
           sender_id?: string | null;
@@ -78,6 +80,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           message?: string | null;
+          read_by?: string[] | null;
           receiver_id?: string | null;
           room_id?: string | null;
           sender_id?: string | null;
@@ -89,7 +92,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       conversations: {
@@ -124,7 +127,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       customer_delivery_locations: {
@@ -186,7 +189,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "customers";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       customer_requirements: {
@@ -224,7 +227,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "customers";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       customers: {
@@ -298,7 +301,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       extra_costs: {
@@ -343,7 +346,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "unit_of_measures";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       format_component_links: {
@@ -388,7 +391,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "formats";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       format_components: {
@@ -423,7 +426,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       formats: {
@@ -512,7 +515,85 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
+        ];
+      };
+      message_reads: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          message_id: string;
+          read_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          message_id: string;
+          read_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          message_id?: string;
+          read_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "message_reads_message_id_fkey";
+            columns: ["message_id"];
+            isOneToOne: false;
+            referencedRelation: "communications";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "message_reads_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notification_delivery_log: {
+        Row: {
+          delivered_at: string;
+          id: string;
+          quote_request_id: string;
+          reminder_type: string;
+          supplier_id: string;
+        };
+        Insert: {
+          delivered_at?: string;
+          id?: string;
+          quote_request_id: string;
+          reminder_type: string;
+          supplier_id: string;
+        };
+        Update: {
+          delivered_at?: string;
+          id?: string;
+          quote_request_id?: string;
+          reminder_type?: string;
+          supplier_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_delivery_log_quote_request_id_fkey";
+            columns: ["quote_request_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notification_delivery_log_supplier_id_fkey";
+            columns: ["supplier_id"];
+            isOneToOne: false;
+            referencedRelation: "suppliers";
+            referencedColumns: ["id"];
+          },
         ];
       };
       organization_default_price_breaks: {
@@ -544,7 +625,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       organization_members: {
@@ -582,7 +663,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       organization_product_fields: {
@@ -629,7 +710,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       organization_production_steps: {
@@ -673,7 +754,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       organization_purchase_order_counters: {
@@ -696,7 +777,7 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       organization_quote_counters: {
@@ -719,7 +800,7 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       organization_quote_request_counters: {
@@ -742,7 +823,42 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
+        ];
+      };
+      organization_reminder_settings: {
+        Row: {
+          created_at: string;
+          id: string;
+          organization_id: string;
+          reminder_days_before: number[];
+          reminder_enabled: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          organization_id: string;
+          reminder_days_before?: number[];
+          reminder_enabled?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          organization_id?: string;
+          reminder_days_before?: number[];
+          reminder_enabled?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "organization_reminder_settings_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: true;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
         ];
       };
       organization_sales_order_counters: {
@@ -765,7 +881,7 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       organizations: {
@@ -854,7 +970,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "sales_presentations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       presentation_items: {
@@ -907,7 +1023,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "presentation_sections";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       presentation_sections: {
@@ -951,7 +1067,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "sales_presentations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       presentation_shares: {
@@ -998,7 +1114,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "sales_presentations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       print_runs: {
@@ -1039,7 +1155,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       product_custom_field_values: {
@@ -1081,7 +1197,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "products";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       product_prices: {
@@ -1129,7 +1245,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "products";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       product_saved_views: {
@@ -1176,7 +1292,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       products: {
@@ -1317,7 +1433,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       profiles: {
@@ -1328,8 +1444,10 @@ export type Database = {
           email: string;
           first_name: string | null;
           id: string;
+          is_online: boolean | null;
           job_title: string | null;
           last_name: string | null;
+          last_seen: string | null;
           online_status: string | null;
           updated_at: string;
         };
@@ -1340,8 +1458,10 @@ export type Database = {
           email: string;
           first_name?: string | null;
           id: string;
+          is_online?: boolean | null;
           job_title?: string | null;
           last_name?: string | null;
+          last_seen?: string | null;
           online_status?: string | null;
           updated_at?: string;
         };
@@ -1352,8 +1472,10 @@ export type Database = {
           email?: string;
           first_name?: string | null;
           id?: string;
+          is_online?: boolean | null;
           job_title?: string | null;
           last_name?: string | null;
+          last_seen?: string | null;
           online_status?: string | null;
           updated_at?: string;
         };
@@ -1364,7 +1486,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       purchase_order_audit: {
@@ -1399,7 +1521,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "purchase_orders";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       purchase_order_line_items: {
@@ -1457,7 +1579,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "purchase_orders";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       purchase_orders: {
@@ -1642,7 +1764,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "test_quote_management_view";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_request_attachments: {
@@ -1686,7 +1808,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "quote_requests";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_request_audit: {
@@ -1721,7 +1843,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "quote_requests";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_request_extra_costs: {
@@ -1766,7 +1888,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "unit_of_measures";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_request_format_price_breaks: {
@@ -1801,7 +1923,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "quote_request_formats";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_request_format_products: {
@@ -1846,7 +1968,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "quote_request_formats";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_request_formats: {
@@ -1894,7 +2016,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "quote_requests";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_request_savings: {
@@ -1939,7 +2061,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "unit_of_measures";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       quote_requests: {
@@ -2034,7 +2156,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "suppliers";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       sales_order_audit: {
@@ -2069,7 +2191,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "sales_orders";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       sales_order_charges: {
@@ -2110,7 +2232,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "sales_orders";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       sales_order_line_items: {
@@ -2184,7 +2306,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "sales_orders";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       sales_order_requirements: {
@@ -2229,7 +2351,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "sales_orders";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       sales_orders: {
@@ -2345,7 +2467,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "print_runs";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       sales_presentations: {
@@ -2401,7 +2523,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       savings: {
@@ -2446,7 +2568,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "unit_of_measures";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       stock_on_hand: {
@@ -2498,7 +2620,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "warehouses";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_communications: {
@@ -2546,7 +2668,64 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "purchase_orders";
             referencedColumns: ["id"];
-          }
+          },
+        ];
+      };
+      supplier_notifications: {
+        Row: {
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          is_dismissed: boolean;
+          is_read: boolean;
+          message: string;
+          notification_type: string;
+          quote_request_id: string | null;
+          supplier_id: string;
+          title: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          is_dismissed?: boolean;
+          is_read?: boolean;
+          message: string;
+          notification_type: string;
+          quote_request_id?: string | null;
+          supplier_id: string;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          is_dismissed?: boolean;
+          is_read?: boolean;
+          message?: string;
+          notification_type?: string;
+          quote_request_id?: string | null;
+          supplier_id?: string;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "supplier_notifications_quote_request_id_fkey";
+            columns: ["quote_request_id"];
+            isOneToOne: false;
+            referencedRelation: "quote_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "supplier_notifications_supplier_id_fkey";
+            columns: ["supplier_id"];
+            isOneToOne: false;
+            referencedRelation: "suppliers";
+            referencedColumns: ["id"];
+          },
         ];
       };
       supplier_quote_attachments: {
@@ -2604,7 +2783,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "test_quote_management_view";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quote_audit: {
@@ -2653,7 +2832,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "test_quote_management_view";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quote_extra_cost_price_breaks: {
@@ -2735,7 +2914,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "test_quote_management_view";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quote_extra_costs: {
@@ -2844,7 +3023,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "unit_of_measures";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quote_extra_costs_price_breaks: {
@@ -2940,7 +3119,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "test_quote_management_view";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quote_formats: {
@@ -3003,7 +3182,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "test_quote_management_view";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quote_price_breaks: {
@@ -3122,7 +3301,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "test_quote_management_view";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quote_savings: {
@@ -3228,7 +3407,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "unit_of_measures";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       supplier_quotes: {
@@ -3361,7 +3540,42 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "suppliers";
             referencedColumns: ["id"];
-          }
+          },
+        ];
+      };
+      supplier_users: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          supplier_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          supplier_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          supplier_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "supplier_users_supplier_id_fkey";
+            columns: ["supplier_id"];
+            isOneToOne: false;
+            referencedRelation: "suppliers";
+            referencedColumns: ["id"];
+          },
         ];
       };
       suppliers: {
@@ -3412,12 +3626,51 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "fk_suppliers_organization";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "suppliers_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
-          }
+          },
+        ];
+      };
+      typing_status: {
+        Row: {
+          id: string;
+          is_typing: boolean | null;
+          room_id: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          is_typing?: boolean | null;
+          room_id: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          is_typing?: boolean | null;
+          room_id?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "typing_status_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       unit_of_measures: {
@@ -3482,7 +3735,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "organizations";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
     };
@@ -3550,7 +3803,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "suppliers";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
       test_quote_management_view: {
@@ -3628,7 +3881,7 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "suppliers";
             referencedColumns: ["id"];
-          }
+          },
         ];
       };
     };
@@ -3644,12 +3897,36 @@ export type Database = {
         };
         Returns: string;
       };
+      cleanup_expired_notifications: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+      cleanup_typing_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+      create_supplier_notification: {
+        Args: {
+          p_supplier_id: string;
+          p_user_id: string;
+          p_notification_type: string;
+          p_title: string;
+          p_message: string;
+          p_quote_request_id?: string;
+          p_expires_at?: string;
+        };
+        Returns: string;
+      };
       delete_quote_attachment: {
         Args: { attachment_id: string };
         Returns: undefined;
       };
       delete_unused_price_breaks: {
         Args: { format_id: string; preserved_ids: string[] };
+        Returns: undefined;
+      };
+      dismiss_notification: {
+        Args: { notification_id: string };
         Returns: undefined;
       };
       fetch_shared_presentation: {
@@ -3714,7 +3991,36 @@ export type Database = {
           uploaded_by: string | null;
         }[];
       };
+      get_unread_count: {
+        Args: { p_room_id: string; p_user_id: string };
+        Returns: number;
+      };
+      get_unread_notification_count: {
+        Args: { user_id?: string };
+        Returns: number;
+      };
+      get_user_notifications: {
+        Args: { p_user_id?: string };
+        Returns: {
+          id: string;
+          title: string;
+          message: string;
+          notification_type: string;
+          quote_request_id: string;
+          is_read: boolean;
+          is_dismissed: boolean;
+          created_at: string;
+        }[];
+      };
       get_user_organizations: {
+        Args: { user_id?: string };
+        Returns: string[];
+      };
+      get_user_supplier_organizations: {
+        Args: { user_id?: string };
+        Returns: string[];
+      };
+      get_user_suppliers: {
         Args: { user_id?: string };
         Returns: string[];
       };
@@ -3737,6 +4043,18 @@ export type Database = {
       is_organization_member: {
         Args: { org_id: string; user_id?: string };
         Returns: boolean;
+      };
+      mark_message_as_read: {
+        Args: { msg_id: string; usr_id: string };
+        Returns: undefined;
+      };
+      mark_messages_as_read: {
+        Args: { p_room_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      mark_notification_read: {
+        Args: { notification_id: string };
+        Returns: undefined;
       };
       record_purchase_order_audit: {
         Args: {
@@ -3878,6 +4196,14 @@ export type Database = {
         Args: { format_id: string; products_data: Json };
         Returns: undefined;
       };
+      update_typing_status: {
+        Args: { p_room_id: string; p_user_id: string; p_is_typing: boolean };
+        Returns: undefined;
+      };
+      user_has_read_message: {
+        Args: { message_read_by: string[]; user_id: string };
+        Returns: boolean;
+      };
       validate_api_key: {
         Args: { key: string };
         Returns: string;
@@ -3910,7 +4236,7 @@ export type Tables<
   }
     ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -3919,14 +4245,14 @@ export type Tables<
     ? R
     : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-      DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-      DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : never;
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
@@ -3936,7 +4262,7 @@ export type TablesInsert<
     schema: keyof Database;
   }
     ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
@@ -3944,12 +4270,12 @@ export type TablesInsert<
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-      Insert: infer I;
-    }
-    ? I
-    : never
-  : never;
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
@@ -3959,7 +4285,7 @@ export type TablesUpdate<
     schema: keyof Database;
   }
     ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
@@ -3967,12 +4293,12 @@ export type TablesUpdate<
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
-  : never;
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
@@ -3982,12 +4308,12 @@ export type Enums<
     schema: keyof Database;
   }
     ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
   ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never;
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
@@ -3997,12 +4323,12 @@ export type CompositeTypes<
     schema: keyof Database;
   }
     ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never;
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never;
 
 export const Constants = {
   public: {

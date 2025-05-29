@@ -1,4 +1,4 @@
-// Shared types for the chat application
+// Chat-specific types that align with Supabase database structure
 export interface User {
   id: string;
   name: string;
@@ -11,7 +11,7 @@ export interface Conversation {
   avatar?: string;
   lastMessage: string;
   time: string;
-  online_status: "online" | "away" | "offline";
+  online_status: "online" | "away" | "offline" | null;
   unread: number;
   role?: string;
   type: "customer" | "supplier" | "publisher";
@@ -23,6 +23,7 @@ export interface Conversation {
   joinedDate?: string;
   tags?: string[];
   avatar_url?: string;
+  room_id?: string;
 }
 
 export interface Message {
@@ -31,12 +32,14 @@ export interface Message {
   sender: string;
   time: string;
   date: string;
+  status?: "sent" | "delivered" | "read";
   attachments?: {
     type: string;
     name?: string;
     size?: number;
     url?: string;
   }[];
+  read_by?: string[]; // Array of user IDs who have read this message
 }
 
 export interface Contact {
@@ -51,6 +54,18 @@ export interface Contact {
   lastActive?: string;
   joinedDate?: string;
   tags?: string[];
-  type: "customer" | "supplier";
+  type: "customer" | "supplier" | "publisher";
   visitorId?: string;
+  avatar_url?: string;
+}
+
+export interface ChatComponentProps {
+  currentOrganization?: {
+    id: string;
+    name: string;
+  };
+  user?: {
+    id: string;
+    email: string;
+  };
 }
