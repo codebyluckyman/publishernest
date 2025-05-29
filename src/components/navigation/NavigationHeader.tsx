@@ -1,7 +1,7 @@
 
-import { OrganizationSwitcher } from "@/components/OrganizationSwitcher";
-import { UserAvatar } from "@/components/UserAvatar";
-import { NotificationsPopover } from "@/components/NotificationsPopover";
+import OrganizationSwitcher from "@/components/OrganizationSwitcher";
+import UserAvatar from "@/components/UserAvatar";
+import NotificationsPopover from "@/components/NotificationsPopover";
 import { OrganizationNotificationsPopover } from "@/components/organizations/OrganizationNotificationsPopover";
 import HelpCenterPopover from "@/components/HelpCenterPopover";
 import { Menu } from "lucide-react";

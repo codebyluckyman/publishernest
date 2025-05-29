@@ -3,7 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import DesktopSidebar from "./navigation/DesktopSidebar";
-import NavigationHeader from "./navigation/NavigationHeader";
+import { NavigationHeader } from "./navigation/NavigationHeader";
 import BreadcrumbNavigation from "./navigation/BreadcrumbNavigation";
 import Footer from "./navigation/Footer";
 import { getNavigationMenuItems } from "./navigation/NavigationMenuItems";
