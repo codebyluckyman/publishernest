@@ -173,7 +173,7 @@ const ConversationItem: React.FC<{
       <div className="relative flex-shrink-0">
         <Avatar className="h-12 w-12 ring-2 ring-white shadow-lg">
           <AvatarImage
-            src={conversation?.avatar_url || "/placeholder.svg"}
+            src={conversation?.avatar_url}
             alt={conversation.name}
             className="object-cover"
           />
