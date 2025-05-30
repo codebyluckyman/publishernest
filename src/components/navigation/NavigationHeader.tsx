@@ -10,8 +10,8 @@ interface NavigationHeaderProps {
 
 export function NavigationHeader({ onMobileMenuToggle }: NavigationHeaderProps) {
   return (
-    <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="flex h-14 items-center gap-4 px-4 lg:px-6">
+    <header className="border-b bg-white w-full">
+      <div className="flex h-14 items-center gap-4 px-4 lg:px-6 w-full">
         <Button
           variant="ghost"
           size="sm"
