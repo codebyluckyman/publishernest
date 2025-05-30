@@ -4355,6 +4355,10 @@ export type Database = {
         Args: { key: string }
         Returns: string
       }
+      validate_production_schedule: {
+        Args: { p_quote_request_id: string; p_production_schedule: Json }
+        Returns: boolean
+      }
     }
     Enums: {
       requirement_type:
