@@ -332,6 +332,10 @@ export function SupplierQuotesTable({
             {quote.formats && quote.formats.length > 0 && (
               <FormatCountButton
                 formats={quote.formats.map(f => ({ 
+                  id: f.id,
+                  quote_request_id: quote.quote_request_id,
+                  format_id: f.format_id,
+                  notes: null,
                   format_name: f.format_name,
                   products: [],
                   price_breaks: []
