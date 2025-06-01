@@ -1,4 +1,3 @@
-
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -78,18 +77,34 @@ export async function fetchSupplierQuotes(
     filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
   }
   if (quoteRequestId) {
-    // We need to update this to match the structure returned by the DB view
-    filteredData = filteredData.filter(
-      (q) => q.quote_request?.id === quoteRequestId
-    );
+    // Check if quote_request is an object and has an id property
+    filteredData = filteredData.filter((q) => {
+      if (typeof q.quote_request === 'object' && q.quote_request !== null) {
+        return (q.quote_request as any).id === quoteRequestId;
+      }
+      return false;
+    });
   }
 
   // Map the data from the view to match the SupplierQuote type
   const formattedQuotes: SupplierQuote[] = filteredData.map((item: any) => {
+    // Safely handle quote_request which might be JSON or object
+    let quoteRequestId = null;
+    if (typeof item.quote_request === 'object' && item.quote_request !== null) {
+      quoteRequestId = (item.quote_request as any).id;
+    } else if (typeof item.quote_request === 'string') {
+      try {
+        const parsed = JSON.parse(item.quote_request);
+        quoteRequestId = parsed.id;
+      } catch {
+        // If parsing fails, keep as null
+      }
+    }
+
     return {
       id: item.id,
       organization_id: item.organization_id,
-      quote_request_id: item.quote_request?.id, // Map from nested object
+      quote_request_id: quoteRequestId,
       supplier_id: item.supplier_id,
       status: item.status as SupplierQuoteStatus,
       total_cost: item.total_cost,
