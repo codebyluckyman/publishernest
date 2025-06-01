@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAllOrganizationNotifications, useOrganizationNotifications } from '@/hooks/useOrganizationNotifications';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
-import { Check, X, Search, CheckAll } from 'lucide-react';
+import { Check, X, Search, CheckCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { OrganizationNotification } from '@/types/organizationNotification';
 
@@ -143,7 +142,7 @@ const Notifications = () => {
             disabled={isMarkingAllRead}
             className="gap-2"
           >
-            <CheckAll className="h-4 w-4" />
+            <CheckCheck className="h-4 w-4" />
             Mark All Read
           </Button>
         )}
