@@ -40,6 +40,7 @@ export const useOrganizationNotifications = (limit?: number) => {
     mutationFn: createOrganizationNotification,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['all-organization-notifications'] });
       queryClient.invalidateQueries({ queryKey: unreadCountKey });
     },
     onError: (error) => {
@@ -52,6 +53,7 @@ export const useOrganizationNotifications = (limit?: number) => {
     mutationFn: markOrganizationNotificationRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['all-organization-notifications'] });
       queryClient.invalidateQueries({ queryKey: unreadCountKey });
     },
     onError: (error) => {
@@ -64,6 +66,7 @@ export const useOrganizationNotifications = (limit?: number) => {
     mutationFn: dismissOrganizationNotification,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['all-organization-notifications'] });
       queryClient.invalidateQueries({ queryKey: unreadCountKey });
     },
     onError: (error) => {
@@ -76,6 +79,7 @@ export const useOrganizationNotifications = (limit?: number) => {
     mutationFn: () => markAllOrganizationNotificationsRead(currentOrganization!.id, user!.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organization-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['all-organization-notifications'] });
       queryClient.invalidateQueries({ queryKey: unreadCountKey });
       toast.success('All notifications marked as read');
     },
@@ -101,6 +105,7 @@ export const useOrganizationNotifications = (limit?: number) => {
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['organization-notifications'] });
+          queryClient.invalidateQueries({ queryKey: ['all-organization-notifications'] });
           queryClient.invalidateQueries({ queryKey: unreadCountKey });
         }
       )
