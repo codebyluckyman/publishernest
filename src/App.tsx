@@ -33,6 +33,7 @@ import SupplierQuoteDetail from "./pages/SupplierQuoteDetail";
 import Organizations from "./pages/Organizations";
 import Stock from "./pages/Stock";
 import EditPurchaseOrder from "./pages/EditPurchaseOrder";
+import Notifications from "./pages/Notifications";
 
 const router = createBrowserRouter([
   {
@@ -151,6 +152,10 @@ const router = createBrowserRouter([
       {
         path: "organizations",
         element: <ProtectedRoute><Organizations /></ProtectedRoute>
+      },
+      {
+        path: "notifications",
+        element: <ProtectedRoute><Notifications /></ProtectedRoute>
       }
     ]
   },

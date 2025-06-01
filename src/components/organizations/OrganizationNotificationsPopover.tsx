@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, X, Eye } from 'lucide-react';
+import { Bell, X, Eye, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useOrganizationNotifications } from '@/hooks/useOrganizationNotifications';
 import { OrganizationNotification } from '@/types/organizationNotification';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationItem = ({ 
   notification, 
@@ -63,15 +64,16 @@ const NotificationItem = ({
             </p>
           </div>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-shrink-0">
           {!notification.is_read && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onMarkRead(notification.id)}
               className="h-6 w-6 p-0"
+              title="Mark as read"
             >
-              <Eye className="h-3 w-3" />
+              <Check className="h-3 w-3" />
             </Button>
           )}
           <Button
@@ -79,6 +81,7 @@ const NotificationItem = ({
             size="sm"
             onClick={() => onDismiss(notification.id)}
             className="h-6 w-6 p-0"
+            title="Dismiss"
           >
             <X className="h-3 w-3" />
           </Button>
@@ -89,6 +92,7 @@ const NotificationItem = ({
 };
 
 export function OrganizationNotificationsPopover() {
+  const navigate = useNavigate();
   const {
     notifications,
     unreadCount,
@@ -96,6 +100,10 @@ export function OrganizationNotificationsPopover() {
     markAsRead,
     dismiss
   } = useOrganizationNotifications();
+
+  const handleViewAll = () => {
+    navigate('/notifications');
+  };
 
   return (
     <Popover>
@@ -112,7 +120,7 @@ export function OrganizationNotificationsPopover() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-96 p-0" align="end">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">Notifications</h3>
@@ -149,7 +157,7 @@ export function OrganizationNotificationsPopover() {
           <>
             <Separator />
             <div className="p-2">
-              <Button variant="ghost" className="w-full text-sm">
+              <Button variant="ghost" className="w-full text-sm" onClick={handleViewAll}>
                 View all notifications
               </Button>
             </div>
