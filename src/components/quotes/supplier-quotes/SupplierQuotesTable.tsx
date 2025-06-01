@@ -21,9 +21,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { SupplierQuote, SupplierQuoteStatus } from "@/types/supplierQuote";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/utils/formatters";
 import { useOrganization } from "@/context/OrganizationContext";
-import { SupplierQuoteDialog } from "./SupplierQuoteDialog";
 import { SupplierQuoteActions } from "./SupplierQuoteActions";
 import { toast } from "sonner";
 import {
@@ -37,11 +36,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { QuoteRequest } from "@/types/quoteRequest";
-import { SupplierQuoteDetailsSheet } from "./details/SupplierQuoteDetailsSheet";
 import { Textarea } from "@/components/ui/textarea";
 import { FormatCountButton } from "../table/FormatCountButton";
 import { useQuoteRequestManagement } from "@/hooks/useQuoteRequestManagement";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 interface SupplierQuotesTableProps {
   statusFilter?: SupplierQuoteStatus[];
@@ -59,11 +58,6 @@ export function SupplierQuotesTable({
   selectedFormat,
 }: SupplierQuotesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(
-    null
-  );
-  const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [quoteForDeletion, setQuoteForDeletion] =
     useState<SupplierQuote | null>(null);
@@ -73,6 +67,7 @@ export function SupplierQuotesTable({
     useState<SupplierQuote | null>(null);
 
   const { currentOrganization } = useOrganization();
+  const navigate = useNavigate();
   const {
     useSupplierQuotesList,
     useSubmitSupplierQuote,
@@ -105,30 +100,8 @@ export function SupplierQuotesTable({
     pageSize: 10,
   });
 
-  useEffect(() => {
-    if (!detailsSheetOpen) {
-      setSelectedQuote(null);
-    }
-  }, [detailsSheetOpen]);
-
-  useEffect(() => {
-    if (!showEditDialog) {
-      setSelectedQuote(null);
-    }
-  }, [showEditDialog]);
-
-  useEffect(() => {
-    refetch;
-  }, [supplier]);
-
   const handleViewDetails = (quote: SupplierQuote) => {
-    setSelectedQuote(quote);
-    setDetailsSheetOpen(true);
-  };
-
-  const handleEdit = (quote: SupplierQuote) => {
-    setSelectedQuote(quote);
-    setShowEditDialog(true);
+    navigate(`/supplier-quotes/${quote.id}`);
   };
 
   const handleSubmit = (quote: SupplierQuote) => {
@@ -154,7 +127,6 @@ export function SupplierQuotesTable({
       {
         onSuccess: () => {
           toast.success("Quote approved successfully");
-          setDetailsSheetOpen(false);
         },
       }
     );
@@ -176,7 +148,6 @@ export function SupplierQuotesTable({
           onSuccess: () => {
             toast.success("Quote rejected successfully");
             setRejectDialogOpen(false);
-            setDetailsSheetOpen(false);
             setRejectionReason("");
             setQuoteForRejection(null);
           },
@@ -204,6 +175,11 @@ export function SupplierQuotesTable({
     setDeleteDialogOpen(true);
   };
 
+  const handleEdit = (quote: SupplierQuote) => {
+    // setSelectedQuote(quote);
+    // setShowEditDialog(true);
+  };
+
   const filteredQuotes = useMemo(() => {
     if (!searchQuery) return quotes;
 
@@ -225,6 +201,10 @@ export function SupplierQuotesTable({
       }) ?? []
     );
   }, [searchQuery, quotes]);
+
+  useEffect(() => {
+    refetch;
+  }, [supplier]);
 
   const columns: ColumnDef<SupplierQuote>[] = [
     {
@@ -293,227 +273,34 @@ export function SupplierQuotesTable({
               return "bg-gray-100 text-gray-800";
           }
         };
-
         return (
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}
-          >
+          <Badge className={getStatusColor()}>
             {status.charAt(0).toUpperCase() + status.slice(1)}
-          </span>
+          </Badge>
         );
       },
     },
     {
-      accessorKey: "request_title",
-      header: ({ column }) => {
-        return (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="justify-center min-w-[150px]"
-            >
-              Title
-              {column.getIsSorted() === "desc" ? (
-                <ArrowDown className="ml-2 h-4 w-4" />
-              ) : (
-                <ArrowUp className="ml-2 h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        );
-      },
+      accessorKey: "total_cost",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="min-w-[100px]"
+        >
+          Total Cost
+          {column.getIsSorted() === "desc" ? (
+            <ArrowDown className="ml-2 h-4 w-4" />
+          ) : (
+            <ArrowUp className="ml-2 h-4 w-4" />
+          )}
+        </Button>
+      ),
       cell: ({ row }) => {
-        return (
-          <div className="flex flex-col min-w-[150px]">
-            <span>{row.original?.quote_request?.title}</span>
-            <span className="text-xs text-muted-foreground font-mono">
-              {row.original?.reference_id || "No reference"}
-            </span>
-          </div>
-        );
+        const amount = row.getValue("total_cost") as number;
+        const currency = row.original.currency;
+        return amount ? formatCurrency(amount, currency) : "Not calculated";
       },
-      sortingFn: (rowA, rowB, id) => {
-        const a = rowA.getValue(id) || "USD";
-        const b = rowB.getValue(id) || "USD";
-        return (a as string).localeCompare(b as string);
-      },
-    },
-    {
-      accessorKey: "currency",
-      header: ({ column }) => {
-        return (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="justify-center"
-            >
-              Currency
-              {column.getIsSorted() === "desc" ? (
-                <ArrowDown className="ml-2 h-4 w-4" />
-              ) : (
-                <ArrowUp className="ml-2 h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const currencyCode = row.getValue("currency");
-        return (
-          <div className="text-center">{(currencyCode as string) || "USD"}</div>
-        );
-      },
-      sortingFn: (rowA, rowB, id) => {
-        const a = rowA.getValue(id) || "USD";
-        const b = rowB.getValue(id) || "USD";
-        return (a as string).localeCompare(b as string);
-      },
-    },
-    {
-      accessorKey: "valid_from",
-      header: ({ column }) => {
-        return (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="justify-center"
-            >
-              Valid From
-              {column.getIsSorted() === "desc" ? (
-                <ArrowDown className="ml-2 h-4 w-4" />
-              ) : (
-                <ArrowUp className="ml-2 h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const validFrom = row.getValue("valid_from");
-        let displayDate = "N/A";
-
-        if (validFrom) {
-          try {
-            displayDate = new Date(validFrom as string).toLocaleDateString(
-              "en-US",
-              {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              }
-            );
-          } catch {
-            displayDate = validFrom as string;
-          }
-        }
-
-        return <div className="text-center">{displayDate}</div>;
-      },
-      sortingFn: (rowA, rowB, id) => {
-        const a = rowA.getValue(id);
-        const b = rowB.getValue(id);
-
-        if (!a && !b) return 0;
-        if (!a) return 1;
-        if (!b) return -1;
-
-        try {
-          const dateA = new Date(a as string);
-          const dateB = new Date(b as string);
-          return dateA.getTime() - dateB.getTime();
-        } catch {
-          return (a as string).localeCompare(b as string);
-        }
-      },
-    },
-    {
-      accessorKey: "valid_to",
-      header: ({ column }) => {
-        return (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === "asc")
-              }
-              className="justify-center"
-            >
-              Valid To
-              {column.getIsSorted() === "desc" ? (
-                <ArrowDown className="ml-2 h-4 w-4" />
-              ) : (
-                <ArrowUp className="ml-2 h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const validTo = row.getValue("valid_to");
-        let displayDate = "N/A";
-
-        if (validTo) {
-          try {
-            displayDate = new Date(validTo as string).toLocaleDateString(
-              "en-US",
-              {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              }
-            );
-          } catch {
-            displayDate = validTo as string;
-          }
-        }
-
-        return <div className="text-center">{displayDate}</div>;
-      },
-      sortingFn: (rowA, rowB, id) => {
-        const a = rowA.getValue(id);
-        const b = rowB.getValue(id);
-
-        if (!a && !b) return 0;
-        if (!a) return 1;
-        if (!b) return -1;
-
-        try {
-          const dateA = new Date(a as string);
-          const dateB = new Date(b as string);
-          return dateA.getTime() - dateB.getTime();
-        } catch {
-          return (a as string).localeCompare(b as string);
-        }
-      },
-    },
-    {
-      accessorKey: "format",
-      header: () => <div className="text-center min-w-[200px]">Format</div>,
-      cell: ({ row }: any) => {
-        return (
-          <div className="flex justify-center min-w-[200px]">
-            {row.original?.formats?.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {row.original?.formats?.map((item: any, index: number) => (
-                  <Badge key={index}>{item?.format_name}</Badge>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center">No Format</div>
-            )}
-          </div>
-        );
-      },
-      enableSorting: false,
     },
     {
       accessorKey: "created_at",
@@ -521,8 +308,9 @@ export function SupplierQuotesTable({
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="min-w-[100px]"
         >
-          Created At
+          Created
           {column.getIsSorted() === "desc" ? (
             <ArrowDown className="ml-2 h-4 w-4" />
           ) : (
@@ -533,6 +321,30 @@ export function SupplierQuotesTable({
       cell: ({ row }) => formatDate(row.getValue("created_at")),
     },
     {
+      accessorKey: "title",
+      header: "Quote Request",
+      cell: ({ row }) => {
+        const quote = row.original;
+        const title = quote.title || quote.quote_request?.title;
+        return (
+          <div className="min-w-[200px]">
+            <div className="font-medium">{title || "Untitled"}</div>
+            {quote.formats && quote.formats.length > 0 && (
+              <FormatCountButton
+                formats={quote.formats.map(f => ({ 
+                  format_name: f.format_name,
+                  products: [],
+                  price_breaks: []
+                }))}
+                request={null}
+                onClick={() => {}}
+              />
+            )}
+          </div>
+        );
+      },
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
@@ -540,9 +352,11 @@ export function SupplierQuotesTable({
         return (
           <SupplierQuoteActions
             quote={quote}
-            onView={() => handleViewDetails(quote)}
+            onViewDetails={() => handleViewDetails(quote)}
             onEdit={() => handleEdit(quote)}
             onSubmit={() => handleSubmit(quote)}
+            onApprove={() => handleApprove(quote)}
+            onReject={() => handleReject(quote)}
             onDelete={() => handleDelete(quote)}
           />
         );
@@ -682,33 +496,6 @@ export function SupplierQuotesTable({
           </div>
         </div>
       </div>
-
-      <SupplierQuoteDetailsSheet
-        quote={selectedQuote}
-        open={detailsSheetOpen}
-        onOpenChange={setDetailsSheetOpen}
-        onApprove={
-          selectedQuote && selectedQuote.status === "submitted"
-            ? handleApprove
-            : undefined
-        }
-        onReject={
-          selectedQuote && selectedQuote.status === "submitted"
-            ? handleReject
-            : undefined
-        }
-      />
-
-      {/* {showEditDialog && selectedQuote && selectedQuote.quote_request && ( */}
-      {showEditDialog && selectedQuote && selectedQuote?.quote_request && (
-        <SupplierQuoteDialog
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
-          quoteRequest={selectedQuote as any}
-          existingQuote={selectedQuote}
-          mode="edit"
-        />
-      )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
