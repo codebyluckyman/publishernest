@@ -22,7 +22,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { PurchaseOrder, PURCHASE_ORDER_STATUS_MAP } from "@/types/purchaseOrder";
-import { DateFormatter, formatCurrency } from "@/utils/formatters";
+import { formatDate, formatCurrency } from "@/utils/formatters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PurchaseOrderDetail = () => {
@@ -65,7 +65,7 @@ const PurchaseOrderDetail = () => {
   
   const formatDateWithUser = (date: string | undefined, userId: string | undefined) => {
     if (!date) return "—";
-    let result = DateFormatter.format(new Date(date));
+    let result = formatDate(date);
     if (userId) {
       result += " by User"; // In a real app, you would fetch the user's name
     }
@@ -140,7 +140,7 @@ const PurchaseOrderDetail = () => {
                 <PurchaseOrderStatusBadge status={purchaseOrder.status_code} />
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Created on {DateFormatter.format(new Date(purchaseOrder.created_at))}
+                Created on {formatDate(purchaseOrder.created_at)}
               </p>
             </div>
           </div>
@@ -183,12 +183,12 @@ const PurchaseOrderDetail = () => {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-medium">Issue Date</h3>
-                    <p>{purchaseOrder.issue_date ? DateFormatter.format(new Date(purchaseOrder.issue_date)) : "—"}</p>
+                    <p>{purchaseOrder.issue_date ? formatDate(purchaseOrder.issue_date) : "—"}</p>
                   </div>
                   
                   <div>
                     <h3 className="font-medium">Delivery Date</h3>
-                    <p>{purchaseOrder.delivery_date ? DateFormatter.format(new Date(purchaseOrder.delivery_date)) : "—"}</p>
+                    <p>{purchaseOrder.delivery_date ? formatDate(purchaseOrder.delivery_date) : "—"}</p>
                   </div>
                   
                   <div>
