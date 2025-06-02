@@ -49,6 +49,8 @@ export type OrganizationContextType = {
   isLoading: boolean;
   createOrganization: (name: string, type: "publisher" | "printer" | "customer") => Promise<Organization | null>;
   switchOrganization: (organizationId: string) => Promise<void>;
+  setCurrentOrganization: (org: Organization | null) => void;
+  refetchOrganizations: () => Promise<void>;
   getOrganizationMembers: (organizationId: string) => Promise<OrganizationMember[]>;
   inviteMember: (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => Promise<void>;
   updateMemberRole: (memberId: string, role: "admin" | "member") => Promise<void>;

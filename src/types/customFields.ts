@@ -1,5 +1,5 @@
 
-export type FieldType = 'text' | 'number' | 'date' | 'boolean' | 'select';
+export type FieldType = "text" | "number" | "select" | "multiselect" | "boolean" | "date";
 
 export interface ProductCustomField {
   id: string;
@@ -7,23 +7,9 @@ export interface ProductCustomField {
   field_name: string;
   field_key: string;
   field_type: FieldType;
-  options?: {
-    values?: string[];
-    colors?: Record<string, string>; // Maps option value to color/variant
-    [key: string]: any;
-  };
   is_required: boolean;
   display_order: number;
+  options?: any;
   created_at: string;
   updated_at: string;
-}
-
-export interface ProductCustomFieldValue {
-  id: string;
-  product_id: string;
-  field_id: string;
-  field_value: any;
-  created_at: string;
-  updated_at: string;
-  field?: ProductCustomField;
 }

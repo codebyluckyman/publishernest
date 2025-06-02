@@ -1,337 +1,231 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Organization } from "@/types/organization";
-import {
-  SupplierQuote,
-  SupplierQuoteFormValues,
-  SupplierQuoteStatus,
-} from "@/types/supplierQuote";
-import { useAuth } from "@/context/AuthContext";
-import {
-  fetchSupplierQuotes,
-  fetchSupplierQuoteById,
-  createSupplierQuote,
-  updateSupplierQuote,
-  submitSupplierQuote,
-  approveSupplierQuote,
-  rejectSupplierQuote,
-  deleteSupplierQuote,
-  acceptSupplierQuote,
-  declineSupplierQuote,
-} from "@/api/supplierQuotes";
-import { api as supplierQuoteApi } from "@/api/supplierQuotes";
 
-/**
- * Custom hook for managing supplier quotes with React Query
- */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { SupplierQuote } from '@/types/supplierQuote';
+import { useOrganization } from '@/context/OrganizationContext';
+import { submitSupplierQuote } from '@/api/supplierQuotes/submitSupplierQuote';
+import { useUser } from '@supabase/auth-helpers-react';
+import { toast } from 'sonner';
+
 export function useSupplierQuotes() {
+  const { currentOrganization } = useOrganization();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const user = useUser();
 
-  /**
-   * Hook to fetch supplier quotes
-   */
-  const useSupplierQuotesList = (
-    currentOrganization: Organization | null,
-    status?: string,
-    supplierId?: string,
-    quoteRequestId?: string,
-    searchQuery?: string,
-    supplier?: string,
-    selectedFormat?: string
-  ) => {
+  // Fetch supplier quotes list
+  const useSupplierQuotesList = (quoteRequestId?: string) => {
     return useQuery({
-      queryKey: [
-        "supplierQuotes",
-        currentOrganization,
-        status,
-        supplierId,
-        quoteRequestId,
-        searchQuery,
-        supplier,
-        selectedFormat,
-      ],
+      queryKey: ['supplier-quotes', currentOrganization?.id, quoteRequestId],
       queryFn: async () => {
-        if (!currentOrganization) {
-          throw new Error("Organization not selected");
+        if (!currentOrganization?.id) return [];
+
+        let query = supabase
+          .from('supplier_quotes')
+          .select(`
+            *,
+            supplier:suppliers(id, supplier_name),
+            quote_request:quote_requests(id, title, description),
+            formats:supplier_quote_formats(
+              id,
+              format_id,
+              quote_request_format_id,
+              format_name
+            ),
+            price_breaks:supplier_quote_price_breaks(*),
+            extra_costs:supplier_quote_extra_costs(*),
+            savings:supplier_quote_savings(*),
+            attachments:supplier_quote_attachments(*)
+          `)
+          .eq('organization_id', currentOrganization.id);
+
+        if (quoteRequestId) {
+          query = query.eq('quote_request_id', quoteRequestId);
         }
-        try {
-          const data = await fetchSupplierQuotes({
-            currentOrganization,
-            status,
-            supplierId,
-            quoteRequestId,
-            searchQuery: searchQuery || undefined, // Ensure it doesn't send "null"
-            supplier: supplier || "",
-            selectedFormat: selectedFormat || "",
-          });
-          return data;
-        } catch (error) {
-          console.error("Fetch failed:", error);
-          throw error;
-        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return data as SupplierQuote[];
       },
-      enabled: !!currentOrganization,
-      retry: false, // Optional: Disable retries if needed
-      meta: {
-        onError: (error: any) => {
-          toast.error(error.message || "Failed to load supplier quotes");
-        },
-      },
-    });
-  };
-  /**
-   * Hook to fetch a specific supplier quote by ID
-   */
-  const useSupplierQuoteById = (id: string | null) => {
-    return useQuery({
-      queryKey: ["supplierQuote", id],
-      queryFn: () => fetchSupplierQuoteById(id as string),
-      enabled: !!id,
-      meta: {
-        onError: (error: any) => {
-          toast.error(error.message || "Failed to load supplier quote");
-        },
-      },
+      enabled: !!currentOrganization?.id,
     });
   };
 
-  /**
-   * Hook to create a new supplier quote
-   */
+  // Create supplier quote
   const useCreateSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({
-        formData,
-        organizationId,
-      }: {
-        formData: SupplierQuoteFormValues;
-        organizationId: string;
-      }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return createSupplierQuote(formData, organizationId, user.id);
-      },
-      onSuccess: (quoteId) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        toast.success("Supplier quote created successfully");
-        return quoteId; // Return the quote ID
-      },
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to create supplier quote");
-      },
-    });
-  };
+      mutationFn: async (quoteData: Partial<SupplierQuote>) => {
+        if (!currentOrganization?.id) throw new Error('No organization selected');
 
-  /**
-   * Hook to update a supplier quote
-   */
-  const useUpdateSupplierQuote = () => {
-    return useMutation({
-      mutationFn: ({
-        id,
-        updates,
-        previousData,
-      }: {
-        id: string;
-        updates: Partial<SupplierQuoteFormValues>;
-        previousData?: any;
-      }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return updateSupplierQuote(id, updates, user.id, previousData);
-      },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({
-          queryKey: ["supplierQuote", variables.id],
-        });
-        toast.success("Supplier quote updated successfully");
-      },
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to update supplier quote");
-      },
-    });
-  };
+        const { data, error } = await supabase
+          .from('supplier_quotes')
+          .insert({
+            ...quoteData,
+            organization_id: currentOrganization.id,
+          })
+          .select()
+          .single();
 
-  /**
-   * Hook to delete a supplier quote
-   */
-  const useDeleteSupplierQuote = () => {
-    return useMutation({
-      mutationFn: (id: string) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return deleteSupplierQuote(id, user.id);
+        if (error) throw error;
+        return data;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        toast.success("Supplier quote deleted successfully");
+        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        toast.success('Quote created successfully');
       },
       onError: (error: any) => {
-        toast.error(error.message || "Failed to delete supplier quote");
-      },
+        toast.error(`Failed to create quote: ${error.message}`);
+      }
     });
   };
 
-  /**
-   * Hook to submit a supplier quote
-   */
+  // Update supplier quote
+  const useUpdateSupplierQuote = () => {
+    return useMutation({
+      mutationFn: async ({ id, ...updates }: Partial<SupplierQuote> & { id: string }) => {
+        const { data, error } = await supabase
+          .from('supplier_quotes')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        toast.success('Quote updated successfully');
+      },
+      onError: (error: any) => {
+        toast.error(`Failed to update quote: ${error.message}`);
+      }
+    });
+  };
+
+  // Submit supplier quote
   const useSubmitSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, totalCost }: { id: string; totalCost: number }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return submitSupplierQuote(id, totalCost, user.id);
+      mutationFn: async ({ id }: { id: string }) => {
+        if (!user?.id) throw new Error('User not authenticated');
+        return await submitSupplierQuote(id, user.id);
       },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({
-          queryKey: ["supplierQuote", variables.id],
-        });
-        toast.success("Supplier quote submitted successfully");
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        toast.success('Quote submitted successfully');
       },
       onError: (error: any) => {
-        toast.error(error.message || "Failed to submit supplier quote");
-      },
+        toast.error(`Failed to submit quote: ${error.message}`);
+      }
     });
   };
 
-  /**
-   * Hook to accept a supplier quote
-   */
-  const useAcceptSupplierQuote = () => {
+  // Delete supplier quote
+  const useDeleteSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({
-        id,
-        acceptedCost,
-      }: {
-        id: string;
-        acceptedCost: number;
-      }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return acceptSupplierQuote(id, acceptedCost, user.id);
+      mutationFn: async (id: string) => {
+        const { error } = await supabase
+          .from('supplier_quotes')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        return id;
       },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({
-          queryKey: ["supplierQuote", variables.id],
-        });
-        toast.success("Supplier quote accepted successfully");
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        toast.success('Quote deleted successfully');
       },
       onError: (error: any) => {
-        toast.error(error.message || "Failed to accept supplier quote");
-      },
+        toast.error(`Failed to delete quote: ${error.message}`);
+      }
     });
   };
 
-  /**
-   * Hook to decline a supplier quote
-   */
-  const useDeclineSupplierQuote = () => {
-    return useMutation({
-      mutationFn: ({ id, reason }: { id: string; reason?: string }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return declineSupplierQuote(id, user.id, reason);
-      },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({
-          queryKey: ["supplierQuote", variables.id],
-        });
-        toast.success("Supplier quote declined successfully");
-      },
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to decline supplier quote");
-      },
-    });
-  };
-
-  /**
-   * Hook to approve a supplier quote
-   */
+  // Approve supplier quote
   const useApproveSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({
-        id,
-        approvedCost,
-      }: {
-        id: string;
-        approvedCost: number;
-      }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return approveSupplierQuote(id, approvedCost, user.id);
+      mutationFn: async (id: string) => {
+        if (!user?.id) throw new Error('User not authenticated');
+
+        const { data, error } = await supabase
+          .from('supplier_quotes')
+          .update({
+            status: 'approved',
+            approved_at: new Date().toISOString(),
+            approved_by: user.id
+          })
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
       },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({
-          queryKey: ["supplierQuote", variables.id],
-        });
-        toast.success("Supplier quote approved successfully");
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        toast.success('Quote approved successfully');
       },
       onError: (error: any) => {
-        toast.error(error.message || "Failed to approve supplier quote");
-      },
+        toast.error(`Failed to approve quote: ${error.message}`);
+      }
     });
   };
 
-  /**
-   * Hook to reject a supplier quote
-   */
+  // Reject supplier quote
   const useRejectSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, reason }: { id: string; reason: string }) => {
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        return rejectSupplierQuote(id, user.id, reason);
+      mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
+        if (!user?.id) throw new Error('User not authenticated');
+
+        const { data, error } = await supabase
+          .from('supplier_quotes')
+          .update({
+            status: 'rejected',
+            rejected_at: new Date().toISOString(),
+            rejected_by: user.id,
+            rejection_reason: reason
+          })
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
       },
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
-        queryClient.invalidateQueries({
-          queryKey: ["supplierQuote", variables.id],
-        });
-        toast.success("Supplier quote rejected successfully");
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['supplier-quotes'] });
+        toast.success('Quote rejected successfully');
       },
       onError: (error: any) => {
-        toast.error(error.message || "Failed to reject supplier quote");
-      },
+        toast.error(`Failed to reject quote: ${error.message}`);
+      }
     });
   };
 
-  /**
-   * Hook to fetch supplier quote audit
-   */
-  const useSupplierQuoteAudit = (supplierQuoteId: string | null) => {
+  // Audit history
+  const useSupplierQuoteAudit = (quoteId: string) => {
     return useQuery({
-      queryKey: ["supplier-quote-audit", supplierQuoteId],
+      queryKey: ['supplier-quote-audit', quoteId],
       queryFn: async () => {
-        if (!supplierQuoteId) return [];
-        return supplierQuoteApi.fetchSupplierQuoteAudit(supplierQuoteId) || [];
+        const { data, error } = await supabase
+          .from('supplier_quote_audit')
+          .select('*')
+          .eq('supplier_quote_id', quoteId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
       },
-      enabled: !!supplierQuoteId,
+      enabled: !!quoteId,
     });
   };
 
   return {
     useSupplierQuotesList,
-    useSupplierQuoteById,
     useCreateSupplierQuote,
     useUpdateSupplierQuote,
-    useDeleteSupplierQuote,
     useSubmitSupplierQuote,
-    useAcceptSupplierQuote,
-    useDeclineSupplierQuote,
+    useDeleteSupplierQuote,
     useApproveSupplierQuote,
     useRejectSupplierQuote,
     useSupplierQuoteAudit,
