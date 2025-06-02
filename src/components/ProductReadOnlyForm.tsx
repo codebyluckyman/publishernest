@@ -21,7 +21,7 @@ type ProductReadOnlyFormProps = {
   productId: string;
 };
 
-export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormProps) {
+export const ProductReadOnlyForm = ({ productId }: ProductReadOnlyFormProps) => {
   const { form, isLoading } = useProductForm(productId, () => {});
   const [formReady, setFormReady] = useState(false);
 
@@ -85,4 +85,6 @@ export default function ProductReadOnlyForm({ productId }: ProductReadOnlyFormPr
       </div>
     </Form>
   );
-}
+};
+
+export default ProductReadOnlyForm;

@@ -596,6 +596,36 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          in_app_enabled: boolean
+          notification_type: string
+          push_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          in_app_enabled?: boolean
+          notification_type: string
+          push_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          in_app_enabled?: boolean
+          notification_type?: string
+          push_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_default_price_breaks: {
         Row: {
           created_at: string
@@ -1864,6 +1894,39 @@ export type Database = {
           },
         ]
       }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh_key: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh_key: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh_key?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       quote_request_attachments: {
         Row: {
           created_at: string
@@ -2777,6 +2840,8 @@ export type Database = {
           is_read: boolean
           message: string
           notification_type: string
+          push_sent: boolean
+          push_sent_at: string | null
           quote_request_id: string | null
           supplier_id: string
           title: string
@@ -2790,6 +2855,8 @@ export type Database = {
           is_read?: boolean
           message: string
           notification_type: string
+          push_sent?: boolean
+          push_sent_at?: string | null
           quote_request_id?: string | null
           supplier_id: string
           title: string
@@ -2803,6 +2870,8 @@ export type Database = {
           is_read?: boolean
           message?: string
           notification_type?: string
+          push_sent?: boolean
+          push_sent_at?: string | null
           quote_request_id?: string | null
           supplier_id?: string
           title?: string
@@ -3972,6 +4041,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_notification_preferences: {
+        Args: { p_user_id?: string }
+        Returns: {
+          notification_type: string
+          push_enabled: boolean
+          in_app_enabled: boolean
+        }[]
+      }
       get_organization_notifications: {
         Args: {
           p_organization_id: string
@@ -4243,6 +4320,14 @@ export type Database = {
         Args: { formatid: string; pricebreaks: Json; numproducts?: number }
         Returns: undefined
       }
+      update_notification_preference: {
+        Args: {
+          p_notification_type: string
+          p_push_enabled: boolean
+          p_in_app_enabled: boolean
+        }
+        Returns: undefined
+      }
       update_quote_request_format_products: {
         Args: { format_id: string; products_data: Json }
         Returns: undefined
@@ -4250,6 +4335,15 @@ export type Database = {
       update_typing_status: {
         Args: { p_room_id: string; p_user_id: string; p_is_typing: boolean }
         Returns: undefined
+      }
+      upsert_push_subscription: {
+        Args: {
+          p_endpoint: string
+          p_p256dh_key: string
+          p_auth_key: string
+          p_user_agent?: string
+        }
+        Returns: string
       }
       user_has_read_message: {
         Args: { message_read_by: string[]; user_id: string }

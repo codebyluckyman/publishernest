@@ -50,7 +50,7 @@ type ProductFormProps = {
   hideButtons?: boolean;
 };
 
-const ProductForm = forwardRef<
+export const ProductForm = forwardRef<
   { deleteProduct: () => Promise<void> },
   ProductFormProps
 >(
