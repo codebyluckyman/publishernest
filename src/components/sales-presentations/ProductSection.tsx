@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,14 +13,10 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface ProductSectionProps {
-  title?: string;
-  description?: string;
   products: Product[];
-  displaySettings?: PresentationDisplaySettings;
+  displaySettings: PresentationDisplaySettings;
   organizationId: string;
   allowDownloads?: boolean;
-  isEditable?: boolean;
-  onEdit?: () => void;
 }
 
 interface ProductWithCustomData {
@@ -85,7 +82,7 @@ const getFieldValue = (product: Product, column: CardColumn | DialogColumn) => {
     case 'isbn10':
       return product.isbn10;
     case 'price':
-      return product.list_price ? formatCurrency(product.list_price, product.currency_code || 'USD') : null;
+      return product.list_price ? formatCurrency(product.list_price, product.currency_code) : null;
     case 'product_form':
       return product.product_form;
     case 'product_form_detail':
@@ -187,8 +184,6 @@ const getFieldValue = (product: Product, column: CardColumn | DialogColumn) => {
 };
 
 export function ProductSection({ 
-  title,
-  description,
   products, 
   displaySettings, 
   organizationId,
@@ -218,8 +213,8 @@ export function ProductSection({
   };
 
   const renderProductCards = (productsToRender: ProductWithCustomData[]) => {
-    const cardColumns = displaySettings?.cardColumns || ['price', 'isbn13', 'publisher'];
-    const features = displaySettings?.features || {};
+    const cardColumns = displaySettings.cardColumns || ['price', 'isbn13', 'publisher'];
+    const features = displaySettings.features || {};
     const gridLayout = features.cardGridLayout || { sm: 1, md: 2, lg: 3, xl: 4, xxl: 5 };
 
     // Generate grid classes based on layout configuration
@@ -267,7 +262,7 @@ export function ProductSection({
                       <span className="text-muted-foreground">{columnLabels[column]}:</span>
                       <span className="font-medium text-right max-w-[60%] truncate">
                         {column === 'price' && customPrice !== undefined 
-                          ? formatCurrency(customPrice, product.currency_code || 'USD')
+                          ? formatCurrency(customPrice, product.currency_code)
                           : value
                         }
                       </span>
@@ -334,17 +329,10 @@ export function ProductSection({
     );
   };
 
-  const currentView = displaySettings?.defaultView || 'card';
+  const currentView = displaySettings.defaultView || 'card';
 
   return (
     <div className="space-y-6">
-      {title && (
-        <div>
-          <h2 className="text-2xl font-bold">{title}</h2>
-          {description && <p className="text-muted-foreground mt-1">{description}</p>}
-        </div>
-      )}
-      
       {currentView === 'carousel' ? (
         renderCarouselView(productsWithCustomData)
       ) : (
@@ -378,7 +366,7 @@ export function ProductSection({
                     </div>
                   )}
                   
-                  {selectedProduct.internal_images && Array.isArray(selectedProduct.internal_images) && selectedProduct.internal_images.length > 0 && (
+                  {selectedProduct.internal_images && selectedProduct.internal_images.length > 0 && (
                     <div className="space-y-2">
                       <h4 className="font-medium">Internal Images</h4>
                       <div className="grid grid-cols-2 gap-2">
@@ -399,7 +387,7 @@ export function ProductSection({
                 {/* Product Details */}
                 <div className="space-y-4">
                   <div className="space-y-3">
-                    {displaySettings?.dialogColumns?.map((column) => {
+                    {displaySettings.dialogColumns?.map((column) => {
                       const value = getFieldValue(selectedProduct, column);
                       if (!value) return null;
                       
@@ -452,7 +440,7 @@ export function ProductSection({
               {(() => {
                 const allImages = [
                   ...(selectedProduct.cover_image_url ? [selectedProduct.cover_image_url] : []),
-                  ...(Array.isArray(selectedProduct.internal_images) ? selectedProduct.internal_images : [])
+                  ...(selectedProduct.internal_images || [])
                 ];
                 
                 if (allImages.length === 0) return null;
