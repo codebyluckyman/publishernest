@@ -1,203 +1,163 @@
 
-import { createContext, ReactNode, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useUser } from '@supabase/auth-helpers-react';
-import { Organization, OrganizationMember, OrganizationContextType, MemberType } from '@/types/organization';
-import { toast } from 'sonner';
+import { createContext, useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useAuth } from "./AuthContext";
+import { useOrganizationApi } from "@/hooks/useOrganizationApi";
+import { Organization, OrganizationContextType, OrganizationMember, MemberType } from "@/types/organization";
 
 export const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
-interface OrganizationProviderProps {
-  children: ReactNode;
-}
-
-export function OrganizationProvider({ children }: OrganizationProviderProps) {
+export const OrganizationProvider = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
   const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const user = useUser();
-
-  const fetchOrganizations = async () => {
-    if (!user?.id) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('organization_members')
-        .select(`
-          organizations (
-            id,
-            name,
-            slug,
-            created_at,
-            logo_url,
-            organization_type,
-            default_num_products,
-            default_extra_costs,
-            default_savings
-          ),
-          member_type
-        `)
-        .eq('auth_user_id', user.id);
-
-      if (error) throw error;
-
-      const orgsWithMemberType = data?.map(item => ({
-        ...item.organizations,
-        userMemberType: item.member_type
-      })) || [];
-
-      setOrganizations(orgsWithMemberType);
-
-      // Set current organization if none is set
-      if (!currentOrganization && orgsWithMemberType.length > 0) {
-        setCurrentOrganization(orgsWithMemberType[0]);
-      }
-    } catch (error: any) {
-      console.error('Error fetching organizations:', error);
-      toast.error('Failed to fetch organizations');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const refetchOrganizations = async () => {
-    await fetchOrganizations();
-  };
+  
+  const api = useOrganizationApi(user?.id);
 
   useEffect(() => {
+    if (!user) {
+      setOrganizations([]);
+      setCurrentOrganization(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchOrganizations = async () => {
+      setIsLoading(true);
+      try {
+        const orgs = await api.fetchUserOrganizations();
+        setOrganizations(orgs);
+
+        const currentOrgId = await api.getCurrentOrganizationId();
+
+        if (currentOrgId) {
+          const currentOrg = orgs.find(org => org.id === currentOrgId) || null;
+          setCurrentOrganization(currentOrg);
+        } else if (orgs.length > 0) {
+          setCurrentOrganization(orgs[0]);
+          await api.updateCurrentOrganization(orgs[0].id);
+        } else {
+          setCurrentOrganization(null);
+        }
+      } catch (error) {
+        console.error("Error fetching organizations:", error);
+        toast.error("Failed to load organizations");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchOrganizations();
-  }, [user?.id]);
+  }, [user]);
 
   const createOrganization = async (name: string, type: "publisher" | "printer" | "customer" = "publisher"): Promise<Organization | null> => {
-    if (!user?.id) return null;
+    if (!user) {
+      toast.error("You must be logged in to create an organization");
+      return null;
+    }
 
     try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .insert({
-          name,
-          slug: name.toLowerCase().replace(/\s+/g, '-'),
-          organization_type: type
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Add user as owner
-      await supabase
-        .from('organization_members')
-        .insert({
-          organization_id: data.id,
-          auth_user_id: user.id,
-          role: 'owner'
-        });
-
-      await fetchOrganizations();
-      toast.success('Organization created successfully');
-      return data;
+      const org = await api.createNewOrganization(name, type);
+      
+      setOrganizations(prev => [...prev, org]);
+      setCurrentOrganization(org);
+      
+      toast.success("Organization created successfully");
+      return org;
     } catch (error: any) {
-      console.error('Error creating organization:', error);
-      toast.error('Failed to create organization');
+      toast.error(error.message || "Failed to create organization");
       return null;
     }
   };
 
-  const switchOrganization = async (organizationId: string): Promise<void> => {
-    const org = organizations.find(o => o.id === organizationId);
-    if (org) {
+  const switchOrganization = async (organizationId: string) => {
+    if (!user) return;
+    
+    try {
+      const org = organizations.find(o => o.id === organizationId);
+      if (!org) throw new Error("Organization not found");
+
+      await api.updateCurrentOrganization(organizationId);
+
       setCurrentOrganization(org);
+      toast.success(`Switched to ${org.name}`);
+    } catch (error: any) {
+      console.error("Error switching organization:", error);
+      toast.error(error.message || "Failed to switch organization");
     }
   };
 
   const getOrganizationMembers = async (organizationId: string): Promise<OrganizationMember[]> => {
     try {
-      const { data, error } = await supabase
-        .from('organization_members')
-        .select('*')
-        .eq('organization_id', organizationId);
-
-      if (error) throw error;
-      return data || [];
+      const members = await api.fetchOrganizationMembers(organizationId);
+      return members;
     } catch (error: any) {
-      console.error('Error fetching organization members:', error);
+      toast.error(error.message || "Failed to fetch organization members");
       return [];
     }
   };
 
-  const inviteMember = async (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType): Promise<void> => {
-    // Implementation would go here
-    toast.success('Member invited successfully');
-  };
-
-  const updateMemberRole = async (memberId: string, role: "admin" | "member"): Promise<void> => {
+  const inviteMember = async (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => {
     try {
-      const { error } = await supabase
-        .from('organization_members')
-        .update({ role })
-        .eq('id', memberId);
-
-      if (error) throw error;
-      toast.success('Member role updated successfully');
+      await api.inviteOrganizationMember(organizationId, email, role, memberType);
+      toast.success(`User invited to the organization`);
     } catch (error: any) {
-      console.error('Error updating member role:', error);
-      toast.error('Failed to update member role');
+      toast.error(error.message || "Failed to invite member");
     }
   };
 
-  const removeMember = async (memberId: string): Promise<void> => {
+  const updateMemberRole = async (memberId: string, role: "admin" | "member") => {
     try {
-      const { error } = await supabase
-        .from('organization_members')
-        .delete()
-        .eq('id', memberId);
-
-      if (error) throw error;
-      toast.success('Member removed successfully');
+      await api.updateMemberRole(memberId, role);
+      toast.success("Member role updated");
     } catch (error: any) {
-      console.error('Error removing member:', error);
-      toast.error('Failed to remove member');
+      toast.error(error.message || "Failed to update member role");
     }
   };
 
-  const updateOrganizationSetting = async (setting: string, value: any): Promise<void> => {
-    if (!currentOrganization?.id) return;
+  const removeMember = async (memberId: string) => {
+    try {
+      await api.removeMember(memberId);
+      toast.success("Member removed from organization");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove member");
+    }
+  };
+
+  const updateOrganizationSetting = async (setting: string, value: any) => {
+    if (!currentOrganization) {
+      toast.error("No organization selected");
+      return;
+    }
 
     try {
-      const { error } = await supabase
-        .from('organizations')
-        .update({ [setting]: value })
-        .eq('id', currentOrganization.id);
-
-      if (error) throw error;
+      const updatedOrg = await api.updateOrganizationSetting(currentOrganization.id, setting, value);
       
-      // Update local state
-      setCurrentOrganization(prev => prev ? { ...prev, [setting]: value } : null);
-      toast.success('Setting updated successfully');
+      // Update the organization in state
+      setCurrentOrganization(updatedOrg);
+      setOrganizations(prev => 
+        prev.map(org => org.id === updatedOrg.id ? updatedOrg : org)
+      );
+      
+      toast.success("Organization setting updated");
     } catch (error: any) {
-      console.error('Error updating organization setting:', error);
-      toast.error('Failed to update setting');
+      toast.error(error.message || "Failed to update organization setting");
     }
   };
 
-  const value: OrganizationContextType = {
+  const value = {
     currentOrganization,
     organizations,
     isLoading,
     createOrganization,
     switchOrganization,
-    setCurrentOrganization,
-    refetchOrganizations,
     getOrganizationMembers,
     inviteMember,
     updateMemberRole,
     removeMember,
-    updateOrganizationSetting,
+    updateOrganizationSetting
   };
 
-  return (
-    <OrganizationContext.Provider value={value}>
-      {children}
-    </OrganizationContext.Provider>
-  );
-}
+  return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>;
+};

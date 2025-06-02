@@ -1,135 +1,229 @@
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useOrganization } from "@/context/OrganizationContext";
+import { productSchema, defaultProductValues, ProductFormValues } from "@/schemas/productSchema";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useProducts } from './useProducts';
-import { Product, ProductFormValues } from '@/types/product';
-
-const productSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  subtitle: z.string().optional(),
-  isbn13: z.string().optional(),
-  isbn10: z.string().optional(),
-  publisher_name: z.string().optional(),
-  publication_date: z.date().optional(),
-  product_form: z.string().optional(),
-  product_form_detail: z.string().optional(),
-  status: z.string().default('active'),
-  list_price: z.number().optional(),
-  currency_code: z.string().optional(),
-  height_measurement: z.number().optional(),
-  width_measurement: z.number().optional(),
-  thickness_measurement: z.number().optional(),
-  weight_measurement: z.number().optional(),
-  page_count: z.number().optional(),
-  edition_number: z.number().optional(),
-  carton_quantity: z.number().optional(),
-  carton_length_mm: z.number().optional(),
-  carton_width_mm: z.number().optional(),
-  carton_height_mm: z.number().optional(),
-  carton_weight_kg: z.number().optional(),
-  format_id: z.string().optional(),
-  format_extras: z.object({
-    foil: z.boolean().optional(),
-    spot_uv: z.boolean().optional(),
-    glitter: z.boolean().optional(),
-    embossing: z.boolean().optional(),
-    die_cut: z.boolean().optional(),
-    holographic: z.boolean().optional(),
-  }).optional(),
-  format_extra_comments: z.string().optional(),
-  synopsis: z.string().optional(),
-  series_name: z.string().optional(),
-  age_range: z.string().optional(),
-  license: z.string().optional(),
-  language_code: z.string().optional(),
-  subject_code: z.string().optional(),
-  product_availability_code: z.string().optional(),
-  cover_image_url: z.string().optional(),
-  internal_images: z.array(z.string()).optional(),
-  selling_points: z.string().optional(),
-});
-
-export function useProductForm(product?: Product) {
-  const { createProduct, updateProduct, deleteProduct } = useProducts();
+export function useProductForm(productId: string | undefined, onSuccess: () => void) {
+  const { currentOrganization } = useOrganization();
+  const [isLoading, setIsLoading] = useState(false);
+  const isEditMode = !!productId;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: product ? {
-      title: product.title,
-      subtitle: product.subtitle || '',
-      isbn13: product.isbn13 || '',
-      isbn10: product.isbn10 || '',
-      publisher_name: product.publisher_name || '',
-      publication_date: product.publication_date ? new Date(product.publication_date) : undefined,
-      product_form: product.product_form || '',
-      product_form_detail: product.product_form_detail || '',
-      status: product.status || 'active',
-      list_price: product.list_price || undefined,
-      currency_code: product.currency_code || 'USD',
-      height_measurement: product.height_measurement || undefined,
-      width_measurement: product.width_measurement || undefined,
-      thickness_measurement: product.thickness_measurement || undefined,
-      weight_measurement: product.weight_measurement || undefined,
-      page_count: product.page_count || undefined,
-      edition_number: product.edition_number || undefined,
-      carton_quantity: product.carton_quantity || undefined,
-      carton_length_mm: product.carton_length_mm || undefined,
-      carton_width_mm: product.carton_width_mm || undefined,
-      carton_height_mm: product.carton_height_mm || undefined,
-      carton_weight_kg: product.carton_weight_kg || undefined,
-      format_id: product.format_id || '',
-      format_extras: product.format_extras || {
-        foil: false,
-        spot_uv: false,
-        glitter: false,
-        embossing: false,
-        die_cut: false,
-        holographic: false,
-      },
-      format_extra_comments: product.format_extra_comments || '',
-      synopsis: product.synopsis || '',
-      series_name: product.series_name || '',
-      age_range: product.age_range || '',
-      license: product.license || '',
-      language_code: product.language_code || '',
-      subject_code: product.subject_code || '',
-      product_availability_code: product.product_availability_code || '',
-      cover_image_url: product.cover_image_url || '',
-      internal_images: product.internal_images || [],
-      selling_points: product.selling_points || '',
-    } : {
-      title: '',
-      status: 'active',
-      currency_code: 'USD',
-      format_extras: {
-        foil: false,
-        spot_uv: false,
-        glitter: false,
-        embossing: false,
-        die_cut: false,
-        holographic: false,
-      },
-      internal_images: [],
-    }
+    defaultValues: defaultProductValues,
   });
 
-  const submitProduct = async (productData: Partial<Product>, isEditing = false) => {
-    if (isEditing && product?.id) {
-      await updateProduct.mutateAsync({ id: product.id, ...productData });
-    } else {
-      await createProduct.mutateAsync(productData);
+  // Load product data when editing an existing product
+  useEffect(() => {
+    if (isEditMode && productId) {
+      setIsLoading(true);
+      
+      const fetchProduct = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("products")
+            .select("*")
+            .eq("id", productId)
+            .single();
+            
+          if (error) {
+            toast.error("Failed to load product: " + error.message);
+            return;
+          }
+          
+          if (data) {
+            const publicationDate = data.publication_date 
+              ? new Date(data.publication_date) 
+              : null;
+              
+            // Parse format_extras from JSON with proper error handling
+            let formatExtras = defaultProductValues.format_extras;
+            
+            if (data.format_extras) {
+              try {
+                if (typeof data.format_extras === 'string') {
+                  const parsed = JSON.parse(data.format_extras);
+                  if (Array.isArray(parsed)) {
+                    formatExtras = parsed;
+                  }
+                } else if (Array.isArray(data.format_extras)) {
+                  formatExtras = data.format_extras;
+                }
+              } catch (error) {
+                console.warn('Failed to parse format_extras:', error);
+                // Keep the default empty array
+              }
+            }
+              
+            console.log('Loaded product data:', data);
+              
+            // Set form values from database data
+            form.reset({
+              ...data,
+              publication_date: publicationDate,
+              list_price: data.list_price !== null ? Number(data.list_price) : null,
+              page_count: data.page_count !== null ? Number(data.page_count) : null,
+              edition_number: data.edition_number !== null ? Number(data.edition_number) : null,
+              height_measurement: data.height_measurement !== null ? Number(data.height_measurement) : null,
+              width_measurement: data.width_measurement !== null ? Number(data.width_measurement) : null,
+              thickness_measurement: data.thickness_measurement !== null ? Number(data.thickness_measurement) : null,
+              weight_measurement: data.weight_measurement !== null ? Number(data.weight_measurement) : null,
+              format_id: data.format_id || null,
+              // New fields
+              internal_images: data.internal_images || [],
+              carton_quantity: data.carton_quantity !== null ? Number(data.carton_quantity) : null,
+              carton_length_mm: data.carton_length_mm !== null ? Number(data.carton_length_mm) : null,
+              carton_width_mm: data.carton_width_mm !== null ? Number(data.carton_width_mm) : null,
+              carton_height_mm: data.carton_height_mm !== null ? Number(data.carton_height_mm) : null,
+              carton_weight_kg: data.carton_weight_kg !== null ? Number(data.carton_weight_kg) : null,
+              age_range: data.age_range || "",
+              synopsis: data.synopsis || "",
+              license: data.license || "",
+              format_extras: formatExtras,
+              format_extra_comments: data.format_extra_comments || null,
+            });
+          }
+        } catch (err: any) {
+          toast.error("Error loading product: " + err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchProduct();
     }
-  };
+  }, [isEditMode, productId, form]);
 
-  const isLoading = createProduct.isPending || updateProduct.isPending || deleteProduct.isPending;
+  // Submit handler for creating or updating products
+  async function onSubmit(values: ProductFormValues) {
+    if (!currentOrganization) {
+      toast.error("No organization selected");
+      return { success: false, productId: null };
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Clean up the format_id field - if it's an empty string, set it to null
+      const cleanedFormatId = values.format_id === "" ? null : values.format_id;
+      
+      const formattedValues = {
+        ...values,
+        title: values.title,
+        publication_date: values.publication_date ? formatDateToYYYYMMDD(values.publication_date) : null,
+        organization_id: currentOrganization.id,
+        format_id: cleanedFormatId,
+      };
+
+      console.log("Submitting product with values:", formattedValues);
+      
+      let result;
+      let submittedProductId = isEditMode ? productId : null;
+      
+      if (isEditMode) {
+        result = await supabase
+          .from("products")
+          .update(formattedValues)
+          .eq("id", productId);
+      } else {
+        result = await supabase
+          .from("products")
+          .insert(formattedValues)
+          .select();
+          
+        if (result.data && result.data.length > 0) {
+          submittedProductId = result.data[0].id;
+        }
+      }
+      
+      if (result.error) {
+        throw result.error;
+      }
+      
+      toast.success(isEditMode ? "Product updated successfully" : "Product created successfully");
+      onSuccess();
+      
+      return { success: true, productId: submittedProductId };
+    } catch (error: any) {
+      toast.error(`Failed to ${isEditMode ? "update" : "create"} product: ${error.message}`);
+      return { success: false, productId: null };
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  /**
+   * Helper function to format a Date to YYYY-MM-DD string
+   * without timezone conversion issues
+   */
+  function formatDateToYYYYMMDD(date: Date): string {
+    const year = date.getFullYear();
+    // getMonth() is 0-indexed, so add 1
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Handle product deletion
+  async function deleteProduct() {
+    if (!productId || !currentOrganization) {
+      toast.error("Cannot delete product: Missing ID or organization");
+      return;
+    }
+    
+    setIsLoading(true);
+    console.log("Delete Product function called with productId:", productId);
+    
+    try {
+      // First delete associated custom field values
+      const { error: customFieldsError } = await supabase
+        .from("product_custom_field_values")
+        .delete()
+        .eq("product_id", productId);
+        
+      if (customFieldsError) {
+        console.error("Error deleting custom field values:", customFieldsError);
+      }
+      
+      // Then delete associated stock records
+      const { error: stockError } = await supabase
+        .from("stock_on_hand")
+        .delete()
+        .eq("product_id", productId);
+        
+      if (stockError) {
+        console.error("Error deleting stock records:", stockError);
+      }
+      
+      // Then delete the product
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId);
+        
+      if (error) {
+        console.error("Error deleting product:", error);
+        throw error;
+      }
+      
+      toast.success("Product deleted successfully");
+      onSuccess();
+    } catch (error: any) {
+      console.error("Exception when deleting product:", error);
+      toast.error(`Failed to delete product: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return {
     form,
-    submitProduct,
-    deleteProduct: deleteProduct.mutateAsync,
     isLoading,
-    isEditMode: !!product,
-    onSubmit: form.handleSubmit
+    isEditMode,
+    onSubmit,
+    deleteProduct
   };
 }

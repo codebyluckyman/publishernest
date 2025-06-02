@@ -1,33 +1,243 @@
 
-import { useProductForm } from '@/hooks/useProductForm';
-import { Product } from '@/types/product';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
+import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { useProductForm } from "@/hooks/useProductForm";
+import { CoverImageSection } from "./products/form-sections/CoverImageSection";
+import { BasicInfoSection } from "./products/form-sections/BasicInfoSection";
+import { IdentifiersSection } from "./products/form-sections/IdentifiersSection";
+import { FormatSection } from "./products/form-sections/FormatSection";
+import { PublicationSection } from "./products/form-sections/PublicationSection";
+import { PhysicalPropertiesSection } from "./products/form-sections/PhysicalPropertiesSection";
+import { CartonSection } from "./products/form-sections/CartonSection";
+import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSection";
+import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
+import { PricingSection } from "./products/form-sections/PricingSection";
+import { FormatExtrasSection } from "./products/form-sections/FormatExtrasSection";
+import { CustomFieldsSection } from "./products/custom-fields/CustomFieldsSection";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+  useState,
+} from "react";
+import { StockTable } from "./products/form-sections/StockTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useOrganization } from "@/context/OrganizationContext";
+import { toast } from "sonner";
 
-interface ProductFormProps {
-  product?: Product;
+type ProductFormProps = {
+  productId?: string;
+  onSuccess: () => void;
   onCancel: () => void;
-}
+  onDelete?: () => void;
+  formId?: string;
+  setIsLoading?: Dispatch<SetStateAction<boolean>>;
+  hideButtons?: boolean;
+};
 
-export function ProductForm({ product, onCancel }: ProductFormProps) {
-  const { form, submitProduct, isLoading, isEditMode } = useProductForm(product);
+const ProductForm = forwardRef<
+  { deleteProduct: () => Promise<void> },
+  ProductFormProps
+>(
+  (
+    {
+      productId,
+      onSuccess,
+      onCancel,
+      onDelete,
+      formId = "product-form",
+      setIsLoading: setParentIsLoading,
+      hideButtons = false,
+    },
+    ref
+  ) => {
+    const { form, isLoading, isEditMode, onSubmit, deleteProduct } =
+      useProductForm(productId, onSuccess);
+    const { currentOrganization } = useOrganization();
+    const [stockQuantities, setStockQuantities] = useState<
+      Record<string, number>
+    >({});
 
-  const handleSubmit = async (data: any) => {
-    await submitProduct(data, isEditMode);
-  };
+    useImperativeHandle(ref, () => ({
+      deleteProduct: async () => {
+        console.log("ProductForm deleteProduct called");
+        await deleteProduct();
+      },
+    }));
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isEditMode ? 'Update' : 'Create'} Product
-          </Button>
-        </div>
-      </form>
-    </Form>
-  );
-}
+    useEffect(() => {
+      console.log(
+        "ProductForm isEditMode:",
+        isEditMode,
+        "productId:",
+        productId
+      );
+    }, [isEditMode, productId]);
+
+    useEffect(() => {
+      if (setParentIsLoading) {
+        setParentIsLoading(isLoading);
+      }
+    }, [isLoading, setParentIsLoading]);
+
+    const handleDelete = async () => {
+      if (productId) {
+        console.log("ProductForm handleDelete called");
+        await deleteProduct();
+        if (onDelete) onDelete();
+      }
+    };
+
+    const handleStockChange = (warehouseId: string, quantity: number) => {
+      setStockQuantities((prev) => ({
+        ...prev,
+        [warehouseId]: quantity,
+      }));
+    };
+
+    const handleFormSubmit = async (values: any) => {
+      try {
+        const result = await onSubmit(values);
+
+        if (result.productId && currentOrganization) {
+          const stockPromises = Object.entries(stockQuantities).map(
+            ([warehouseId, quantity]) => {
+              return supabase.from("stock_on_hand").upsert(
+                {
+                  product_id: result.productId,
+                  warehouse_id: warehouseId,
+                  organization_id: currentOrganization.id,
+                  quantity,
+                },
+                { onConflict: "product_id, warehouse_id" }
+              );
+            }
+          );
+
+          await Promise.all(stockPromises);
+        }
+
+        return result;
+      } catch (error) {
+        console.error("Error saving product with stock:", error);
+        throw error;
+      }
+    };
+
+    return (
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleFormSubmit)}
+          className="space-y-6"
+          id={formId}
+        >
+          <CoverImageSection form={form} />
+          <BasicInfoSection form={form} />
+          <IdentifiersSection form={form} />
+          <FormatSection form={form} />
+          <FormatExtrasSection form={form} />
+          <PublicationSection form={form} />
+          <PhysicalPropertiesSection form={form} />
+          <CartonSection form={form} />
+          <AdditionalInfoSection form={form} />
+          <InternalImagesSection form={form} />
+
+          {productId && (
+            <>
+              <CustomFieldsSection productId={productId} />
+              <PricingSection form={form} productId={productId} />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Inventory</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StockTable
+                    productId={productId}
+                    onChange={handleStockChange}
+                  />
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {!hideButtons && (
+            <div className="flex justify-end space-x-2">
+              {isEditMode && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      type="button"
+                      disabled={isLoading}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete this product and cannot be
+                        undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+              <Button
+                variant="outline"
+                type="button"
+                onClick={onCancel}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                variant={isEditMode ? "success" : "default"}
+              >
+                {isLoading
+                  ? "Saving..."
+                  : isEditMode
+                  ? "Update Product"
+                  : "Create Product"}
+              </Button>
+            </div>
+          )}
+        </form>
+      </Form>
+    );
+  }
+);
+
+ProductForm.displayName = "ProductForm";
+
+export default ProductForm;
