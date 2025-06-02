@@ -95,7 +95,11 @@ export interface SupplierQuote {
   valid_to: string | null;
   terms: string | null;
   remarks: string | null;
-  production_schedule?: Record<string, string | null> | null;
+  production_schedule?: Array<{
+    stepId: string;
+    plannedDate: string;
+    notes?: string;
+  }> | Record<string, string | null> | null;
 
   approved_at?: string | null;
   approved_by?: string | null;
