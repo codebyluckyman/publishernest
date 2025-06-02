@@ -1,11 +1,24 @@
 import type React from "react";
 import { useState } from "react";
-import { Search } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Search,
+  Users,
+  Building2,
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Conversation } from "./type";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -24,34 +37,70 @@ const ChatSidebar: React.FC<SidebarProps> = ({
   currentOrganizationRole,
   currentUser,
 }) => {
-  const availableTabs = ["customer", "supplier", "publisher"].filter(
-    (tab) => tab !== currentOrganizationRole
+  const availableTypes = ["customer", "supplier", "publisher"].filter(
+    (type) => type !== currentOrganizationRole
   ) as ("customer" | "supplier" | "publisher")[];
 
-  const [activeTab, setActiveTab] = useState<
-    "customer" | "supplier" | "publisher"
-  >(availableTabs[0]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    availableTypes.reduce((acc, type) => ({ ...acc, [type]: true }), {})
+  );
 
-  // Filter conversations based on active tab and search query
+  // Toggle group expansion
+  const toggleGroup = (type: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
+
+  // Filter conversations based on search query
   const filteredConversations = conversations.filter((conversation) => {
-    const matchesTab = conversation.type === activeTab;
-    const matchesSearch =
+    return (
       conversation.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conversation.email?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
+      conversation.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (conversation.lastMessage &&
+        conversation.lastMessage
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()))
+    );
   });
 
-  const unreadCounts = {
-    customer: conversations
-      .filter((c) => c.type === "customer")
-      .reduce((total, conversation) => total + conversation.unread, 0),
-    supplier: conversations
-      .filter((c) => c.type === "supplier")
-      .reduce((total, conversation) => total + conversation.unread, 0),
-    publisher: conversations
-      .filter((c) => c.type === "publisher")
-      .reduce((total, conversation) => total + conversation.unread, 0),
+  // Group conversations by type
+  const groupedConversations = availableTypes.reduce(
+    (acc, type) => {
+      acc[type] = filteredConversations.filter((conv) => conv.type === type);
+      return acc;
+    },
+    {} as Record<string, Conversation[]>
+  );
+
+  // Calculate unread counts by type
+  const unreadCounts = availableTypes.reduce(
+    (acc, type) => {
+      acc[type] = conversations
+        .filter((c) => c.type === type)
+        .reduce((total, conversation) => total + conversation.unread, 0);
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  // Get icon for each conversation type
+  const getIconForType = (type: "customer" | "supplier" | "publisher") => {
+    switch (type) {
+      case "customer":
+        return <Users className="h-4 w-4 mr-2" />;
+      case "supplier":
+        return <Building2 className="h-4 w-4 mr-2" />;
+      case "publisher":
+        return <BookOpen className="h-4 w-4 mr-2" />;
+    }
+  };
+
+  // Format type name for display
+  const formatTypeName = (type: string) => {
+    return type.charAt(0).toUpperCase() + type.slice(1) + "s";
   };
 
   return (
@@ -68,39 +117,48 @@ const ChatSidebar: React.FC<SidebarProps> = ({
           />
         </div>
 
-        <Tabs
-          defaultValue={availableTabs[0]}
-          className="w-full flex-1 flex flex-col"
-        >
-          <TabsList className="grid w-full grid-cols-2 p-1.5 bg-gray-50/80 border-b border-gray-100 rounded-none h-auto backdrop-blur-sm">
-            {availableTabs.map((tab) => (
-              <TabsTrigger
-                key={tab}
-                value={tab}
-                className="relative text-center text-sm font-semibold py-3.5 px-4 data-[state=active]:text-indigo-700 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/10 text-gray-600 hover:text-gray-800 rounded-lg transition-all duration-300 data-[state=active]:border data-[state=active]:border-indigo-100 hover:bg-white/60"
-                onClick={() => setActiveTab(tab)}
+        {/* Grouped Conversations */}
+        <div className="flex-1 overflow-auto">
+          {isLoading ? (
+            <div className="p-3 space-y-2">
+              {[1, 2, 3, 4].map((i) => (
+                <ConversationSkeleton key={i} />
+              ))}
+            </div>
+          ) : (
+            availableTypes.map((type) => (
+              <Collapsible
+                key={type}
+                open={expandedGroups[type]}
+                onOpenChange={() => toggleGroup(type)}
+                className="border-b border-gray-100 last:border-b-0"
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                {unreadCounts[tab] > 0 && (
-                  <span className="ml-2 inline-flex items-center justify-center px-2.5 py-1 text-xs font-bold leading-none rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white min-w-[20px] h-[20px] shadow-lg shadow-rose-500/25">
-                    {unreadCounts[tab]}
-                  </span>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {availableTabs.map((tab) => (
-            <TabsContent key={tab} value={tab} className="flex-1 mt-0">
-              <div className="flex-1 overflow-auto h-full">
-                {isLoading ? (
-                  <div className="p-3 space-y-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <ConversationSkeleton key={i} />
-                    ))}
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between p-3 bg-gray-50/80 hover:bg-gray-100/80 cursor-pointer">
+                    <div className="flex items-center">
+                      {getIconForType(type)}
+                      <span className="font-medium text-gray-700">
+                        {formatTypeName(type)}
+                      </span>
+                      {unreadCounts[type] > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="ml-2 bg-rose-500 text-white"
+                        >
+                          {unreadCounts[type]}
+                        </Badge>
+                      )}
+                    </div>
+                    {expandedGroups[type] ? (
+                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                    )}
                   </div>
-                ) : filteredConversations.length > 0 ? (
-                  <div className="h-full overflow-auto">
-                    {filteredConversations.map((conversation) => (
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  {groupedConversations[type].length > 0 ? (
+                    groupedConversations[type].map((conversation) => (
                       <ConversationItem
                         key={conversation.id}
                         conversation={conversation}
@@ -110,23 +168,29 @@ const ChatSidebar: React.FC<SidebarProps> = ({
                         onClick={() => onSelectConversation(conversation)}
                         currentUser={currentUser}
                       />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState
-                    icon={<Search className="h-8 w-8 text-gray-400" />}
-                    title={`No ${activeTab}s found`}
-                    description={
-                      searchQuery
-                        ? `No ${activeTab}s match your search.`
-                        : `When ${activeTab}s message you, they'll appear here.`
-                    }
-                  />
-                )}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-sm text-gray-500">
+                      No {type}s found
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            ))
+          )}
+
+          {!isLoading && filteredConversations.length === 0 && (
+            <EmptyState
+              icon={<Search className="h-8 w-8 text-gray-400" />}
+              title="No conversations found"
+              description={
+                searchQuery
+                  ? "No conversations match your search."
+                  : "Start a new conversation."
+              }
+            />
+          )}
+        </div>
       </div>
     </div>
   );

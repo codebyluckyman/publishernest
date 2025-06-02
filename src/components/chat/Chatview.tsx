@@ -19,6 +19,10 @@ import {
   FileText,
   ImageIcon,
   CheckCheck,
+  Film,
+  Music,
+  Link,
+  File,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -64,6 +68,34 @@ const ChatView: React.FC<ChatViewProps> = ({
   const shouldStickToBottom = useRef(true);
   const isPrepend = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showAttachments, setShowAttachments] = useState(false);
+  const [attachmentFilter, setAttachmentFilter] = useState<
+    "all" | "media" | "files" | "links"
+  >("all");
+
+  // Sample attachment data - replace with your actual data
+  const allAttachments = useMemo(() => {
+    return messages
+      .filter((msg) => msg.attachments && msg.attachments.length > 0)
+      .flatMap((msg) => msg.attachments || [])
+      .filter(Boolean);
+  }, [messages]);
+
+  const filteredAttachments = useMemo(() => {
+    if (attachmentFilter === "all") return allAttachments;
+    if (attachmentFilter === "media")
+      return allAttachments.filter(
+        (att) => att.type === "image" || att.type === "video"
+      );
+    if (attachmentFilter === "files")
+      return allAttachments.filter(
+        (att) =>
+          att.type !== "image" && att.type !== "video" && att.type !== "link"
+      );
+    if (attachmentFilter === "links")
+      return allAttachments.filter((att) => att.type === "link");
+    return allAttachments;
+  }, [allAttachments, attachmentFilter]);
 
   // Use typing indicator hook
   const { typingUsers, handleInputChange, stopTyping } = useTypingIndicator(
@@ -300,7 +332,9 @@ const ChatView: React.FC<ChatViewProps> = ({
               "bg-blue-100",
               "shadow-lg",
               "transition-all",
-              "duration-500"
+              "duration-500",
+              "rounded-md",
+              "p-sm"
             );
 
             // Remove highlighting after 3 seconds
@@ -310,10 +344,12 @@ const ChatView: React.FC<ChatViewProps> = ({
                 "ring-blue-500",
                 "bg-blue-100",
                 "shadow-lg",
+                "rounded-md",
                 "transition-all",
-                "duration-500"
+                "duration-500",
+                "p-sm"
               );
-            }, 3000);
+            }, 4000);
           }
         }, 100);
       }
@@ -535,7 +571,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                       <div className="flex items-start gap-3 max-w-[80%]">
                         <Avatar className="h-10 w-10 ring-2 ring-white shadow-md">
                           <AvatarImage
-                            src={contact?.avatar_url || "/placeholder.svg"}
+                            src={contact?.avatar_url}
                             alt={contact?.name}
                           />
                           <AvatarFallback className="bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white font-bold text-xs">
@@ -696,16 +732,155 @@ const ChatView: React.FC<ChatViewProps> = ({
         </div>
       </div>
 
+      {/* Attachments Sidebar */}
+      {showAttachments && (
+        <div className="w-96 border-l border-slate-200/60 flex flex-col bg-gradient-to-b from-slate-50/30 to-white">
+          <div className="p-6 border-b border-slate-200/60">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-24 w-24 mb-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center shadow-lg">
+                <Paperclip className="h-12 w-12 text-indigo-500" />
+              </div>
+              <h3 className="font-bold text-xl text-slate-900 mb-2">
+                Attachments
+              </h3>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-sm text-slate-600 font-medium">
+                  {filteredAttachments.length} items
+                </span>
+              </div>
+
+              <div className="flex space-x-2 w-full">
+                <Button
+                  variant={attachmentFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setAttachmentFilter("all")}
+                >
+                  All
+                </Button>
+                <Button
+                  variant={attachmentFilter === "media" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setAttachmentFilter("media")}
+                >
+                  Media
+                </Button>
+                <Button
+                  variant={attachmentFilter === "files" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setAttachmentFilter("files")}
+                >
+                  Files
+                </Button>
+                <Button
+                  variant={attachmentFilter === "links" ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setAttachmentFilter("links")}
+                >
+                  Links
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+            {filteredAttachments.length > 0 ? (
+              <div className="space-y-4">
+                <h4 className="font-semibold text-slate-900 mb-4 text-lg">
+                  {attachmentFilter.charAt(0).toUpperCase() +
+                    attachmentFilter.slice(1)}{" "}
+                  Attachments
+                </h4>
+                <div className="space-y-4">
+                  {filteredAttachments.map((attachment, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{
+                          backgroundColor:
+                            attachment.type === "image"
+                              ? "rgba(59, 130, 246, 0.1)"
+                              : attachment.type === "video"
+                                ? "rgba(99, 102, 241, 0.1)"
+                                : attachment.type === "audio"
+                                  ? "rgba(168, 85, 247, 0.1)"
+                                  : attachment.type === "link"
+                                    ? "rgba(16, 185, 129, 0.1)"
+                                    : "rgba(107, 114, 128, 0.1)",
+                        }}
+                      >
+                        {attachment.type === "image" ? (
+                          <ImageIcon className="h-5 w-5 text-blue-500" />
+                        ) : attachment.type === "video" ? (
+                          <Film className="h-5 w-5 text-indigo-500" />
+                        ) : attachment.type === "audio" ? (
+                          <Music className="h-5 w-5 text-purple-500" />
+                        ) : attachment.type === "link" ? (
+                          <Link className="h-5 w-5 text-emerald-500" />
+                        ) : (
+                          ""
+                          // <File className="h-5 w-5 text-gray-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-slate-500 font-medium">
+                          {attachment.type.charAt(0).toUpperCase() +
+                            attachment.type.slice(1)}
+                        </p>
+                        <p className="text-sm font-semibold text-slate-900 break-all">
+                          {attachment.name}
+                        </p>
+                        {attachment.size && (
+                          <p className="text-xs text-slate-500 mt-1">
+                            {(attachment.size / 1024 / 1024).toFixed(2)} MB
+                            {/* {attachment.date && ` • ${attachment.date}`} */}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:text-slate-600"
+                        onClick={() => window.open(attachment.url, "_blank")}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                  <Paperclip className="h-8 w-8 text-slate-400" />
+                </div>
+                <h4 className="text-slate-900 font-medium mb-2">
+                  No attachments found
+                </h4>
+                <p className="text-slate-500 text-sm">
+                  {attachmentFilter !== "all"
+                    ? `No ${attachmentFilter} attachments in this conversation.`
+                    : "This conversation doesn't have any attachments yet."}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Contact Info Sidebar */}
       {showContactInfo && contact && (
         <div className="w-96 border-l border-slate-200/60 flex flex-col bg-gradient-to-b from-slate-50/30 to-white">
           <div className="p-6 border-b border-slate-200/60">
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 mb-4 ring-4 ring-white shadow-xl">
-                <AvatarImage
-                  src={contact.avatar_url || "/placeholder.svg"}
-                  alt={contact.name}
-                />
+                <AvatarImage src={contact.avatar_url} alt={contact.name} />
                 <AvatarFallback className="bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white font-bold text-2xl">
                   {contact.name
                     .split(" ")
@@ -854,6 +1029,78 @@ const ChatView: React.FC<ChatViewProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Attachments Section - Added to the bottom of contact info */}
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-4 text-lg">
+                Attachments
+              </h4>
+              <div className="space-y-4">
+                {allAttachments.length > 0 ? (
+                  allAttachments.map((attachment, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{
+                          backgroundColor:
+                            attachment.type === "image"
+                              ? "rgba(59, 130, 246, 0.1)"
+                              : attachment.type === "video"
+                                ? "rgba(99, 102, 241, 0.1)"
+                                : attachment.type === "audio"
+                                  ? "rgba(168, 85, 247, 0.1)"
+                                  : "rgba(107, 114, 128, 0.1)",
+                        }}
+                      >
+                        {attachment.type === "image" ? (
+                          // <ImageIcon className="h-5 w-5 text-blue-500" />
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100">
+                            <img
+                              src={attachment.url || "/placeholder.svg"}
+                              alt={attachment.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : attachment.type === "video" ? (
+                          <Film className="h-5 w-5 text-indigo-500" />
+                        ) : attachment.type === "audio" ? (
+                          <Music className="h-5 w-5 text-purple-500" />
+                        ) : (
+                          <File className="h-5 w-5 text-gray-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 break-all">
+                          {attachment.name}
+                        </p>
+                        {attachment.size && (
+                          <p className="text-xs text-slate-500 mt-1">
+                            {(attachment.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:text-slate-600"
+                        onClick={() => window.open(attachment.url, "_blank")}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center p-4 bg-white rounded-xl border border-slate-200">
+                    <p className="text-slate-500 text-sm">
+                      No attachments in this conversation
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
