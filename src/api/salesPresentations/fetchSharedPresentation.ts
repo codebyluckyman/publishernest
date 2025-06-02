@@ -21,19 +21,19 @@ export async function fetchSharedPresentation(accessCode: string) {
     const presentation = data[0];
 
     // Ensure display_settings has both cardColumns and dialogColumns
-    const displaySettings = presentation.display_settings || {};
+    const displaySettings = presentation.display_settings as any || {};
     
     // Create a properly typed displaySettings object
     const processedDisplaySettings: PresentationDisplaySettings = {
-      cardColumns: Array.isArray(displaySettings.cardColumns) 
+      cardColumns: Array.isArray(displaySettings?.cardColumns) 
         ? displaySettings.cardColumns
-        : (Array.isArray(displaySettings.displayColumns) 
+        : (Array.isArray(displaySettings?.displayColumns) 
             ? displaySettings.displayColumns 
             : defaultCardColumns),
       
-      dialogColumns: Array.isArray(displaySettings.dialogColumns) 
+      dialogColumns: Array.isArray(displaySettings?.dialogColumns) 
         ? displaySettings.dialogColumns
-        : (Array.isArray(displaySettings.displayColumns) 
+        : (Array.isArray(displaySettings?.displayColumns) 
             ? [...displaySettings.displayColumns, 'synopsis'] 
             : defaultDialogColumns)
     };
@@ -44,7 +44,7 @@ export async function fetchSharedPresentation(accessCode: string) {
     // Call the function to increment the access count
     await supabaseCustom.rpc('increment_presentation_share_access', {
       code: accessCode
-    }).catch(err => console.error('Failed to increment access count:', err));
+    });
     
     return { data: presentation, error: null };
   } catch (error) {
