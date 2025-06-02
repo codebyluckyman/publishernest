@@ -8,8 +8,14 @@ import { toast } from 'sonner';
 export function useOrganizationProductFields() {
   const { currentOrganization } = useOrganization();
   const queryClient = useQueryClient();
-
-  const { data: customFields, isLoading } = useQuery({
+  
+  // Fetch all custom fields for the current organization
+  const { 
+    data: customFields,
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
     queryKey: ['organization-product-fields', currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization?.id) return [];
@@ -18,114 +24,130 @@ export function useOrganizationProductFields() {
         .from('organization_product_fields')
         .select('*')
         .eq('organization_id', currentOrganization.id)
-        .order('display_order');
+        .order('display_order', { ascending: true });
+        
+      if (error) {
+        throw new Error(`Error fetching custom fields: ${error.message}`);
+      }
       
-      if (error) throw error;
       return data as ProductCustomField[];
     },
     enabled: !!currentOrganization?.id,
   });
 
-  const createField = useMutation({
+  // Create a new custom field
+  const createCustomField = useMutation({
     mutationFn: async (field: Omit<ProductCustomField, 'id' | 'created_at' | 'updated_at'>) => {
-      if (!currentOrganization?.id) throw new Error('No organization selected');
-      
+      if (!currentOrganization?.id) {
+        throw new Error('No organization selected');
+      }
+
       const { data, error } = await supabase
         .from('organization_product_fields')
         .insert({
           ...field,
-          organization_id: currentOrganization.id,
+          organization_id: currentOrganization.id
         })
         .select()
         .single();
+
+      if (error) {
+        throw error;
+      }
       
-      if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-product-fields'] });
+      queryClient.invalidateQueries({ queryKey: ['organization-product-fields', currentOrganization?.id] });
       toast.success('Custom field created successfully');
     },
-    onError: (error) => {
-      console.error('Error creating custom field:', error);
-      toast.error('Failed to create custom field');
-    },
+    onError: (error: any) => {
+      toast.error(`Failed to create custom field: ${error.message}`);
+    }
   });
 
-  const updateField = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ProductCustomField> }) => {
+  // Update an existing custom field
+  const updateCustomField = useMutation({
+    mutationFn: async (field: Partial<ProductCustomField> & { id: string }) => {
       const { data, error } = await supabase
         .from('organization_product_fields')
-        .update(updates)
-        .eq('id', id)
+        .update(field)
+        .eq('id', field.id)
         .select()
         .single();
-      
-      if (error) throw error;
+
+      if (error) {
+        throw error;
+      }
+
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-product-fields'] });
+      queryClient.invalidateQueries({ queryKey: ['organization-product-fields', currentOrganization?.id] });
       toast.success('Custom field updated successfully');
     },
-    onError: (error) => {
-      console.error('Error updating custom field:', error);
-      toast.error('Failed to update custom field');
-    },
+    onError: (error: any) => {
+      toast.error(`Failed to update custom field: ${error.message}`);
+    }
   });
 
-  const deleteField = useMutation({
-    mutationFn: async (id: string) => {
+  // Delete a custom field
+  const deleteCustomField = useMutation({
+    mutationFn: async (fieldId: string) => {
       const { error } = await supabase
         .from('organization_product_fields')
         .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+        .eq('id', fieldId);
+
+      if (error) {
+        throw error;
+      }
+
+      return fieldId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-product-fields'] });
+      queryClient.invalidateQueries({ queryKey: ['organization-product-fields', currentOrganization?.id] });
       toast.success('Custom field deleted successfully');
     },
-    onError: (error) => {
-      console.error('Error deleting custom field:', error);
-      toast.error('Failed to delete custom field');
-    },
+    onError: (error: any) => {
+      toast.error(`Failed to delete custom field: ${error.message}`);
+    }
   });
 
-  const reorderFields = useMutation({
-    mutationFn: async (fields: { id: string; display_order: number }[]) => {
-      // Update each field individually
-      const updates = fields.map(field => 
-        supabase
-          .from('organization_product_fields')
-          .update({ display_order: field.display_order })
-          .eq('id', field.id)
-      );
+  // Reorder custom fields
+  const reorderCustomFields = useMutation({
+    mutationFn: async (fields: { id: string, display_order: number }[]) => {
+      const updates = fields.map(field => ({
+        id: field.id,
+        display_order: field.display_order
+      }));
       
-      const results = await Promise.all(updates);
-      const errors = results.filter(result => result.error);
-      
-      if (errors.length > 0) {
-        throw new Error('Failed to reorder some fields');
+      const { error } = await supabase
+        .from('organization_product_fields')
+        .upsert(updates);
+
+      if (error) {
+        throw error;
       }
+
+      return fields;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organization-product-fields'] });
-      toast.success('Field order updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['organization-product-fields', currentOrganization?.id] });
     },
-    onError: (error) => {
-      console.error('Error reordering fields:', error);
-      toast.error('Failed to reorder fields');
-    },
+    onError: (error: any) => {
+      toast.error(`Failed to reorder custom fields: ${error.message}`);
+    }
   });
 
   return {
     customFields: customFields || [],
     isLoading,
-    createField,
-    updateField,
-    deleteField,
-    reorderFields,
+    error,
+    refetch,
+    createCustomField,
+    updateCustomField,
+    deleteCustomField,
+    reorderCustomFields
   };
 }
