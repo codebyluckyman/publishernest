@@ -51,17 +51,36 @@ export function PriceBreakComparisonTable({
     return Math.max(maxProducts, 4);
   }, [quotes, formatId]);
 
-  // Extract all unique price break quantities across all quotes for this format
+  // Extract all unique price break quantities from the quote request format
   const quantities = useMemo(() => {
     const uniqueQuantities = new Set<number>();
-    quotes.forEach(quote => {
-      quote.price_breaks?.forEach(pb => {
-        // Only include price breaks for the specific format if formatId is provided
-        if (!formatId || pb.quote_request_format_id === formatId) {
-          uniqueQuantities.add(pb.quantity);
+    
+    if (formatId && quotes.length > 0) {
+      // First, try to get quantities from the quote request format price breaks
+      const firstQuote = quotes[0];
+      if (firstQuote.quote_request?.formats) {
+        const quoteRequestFormat = firstQuote.quote_request.formats.find(f => f.id === formatId);
+        if (quoteRequestFormat?.price_breaks) {
+          console.log(`Found quote request format price breaks:`, quoteRequestFormat.price_breaks);
+          quoteRequestFormat.price_breaks.forEach(pb => {
+            uniqueQuantities.add(pb.quantity);
+          });
         }
+      }
+    }
+    
+    // If no quantities found from quote request format, fall back to supplier quotes
+    if (uniqueQuantities.size === 0) {
+      console.log(`No quote request format price breaks found, falling back to supplier quotes`);
+      quotes.forEach(quote => {
+        quote.price_breaks?.forEach(pb => {
+          // Only include price breaks for the specific format if formatId is provided
+          if (!formatId || pb.quote_request_format_id === formatId) {
+            uniqueQuantities.add(pb.quantity);
+          }
+        });
       });
-    });
+    }
     
     console.log(`Found quantities for format ${formatId}:`, Array.from(uniqueQuantities));
     return Array.from(uniqueQuantities).sort((a, b) => a - b);
