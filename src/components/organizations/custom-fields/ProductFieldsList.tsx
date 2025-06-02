@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useOrganizationProductFields } from '@/hooks/useOrganizationProductFields';
 import { ProductCustomField } from '@/types/customFields';
@@ -19,7 +18,7 @@ import {
 import { ProductFieldForm } from './ProductFieldForm';
 
 export function ProductFieldsList() {
-  const { customFields, isLoading, deleteCustomField } = useOrganizationProductFields();
+  const { customFields, isLoading, deleteField } = useOrganizationProductFields();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<ProductCustomField | null>(null);
   const [isDeletingField, setIsDeletingField] = useState<string | null>(null);
@@ -37,7 +36,7 @@ export function ProductFieldsList() {
   const handleDeleteField = async (fieldId: string) => {
     setIsDeletingField(fieldId);
     try {
-      await deleteCustomField.mutateAsync(fieldId);
+      await deleteField.mutateAsync(fieldId);
     } finally {
       setIsDeletingField(null);
     }

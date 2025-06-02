@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
@@ -13,6 +14,12 @@ interface PresentationSectionsProps {
   presentationId: string;
   isEditable?: boolean;
   displaySettings?: PresentationDisplaySettings;
+}
+
+interface ProductWithData {
+  product: ProductWithFormat;
+  customPrice?: number;
+  customDescription?: string;
 }
 
 export function PresentationSections({ 
@@ -91,7 +98,7 @@ export function PresentationSections({
     if (section.section_type === 'products') {
       const sectionItems = sectionItemsMap?.get(section.id) || [];
       
-      const productsWithData = sectionItems.map(item => {
+      const productsWithData: ProductWithData[] = sectionItems.map(item => {
         const product = item.item_id ? productMap.get(item.item_id) : undefined;
         
         return {
@@ -141,8 +148,9 @@ export function PresentationSections({
                 <ProductSection
                   title={section.title}
                   description={section.description}
-                  products={section.productsWithData || []}
+                  products={section.productsWithData.map(item => item.product)}
                   displaySettings={displaySettings}
+                  organizationId={section.presentation_id}
                   isEditable={isEditable}
                   onEdit={() => {/* Edit functionality will be added later */}}
                 />
