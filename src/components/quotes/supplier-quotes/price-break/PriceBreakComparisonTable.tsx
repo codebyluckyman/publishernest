@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +10,7 @@ import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 interface PriceBreakComparisonTableProps {
   quotes: SupplierQuote[];
-  formatId?: string;
+  formatId?: string; // This should be the quote_request_format_id
   includeExpiredQuotes?: boolean;
   includeDraftQuotes?: boolean;
 }
@@ -22,14 +23,32 @@ export function PriceBreakComparisonTable({
 }: PriceBreakComparisonTableProps) {
   // Get number of products from the quote request format - default to 4 to handle all possible products
   const numProducts = useMemo(() => {
-    if (!quotes.length) return 4;
+    if (!quotes.length || !formatId) return 4;
     
-    const quoteRequestFormat = quotes[0].quote_request?.formats?.find(f => 
-      formatId ? f.id === formatId : true
+    // Find the first quote that has the format we're looking for
+    const firstQuoteWithFormat = quotes.find(quote => 
+      quote.quote_request?.formats?.some(f => f.id === formatId)
     );
     
-    // Always return at least 4 to check for all unit_cost_X fields
-    return Math.max(quoteRequestFormat?.num_products || 1, 4);
+    if (firstQuoteWithFormat) {
+      const quoteRequestFormat = firstQuoteWithFormat.quote_request.formats.find(f => f.id === formatId);
+      return Math.max(quoteRequestFormat?.num_products || 1, 4);
+    }
+    
+    // Fallback: check price breaks for any unit_cost_X fields
+    let maxProducts = 1;
+    quotes.forEach(quote => {
+      quote.price_breaks?.forEach(pb => {
+        for (let i = 1; i <= 10; i++) {
+          const unitCostKey = `unit_cost_${i}`;
+          if (pb[unitCostKey] !== undefined && pb[unitCostKey] !== null) {
+            maxProducts = Math.max(maxProducts, i);
+          }
+        }
+      });
+    });
+    
+    return Math.max(maxProducts, 4);
   }, [quotes, formatId]);
 
   // Extract all unique price break quantities across all quotes for this format
@@ -43,6 +62,8 @@ export function PriceBreakComparisonTable({
         }
       });
     });
+    
+    console.log(`Found quantities for format ${formatId}:`, Array.from(uniqueQuantities));
     return Array.from(uniqueQuantities).sort((a, b) => a - b);
   }, [quotes, formatId]);
 
@@ -84,19 +105,37 @@ export function PriceBreakComparisonTable({
 
   // Extract product titles from quote request
   const productTitles = useMemo(() => {
-    if (!filteredQuotes.length) return [];
-    
-    const quoteRequestFormat = filteredQuotes[0].quote_request?.formats?.find(f => 
-      formatId ? f.id === formatId : true
-    );
-    
-    const titles: string[] = [];
-    
-    for (let i = 0; i < numProducts; i++) {
-      const product = quoteRequestFormat?.products?.[i];
-      titles.push(`${i + 1}× ${product?.product_name || 'Product'}`);
+    if (!filteredQuotes.length || !formatId) {
+      // Fallback to generic titles
+      const titles: string[] = [];
+      for (let i = 0; i < numProducts; i++) {
+        titles.push(`${i + 1}× Product ${i + 1}`);
+      }
+      return titles;
     }
     
+    // Find the quote request format
+    const firstQuoteWithFormat = filteredQuotes.find(quote => 
+      quote.quote_request?.formats?.some(f => f.id === formatId)
+    );
+    
+    if (firstQuoteWithFormat) {
+      const quoteRequestFormat = firstQuoteWithFormat.quote_request.formats.find(f => f.id === formatId);
+      const titles: string[] = [];
+      
+      for (let i = 0; i < numProducts; i++) {
+        const product = quoteRequestFormat?.products?.[i];
+        titles.push(`${i + 1}× ${product?.product_name || `Product ${i + 1}`}`);
+      }
+      
+      return titles;
+    }
+    
+    // Fallback to generic titles
+    const titles: string[] = [];
+    for (let i = 0; i < numProducts; i++) {
+      titles.push(`${i + 1}× Product ${i + 1}`);
+    }
     return titles;
   }, [filteredQuotes, formatId, numProducts]);
 
@@ -141,6 +180,8 @@ export function PriceBreakComparisonTable({
 
   // Generate structured data for the consolidated table
   const tableData = useMemo(() => {
+    console.log(`Generating table data for format ${formatId}, found ${quantities.length} quantities`);
+    
     const data: Array<{
       quantity: number,
       products: Array<{
@@ -220,6 +261,8 @@ export function PriceBreakComparisonTable({
             hasAnyData = true;
           }
           
+          console.log(`Supplier ${supplier.name}, quantity ${quantity}, product ${productIndex + 1}, unitCost:`, unitCost);
+          
           return {
             supplierId: supplier.id,
             supplierName: supplier.name,
@@ -249,10 +292,12 @@ export function PriceBreakComparisonTable({
       }
     });
     
+    console.log(`Generated table data with ${data.length} quantity rows`);
     return data;
   }, [quantities, numProducts, productTitles, suppliers, formatId]);
 
   if (tableData.length === 0) {
+    console.log(`No table data generated. Quantities: ${quantities.length}, Suppliers: ${suppliers.length}, Format ID: ${formatId}`);
     return <div className="text-center py-6">No price break information available for comparison.</div>;
   }
 

@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -80,9 +81,21 @@ export function SupplierQuoteDialog({
   }, [open, quoteRequest, existingQuote, mode]);
 
   // Initialize production schedule based on quote request required step
-  const getInitialProductionSchedule = () => {
+  const getInitialProductionSchedule = (): Record<string, string | null> => {
     if (existingQuote && existingQuote.production_schedule) {
-      return existingQuote.production_schedule;
+      // Handle both array and object formats
+      if (Array.isArray(existingQuote.production_schedule)) {
+        // Convert array format to object format for the form
+        const scheduleObject: Record<string, string | null> = {};
+        existingQuote.production_schedule.forEach((item) => {
+          if (typeof item === 'object' && item.stepId && item.plannedDate) {
+            scheduleObject[item.stepId] = item.plannedDate;
+          }
+        });
+        return scheduleObject;
+      } else if (typeof existingQuote.production_schedule === 'object') {
+        return existingQuote.production_schedule as Record<string, string | null>;
+      }
     } else if (
       quoteRequest.production_schedule_requested &&
       quoteRequest.required_step_id &&
