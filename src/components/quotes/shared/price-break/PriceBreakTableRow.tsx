@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Control } from "react-hook-form";
 import { PriceBreakTableCell } from "./PriceBreakTableCell";
@@ -46,6 +47,19 @@ export function PriceBreakTableRow({
         const unitCostKey = `unit_cost_${product.index + 1}`;
         const unitCost = priceBreak[unitCostKey];
 
+        // For read-only mode, display the value directly if it exists
+        if (isReadOnly) {
+          return (
+            <TableCell key={product.index} className="py-1 text-sm">
+              {unitCost !== null && unitCost !== undefined 
+                ? `${currency || ''} ${Number(unitCost).toFixed(2)}`
+                : '-'
+              }
+            </TableCell>
+          );
+        }
+
+        // For edit mode, use the form control
         if (!control || !fieldArrayName) {
           return (
             <TableCell key={product.index} className="py-1">
