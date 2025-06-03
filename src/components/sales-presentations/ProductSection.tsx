@@ -149,7 +149,7 @@ export function ProductSection({
       case 'format_name':
         return product.format?.format_name || 'N/A';
       case 'extent':
-        return product.format?.format_name || 'N/A';  
+        return product.format?.extent || 'N/A';  
       case 'binding_type':
       case 'cover_material':
       case 'cover_stock_print':
