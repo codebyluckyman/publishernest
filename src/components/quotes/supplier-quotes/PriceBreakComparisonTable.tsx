@@ -13,51 +13,42 @@ interface PriceBreakComparisonTableProps {
   onSelectQuote?: (quote: SupplierQuote) => void;
 }
 
-interface PriceBreakCell {
+interface ProductPriceCell {
   unitCost: number | null;
   quote: SupplierQuote;
   priceBreak: SupplierQuotePriceBreak;
   isExpired: boolean;
   isDraft: boolean;
   isValid: boolean;
+  productIndex: number; // 1-based index (1, 2, 3, etc.)
 }
 
-interface PriceBreakComparisonData {
+interface QuantityComparisonData {
   quantity: number;
-  productCombinations: {
-    [numProducts: number]: {
-      [supplierId: string]: PriceBreakCell;
+  maxProducts: number;
+  supplierData: {
+    [supplierId: string]: {
+      supplier: { id: string; name: string };
+      productPrices: ProductPriceCell[]; // Array indexed by product position (0-based)
     };
   };
 }
 
-// Helper function to get the correct unit cost based on number of products
-const getUnitCostForProducts = (priceBreak: SupplierQuotePriceBreak, numProducts: number): number | null => {
-  const columnName = `unit_cost_${numProducts}` as keyof SupplierQuotePriceBreak;
+// Helper function to get the correct unit cost based on product index
+const getUnitCostForProduct = (priceBreak: SupplierQuotePriceBreak, productIndex: number): number | null => {
+  if (productIndex === 1) return priceBreak.unit_cost || null;
+  
+  const columnName = `unit_cost_${productIndex}` as keyof SupplierQuotePriceBreak;
   const unitCost = priceBreak[columnName] as number | null;
   
-  console.log(`🔍 Getting unit cost for ${numProducts} products:`, {
+  console.log(`🔍 Getting unit cost for product ${productIndex}:`, {
     priceBreakId: priceBreak.id,
     columnName,
     unitCost,
     fallbackUnitCost: priceBreak.unit_cost,
-    allUnitCosts: {
-      unit_cost: priceBreak.unit_cost,
-      unit_cost_1: priceBreak.unit_cost_1,
-      unit_cost_2: priceBreak.unit_cost_2,
-      unit_cost_3: priceBreak.unit_cost_3,
-      unit_cost_4: priceBreak.unit_cost_4,
-      unit_cost_5: priceBreak.unit_cost_5,
-    }
   });
   
-  // Fallback to unit_cost if the specific column is null/undefined
-  if (unitCost === null || unitCost === undefined) {
-    console.log(`⚠️ No unit cost for ${numProducts} products, falling back to base unit_cost:`, priceBreak.unit_cost);
-    return priceBreak.unit_cost || null;
-  }
-  
-  return unitCost;
+  return unitCost || null;
 };
 
 export function PriceBreakComparisonTable({
@@ -73,57 +64,26 @@ export function PriceBreakComparisonTable({
     totalQuotes: quotes.length,
     includeExpiredQuotes,
     includeDraftQuotes,
-    quotesWithPriceBreaks: quotes.filter(q => q.price_breaks && q.price_breaks.length > 0).length,
-    quotesDebug: quotes.map(q => ({
-      id: q.id,
-      supplierId: q.supplier_id,
-      priceBreaksCount: q.price_breaks?.length || 0,
-      hasPriceBreaks: !!q.price_breaks && q.price_breaks.length > 0
-    }))
   });
 
   const filteredQuotes = useMemo(() => {
-    console.log("🔄 Filtering quotes...");
-    const filtered = quotes.filter(quote => {
-      console.log(`📋 Checking quote ${quote.id}:`, {
-        supplierId: quote.supplier_id,
-        supplierName: quote.supplier?.supplier_name,
-        status: quote.status,
-        validTo: quote.valid_to,
-        priceBreaksCount: quote.price_breaks?.length || 0,
-        priceBreaksData: quote.price_breaks
-      });
-
+    return quotes.filter(quote => {
       if (!includeExpiredQuotes) {
         const isExpired = quote.valid_to ? new Date(quote.valid_to) < new Date() : false;
-        if (isExpired) {
-          console.log(`❌ Excluding expired quote ${quote.id}`);
-          return false;
-        }
+        if (isExpired) return false;
       }
       
       if (!includeDraftQuotes && quote.status === 'draft') {
-        console.log(`❌ Excluding draft quote ${quote.id}`);
         return false;
       }
       
-      console.log(`✅ Including quote ${quote.id}`);
       return true;
     });
-
-    console.log("🎯 Filtered quotes result:", {
-      originalCount: quotes.length,
-      filteredCount: filtered.length,
-      filteredQuoteIds: filtered.map(q => q.id)
-    });
-
-    return filtered;
   }, [quotes, includeExpiredQuotes, includeDraftQuotes]);
 
-  const { comparisonData, uniqueProductCounts, uniqueSuppliers } = useMemo(() => {
-    console.log("🏗️ Building comparison data...");
-    const dataMap = new Map<number, PriceBreakComparisonData>();
-    const productCounts = new Set<number>();
+  const { comparisonData, uniqueSuppliers } = useMemo(() => {
+    console.log("🏗️ Building enhanced comparison data...");
+    const dataMap = new Map<number, QuantityComparisonData>();
     const suppliers = new Map<string, { id: string; name: string }>();
 
     filteredQuotes.forEach(quote => {
@@ -131,7 +91,6 @@ export function PriceBreakComparisonTable({
         supplierId: quote.supplier_id,
         supplierName: quote.supplier?.supplier_name,
         priceBreaksCount: quote.price_breaks?.length || 0,
-        priceBreaks: quote.price_breaks
       });
 
       if (!quote.price_breaks || quote.price_breaks.length === 0) {
@@ -143,125 +102,111 @@ export function PriceBreakComparisonTable({
       const isDraft = quote.status === 'draft';
       const isValid = quote.status === 'submitted' && !isExpired;
       
-      console.log(`📊 Quote ${quote.id} validity:`, {
-        isExpired,
-        isDraft,
-        isValid,
-        status: quote.status,
-        validTo: quote.valid_to
-      });
-      
       suppliers.set(quote.supplier_id, {
         id: quote.supplier_id,
         name: quote.supplier?.supplier_name || "Unknown Supplier"
       });
 
-      quote.price_breaks.forEach((priceBreak, index) => {
-        console.log(`💰 Processing price break ${index + 1} for quote ${quote.id}:`, {
-          priceBreakId: priceBreak.id,
-          quantity: priceBreak.quantity,
-          numProducts: priceBreak.num_products,
-          unitCost: priceBreak.unit_cost,
-          allUnitCosts: {
-            unit_cost_1: priceBreak.unit_cost_1,
-            unit_cost_2: priceBreak.unit_cost_2,
-            unit_cost_3: priceBreak.unit_cost_3,
-          }
-        });
-
+      quote.price_breaks.forEach((priceBreak) => {
         const quantity = priceBreak.quantity;
         const numProducts = priceBreak.num_products || 1;
         
-        console.log(`📈 Adding to data map: quantity=${quantity}, numProducts=${numProducts}`);
-        
-        productCounts.add(numProducts);
+        console.log(`💰 Processing price break for quantity ${quantity}, ${numProducts} products`);
 
         if (!dataMap.has(quantity)) {
           dataMap.set(quantity, {
             quantity,
-            productCombinations: {}
+            maxProducts: numProducts,
+            supplierData: {}
           });
-          console.log(`🆕 Created new quantity entry: ${quantity}`);
+        } else {
+          // Update max products if this price break has more
+          const existingData = dataMap.get(quantity)!;
+          existingData.maxProducts = Math.max(existingData.maxProducts, numProducts);
         }
 
         const quantityData = dataMap.get(quantity)!;
         
-        if (!quantityData.productCombinations[numProducts]) {
-          quantityData.productCombinations[numProducts] = {};
-          console.log(`🆕 Created new product combination: ${numProducts} products for quantity ${quantity}`);
+        if (!quantityData.supplierData[quote.supplier_id]) {
+          quantityData.supplierData[quote.supplier_id] = {
+            supplier: suppliers.get(quote.supplier_id)!,
+            productPrices: []
+          };
         }
 
-        // Use the helper function to get the correct unit cost
-        const unitCost = getUnitCostForProducts(priceBreak, numProducts);
-
-        quantityData.productCombinations[numProducts][quote.supplier_id] = {
-          unitCost,
-          quote,
-          priceBreak,
-          isExpired,
-          isDraft,
-          isValid
-        };
-
-        console.log(`✅ Added price break cell:`, {
-          quantity,
-          numProducts,
-          supplierId: quote.supplier_id,
-          unitCost,
-          isValid
-        });
+        const supplierData = quantityData.supplierData[quote.supplier_id];
+        
+        // Create individual product price cells for each product (1 to numProducts)
+        for (let productIndex = 1; productIndex <= numProducts; productIndex++) {
+          const unitCost = getUnitCostForProduct(priceBreak, productIndex);
+          
+          const productCell: ProductPriceCell = {
+            unitCost,
+            quote,
+            priceBreak,
+            isExpired,
+            isDraft,
+            isValid,
+            productIndex
+          };
+          
+          // Store in 0-based array (productIndex - 1)
+          supplierData.productPrices[productIndex - 1] = productCell;
+          
+          console.log(`✅ Added product ${productIndex} cell:`, {
+            quantity,
+            supplierId: quote.supplier_id,
+            productIndex,
+            unitCost,
+            isValid
+          });
+        }
       });
     });
 
     const finalData = {
       comparisonData: Array.from(dataMap.values()).sort((a, b) => a.quantity - b.quantity),
-      uniqueProductCounts: Array.from(productCounts).sort((a, b) => a - b),
       uniqueSuppliers: Array.from(suppliers.values()).sort((a, b) => a.name.localeCompare(b.name))
     };
 
-    console.log("🎯 Final comparison data:", {
+    console.log("🎯 Final enhanced comparison data:", {
       comparisonDataCount: finalData.comparisonData.length,
-      quantities: finalData.comparisonData.map(d => d.quantity),
-      uniqueProductCounts: finalData.uniqueProductCounts,
+      quantities: finalData.comparisonData.map(d => `${d.quantity} (max ${d.maxProducts} products)`),
       uniqueSuppliers: finalData.uniqueSuppliers.map(s => s.name),
-      dataMap: Object.fromEntries(dataMap)
     });
 
     return finalData;
   }, [filteredQuotes]);
 
-  const getBestPriceForQuantityAndProducts = (quantity: number, numProducts: number) => {
+  const getBestPriceForProduct = (quantity: number, productIndex: number) => {
     const quantityData = comparisonData.find(d => d.quantity === quantity);
-    if (!quantityData?.productCombinations[numProducts]) {
-      console.log(`❌ No data found for quantity ${quantity}, ${numProducts} products`);
-      return null;
-    }
+    if (!quantityData) return null;
 
-    const cells = Object.values(quantityData.productCombinations[numProducts]);
-    const validCells = cells.filter(cell => cell.isValid && cell.unitCost !== null);
-    
-    console.log(`🏆 Finding best price for quantity ${quantity}, ${numProducts} products:`, {
-      totalCells: cells.length,
-      validCells: validCells.length,
-      validPrices: validCells.map(c => c.unitCost)
+    const prices: number[] = [];
+    Object.values(quantityData.supplierData).forEach(supplierData => {
+      const productCell = supplierData.productPrices[productIndex - 1]; // Convert to 0-based
+      if (productCell?.isValid && productCell.unitCost !== null) {
+        prices.push(productCell.unitCost);
+      }
     });
     
-    if (validCells.length === 0) {
-      console.log(`⚠️ No valid cells for quantity ${quantity}, ${numProducts} products`);
-      return null;
-    }
+    console.log(`🏆 Finding best price for quantity ${quantity}, product ${productIndex}:`, {
+      validPrices: prices
+    });
     
-    const bestPrice = Math.min(...validCells.map(cell => cell.unitCost!));
+    if (prices.length === 0) return null;
+    
+    const bestPrice = Math.min(...prices);
     console.log(`🎯 Best price found: ${bestPrice}`);
     return bestPrice;
   };
 
-  const handleCellClick = (cell: PriceBreakCell) => {
-    console.log("🖱️ Cell clicked:", {
+  const handleCellClick = (cell: ProductPriceCell) => {
+    console.log("🖱️ Product cell clicked:", {
       quoteId: cell.quote.id,
       supplierId: cell.quote.supplier_id,
+      productIndex: cell.productIndex,
       unitCost: cell.unitCost,
-      quantity: cell.priceBreak.quantity
     });
     setSelectedQuote(cell.quote);
     setDetailsSheetOpen(true);
@@ -275,12 +220,8 @@ export function PriceBreakComparisonTable({
     }
   };
 
-  if (comparisonData.length === 0 || uniqueProductCounts.length === 0) {
-    console.log("❌ No comparison data available:", {
-      comparisonDataLength: comparisonData.length,
-      uniqueProductCountsLength: uniqueProductCounts.length,
-      filteredQuotesLength: filteredQuotes.length
-    });
+  if (comparisonData.length === 0) {
+    console.log("❌ No comparison data available");
     return (
       <div className="text-center p-8 border border-dashed rounded-md">
         <p className="text-muted-foreground">No price break data available for comparison.</p>
@@ -288,54 +229,58 @@ export function PriceBreakComparisonTable({
     );
   }
 
-  console.log("🎨 Rendering price break comparison table");
+  console.log("🎨 Rendering enhanced price break comparison table");
 
   return (
     <>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-300">
           <thead>
-            {/* Main header row */}
+            {/* Main header row - Quantity and Product Groups */}
             <tr>
               <th className="border border-gray-300 p-3 bg-gray-50 font-semibold text-left" rowSpan={3}>
                 Quantity
               </th>
-              {uniqueProductCounts.map(count => (
+              {comparisonData.map(quantityData => (
                 <th
-                  key={count}
+                  key={`products-${quantityData.quantity}`}
                   className="border border-gray-300 p-3 bg-gray-50 font-semibold text-center"
-                  colSpan={uniqueSuppliers.length}
+                  colSpan={quantityData.maxProducts * uniqueSuppliers.length}
                 >
-                  {count} Product{count !== 1 ? 's' : ''}
+                  {quantityData.maxProducts} Product{quantityData.maxProducts !== 1 ? 's' : ''}
                 </th>
               ))}
             </tr>
             
-            {/* Supplier names row */}
+            {/* Supplier names row - repeated for each product */}
             <tr>
-              {uniqueProductCounts.map(count => (
-                uniqueSuppliers.map(supplier => (
-                  <th
-                    key={`${count}-${supplier.id}`}
-                    className="border border-gray-300 p-2 bg-gray-100 text-sm font-medium text-center"
-                  >
-                    {supplier.name}
-                  </th>
-                ))
+              {comparisonData.map(quantityData => (
+                Array.from({ length: quantityData.maxProducts }, (_, productIndex) => (
+                  uniqueSuppliers.map(supplier => (
+                    <th
+                      key={`${quantityData.quantity}-${productIndex}-${supplier.id}`}
+                      className="border border-gray-300 p-2 bg-gray-100 text-sm font-medium text-center"
+                    >
+                      {supplier.name}
+                    </th>
+                  ))
+                )).flat()
               ))}
             </tr>
             
-            {/* Status row */}
+            {/* Product labels row */}
             <tr>
-              {uniqueProductCounts.map(count => (
-                uniqueSuppliers.map(supplier => (
-                  <th
-                    key={`status-${count}-${supplier.id}`}
-                    className="border border-gray-300 p-1 bg-gray-50 text-xs text-center"
-                  >
-                    Status
-                  </th>
-                ))
+              {comparisonData.map(quantityData => (
+                Array.from({ length: quantityData.maxProducts }, (_, productIndex) => (
+                  uniqueSuppliers.map(supplier => (
+                    <th
+                      key={`product-${quantityData.quantity}-${productIndex}-${supplier.id}`}
+                      className="border border-gray-300 p-1 bg-gray-50 text-xs text-center"
+                    >
+                      Product {productIndex + 1}
+                    </th>
+                  ))
+                )).flat()
               ))}
             </tr>
           </thead>
@@ -347,16 +292,16 @@ export function PriceBreakComparisonTable({
                   {quantityData.quantity.toLocaleString()}
                 </td>
                 
-                {uniqueProductCounts.map(numProducts => {
-                  const bestPrice = getBestPriceForQuantityAndProducts(quantityData.quantity, numProducts);
-                  
-                  return uniqueSuppliers.map(supplier => {
-                    const cell = quantityData.productCombinations[numProducts]?.[supplier.id];
+                {/* Product columns for this quantity */}
+                {Array.from({ length: quantityData.maxProducts }, (_, productIndex) => (
+                  uniqueSuppliers.map(supplier => {
+                    const supplierData = quantityData.supplierData[supplier.id];
+                    const productCell = supplierData?.productPrices[productIndex];
                     
-                    if (!cell) {
+                    if (!productCell) {
                       return (
                         <td
-                          key={`${numProducts}-${supplier.id}`}
+                          key={`${productIndex}-${supplier.id}`}
                           className="border border-gray-300 p-3 text-center text-gray-400"
                         >
                           N/A
@@ -364,22 +309,25 @@ export function PriceBreakComparisonTable({
                       );
                     }
                     
-                    const isBest = cell.isValid && cell.unitCost === bestPrice && bestPrice !== null;
-                    const currency = cell.quote.currency || 'USD';
+                    const bestPrice = getBestPriceForProduct(quantityData.quantity, productIndex + 1);
+                    const isBest = productCell.isValid && 
+                                  productCell.unitCost === bestPrice && 
+                                  bestPrice !== null;
+                    const currency = productCell.quote.currency || 'USD';
                     
                     return (
                       <td
-                        key={`${numProducts}-${supplier.id}`}
+                        key={`${productIndex}-${supplier.id}`}
                         className="border border-gray-300 p-2 text-center"
                       >
                         <div className="space-y-1">
                           {/* Status badge */}
                           <div className="text-xs">
-                            {cell.isDraft ? (
+                            {productCell.isDraft ? (
                               <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
                                 Draft
                               </Badge>
-                            ) : cell.isExpired ? (
+                            ) : productCell.isExpired ? (
                               <Badge variant="outline" className="bg-red-50 text-red-800 border-red-200">
                                 Expired
                               </Badge>
@@ -392,16 +340,16 @@ export function PriceBreakComparisonTable({
                           
                           {/* Price */}
                           <div>
-                            {cell.unitCost !== null ? (
+                            {productCell.unitCost !== null ? (
                               <button
-                                onClick={() => handleCellClick(cell)}
+                                onClick={() => handleCellClick(productCell)}
                                 className={cn(
                                   "text-sm font-medium hover:underline cursor-pointer",
-                                  cell.isExpired && "line-through text-gray-400",
-                                  cell.isDraft && "text-gray-500"
+                                  productCell.isExpired && "line-through text-gray-400",
+                                  productCell.isDraft && "text-gray-500"
                                 )}
                               >
-                                {formatCurrency(cell.unitCost, currency)}
+                                {formatCurrency(productCell.unitCost, currency)}
                                 {isBest && (
                                   <span className="ml-1 text-xs font-bold text-green-600">
                                     BEST
@@ -415,8 +363,8 @@ export function PriceBreakComparisonTable({
                         </div>
                       </td>
                     );
-                  });
-                })}
+                  })
+                )).flat()}
               </tr>
             ))}
           </tbody>
