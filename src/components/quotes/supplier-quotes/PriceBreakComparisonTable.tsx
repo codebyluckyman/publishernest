@@ -81,10 +81,11 @@ export function PriceBreakComparisonTable({
     });
   }, [quotes, includeExpiredQuotes, includeDraftQuotes]);
 
-  const { comparisonData, uniqueSuppliers } = useMemo(() => {
+  const { comparisonData, uniqueSuppliers, globalMaxProducts } = useMemo(() => {
     console.log("🏗️ Building enhanced comparison data...");
     const dataMap = new Map<number, QuantityComparisonData>();
     const suppliers = new Map<string, { id: string; name: string }>();
+    let maxProductsGlobal = 1;
 
     filteredQuotes.forEach(quote => {
       console.log(`🔍 Processing quote ${quote.id}:`, {
@@ -110,6 +111,9 @@ export function PriceBreakComparisonTable({
       quote.price_breaks.forEach((priceBreak) => {
         const quantity = priceBreak.quantity;
         const numProducts = priceBreak.num_products || 1;
+        
+        // Update global max products
+        maxProductsGlobal = Math.max(maxProductsGlobal, numProducts);
         
         console.log(`💰 Processing price break for quantity ${quantity}, ${numProducts} products`);
 
@@ -166,13 +170,15 @@ export function PriceBreakComparisonTable({
 
     const finalData = {
       comparisonData: Array.from(dataMap.values()).sort((a, b) => a.quantity - b.quantity),
-      uniqueSuppliers: Array.from(suppliers.values()).sort((a, b) => a.name.localeCompare(b.name))
+      uniqueSuppliers: Array.from(suppliers.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      globalMaxProducts: maxProductsGlobal
     };
 
     console.log("🎯 Final enhanced comparison data:", {
       comparisonDataCount: finalData.comparisonData.length,
       quantities: finalData.comparisonData.map(d => `${d.quantity} (max ${d.maxProducts} products)`),
       uniqueSuppliers: finalData.uniqueSuppliers.map(s => s.name),
+      globalMaxProducts: finalData.globalMaxProducts
     });
 
     return finalData;
@@ -236,52 +242,34 @@ export function PriceBreakComparisonTable({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-300">
           <thead>
-            {/* Main header row - Quantity and Product Groups */}
+            {/* Product header row */}
             <tr>
-              <th className="border border-gray-300 p-3 bg-gray-50 font-semibold text-left" rowSpan={3}>
+              <th className="border border-gray-300 p-3 bg-gray-50 font-semibold text-left" rowSpan={2}>
                 Quantity
               </th>
-              {comparisonData.map(quantityData => (
+              {Array.from({ length: globalMaxProducts }, (_, productIndex) => (
                 <th
-                  key={`products-${quantityData.quantity}`}
+                  key={`product-${productIndex + 1}`}
                   className="border border-gray-300 p-3 bg-gray-50 font-semibold text-center"
-                  colSpan={quantityData.maxProducts * uniqueSuppliers.length}
+                  colSpan={uniqueSuppliers.length}
                 >
-                  {quantityData.maxProducts} Product{quantityData.maxProducts !== 1 ? 's' : ''}
+                  Product {productIndex + 1}
                 </th>
               ))}
             </tr>
             
-            {/* Supplier names row - repeated for each product */}
+            {/* Supplier names row - under each product */}
             <tr>
-              {comparisonData.map(quantityData => (
-                Array.from({ length: quantityData.maxProducts }, (_, productIndex) => (
-                  uniqueSuppliers.map(supplier => (
-                    <th
-                      key={`${quantityData.quantity}-${productIndex}-${supplier.id}`}
-                      className="border border-gray-300 p-2 bg-gray-100 text-sm font-medium text-center"
-                    >
-                      {supplier.name}
-                    </th>
-                  ))
-                )).flat()
-              ))}
-            </tr>
-            
-            {/* Product labels row */}
-            <tr>
-              {comparisonData.map(quantityData => (
-                Array.from({ length: quantityData.maxProducts }, (_, productIndex) => (
-                  uniqueSuppliers.map(supplier => (
-                    <th
-                      key={`product-${quantityData.quantity}-${productIndex}-${supplier.id}`}
-                      className="border border-gray-300 p-1 bg-gray-50 text-xs text-center"
-                    >
-                      Product {productIndex + 1}
-                    </th>
-                  ))
-                )).flat()
-              ))}
+              {Array.from({ length: globalMaxProducts }, (_, productIndex) => (
+                uniqueSuppliers.map(supplier => (
+                  <th
+                    key={`${productIndex + 1}-${supplier.id}`}
+                    className="border border-gray-300 p-2 bg-gray-100 text-sm font-medium text-center"
+                  >
+                    {supplier.name}
+                  </th>
+                ))
+              )).flat()}
             </tr>
           </thead>
           
@@ -292,8 +280,8 @@ export function PriceBreakComparisonTable({
                   {quantityData.quantity.toLocaleString()}
                 </td>
                 
-                {/* Product columns for this quantity */}
-                {Array.from({ length: quantityData.maxProducts }, (_, productIndex) => (
+                {/* Product columns - iterate by product first, then suppliers */}
+                {Array.from({ length: globalMaxProducts }, (_, productIndex) => (
                   uniqueSuppliers.map(supplier => {
                     const supplierData = quantityData.supplierData[supplier.id];
                     const productCell = supplierData?.productPrices[productIndex];
@@ -301,7 +289,7 @@ export function PriceBreakComparisonTable({
                     if (!productCell) {
                       return (
                         <td
-                          key={`${productIndex}-${supplier.id}`}
+                          key={`${productIndex + 1}-${supplier.id}`}
                           className="border border-gray-300 p-3 text-center text-gray-400"
                         >
                           N/A
@@ -317,7 +305,7 @@ export function PriceBreakComparisonTable({
                     
                     return (
                       <td
-                        key={`${productIndex}-${supplier.id}`}
+                        key={`${productIndex + 1}-${supplier.id}`}
                         className="border border-gray-300 p-2 text-center"
                       >
                         <div className="space-y-1">
