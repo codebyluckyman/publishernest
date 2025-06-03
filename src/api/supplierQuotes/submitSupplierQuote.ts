@@ -46,9 +46,9 @@ export async function submitSupplierQuote(
     await recordSupplierQuoteAudit(
       id,
       userId,
+      'quote_submitted',
       { status: currentQuote.status },
       { status: 'submitted' },
-      'quote_submitted'
     );
 
     // Create organization notification about the quote submission
