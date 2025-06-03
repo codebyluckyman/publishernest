@@ -1,11 +1,16 @@
 
-import React from "react";
+import React, { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { QuoteRequest } from "@/types/quoteRequest";
 import { SupplierQuote } from "@/types/supplierQuote";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { X, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { SupplierQuoteDetails } from "../SupplierQuoteDetails";
+import { SupplierQuoteDetails } from "@/components/quotes/supplier-quotes/SupplierQuoteDetails";
+import { SupplierQuoteAuditHistory } from "../SupplierQuoteAuditHistory";
 
 interface SupplierQuoteDetailsSheetProps {
   quote: SupplierQuote | null;
@@ -22,53 +27,45 @@ export function SupplierQuoteDetailsSheet({
   onApprove,
   onReject
 }: SupplierQuoteDetailsSheetProps) {
-  const navigate = useNavigate();
+  const [showAuditHistory, setShowAuditHistory] = useState(false);
 
-  const handleViewInFullPage = () => {
-    if (quote) {
-      navigate(`/quotes/${quote.id}/details`);
-      onOpenChange(false);
+  const handleClose = (open: boolean) => {
+    // Reset audit history view when closing the sheet
+    if (!open) {
+      setShowAuditHistory(false);
     }
-  };
-
-  const handleApprove = () => {
-    if (quote && onApprove) {
-      onApprove(quote);
-    }
-  };
-
-  const handleReject = () => {
-    if (quote && onReject) {
-      onReject(quote);
-    }
+    onOpenChange(open);
   };
 
   return (
-    <Sheet open={open && !!quote} onOpenChange={onOpenChange}>
+    <Sheet open={open && !!quote} onOpenChange={handleClose}>
       <SheetContent className="w-[90%] sm:w-[550px] md:w-[650px] overflow-y-auto">
         <SheetHeader className="flex flex-row items-center justify-between mb-6">
-          <SheetTitle className="text-xl">Quote Details</SheetTitle>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleViewInFullPage}>
-              <span className="mr-2">Full view</span>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <SheetTitle className="text-xl">
+            {showAuditHistory ? "Audit History" : "Quote Details"}
+          </SheetTitle>
         </SheetHeader>
 
-        {quote && (
-          <div className="pr-6">
-            <SupplierQuoteDetails 
-              quote={quote} 
-              onClose={() => onOpenChange(false)}
-              onApprove={onApprove ? handleApprove : undefined}
-              onReject={onReject ? handleReject : undefined}
-            />
-          </div>
-        )}
+        <ScrollArea className="h-[calc(100vh-5rem)] pr-4">
+          {quote && (
+            <>
+              {showAuditHistory ? (
+                <SupplierQuoteAuditHistory 
+                  supplierQuoteId={quote.id}
+                  onBack={() => setShowAuditHistory(false)}
+                />
+              ) : (
+                <SupplierQuoteDetails 
+                  quote={quote} 
+                  onClose={() => onOpenChange(false)}
+                  onApprove={onApprove ? () => onApprove(quote) : undefined}
+                  onReject={onReject ? (reason) => onReject(quote, reason) : undefined}
+                  onShowHistory={() => setShowAuditHistory(true)}
+                />
+              )}
+            </>
+          )}
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );

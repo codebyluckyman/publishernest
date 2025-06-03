@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { ProductFormValues, productFormOptions } from "@/schemas/productSchema";
+import { ProductFormValues } from "@/schemas/productSchema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,33 @@ interface PricingSectionProps {
   readOnly?: boolean;
 }
 
+const CURRENCY_OPTIONS = [
+  { value: "USD", label: "USD - US Dollar" },
+  { value: "EUR", label: "EUR - Euro" },
+  { value: "GBP", label: "GBP - British Pound" },
+  { value: "CAD", label: "CAD - Canadian Dollar" },
+  { value: "AUD", label: "AUD - Australian Dollar" },
+  { value: "JPY", label: "JPY - Japanese Yen" },
+  { value: "CHF", label: "CHF - Swiss Franc" },
+  { value: "CNY", label: "CNY - Chinese Yuan" },
+  { value: "SEK", label: "SEK - Swedish Krona" },
+  { value: "NOK", label: "NOK - Norwegian Krone" },
+  { value: "DKK", label: "DKK - Danish Krone" },
+  { value: "PLN", label: "PLN - Polish Zloty" },
+  { value: "CZK", label: "CZK - Czech Koruna" },
+  { value: "HUF", label: "HUF - Hungarian Forint" },
+  { value: "RUB", label: "RUB - Russian Ruble" },
+  { value: "BRL", label: "BRL - Brazilian Real" },
+  { value: "MXN", label: "MXN - Mexican Peso" },
+  { value: "SGD", label: "SGD - Singapore Dollar" },
+  { value: "HKD", label: "HKD - Hong Kong Dollar" },
+  { value: "INR", label: "INR - Indian Rupee" },
+  { value: "KRW", label: "KRW - South Korean Won" },
+  { value: "TRY", label: "TRY - Turkish Lira" },
+  { value: "ZAR", label: "ZAR - South African Rand" },
+  { value: "NZD", label: "NZD - New Zealand Dollar" },
+];
+
 export function PricingSection({ form, productId, readOnly = false }: PricingSectionProps) {
   const [prices, setPrices] = useState<ProductPrice[]>([]);
   const [newPrice, setNewPrice] = useState<number | null>(null);
@@ -36,7 +63,7 @@ export function PricingSection({ form, productId, readOnly = false }: PricingSec
   const usedCurrencies = prices.map(price => price.currency_code);
   
   // Filter available currencies to exclude ones already in use
-  const availableCurrencies = productFormOptions.currencyCodes.filter(
+  const availableCurrencies = CURRENCY_OPTIONS.filter(
     currency => !usedCurrencies.includes(currency.value)
   );
 
@@ -172,7 +199,7 @@ export function PricingSection({ form, productId, readOnly = false }: PricingSec
   };
 
   const getCurrencyLabel = (code: string) => {
-    const currency = productFormOptions.currencyCodes.find(c => c.value === code);
+    const currency = CURRENCY_OPTIONS.find(c => c.value === code);
     return currency ? currency.label : code;
   };
 

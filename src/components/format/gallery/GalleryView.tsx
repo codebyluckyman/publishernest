@@ -37,7 +37,7 @@ export function GalleryView({ products, onProductClick }: GalleryViewProps) {
             <div className="p-4">
               <h4 className="font-medium line-clamp-2">{product.title}</h4>
               <p className="text-sm text-muted-foreground">
-                {product.isbn13 || product.isbn10 || "No ISBN"}
+                {product.isbn13 ? `ISBN-13: ${product.isbn13}` : product.isbn10 ? `ISBN-10: ${product.isbn10}` : "No ISBN"}
               </p>
             </div>
           </CardContent>

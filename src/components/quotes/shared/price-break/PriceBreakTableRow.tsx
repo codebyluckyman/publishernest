@@ -26,32 +26,48 @@ export function PriceBreakTableRow({
   control,
   fieldArrayName,
   useSingleProductCost,
-  useSingleCostForAll
+  useSingleCostForAll,
 }: PriceBreakTableRowProps) {
   // Find the index in the form field array
-  const fieldIndex = priceBreaks.findIndex(p => 
-    (p.price_break_id === priceBreak.price_break_id || p.id === priceBreak.id)
+  const fieldIndex = priceBreaks.findIndex(
+    (p) =>
+      p.price_break_id === priceBreak.price_break_id || p.id === priceBreak.id
   );
 
   return (
-    <TableRow 
-      key={priceBreak.id || priceBreak.price_break_id || priceBreakIndex} 
+    <TableRow
+      key={priceBreak.id || priceBreak.price_break_id || priceBreakIndex}
       className="h-7 hover:bg-gray-50"
     >
       <TableCell className="font-medium py-1 text-sm">
         {priceBreak.quantity.toLocaleString()}
       </TableCell>
-      
+
       {products.map((product) => {
         const unitCostKey = `unit_cost_${product.index + 1}`;
         const unitCost = priceBreak[unitCostKey];
-        
-        if (!control || !fieldArrayName) {
+
+        // For read-only mode, display the value directly if it exists
+        if (isReadOnly) {
           return (
-            <TableCell key={product.index} className="py-1">-</TableCell>
+            <TableCell key={product.index} className="py-1 text-sm">
+              {unitCost !== null && unitCost !== undefined 
+                ? `${currency || ''} ${Number(unitCost).toFixed(2)}`
+                : '-'
+              }
+            </TableCell>
           );
         }
-        
+
+        // For edit mode, use the form control
+        if (!control || !fieldArrayName) {
+          return (
+            <TableCell key={product.index} className="py-1">
+              -
+            </TableCell>
+          );
+        }
+
         return (
           <PriceBreakTableCell
             key={product.index}
@@ -64,6 +80,7 @@ export function PriceBreakTableRow({
             currency={currency}
             useSingleProductCost={useSingleProductCost}
             useSingleCostForAll={useSingleCostForAll}
+            productLength={products?.length}
           />
         );
       })}

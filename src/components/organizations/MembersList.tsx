@@ -1,9 +1,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { OrganizationMember } from "@/context/OrganizationContext";
+import { OrganizationMember, MemberType } from "@/types/organization";
 import { Users } from "lucide-react";
 import { MemberInviteForm } from "./MemberInviteForm";
 import { MemberItem } from "./MemberItem";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState, useEffect } from "react";
+import { MembersTableHeader } from "./MembersTableHeader";
 
 type UserProfile = {
   id: string;
@@ -18,7 +21,7 @@ interface MembersListProps {
   members: (OrganizationMember & { profile?: UserProfile })[];
   currentUserId: string | undefined;
   loading: boolean;
-  onInvite: (organizationId: string, email: string, role: "admin" | "member") => Promise<void>;
+  onInvite: (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => Promise<void>;
   onRoleChange: (memberId: string, role: "admin" | "member") => Promise<void>;
   onRemove: (memberId: string) => Promise<void>;
 }
@@ -32,9 +35,45 @@ export const MembersList = ({
   onRoleChange,
   onRemove
 }: MembersListProps) => {
-  const handleInvite = async (email: string, role: "admin" | "member") => {
-    await onInvite(organizationId, email, role);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [memberTypeFilter, setMemberTypeFilter] = useState("all");
+  const [filteredMembers, setFilteredMembers] = useState(members);
+
+  const handleInvite = async (email: string, role: "admin" | "member", memberType: MemberType) => {
+    await onInvite(organizationId, email, role, memberType);
   };
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setRoleFilter("all");
+    setMemberTypeFilter("all");
+  };
+
+  useEffect(() => {
+    // Apply filters
+    const filtered = members.filter(member => {
+      // Filter by search query (name or email)
+      const memberName = member.profile?.first_name && member.profile?.last_name
+        ? `${member.profile.first_name} ${member.profile.last_name}`.toLowerCase()
+        : member.profile?.email?.toLowerCase() || "";
+      const memberEmail = member.profile?.email?.toLowerCase() || "";
+      
+      const searchMatch = !searchQuery || 
+        memberName.includes(searchQuery.toLowerCase()) || 
+        memberEmail.includes(searchQuery.toLowerCase());
+
+      // Filter by role
+      const roleMatch = roleFilter === "all" || member.role === roleFilter;
+
+      // Filter by member type
+      const typeMatch = memberTypeFilter === "all" || member.member_type === memberTypeFilter;
+
+      return searchMatch && roleMatch && typeMatch;
+    });
+
+    setFilteredMembers(filtered);
+  }, [members, searchQuery, roleFilter, memberTypeFilter]);
 
   return (
     <Card>
@@ -48,21 +87,49 @@ export const MembersList = ({
       <CardContent className="space-y-4">
         <MemberInviteForm onInvite={handleInvite} />
 
-        <div className="space-y-2">
-          {loading ? (
-            <p>Loading members...</p>
-          ) : (
-            members.map((member) => (
-              <MemberItem
-                key={member.id}
-                member={member}
-                isCurrentUser={member.auth_user_id === currentUserId}
-                onRoleChange={onRoleChange}
-                onRemove={onRemove}
-              />
-            ))
-          )}
-        </div>
+        <MembersTableHeader 
+          onSearchChange={setSearchQuery}
+          onRoleFilterChange={setRoleFilter}
+          onMemberTypeFilterChange={setMemberTypeFilter}
+          onResetFilters={handleResetFilters}
+          roleFilter={roleFilter}
+          memberTypeFilter={memberTypeFilter}
+          searchQuery={searchQuery}
+        />
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Member</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">Loading members...</TableCell>
+              </TableRow>
+            ) : filteredMembers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">
+                  {members.length === 0 ? "No members found" : "No results match your search"}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredMembers.map((member) => (
+                <MemberItem
+                  key={member.id}
+                  member={member}
+                  isCurrentUser={member.auth_user_id === currentUserId}
+                  onRoleChange={onRoleChange}
+                  onRemove={onRemove}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

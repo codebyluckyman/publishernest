@@ -10,8 +10,12 @@ import { toast } from "sonner";
 interface UseProductTableProps {
   searchQuery: string;
   filters: {
-    product_form: string | null;
-    publisher_name: string | null;
+    product_form: string | string[];
+    publisher_name: string | string[];
+    pub_month: string | string[] | null;
+    license: string | string[] | null;
+    format_id: string | string[] | null;
+    series_name: string | string[] | null;
   };
   currentOrganization: Organization | null;
   refreshTrigger?: number;

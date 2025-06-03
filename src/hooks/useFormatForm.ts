@@ -22,6 +22,10 @@ export const formatSchema = z.object({
   cover_material: z.string().optional(),
   internal_material: z.string().optional(),
   binding_type: z.string().optional(),
+  end_papers_material: z.string().optional(),
+  end_papers_print: z.string().optional(),
+  spacers_material: z.string().optional(),
+  spacers_stock_print: z.string().optional(),
 });
 
 export type FormatFormValues = z.infer<typeof formatSchema>;
@@ -41,6 +45,10 @@ export const defaultValues: FormatFormValues = {
   cover_material: "",
   internal_material: "",
   binding_type: "",
+  end_papers_material: "",
+  end_papers_print: "",
+  spacers_material: "",
+  spacers_stock_print: "",
 };
 
 interface UseFormatFormProps {
@@ -92,6 +100,10 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
               cover_material: data.cover_material || "",
               internal_material: data.internal_material || "",
               binding_type: data.binding_type || "",
+              end_papers_material: data.end_papers_material || "",
+              end_papers_print: data.end_papers_print || "",
+              spacers_material: data.spacers_material || "",
+              spacers_stock_print: data.spacers_stock_print || "",
             });
           }
         } catch (err: any) {
@@ -135,6 +147,10 @@ export function useFormatForm({ formatId, onSuccess }: UseFormatFormProps) {
         cover_material: values.cover_material,
         internal_material: values.internal_material,
         binding_type: values.binding_type,
+        end_papers_material: values.end_papers_material,
+        end_papers_print: values.end_papers_print,
+        spacers_material: values.spacers_material,
+        spacers_stock_print: values.spacers_stock_print,
         organization_id: currentOrganization.id,
       };
 

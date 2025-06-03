@@ -1,7 +1,30 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Format } from "@/components/format/types/FormatTypes";
+
+interface Format {
+  id: string;
+  format_name: string | null;
+  tps_height_mm: number | null;
+  tps_width_mm: number | null;
+  tps_depth_mm: number | null;
+  tps_plc_height_mm: number | null;
+  tps_plc_width_mm: number | null;
+  tps_plc_depth_mm: number | null;
+  extent: string | null;
+  binding_type: string | null;
+  cover_material: string | null;
+  internal_material: string | null;
+  cover_stock_print: string | null;
+  internal_stock_print: string | null;
+  orientation: string | null;
+  end_papers_material: string | null;
+  end_papers_print: string | null;
+  spacers_material: string | null;
+  spacers_stock_print: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export function useFormatDetails(formatId: string | null) {
   return useQuery({
@@ -11,7 +34,29 @@ export function useFormatDetails(formatId: string | null) {
 
       const { data, error } = await supabase
         .from("formats")
-        .select("*")
+        .select(`
+          id,
+          format_name,
+          tps_height_mm,
+          tps_width_mm,
+          tps_depth_mm,
+          tps_plc_height_mm,
+          tps_plc_width_mm,
+          tps_plc_depth_mm,
+          extent,
+          binding_type,
+          cover_material,
+          internal_material,
+          cover_stock_print,
+          internal_stock_print,
+          orientation,
+          end_papers_material,
+          end_papers_print,
+          spacers_material,
+          spacers_stock_print,
+          created_at,
+          updated_at
+        `)
         .eq("id", formatId)
         .single();
 

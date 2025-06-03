@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
 
@@ -24,29 +23,32 @@ export async function deleteSupplierQuote(
 
   // Delete related records first (in cascade order)
   // Use typed table names instead of string literals
-  const deleteFromTable = async (table: 
-    'supplier_quote_price_breaks' | 
-    'supplier_quote_extra_costs' | 
-    'supplier_quote_savings' | 
-    'supplier_quote_formats' | 
-    'supplier_quote_attachments'
+  const deleteFromTable = async (
+    table:
+      | "supplier_quote_price_breaks"
+      | "supplier_quote_extra_costs"
+      | "supplier_quote_savings"
+      | "supplier_quote_formats"
+      | "supplier_quote_attachments"
+      | "supplier_quote_extra_cost_price_breaks"
   ) => {
     const { error } = await supabase
       .from(table)
       .delete()
       .eq("supplier_quote_id", id);
-    
+
     if (error) {
       console.error(`Error deleting related records from ${table}:`, error);
     }
   };
 
   // Delete from each table in sequence
-  await deleteFromTable('supplier_quote_price_breaks');
-  await deleteFromTable('supplier_quote_extra_costs');
-  await deleteFromTable('supplier_quote_savings');
-  await deleteFromTable('supplier_quote_formats');
-  await deleteFromTable('supplier_quote_attachments');
+  await deleteFromTable("supplier_quote_price_breaks");
+  await deleteFromTable("supplier_quote_extra_costs");
+  await deleteFromTable("supplier_quote_savings");
+  await deleteFromTable("supplier_quote_formats");
+  await deleteFromTable("supplier_quote_attachments");
+  await deleteFromTable("supplier_quote_extra_cost_price_breaks");
 
   // Now delete the supplier quote
   const { error } = await supabase
@@ -59,13 +61,8 @@ export async function deleteSupplierQuote(
   }
 
   // Record audit entry
-  await recordSupplierQuoteAudit(
-    id,
-    userId,
-    "delete",
-    {
-      previous: quoteData,
-      new: null
-    }
-  );
+  await recordSupplierQuoteAudit(id, userId, "delete", {
+    previous: quoteData,
+    new: null,
+  });
 }

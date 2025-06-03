@@ -1,23 +1,37 @@
-import { useState } from "react";
+
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DateFormatter } from "@/utils/formatters";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { formatDate } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { PrintRun, PrintRunStatus } from "@/types/printRun";
 import { Input } from "@/components/ui/input";
 import { usePagination } from "@/hooks/usePagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
+import { debounce } from "lodash";
 
 export const FILTER_VALUES = {
-  ALL_STATUSES: "ALL_STATUSES"
+  ALL_STATUSES: "ALL_STATUSES",
 };
 
 const PrintRunDialog = ({
@@ -27,13 +41,19 @@ const PrintRunDialog = ({
   onOpenChange,
 }: {
   printRun?: PrintRun;
-  onSave: (data: { title: string; description: string; status: PrintRunStatus }) => void;
+  onSave: (data: {
+    title: string;
+    description: string;
+    status: PrintRunStatus;
+  }) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {
   const [title, setTitle] = useState(printRun?.title || "");
   const [description, setDescription] = useState(printRun?.description || "");
-  const [status, setStatus] = useState<PrintRunStatus>(printRun?.status || "draft");
+  const [status, setStatus] = useState<PrintRunStatus>(
+    printRun?.status || "draft"
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,15 +64,17 @@ const PrintRunDialog = ({
   return (
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>{printRun ? "Edit Print Run" : "Create Print Run"}</DialogTitle>
+        <DialogTitle>
+          {printRun ? "Edit Print Run" : "Create Print Run"}
+        </DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium block">Title</label>
-          <Input 
-            id="title" 
-            value={title} 
-            onChange={(e) => setTitle(e.target.value)} 
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter print run title"
             required
           />
@@ -60,10 +82,10 @@ const PrintRunDialog = ({
 
         <div className="space-y-2">
           <label className="text-sm font-medium block">Description</label>
-          <Input 
-            id="description" 
-            value={description} 
-            onChange={(e) => setDescription(e.target.value)} 
+          <Input
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter print run description"
           />
         </div>
@@ -76,19 +98,21 @@ const PrintRunDialog = ({
             options={[
               { value: "draft", label: "Draft" },
               { value: "in_progress", label: "In Progress" },
-              { value: "completed", label: "Completed" }
+              { value: "completed", label: "Completed" },
             ]}
             placeholder="Select status"
           />
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button type="submit">
-            {printRun ? "Update" : "Create"}
-          </Button>
+          <Button type="submit">{printRun ? "Update" : "Create"}</Button>
         </div>
       </form>
     </DialogContent>
@@ -97,76 +121,98 @@ const PrintRunDialog = ({
 
 const PrintRunStatusBadge = ({ status }: { status: PrintRunStatus }) => {
   const colorMap = {
-    'draft': 'bg-gray-200 text-gray-800',
-    'in_progress': 'bg-blue-100 text-blue-800',
-    'completed': 'bg-green-100 text-green-800',
+    draft: "bg-gray-200 text-gray-800",
+    in_progress: "bg-blue-100 text-blue-800",
+    completed: "bg-green-100 text-green-800",
   };
 
   const labelMap = {
-    'draft': 'Draft',
-    'in_progress': 'In Progress',
-    'completed': 'Completed',
+    draft: "Draft",
+    in_progress: "In Progress",
+    completed: "Completed",
   };
 
-  return (
-    <Badge className={colorMap[status]}>
-      {labelMap[status]}
-    </Badge>
-  );
+  return <Badge className={colorMap[status]}>{labelMap[status]}</Badge>;
 };
 
 const PrintRuns = () => {
   const { currentOrganization } = useOrganization();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>(FILTER_VALUES.ALL_STATUSES);
+  const [inputValue, setInputValue] = useState(searchTerm);
 
-  const { printRuns, isLoading, isError, error, createPrintRun, updatePrintRun, deletePrintRun } = usePrintRuns();
-  
-  const [selectedPrintRun, setSelectedPrintRun] = useState<PrintRun | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<string>(
+    FILTER_VALUES.ALL_STATUSES
+  );
+
+  const {
+    printRuns,
+    isLoading,
+    isError,
+    error,
+    createPrintRun,
+    updatePrintRun,
+    deletePrintRun,
+  } = usePrintRuns();
+
+  const [selectedPrintRun, setSelectedPrintRun] = useState<
+    PrintRun | undefined
+  >(undefined);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const filteredPrintRuns = printRuns.filter((printRun) => {
-    const matchesSearch = searchTerm === "" || 
+    const matchesSearch =
+      searchTerm === "" ||
       printRun.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (printRun.description && printRun.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === FILTER_VALUES.ALL_STATUSES || printRun.status === statusFilter;
-    
+      (printRun.description &&
+        printRun.description.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesStatus =
+      statusFilter === FILTER_VALUES.ALL_STATUSES ||
+      printRun.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
-  const { 
-    currentData: paginatedPrintRuns, 
-    currentPage, 
-    pageSize, 
-    totalPages, 
-    nextPage, 
+  const {
+    currentData: paginatedPrintRuns,
+    currentPage,
+    pageSize,
+    totalPages,
+    nextPage,
     previousPage,
     goToPage,
-    changePageSize
+    changePageSize,
   } = usePagination({ data: filteredPrintRuns });
 
-  const handleCreatePrintRun = (data: { title: string; description: string; status: PrintRunStatus }) => {
+  const handleCreatePrintRun = (data: {
+    title: string;
+    description: string;
+    status: PrintRunStatus;
+  }) => {
     if (!currentOrganization || !user) return;
-    
+
     createPrintRun({
       title: data.title,
       description: data.description,
       organizationId: currentOrganization.id,
       createdBy: user.id,
-      status: data.status
+      status: data.status,
     });
   };
 
-  const handleUpdatePrintRun = (data: { title: string; description: string; status: PrintRunStatus }) => {
+  const handleUpdatePrintRun = (data: {
+    title: string;
+    description: string;
+    status: PrintRunStatus;
+  }) => {
     if (!selectedPrintRun) return;
-    
+
     updatePrintRun({
       id: selectedPrintRun.id,
       title: data.title,
       description: data.description,
-      status: data.status
+      status: data.status,
     });
   };
 
@@ -193,6 +239,17 @@ const PrintRuns = () => {
     { value: "completed", label: "Completed" },
   ];
 
+  const debouncedSetSearchQuery = useMemo(
+    () => debounce((query: string) => setSearchTerm(query), 500),
+    [setSearchTerm]
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    debouncedSetSearchQuery(value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -211,8 +268,8 @@ const PrintRuns = () => {
             <div className="w-full md:w-2/3">
               <Input
                 placeholder="Search print runs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={inputValue}
+                onChange={handleInputChange}
                 className="w-full"
               />
             </div>
@@ -229,7 +286,8 @@ const PrintRuns = () => {
           {isError && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>
-                Error loading print runs: {error instanceof Error ? error.message : 'Unknown error'}
+                Error loading print runs:{" "}
+                {error instanceof Error ? error.message : "Unknown error"}
               </AlertDescription>
             </Alert>
           )}
@@ -256,12 +314,16 @@ const PrintRuns = () => {
                   <TableBody>
                     {paginatedPrintRuns.map((printRun) => (
                       <TableRow key={printRun.id}>
-                        <TableCell className="font-medium">{printRun.title}</TableCell>
+                        <TableCell className="font-medium">
+                          {printRun.title}
+                        </TableCell>
                         <TableCell>{printRun.description || "—"}</TableCell>
                         <TableCell>
                           <PrintRunStatusBadge status={printRun.status} />
                         </TableCell>
-                        <TableCell>{DateFormatter.format(new Date(printRun.created_at))}</TableCell>
+                        <TableCell>
+                          {formatDate(printRun.created_at)}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -287,7 +349,7 @@ const PrintRuns = () => {
                   </TableBody>
                 </Table>
               </div>
-              
+
               <PaginationControls
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -306,7 +368,9 @@ const PrintRuns = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <PrintRunDialog
           printRun={selectedPrintRun}
-          onSave={selectedPrintRun ? handleUpdatePrintRun : handleCreatePrintRun}
+          onSave={
+            selectedPrintRun ? handleUpdatePrintRun : handleCreatePrintRun
+          }
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
         />

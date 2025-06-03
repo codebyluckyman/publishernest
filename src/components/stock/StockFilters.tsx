@@ -1,12 +1,18 @@
-
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "@/context/OrganizationContext";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FilterX, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { debounce } from "lodash";
 
 type FilterProps = {
   searchQuery: string;
@@ -27,22 +33,24 @@ const StockFilters = ({
 }: FilterProps) => {
   const { currentOrganization } = useOrganization();
 
+  const [inputValue, setInputValue] = useState(searchQuery);
+
   // Fetch warehouses for the filter dropdown
   const { data: warehouses } = useQuery({
     queryKey: ["warehouses", currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) return [];
-      
+
       const { data, error } = await supabase
         .from("warehouses")
         .select("*")
         .eq("organization_id", currentOrganization.id)
         .order("name");
-        
+
       if (error) throw new Error(error.message);
       return data;
     },
-    enabled: !!currentOrganization
+    enabled: !!currentOrganization,
   });
 
   // Fetch products for the filter dropdown
@@ -50,23 +58,34 @@ const StockFilters = ({
     queryKey: ["products", currentOrganization?.id],
     queryFn: async () => {
       if (!currentOrganization) return [];
-      
+
       const { data, error } = await supabase
         .from("products")
         .select("id, title")
         .eq("organization_id", currentOrganization.id)
         .order("title");
-        
+
       if (error) throw new Error(error.message);
       return data;
     },
-    enabled: !!currentOrganization
+    enabled: !!currentOrganization,
   });
 
   const clearFilters = () => {
     setSelectedWarehouse(null);
     setSelectedProduct(null);
     setSearchQuery("");
+  };
+
+  const debouncedSetSearchQuery = useMemo(
+    () => debounce((query: string) => setSearchQuery(query), 500),
+    [setSearchQuery]
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    debouncedSetSearchQuery(value);
   };
 
   return (
@@ -79,18 +98,21 @@ const StockFilters = ({
               type="search"
               placeholder="Search..."
               className="pl-9 w-full md:w-[200px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={inputValue}
+              onChange={handleInputChange}
             />
           </div>
         </div>
       </div>
-      
+
       {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="flex flex-col space-y-1">
           <label className="text-sm font-medium">Warehouse</label>
-          <Select value={selectedWarehouse || undefined} onValueChange={(value) => setSelectedWarehouse(value || null)}>
+          <Select
+            value={selectedWarehouse || undefined}
+            onValueChange={(value) => setSelectedWarehouse(value || null)}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All warehouses" />
             </SelectTrigger>
@@ -104,10 +126,13 @@ const StockFilters = ({
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="flex flex-col space-y-1">
           <label className="text-sm font-medium">Product</label>
-          <Select value={selectedProduct || undefined} onValueChange={(value) => setSelectedProduct(value || null)}>
+          <Select
+            value={selectedProduct || undefined}
+            onValueChange={(value) => setSelectedProduct(value || null)}
+          >
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="All products" />
             </SelectTrigger>
@@ -121,11 +146,11 @@ const StockFilters = ({
             </SelectContent>
           </Select>
         </div>
-        
+
         {(selectedWarehouse || selectedProduct || searchQuery) && (
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="mt-auto"
             onClick={clearFilters}
           >

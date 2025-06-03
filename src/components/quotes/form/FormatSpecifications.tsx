@@ -69,15 +69,57 @@ export function FormatSpecifications({ format, isLoading, hide = false }: Format
           
           {format.cover_stock_print && (
             <div>
-              <p className="text-muted-foreground">Cover:</p>
+              <p className="text-muted-foreground">Cover Print Specifications:</p>
               <p>{format.cover_stock_print}</p>
             </div>
           )}
-          
+
+          {format.cover_material && (
+            <div>
+              <p className="text-muted-foreground">Cover Material:</p>
+              <p>{format.cover_material}</p>
+            </div>
+          )}                    
+
           {format.internal_stock_print && (
             <div>
-              <p className="text-muted-foreground">Internal:</p>
+              <p className="text-muted-foreground">Internal Print Specifications:</p>
               <p>{format.internal_stock_print}</p>
+            </div>
+          )}
+
+          {format.internal_material && (
+            <div>
+              <p className="text-muted-foreground">Internal Material:</p>
+              <p>{format.internal_material}</p>
+            </div>
+          )}          
+          
+          {format.end_papers_material && (
+            <div>
+              <p className="text-muted-foreground">End Papers Material:</p>
+              <p>{format.end_papers_material}</p>
+            </div>
+          )}
+          
+          {format.end_papers_print && (
+            <div>
+              <p className="text-muted-foreground">End Papers Print:</p>
+              <p>{format.end_papers_print}</p>
+            </div>
+          )}
+          
+          {format.spacers_material && (
+            <div>
+              <p className="text-muted-foreground">Spacers Material:</p>
+              <p>{format.spacers_material}</p>
+            </div>
+          )}
+          
+          {format.spacers_stock_print && (
+            <div>
+              <p className="text-muted-foreground">Spacers Print:</p>
+              <p>{format.spacers_stock_print}</p>
             </div>
           )}
         </div>

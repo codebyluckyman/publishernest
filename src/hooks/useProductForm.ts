@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +16,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     defaultValues: defaultProductValues,
   });
 
+  // Load product data when editing an existing product
   useEffect(() => {
     if (isEditMode && productId) {
       setIsLoading(true);
@@ -39,13 +39,28 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
               ? new Date(data.publication_date) 
               : null;
               
-            // Parse format_extras from JSON if it exists, otherwise use default
-            const formatExtras = data.format_extras 
-              ? (typeof data.format_extras === 'string' 
-                  ? JSON.parse(data.format_extras) 
-                  : data.format_extras)
-              : defaultProductValues.format_extras;
+            // Parse format_extras from JSON with proper error handling
+            let formatExtras = defaultProductValues.format_extras;
+            
+            if (data.format_extras) {
+              try {
+                if (typeof data.format_extras === 'string') {
+                  const parsed = JSON.parse(data.format_extras);
+                  if (Array.isArray(parsed)) {
+                    formatExtras = parsed;
+                  }
+                } else if (Array.isArray(data.format_extras)) {
+                  formatExtras = data.format_extras;
+                }
+              } catch (error) {
+                console.warn('Failed to parse format_extras:', error);
+                // Keep the default empty array
+              }
+            }
               
+            console.log('Loaded product data:', data);
+              
+            // Set form values from database data
             form.reset({
               ...data,
               publication_date: publicationDate,
@@ -82,6 +97,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     }
   }, [isEditMode, productId, form]);
 
+  // Submit handler for creating or updating products
   async function onSubmit(values: ProductFormValues) {
     if (!currentOrganization) {
       toast.error("No organization selected");
@@ -99,7 +115,7 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
         title: values.title,
         publication_date: values.publication_date ? formatDateToYYYYMMDD(values.publication_date) : null,
         organization_id: currentOrganization.id,
-        format_id: cleanedFormatId, // Use the cleaned format_id
+        format_id: cleanedFormatId,
       };
 
       console.log("Submitting product with values:", formattedValues);
@@ -162,7 +178,17 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
     console.log("Delete Product function called with productId:", productId);
     
     try {
-      // First delete associated stock records
+      // First delete associated custom field values
+      const { error: customFieldsError } = await supabase
+        .from("product_custom_field_values")
+        .delete()
+        .eq("product_id", productId);
+        
+      if (customFieldsError) {
+        console.error("Error deleting custom field values:", customFieldsError);
+      }
+      
+      // Then delete associated stock records
       const { error: stockError } = await supabase
         .from("stock_on_hand")
         .delete()

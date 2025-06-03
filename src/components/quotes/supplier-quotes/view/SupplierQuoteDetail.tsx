@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
 import { QuoteHeader } from "./QuoteHeader";
 import { TermsView } from "./TermsView";
 import { NotesView } from "./NotesView";
@@ -35,11 +37,23 @@ export function SupplierQuoteDetail({
   
   return (
     <div className="space-y-6">
-      <QuoteHeader 
-        quote={quote}
-        onEdit={onEdit}
-        onShowHistory={onShowHistory}
-      />
+      <div className="flex justify-between items-center">
+        <QuoteHeader 
+          quote={quote}
+          onEdit={onEdit}
+        />
+        {onShowHistory && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onShowHistory}
+            className="flex items-center gap-2"
+          >
+            <History className="h-4 w-4" />
+            View History
+          </Button>
+        )}
+      </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-6 w-full h-auto">

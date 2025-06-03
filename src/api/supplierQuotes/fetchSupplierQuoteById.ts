@@ -5,6 +5,8 @@ import {
   SupplierQuoteFormat, 
   SupplierQuoteAttachment, 
   SupplierQuotePriceBreak,
+  SupplierQuoteExtraCost,
+  SupplierQuoteSaving,
   SupplierQuoteStatus 
 } from "@/types/supplierQuote";
 import { getPublicUrl } from "./getPublicUrls";
@@ -70,6 +72,30 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
           notes,
           products:products(title)
         )
+      ),
+      extra_costs:quote_request_extra_costs(
+        id,
+        name,
+        description,
+        unit_of_measure_id,
+        unit_of_measures:unit_of_measures(
+          id,
+          name,
+          abbreviation,
+          is_inventory_unit
+        )
+      ),
+      savings:quote_request_savings(
+        id,
+        name,
+        description,
+        unit_of_measure_id,
+        unit_of_measures:unit_of_measures(
+          id,
+          name,
+          abbreviation,
+          is_inventory_unit
+        )
       )
     `)
     .eq("id", quoteData.quote_request_id)
@@ -87,6 +113,26 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
 
   if (priceBreaksError) {
     console.error("Error fetching price breaks:", priceBreaksError.message);
+  }
+
+  // Fetch extra costs for this quote
+  const { data: extraCosts, error: extraCostsError } = await supabase
+    .from("supplier_quote_extra_costs")
+    .select("*")
+    .eq("supplier_quote_id", id);
+
+  if (extraCostsError) {
+    console.error("Error fetching extra costs:", extraCostsError.message);
+  }
+
+  // Fetch savings for this quote
+  const { data: savings, error: savingsError } = await supabase
+    .from("supplier_quote_savings")
+    .select("*")
+    .eq("supplier_quote_id", id);
+
+  if (savingsError) {
+    console.error("Error fetching savings:", savingsError.message);
   }
 
   // Fetch the formats for this quote
@@ -148,10 +194,14 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
   // Combine all data into a single supplier quote object
   const supplierQuote: SupplierQuote = {
     ...quoteData,
+    supplier_name: quoteData.supplier?.supplier_name || null,
+    title: quoteRequest?.title || null,
     quote_request: quoteRequest || null,
     formats: processedFormats,
     attachments: processedAttachments,
     price_breaks: priceBreaks as SupplierQuotePriceBreak[] || [],
+    extra_costs: extraCosts as SupplierQuoteExtraCost[] || [],
+    savings: savings as SupplierQuoteSaving[] || [],
     status: quoteData.status as SupplierQuoteStatus,
     production_schedule: productionSchedule
   };

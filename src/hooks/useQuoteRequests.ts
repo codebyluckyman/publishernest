@@ -3,13 +3,13 @@ import { toast } from "sonner";
 import { Organization } from "@/types/organization";
 import { QuoteRequest, QuoteRequestFormValues } from "@/types/quoteRequest";
 import { useAuth } from "@/context/AuthContext";
-import { 
+import {
   fetchQuoteRequests,
   createQuoteRequest,
   updateQuoteRequest,
   updateQuoteRequestStatus,
   deleteQuoteRequest,
-  fetchQuoteRequestAudit
+  fetchQuoteRequestAudit,
 } from "@/api/quoteRequests";
 import { supabase } from "@/integrations/supabase/client";
 import { Supplier } from "@/types/supplier";
@@ -27,21 +27,26 @@ export function useQuoteRequests() {
   const useQuoteRequestsList = (
     currentOrganization: Organization | null,
     status?: string,
-    searchQuery?: string
+    searchQuery?: string,
+    users?: string,
+    supplier?: string
   ) => {
     return useQuery({
       queryKey: ["quoteRequests", currentOrganization?.id, status, searchQuery],
-      queryFn: () => fetchQuoteRequests({ 
-        currentOrganization, 
-        status, 
-        searchQuery 
-      }),
+      queryFn: () =>
+        fetchQuoteRequests({
+          currentOrganization,
+          status,
+          searchQuery,
+          users,
+          supplier,
+        }),
       enabled: !!currentOrganization,
       meta: {
         onError: (error: any) => {
           toast.error(error.message || "Failed to load quote requests");
-        }
-      }
+        },
+      },
     });
   };
 
@@ -56,15 +61,15 @@ export function useQuoteRequests() {
           .from("suppliers")
           .select("*")
           .order("supplier_name");
-          
+
         if (error) throw error;
         return data as Supplier[];
       },
       meta: {
         onError: (error: any) => {
           toast.error(error.message || "Failed to load suppliers");
-        }
-      }
+        },
+      },
     });
   };
 
@@ -73,7 +78,13 @@ export function useQuoteRequests() {
    */
   const useCreateQuoteRequest = () => {
     return useMutation({
-      mutationFn: ({ formData, organizationId }: { formData: QuoteRequestFormValues; organizationId: string }) => {
+      mutationFn: ({
+        formData,
+        organizationId,
+      }: {
+        formData: QuoteRequestFormValues;
+        organizationId: string;
+      }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -85,7 +96,7 @@ export function useQuoteRequests() {
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to create quote request");
-      }
+      },
     });
   };
 
@@ -94,7 +105,13 @@ export function useQuoteRequests() {
    */
   const useUpdateQuoteRequest = () => {
     return useMutation({
-      mutationFn: ({ id, updates }: { id: string; updates: Partial<QuoteRequestFormValues> }) => {
+      mutationFn: ({
+        id,
+        updates,
+      }: {
+        id: string;
+        updates: Partial<QuoteRequestFormValues>;
+      }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -106,7 +123,7 @@ export function useQuoteRequests() {
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to update quote request");
-      }
+      },
     });
   };
 
@@ -115,7 +132,13 @@ export function useQuoteRequests() {
    */
   const useUpdateQuoteRequestStatus = () => {
     return useMutation({
-      mutationFn: ({ id, status }: { id: string; status: 'pending' | 'approved' | 'declined' }) => {
+      mutationFn: ({
+        id,
+        status,
+      }: {
+        id: string;
+        status: "pending" | "approved" | "declined";
+      }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
@@ -123,21 +146,23 @@ export function useQuoteRequests() {
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["quoteRequests"] });
-        const statusMessage = variables.status === 'approved' 
-          ? 'marked active' 
-          : variables.status === 'declined' 
-            ? 'marked inactive' 
-            : 'marked as pending';
+        const statusMessage =
+          variables.status === "approved"
+            ? "marked active"
+            : variables.status === "declined"
+            ? "marked inactive"
+            : "marked as pending";
         toast.success(`Quote request ${statusMessage} successfully`);
       },
       onError: (error: any, variables) => {
-        const statusText = variables.status === 'approved' 
-          ? 'mark active' 
-          : variables.status === 'declined' 
-            ? 'mark inactive' 
-            : 'mark as pending';
+        const statusText =
+          variables.status === "approved"
+            ? "mark active"
+            : variables.status === "declined"
+            ? "mark inactive"
+            : "mark as pending";
         toast.error(error.message || `Failed to ${statusText} quote request`);
-      }
+      },
     });
   };
 
@@ -158,7 +183,7 @@ export function useQuoteRequests() {
       },
       onError: (error: any) => {
         toast.error(error.message || "Failed to delete quote request");
-      }
+      },
     });
   };
 
@@ -173,8 +198,8 @@ export function useQuoteRequests() {
       meta: {
         onError: (error: any) => {
           toast.error(error.message || "Failed to load audit history");
-        }
-      }
+        },
+      },
     });
   };
 
@@ -185,6 +210,6 @@ export function useQuoteRequests() {
     useUpdateQuoteRequestStatus,
     useDeleteQuoteRequest,
     useQuoteRequestAudit,
-    useFetchSuppliers
+    useFetchSuppliers,
   };
 }

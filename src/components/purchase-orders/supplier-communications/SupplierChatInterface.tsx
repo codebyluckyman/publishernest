@@ -6,7 +6,7 @@ import { Send, User, Phone, Mail, Pencil, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { SupplierCommunication } from "@/api/supplierCommunications/fetchSupplierCommunications";
-import { DateFormatter } from "@/utils/formatters";
+import { formatDateTime } from "@/utils/formatters";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -107,7 +107,7 @@ export function SupplierChatInterface({
                       </p>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {DateFormatter.format(new Date(comm.communication_date))}
+                      {formatDateTime(comm.communication_date)}
                     </p>
                   </div>
                   <div className="mt-2 whitespace-pre-line text-sm">

@@ -1,4 +1,3 @@
-
 import { TableHeader, TableRow, TableHead } from "@/components/ui/table";
 import { SortQuoteRequestField, SortDirection } from "@/types/quoteRequest";
 import { SortableTableHeader } from "./SortableTableHeader";
@@ -21,22 +20,25 @@ export function QuoteRequestTableHeader({
   allRowIds,
   onSelectAll,
 }: QuoteRequestTableHeaderProps) {
-  const allSelected = allRowIds.length > 0 && selectedRows.length === allRowIds.length;
-  const indeterminate = selectedRows.length > 0 && selectedRows.length < allRowIds.length;
+  const allSelected =
+    allRowIds.length > 0 && selectedRows.length === allRowIds.length;
+  const indeterminate =
+    selectedRows.length > 0 && selectedRows.length < allRowIds.length;
 
   return (
     <TableHeader>
       <TableRow>
         <TableHead className="w-12">
-          <Checkbox 
-            checked={allSelected} 
+          <Checkbox
+            checked={allSelected}
             onCheckedChange={onSelectAll}
             className="mr-2"
             ref={(checkbox) => {
               // Set indeterminate state if some but not all rows are selected
               if (checkbox) {
                 // Using DOM API directly since the React interface doesn't include indeterminate
-                (checkbox as unknown as HTMLInputElement).indeterminate = indeterminate;
+                (checkbox as unknown as HTMLInputElement).indeterminate =
+                  indeterminate;
               }
             }}
           />
@@ -77,6 +79,13 @@ export function QuoteRequestTableHeader({
           onSort={handleSort}
         />
         <TableHead>Formats</TableHead>
+        <SortableTableHeader
+          field="users"
+          label="Created By"
+          currentSortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+        />
         <TableHead className="text-right">Actions</TableHead>
       </TableRow>
     </TableHeader>

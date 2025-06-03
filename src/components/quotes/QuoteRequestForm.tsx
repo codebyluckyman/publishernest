@@ -46,22 +46,24 @@ export function QuoteRequestForm({
       description: initialValues?.description || "",
       due_date: initialValues?.due_date,
       notes: initialValues?.notes || "",
-      formats: initialValues?.formats?.map(format => ({
-        ...format,
-        products: format.products || []
-      })) || [],
+      formats:
+        initialValues?.formats?.map((format) => ({
+          ...format,
+          products: format.products || [],
+        })) || [],
       extra_costs: initialValues?.extra_costs || [],
       savings: initialValues?.savings || [],
       currency: initialValues?.currency || "USD",
       products: initialValues?.products || {},
       quantities: initialValues?.quantities || {},
       supplier_id: initialValues?.supplier_id,
-      production_schedule_requested: initialValues?.production_schedule_requested || false,
+      production_schedule_requested:
+        initialValues?.production_schedule_requested || false,
       required_step_id: initialValues?.required_step_id || null,
       required_step_date: initialValues?.required_step_date || null,
       attachments: [],
     },
-    mode: "onChange"
+    mode: "onChange",
   });
 
   useEffect(() => {
@@ -72,7 +74,7 @@ export function QuoteRequestForm({
   useEffect(() => {
     if (formats.length > 0) {
       const namesMap: Record<string, string> = {};
-      formats.forEach(format => {
+      formats.forEach((format) => {
         namesMap[format.id] = format.format_name;
       });
       setFormatNames(namesMap);
@@ -81,38 +83,42 @@ export function QuoteRequestForm({
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      if (name?.startsWith('formats') && type === 'change') {
+      if (name?.startsWith("formats") && type === "change") {
         const formData = form.getValues();
         const formatsList = formData.formats || [];
-        
+
         if (formatsList.length > 0) {
           const selectedFormatNames = formatsList
-            .map(format => format.format_id ? formatNames[format.format_id] : null)
+            .map((format) =>
+              format.format_id ? formatNames[format.format_id] : null
+            )
             .filter(Boolean);
-          
+
           if (selectedFormatNames.length > 0) {
-            const newTitle = `QR for ${selectedFormatNames.join(', ')}`;
-            form.setValue('title', newTitle, { shouldDirty: true });
+            const newTitle = `QR for ${selectedFormatNames.join(", ")}`;
+            form.setValue("title", newTitle, { shouldDirty: true });
           }
         }
       }
     });
-    
+
     return () => subscription.unsubscribe();
   }, [form, formatNames]);
 
   const handleFormSubmit = async (data: QuoteRequestFormValues) => {
     console.log("Attempting to submit form with data:", data);
-    
+
     if (!data.title && data.formats?.length) {
       const formatsList = data.formats || [];
       if (formatsList.length > 0) {
         const selectedFormatNames = formatsList
-          .map(format => format.format_id ? formatNames[format.format_id] : null)
+          .map((format) =>
+            format.format_id ? formatNames[format.format_id] : null
+          )
           .filter(Boolean);
-        
+
         if (selectedFormatNames.length > 0) {
-          data.title = `QR for ${selectedFormatNames.join(', ')}`;
+          data.title = `QR for ${selectedFormatNames.join(", ")}`;
         } else {
           data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
         }
@@ -120,29 +126,32 @@ export function QuoteRequestForm({
         data.title = `Quote Request - ${new Date().toLocaleDateString()}`;
       }
     }
-    
+
     if (!data.supplier_ids || data.supplier_ids.length === 0) {
       console.error("No suppliers selected");
-      form.setError("supplier_ids", { 
-        type: "manual", 
-        message: "At least one supplier must be selected" 
+      form.setError("supplier_ids", {
+        type: "manual",
+        message: "At least one supplier must be selected",
       });
       return;
     }
-    
+
     console.log("Form submission data:", data);
     onSubmit(data);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="space-y-6"
+      >
         <FormatFieldArray form={form} />
         <CostsAndSavingsTabsField />
         <ProductionScheduleField />
         <AttachmentsField />
-        <BasicFormFields 
-          titleReadOnly={hasFormats || form.getValues('formats')?.length > 0}
+        <BasicFormFields
+          titleReadOnly={hasFormats || form.getValues("formats")?.length > 0}
           suppliers={suppliers}
         />
         <FormActions

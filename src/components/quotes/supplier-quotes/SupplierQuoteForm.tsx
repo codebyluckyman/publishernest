@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -22,7 +21,7 @@ interface SupplierQuoteFormProps {
   onDone?: () => void;
   onFormChange?: (hasChanges: boolean) => void;
   setCurrentFormData?: (data: SupplierQuoteFormValues) => void;
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
 }
 
 export function SupplierQuoteForm({
@@ -37,11 +36,13 @@ export function SupplierQuoteForm({
   onDone,
   onFormChange,
   setCurrentFormData,
-  mode = 'create'
+  mode = "create",
 }: SupplierQuoteFormProps) {
   const { currentOrganization } = useOrganization();
-  const { suppliers, isLoading: loadingSuppliers } = useSuppliers(currentOrganization?.id);
-  
+  const { suppliers, isLoading: loadingSuppliers } = useSuppliers(
+    currentOrganization?.id
+  );
+
   const {
     form,
     activeTab,
@@ -49,7 +50,7 @@ export function SupplierQuoteForm({
     selectedSupplier,
     setSelectedSupplier,
     isFormComplete,
-    currencies
+    currencies,
   } = useSupplierQuoteForm({
     quoteRequest,
     initialValues,
@@ -57,28 +58,31 @@ export function SupplierQuoteForm({
     onFormChange,
     setCurrentFormData,
     createdQuoteId,
-    mode
+    mode,
   });
 
   // Update selected supplier when suppliers are loaded
   if (suppliers && !selectedSupplier) {
     const supplierId = form.watch("supplier_id");
     if (supplierId) {
-      const supplier = suppliers.find(s => s.id === supplierId) || null;
+      const supplier = suppliers.find((s) => s.id === supplierId) || null;
       setSelectedSupplier(supplier);
     }
   }
 
-  const handleSubmit = (data: SupplierQuoteFormValues) => {
-    onSubmit(data);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = form.getValues();
+    onSubmit(formData);
   };
 
   // Show success view if quote has been created
-  if (createdQuoteId) {
+  if (mode === "create" && createdQuoteId) {
     return (
-      <SuccessView 
-        createdQuoteId={createdQuoteId} 
-        onDone={onDone} 
+      <SuccessView
+        createdQuoteId={createdQuoteId}
+        onDone={onDone}
         onSubmit={onFinalSubmit}
         isSubmitReady={isFormComplete}
         isSubmitting={isSubmitting}
@@ -88,16 +92,15 @@ export function SupplierQuoteForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormHeader 
+      <form onSubmit={(e) => handleSubmit(e)} className="space-y-6">
+        <FormHeader
           quoteRequest={quoteRequest}
           suppliers={suppliers}
           loadingSuppliers={loadingSuppliers}
           form={form}
-          mode={mode}
         />
-        
-        <FormTabs 
+
+        <FormTabs
           control={form.control}
           quoteRequest={quoteRequest}
           selectedSupplier={selectedSupplier}
@@ -105,9 +108,10 @@ export function SupplierQuoteForm({
           setActiveTab={setActiveTab}
           currencies={currencies}
           form={form}
+          mode={mode}
         />
-        
-        <FormActions 
+
+        <FormActions
           isSubmitting={isSubmitting}
           onCancel={onCancel}
           isValid={form.formState.isValid}

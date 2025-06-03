@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { QuoteRequest } from "@/types/quoteRequest";
 import { useState } from "react";
@@ -10,18 +9,22 @@ interface QuoteResponseButtonProps {
   isSmall?: boolean;
 }
 
-export function QuoteResponseButton({ quoteRequest, isSmall }: QuoteResponseButtonProps) {
+export function QuoteResponseButton({
+  quoteRequest,
+  isSmall,
+}: QuoteResponseButtonProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  
+
   // Check if we have a supplier_id (legacy) or supplier_ids (new)
   const hasSingleSupplier = quoteRequest.supplier_id !== null;
-  const hasMultipleSuppliers = quoteRequest.supplier_ids && quoteRequest.supplier_ids.length > 0;
-  
+  const hasMultipleSuppliers =
+    quoteRequest.supplier_ids && quoteRequest.supplier_ids.length > 0;
+
   // If there's no supplier, we can't create a response
   if (!hasSingleSupplier && !hasMultipleSuppliers) {
     return null;
   }
-  
+
   return (
     <>
       <Button
@@ -32,7 +35,7 @@ export function QuoteResponseButton({ quoteRequest, isSmall }: QuoteResponseButt
       >
         Create Quote Response
       </Button>
-      
+
       <SupplierQuoteDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}

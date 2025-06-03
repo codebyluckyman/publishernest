@@ -6,10 +6,12 @@ import { FormatFormValues } from "@/hooks/useFormatForm";
 import { Separator } from "@/components/ui/separator";
 import { SizeSection } from "./format-sections/SizeSection";
 import { ExtentSection } from "./format-sections/ExtentSection";
-import { PrintingSection } from "./format-sections/PrintingSection";
-import { MaterialSection } from "./format-sections/MaterialSection";
+import { CoverSpecificationsSection } from "./format-sections/CoverSpecificationsSection";
+import { InternalSpecificationsSection } from "./format-sections/InternalSpecificationsSection";
 import { BindingSection } from "./format-sections/BindingSection";
 import { ComponentsSection } from "./format-sections/ComponentsSection";
+import { EndPapersSection } from "./format-sections/EndPapersSection";
+import { SpacersSection } from "./format-sections/SpacersSection";
 
 interface FormatFormFieldsProps {
   form: UseFormReturn<FormatFormValues>;
@@ -41,10 +43,16 @@ export function FormatFormFields({ form, formatId, readOnly = false }: FormatFor
       <ExtentSection form={form} readOnly={readOnly} />
       
       <Separator />
-      <PrintingSection form={form} readOnly={readOnly} />
+      <CoverSpecificationsSection form={form} readOnly={readOnly} />
       
       <Separator />
-      <MaterialSection form={form} readOnly={readOnly} />
+      <InternalSpecificationsSection form={form} readOnly={readOnly} />
+      
+      <Separator />
+      <EndPapersSection form={form} readOnly={readOnly} />
+      
+      <Separator />
+      <SpacersSection form={form} readOnly={readOnly} />
       
       <Separator />
       <BindingSection form={form} readOnly={readOnly} />

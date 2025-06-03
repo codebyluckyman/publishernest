@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Menu, X, User, LogOut, ChevronDown, ChevronRight } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -17,72 +16,46 @@ interface MobileNavigationProps {
   currentPageLabel: string;
 }
 
-const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps) => {
+const MobileNavigation = ({
+  menuItems,
+  currentPageLabel,
+}: MobileNavigationProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, userProfile } = useAuth();
   const { currentOrganization } = useOrganization();
-  const [userProfile, setUserProfile] = useState<{
-    first_name: string | null;
-    last_name: string | null;
-    avatar_url: string | null;
-  } | null>(null);
 
   // Auto-expand submenus based on current route
   useEffect(() => {
     const currentPath = location.pathname;
-    
+
     // Check all menu items with submenus
-    menuItems.forEach(item => {
+    menuItems.forEach((item) => {
       if (item.submenu) {
         // Check if current path matches any submenu item
-        const isSubmenuActive = item.submenu.some(subItem => 
-          currentPath === subItem.path || 
-          (currentPath.includes('/quote-requests') && subItem.path === '/quote-requests')
+        const isSubmenuActive = item.submenu.some(
+          (subItem) =>
+            currentPath === subItem.path ||
+            (currentPath.includes("/quote-requests") &&
+              subItem.path === "/quote-requests")
         );
-        
+
         if (isSubmenuActive) {
-          setOpenSubmenus(prev => ({
+          setOpenSubmenus((prev) => ({
             ...prev,
-            [item.label]: true
+            [item.label]: true,
           }));
         }
       }
     });
   }, [location.pathname, menuItems]);
 
-  // Fetch user profile
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, avatar_url')
-            .eq('id', user.id)
-            .single();
-
-          if (error) throw error;
-          
-          if (data) {
-            console.log("Fetched profile in mobile nav:", data);
-            setUserProfile(data);
-          }
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-        }
-      }
-    };
-
-    fetchUserProfile();
-  }, [user?.id]);
-
   const toggleSubmenu = (label: string) => {
-    setOpenSubmenus(prev => ({
+    setOpenSubmenus((prev) => ({
       ...prev,
-      [label]: !prev[label]
+      [label]: !prev[label],
     }));
   };
 
@@ -116,7 +89,7 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
   return (
     <div className="md:hidden">
       <div className="flex items-center">
-        <button 
+        <button
           onClick={() => setMobileMenuOpen(true)}
           className="p-2 mr-2 text-gray-700 hover:bg-gray-100 rounded-md"
         >
@@ -124,25 +97,32 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
         </button>
         <h1 className="text-xl font-bold">{currentPageLabel}</h1>
       </div>
-      
+
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-[85%] p-0 bg-white">
           <div className="flex flex-col h-full">
             {/* Header with logo */}
             <div className="p-4 border-b">
               <div className="flex items-center justify-between mb-2">
-                <button onClick={() => setMobileMenuOpen(false)} className="p-1">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               {currentOrganization?.logo_url && (
-                <img src={currentOrganization.logo_url} alt={`${currentOrganization.name} logo`} className="h-16 w-auto object-contain rounded-sm mx-auto mb-4" />
+                <img
+                  src={currentOrganization.logo_url}
+                  alt={`${currentOrganization.name} logo`}
+                  className="h-16 w-auto object-contain rounded-sm mx-auto mb-4"
+                />
               )}
               <div className="mb-2">
                 <OrganizationSwitcher />
               </div>
             </div>
-            
+
             {/* Menu items */}
             <div className="flex-1 overflow-y-auto">
               <nav className="px-2 py-4">
@@ -151,7 +131,7 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                     <li key={item.path}>
                       {item.submenu ? (
                         <div className="flex flex-col w-full">
-                          <button 
+                          <button
                             className="flex items-center justify-between w-full px-4 py-3 text-base rounded-md text-gray-700 hover:bg-gray-100"
                             onClick={() => toggleSubmenu(item.label)}
                           >
@@ -166,18 +146,19 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                               <ChevronRight className="w-4 h-4" />
                             )}
                           </button>
-                          
+
                           {openSubmenus[item.label] && (
                             <div className="ml-8 pl-2 border-l border-gray-200 mt-1">
-                              {item.submenu.map(subItem => (
+                              {item.submenu.map((subItem) => (
                                 <Link
                                   key={subItem.path}
                                   to={subItem.path}
                                   className={`flex items-center px-4 py-3 text-base rounded-md ${
-                                    location.pathname === subItem.path || 
-                                    (location.pathname.includes(subItem.path) && subItem.path !== '/') 
-                                    ? 'bg-accent text-white' 
-                                    : 'text-gray-700 hover:bg-gray-100'
+                                    location.pathname === subItem.path ||
+                                    (location.pathname.includes(subItem.path) &&
+                                      subItem.path !== "/")
+                                      ? "bg-accent text-white"
+                                      : "text-gray-700 hover:bg-gray-100"
                                   }`}
                                   onClick={() => setMobileMenuOpen(false)}
                                 >
@@ -190,9 +171,13 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                           )}
                         </div>
                       ) : (
-                        <Link 
+                        <Link
                           to={item.path}
-                          className={`flex items-center px-4 py-3 text-base rounded-md ${location.pathname === item.path ? 'bg-accent text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                          className={`flex items-center px-4 py-3 text-base rounded-md ${
+                            location.pathname === item.path
+                              ? "bg-accent text-white"
+                              : "text-gray-700 hover:bg-gray-100"
+                          }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {/* @ts-ignore - passing the real icon component here */}
@@ -205,12 +190,12 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                 </ul>
               </nav>
             </div>
-            
+
             {/* User profile section */}
             {user && (
               <div className="p-4 border-t mt-auto">
                 <div className="flex items-center gap-3 mb-3">
-                  <UserAvatar 
+                  <UserAvatar
                     avatarUrl={userProfile?.avatar_url}
                     fallback={getUserInitials()}
                     className="h-9 w-9"
@@ -225,17 +210,17 @@ const MobileNavigation = ({ menuItems, currentPageLabel }: MobileNavigationProps
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <button 
+                  <button
                     className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm rounded-md border hover:bg-gray-50"
                     onClick={() => {
-                      navigate('/profile');
+                      navigate("/profile");
                       setMobileMenuOpen(false);
                     }}
                   >
                     <User className="w-4 h-4" />
                     Profile
                   </button>
-                  <button 
+                  <button
                     className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm rounded-md border hover:bg-gray-50"
                     onClick={() => {
                       handleSignOut();

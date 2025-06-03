@@ -1,6 +1,7 @@
 
 import ProductCategories from "@/components/products/ProductCategories";
-import { ProductTableContainer } from "@/components/products/ProductTableContainer";
+import { EditableProductTableContainer } from "@/components/products/EditableProductTableContainer";
+import { ProductEditProvider } from "@/context/ProductEditContext";
 
 const Products = () => {
   return (
@@ -10,9 +11,11 @@ const Products = () => {
         <p className="text-gray-600">Manage your product catalog and inventory</p>
       </div>
 
-      <ProductCategories />
+      {/* <ProductCategories /> */}
 
-      <ProductTableContainer />
+      <ProductEditProvider>
+        <EditableProductTableContainer />
+      </ProductEditProvider>
     </div>
   );
 };

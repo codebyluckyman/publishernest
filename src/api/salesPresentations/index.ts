@@ -7,6 +7,16 @@ import { deleteSalesPresentation } from './deleteSalesPresentation';
 import { publishSalesPresentation } from './publishSalesPresentation';
 import { createPresentationShare } from './createPresentationShare';
 import { trackPresentationView } from './trackPresentationView';
+import { 
+  fetchPresentationSections,
+  fetchPresentationItems, 
+  createPresentationSection, 
+  updatePresentationSection,
+  deletePresentationSection,
+  addPresentationItem,
+  updatePresentationItem,
+  deletePresentationItem
+} from './presentationSections';
 
 export {
   fetchSalesPresentations,
@@ -16,5 +26,14 @@ export {
   deleteSalesPresentation,
   publishSalesPresentation,
   createPresentationShare,
-  trackPresentationView
+  trackPresentationView,
+  // Presentation sections and items
+  fetchPresentationSections,
+  fetchPresentationItems,
+  createPresentationSection,
+  updatePresentationSection,
+  deletePresentationSection,
+  addPresentationItem,
+  updatePresentationItem,
+  deletePresentationItem
 };

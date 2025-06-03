@@ -5,14 +5,27 @@ import { useOrganization } from './useOrganization';
 import { Product } from '@/types/product';
 import { Format } from '@/types/format';
 
-// Define a simplified format interface for the component needs
-interface FormatLight {
+// Define a complete format interface for the component needs
+export interface FormatLight {
   id: string;
-  format_name: string;
+  format_name: string | null;
   tps_height_mm: number | null;
   tps_width_mm: number | null;
   tps_depth_mm: number | null;
+  tps_plc_height_mm: number | null;
+  tps_plc_width_mm: number | null;
+  tps_plc_depth_mm: number | null;
   extent: string | null;
+  binding_type: string | null;
+  cover_material: string | null;
+  internal_material: string | null;
+  cover_stock_print: string | null;
+  internal_stock_print: string | null;
+  orientation: string | null;
+  end_papers_material: string | null;
+  end_papers_print: string | null;
+  spacers_material: string | null;
+  spacers_stock_print: string | null;
 }
 
 export interface ProductWithFormat extends Product {
@@ -37,7 +50,20 @@ export function useProductsWithFormats() {
             tps_height_mm,
             tps_width_mm,
             tps_depth_mm,
-            extent
+            tps_plc_height_mm,
+            tps_plc_width_mm,
+            tps_plc_depth_mm,
+            extent,
+            binding_type,
+            cover_material,
+            internal_material,
+            cover_stock_print,
+            internal_stock_print,
+            orientation,
+            end_papers_material,
+            end_papers_print,
+            spacers_material,
+            spacers_stock_print
           )
         `)
         .eq('organization_id', currentOrganization.id)

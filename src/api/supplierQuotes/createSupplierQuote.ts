@@ -1,7 +1,169 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { SupplierQuoteFormValues, SupplierQuotePriceBreak } from "@/types/supplierQuote";
+import {
+  SupplierQuoteFormValues,
+  SupplierQuotePriceBreak,
+} from "@/types/supplierQuote";
 import { recordSupplierQuoteAudit } from "./supplierQuoteAudit";
+
+export async function insertSupplierQuoteExtraCostPriceBreaks(
+  supplierQuoteId: string,
+  extraCosts: any[]
+): Promise<void> {
+  // 1. Filter by unit_of_measure_id
+  const eligibleExtraCosts = extraCosts.filter(
+    (ec) => ec.unit_of_measure_id === "d53da411-5061-4710-aa1d-75a638c45dc6"
+  );
+
+  if (eligibleExtraCosts.length === 0) {
+    console.log("No eligible extra costs found");
+    return;
+  }
+
+  const priceBreaksToInsert = [];
+
+  for (const extraCost of eligibleExtraCosts) {
+    // 2. Handle simple unit_cost case
+    if (extraCost.unit_cost !== null && extraCost.unit_cost !== undefined) {
+      priceBreaksToInsert.push({
+        supplier_quote_id: supplierQuoteId,
+        extra_cost_id: extraCost.extra_cost_id,
+        unit_cost: extraCost.unit_cost,
+        unit_cost_1: null,
+        unit_cost_2: null,
+        unit_cost_3: null,
+        unit_cost_4: null,
+        unit_cost_5: null,
+        unit_cost_6: null,
+        unit_cost_7: null,
+        unit_cost_8: null,
+        unit_cost_9: null,
+        unit_cost_10: null,
+        unit_of_measure_id: extraCost.unit_of_measure_id,
+      });
+      continue;
+    }
+
+    // 3. Handle array cases
+    const arrayFields = [];
+    let maxArrayLength = 0;
+
+    // Find all array fields
+    for (let i = 1; i <= 10; i++) {
+      const fieldName = `unit_cost_${i}`;
+      if (Array.isArray(extraCost[fieldName])) {
+        arrayFields.push({ fieldName, values: extraCost[fieldName] });
+        maxArrayLength = Math.max(maxArrayLength, extraCost[fieldName].length);
+      }
+    }
+
+    const quantities = [
+      "2,000",
+      "2,500",
+      "3,000",
+      "5,000",
+      "7,500",
+      "10,000",
+      "15,000",
+      "20,000",
+      "25,000",
+    ];
+
+    // Convert to number[]
+    const quantityArr = quantities.map((q) =>
+      parseInt(q.replace(/,/g, ""), 10)
+    );
+
+    // Process array indices
+    if (arrayFields.length > 0) {
+      for (let index = 0; index < maxArrayLength; index++) {
+        const newRow = {
+          supplier_quote_id: supplierQuoteId,
+          extra_cost_id: extraCost.extra_cost_id,
+          unit_cost: null,
+          unit_of_measure_id: extraCost.unit_of_measure_id,
+          quantity: quantityArr[index] || null,
+          ...Object.fromEntries(
+            Array.from({ length: 10 }, (_, i) => [`unit_cost_${i + 1}`, null])
+          ),
+        };
+
+        let hasValue = false;
+
+        // Set values from arrays
+        for (const { fieldName, values } of arrayFields) {
+          if (index < values.length && values[index] !== null) {
+            newRow[fieldName] = values[index];
+            hasValue = true;
+          }
+        }
+
+        // Only add if at least one unit_cost has value
+        if (hasValue) {
+          priceBreaksToInsert.push(newRow);
+        }
+      }
+    } else {
+      // 4. Handle non-array values
+      const newRow = {
+        supplier_quote_id: supplierQuoteId,
+        extra_cost_id: extraCost.extra_cost_id,
+        unit_cost: null,
+        unit_of_measure_id: extraCost.unit_of_measure_id,
+        ...Object.fromEntries(
+          Array.from({ length: 10 }, (_, i) => [`unit_cost_${i + 1}`, null])
+        ),
+      };
+
+      let hasValue = false;
+
+      // Set non-array values
+      for (let i = 1; i <= 10; i++) {
+        const fieldName = `unit_cost_${i}`;
+        if (
+          extraCost[fieldName] !== null &&
+          extraCost[fieldName] !== undefined
+        ) {
+          newRow[fieldName] = extraCost[fieldName];
+          hasValue = true;
+        }
+      }
+
+      // Only add if at least one unit_cost has value
+      if (hasValue) {
+        priceBreaksToInsert.push(newRow);
+      }
+    }
+  }
+
+  // 5. Final nuclear validation
+  const validatedRows = priceBreaksToInsert.filter((row) => {
+    // Check unit_cost first
+    if (row.unit_cost !== null) return true;
+
+    // Check all unit_cost_X fields
+    for (let i = 1; i <= 10; i++) {
+      if (row[`unit_cost_${i}`] !== null && row[`unit_cost_${i}`] !== undefined)
+        return true;
+    }
+
+    return false;
+  });
+
+  // 6. Insert only if we have valid rows
+  if (validatedRows.length > 0) {
+    console.log("Inserting rows:", JSON.stringify(validatedRows, null, 2));
+    const { error } = await supabase
+      .from("supplier_quote_extra_cost_price_breaks")
+      .insert(validatedRows);
+
+    if (error) {
+      console.error("Insertion error:", error);
+      throw error;
+    }
+  } else {
+    console.log("No valid rows to insert");
+  }
+}
 
 export async function createSupplierQuote(
   formData: SupplierQuoteFormValues,
@@ -9,49 +171,54 @@ export async function createSupplierQuote(
   userId: string
 ): Promise<string> {
   // Log the entire form data for debugging
-  console.log('Full Supplier Quote Form Data:', JSON.stringify(formData, null, 2));
+  console.log(
+    "Full Supplier Quote Form Data:",
+    JSON.stringify(formData, null, 2)
+  );
+
+  // Remove the early return that was preventing execution
+  // return;
 
   // Log extra costs with improved structure to show we're removing price breaks
   if (formData.extra_costs && formData.extra_costs.length > 0) {
-    console.log('Extra costs after form initialization:');
-    
     formData.extra_costs.forEach((ec, index) => {
       // Log the main extra cost object
       console.log(`Extra cost #${index + 1} (${ec.extra_cost_id}):`);
-      console.log('  Base properties:', {
+      console.log("  Base properties:", {
         extra_cost_id: ec.extra_cost_id,
         unit_cost: ec.unit_cost,
-        unit_of_measure_id: ec.unit_of_measure_id
+        unit_of_measure_id: ec.unit_of_measure_id,
       });
-      
+
       // Log unit costs
-      const unitCostEntries = Object.entries(ec).filter(([key, value]) => 
-        key.startsWith('unit_cost_') && 
-        !isNaN(parseInt(key.replace('unit_cost_', ''))) &&
-        value !== undefined && 
-        value !== null
+      const unitCostEntries = Object.entries(ec).filter(
+        ([key, value]) =>
+          key.startsWith("unit_cost_") &&
+          !isNaN(parseInt(key.replace("unit_cost_", ""))) &&
+          value !== undefined &&
+          value !== null
       );
-      
+
       if (unitCostEntries.length > 0) {
-        console.log('  Unit costs:');
+        console.log("  Unit costs:");
         unitCostEntries.forEach(([key, value]) => {
           console.log(`    ${key}: ${value}`);
         });
       }
-      
+
       // Check if there are any numeric indices that might contain unit costs
-      const numericIndices = Object.keys(ec).filter(key => !isNaN(parseInt(key)));
+      const numericIndices = Object.keys(ec).filter(
+        (key) => !isNaN(parseInt(key))
+      );
       if (numericIndices.length > 0) {
-        console.log('  Indexed unit costs:');
-        numericIndices.forEach(idx => {
+        console.log("  Indexed unit costs:");
+        numericIndices.forEach((idx) => {
           const unitCostObj = ec[idx as keyof typeof ec];
-          if (typeof unitCostObj === 'object' && unitCostObj !== null) {
+          if (typeof unitCostObj === "object" && unitCostObj !== null) {
             console.log(`    Index ${idx}:`, unitCostObj);
           }
         });
       }
-      
-      console.log('---------------------');
     });
   }
 
@@ -62,7 +229,7 @@ export async function createSupplierQuote(
       organization_id: organizationId,
       quote_request_id: formData.quote_request_id,
       supplier_id: formData.supplier_id,
-      currency: formData.currency || 'USD',  // Default to USD if currency is not provided
+      currency: formData.currency || "USD", // Default to USD if currency is not provided
       notes: formData.notes || null,
       status: "draft",
       reference: formData.reference || null,
@@ -79,78 +246,84 @@ export async function createSupplierQuote(
       packaging_carton_width: formData.packaging_carton_width || null,
       packaging_carton_height: formData.packaging_carton_height || null,
       packaging_carton_volume: formData.packaging_carton_volume || null,
-      packaging_cartons_per_pallet: formData.packaging_cartons_per_pallet || null,
-      packaging_copies_per_20ft_palletized: formData.packaging_copies_per_20ft_palletized || null,
-      packaging_copies_per_40ft_palletized: formData.packaging_copies_per_40ft_palletized || null,
-      packaging_copies_per_20ft_unpalletized: formData.packaging_copies_per_20ft_unpalletized || null,
-      packaging_copies_per_40ft_unpalletized: formData.packaging_copies_per_40ft_unpalletized || null
+      packaging_cartons_per_pallet:
+        formData.packaging_cartons_per_pallet || null,
+      packaging_copies_per_20ft_palletized:
+        formData.packaging_copies_per_20ft_palletized || null,
+      packaging_copies_per_40ft_palletized:
+        formData.packaging_copies_per_40ft_palletized || null,
+      packaging_copies_per_20ft_unpalletized:
+        formData.packaging_copies_per_20ft_unpalletized || null,
+      packaging_copies_per_40ft_unpalletized:
+        formData.packaging_copies_per_40ft_unpalletized || null,
     })
     .select()
     .single();
-
-  console.log('Inserted Supplier Quote:', supplierQuote);
-  console.log('Supplier Quote ID:', supplierQuote?.id);
-  console.log('Supplier Quote Insertion Error:', error);
 
   if (error) {
     throw new Error(`Error creating supplier quote: ${error.message}`);
   }
 
   // Fetch quote request formats to get format IDs
-  const { data: quoteRequestFormats, error: quoteRequestFormatsError } = await supabase
-    .from("quote_request_formats")
-    .select("id, format_id")
-    .eq("quote_request_id", formData.quote_request_id);
+  const { data: quoteRequestFormats, error: quoteRequestFormatsError } =
+    await supabase
+      .from("quote_request_formats")
+      .select("id, format_id")
+      .eq("quote_request_id", formData.quote_request_id);
 
   if (quoteRequestFormatsError) {
-    console.error("Error fetching quote request formats:", quoteRequestFormatsError.message);
+    console.error(
+      "Error fetching quote request formats:",
+      quoteRequestFormatsError.message
+    );
     // Continue execution - we don't want to fail the entire operation if this fails
   } else {
-    console.log("Quote request formats:", quoteRequestFormats);
-    
     // Extract unique format associations
     const formatAssociations = new Map();
-    
+
     // First, add all format associations from the quote request formats
     if (quoteRequestFormats && quoteRequestFormats.length > 0) {
-      quoteRequestFormats.forEach(qrf => {
+      quoteRequestFormats.forEach((qrf) => {
         if (qrf.format_id && qrf.id) {
           formatAssociations.set(qrf.id, {
             supplier_quote_id: supplierQuote.id,
             format_id: qrf.format_id,
-            quote_request_format_id: qrf.id
+            quote_request_format_id: qrf.id,
           });
         }
       });
     }
-    
+
     // Then, check if we have price breaks that reference specific formats
     if (formData.price_breaks && formData.price_breaks.length > 0) {
-      formData.price_breaks.forEach(pb => {
+      formData.price_breaks.forEach((pb) => {
         if (pb.quote_request_format_id) {
-          const qrf = quoteRequestFormats?.find(f => f.id === pb.quote_request_format_id);
+          const qrf = quoteRequestFormats?.find(
+            (f) => f.id === pb.quote_request_format_id
+          );
           if (qrf && qrf.format_id) {
             formatAssociations.set(pb.quote_request_format_id, {
               supplier_quote_id: supplierQuote.id,
               format_id: qrf.format_id,
-              quote_request_format_id: pb.quote_request_format_id
+              quote_request_format_id: pb.quote_request_format_id,
             });
           }
         }
       });
     }
-    
+
     // Insert format associations if we found any
     if (formatAssociations.size > 0) {
       const formatsToInsert = Array.from(formatAssociations.values());
-      console.log("Inserting format associations:", formatsToInsert);
-      
       const { error: formatInsertError } = await supabase
         .from("supplier_quote_formats")
         .insert(formatsToInsert);
-      
+
       if (formatInsertError) {
-        console.error("Error inserting format associations:", formatInsertError);
+        console.error(
+          "Error inserting format associations:",
+          formatInsertError
+        );
       } else {
         console.log("Successfully inserted format associations");
       }
@@ -162,15 +335,15 @@ export async function createSupplierQuote(
     // Create a map to store format IDs for each quote_request_format_id
     const formatIdMap = new Map();
     if (quoteRequestFormats && quoteRequestFormats.length > 0) {
-      quoteRequestFormats.forEach(qrf => {
+      quoteRequestFormats.forEach((qrf) => {
         formatIdMap.set(qrf.id, qrf.format_id);
       });
     }
 
-    const priceBreaksToInsert = formData.price_breaks.map(pb => {
+    const priceBreaksToInsert = formData.price_breaks.map((pb) => {
       // Get format_id from our map based on the quote_request_format_id
       const format_id = formatIdMap.get(pb.quote_request_format_id);
-      
+
       return {
         supplier_quote_id: supplierQuote.id,
         quote_request_format_id: pb.quote_request_format_id,
@@ -188,7 +361,7 @@ export async function createSupplierQuote(
         unit_cost_7: pb.unit_cost_7,
         unit_cost_8: pb.unit_cost_8,
         unit_cost_9: pb.unit_cost_9,
-        unit_cost_10: pb.unit_cost_10
+        unit_cost_10: pb.unit_cost_10,
       };
     });
 
@@ -204,31 +377,32 @@ export async function createSupplierQuote(
 
   // Insert extra costs if any
   if (formData.extra_costs && formData.extra_costs.length > 0) {
-    // Log all extra costs for debugging
-    console.log('Extra costs before filtering:', formData.extra_costs);
-    
-    const extraCostsToInsert = formData.extra_costs
-      .filter(ec => {
-        // Only insert costs that have any values - either unit_cost or any of unit_cost_1 through unit_cost_10
-        const hasValue = 
-               (ec.unit_cost !== null && ec.unit_cost !== undefined) || 
-               (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) || 
-               (ec.unit_cost_2 !== null && ec.unit_cost_2 !== undefined) ||
-               (ec.unit_cost_3 !== null && ec.unit_cost_3 !== undefined) ||
-               (ec.unit_cost_4 !== null && ec.unit_cost_4 !== undefined) ||
-               (ec.unit_cost_5 !== null && ec.unit_cost_5 !== undefined) ||
-               (ec.unit_cost_6 !== null && ec.unit_cost_6 !== undefined) ||
-               (ec.unit_cost_7 !== null && ec.unit_cost_7 !== undefined) ||
-               (ec.unit_cost_8 !== null && ec.unit_cost_8 !== undefined) ||
-               (ec.unit_cost_9 !== null && ec.unit_cost_9 !== undefined) ||
-               (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
-               
-        // For debugging purposes, log the extra cost and whether it has values
-        console.log(`Extra cost ${ec.extra_cost_id} has values: ${hasValue}`, ec);
-        
+    const standardExtraCosts = formData.extra_costs.filter(
+      (ec) => ec.unit_of_measure_id !== "d53da411-5061-4710-aa1d-75a638c45dc6"
+    );
+
+    const priceBreakExtraCosts = formData.extra_costs.filter(
+      (ec) => ec.unit_of_measure_id === "d53da411-5061-4710-aa1d-75a638c45dc6"
+    );
+
+    const standardCostsToInsert = standardExtraCosts
+      .filter((ec) => {
+        const hasValue =
+          (ec.unit_cost !== null && ec.unit_cost !== undefined) ||
+          (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) ||
+          (ec.unit_cost_2 !== null && ec.unit_cost_2 !== undefined) ||
+          (ec.unit_cost_3 !== null && ec.unit_cost_3 !== undefined) ||
+          (ec.unit_cost_4 !== null && ec.unit_cost_4 !== undefined) ||
+          (ec.unit_cost_5 !== null && ec.unit_cost_5 !== undefined) ||
+          (ec.unit_cost_6 !== null && ec.unit_cost_6 !== undefined) ||
+          (ec.unit_cost_7 !== null && ec.unit_cost_7 !== undefined) ||
+          (ec.unit_cost_8 !== null && ec.unit_cost_8 !== undefined) ||
+          (ec.unit_cost_9 !== null && ec.unit_cost_9 !== undefined) ||
+          (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
+
         return hasValue;
       })
-      .map(ec => ({
+      .map((ec) => ({
         supplier_quote_id: supplierQuote.id,
         extra_cost_id: ec.extra_cost_id,
         unit_cost: ec.unit_cost === undefined ? null : ec.unit_cost,
@@ -242,49 +416,94 @@ export async function createSupplierQuote(
         unit_cost_8: ec.unit_cost_8 === undefined ? null : ec.unit_cost_8,
         unit_cost_9: ec.unit_cost_9 === undefined ? null : ec.unit_cost_9,
         unit_cost_10: ec.unit_cost_10 === undefined ? null : ec.unit_cost_10,
-        unit_of_measure_id: ec.unit_of_measure_id
+        unit_of_measure_id: ec.unit_of_measure_id,
       }));
 
-    if (extraCostsToInsert.length > 0) {
-      console.log('Inserting extra costs:', extraCostsToInsert);
+    const priceBreakCostsToInsert = priceBreakExtraCosts
+      .filter((ec) => {
+        const hasValue =
+          (ec.unit_cost !== null && ec.unit_cost !== undefined) ||
+          (ec.unit_cost_1 !== null && ec.unit_cost_1 !== undefined) ||
+          (ec.unit_cost_2 !== null && ec.unit_cost_2 !== undefined) ||
+          (ec.unit_cost_3 !== null && ec.unit_cost_3 !== undefined) ||
+          (ec.unit_cost_4 !== null && ec.unit_cost_4 !== undefined) ||
+          (ec.unit_cost_5 !== null && ec.unit_cost_5 !== undefined) ||
+          (ec.unit_cost_6 !== null && ec.unit_cost_6 !== undefined) ||
+          (ec.unit_cost_7 !== null && ec.unit_cost_7 !== undefined) ||
+          (ec.unit_cost_8 !== null && ec.unit_cost_8 !== undefined) ||
+          (ec.unit_cost_9 !== null && ec.unit_cost_9 !== undefined) ||
+          (ec.unit_cost_10 !== null && ec.unit_cost_10 !== undefined);
+
+        return hasValue;
+      })
+      .map((ec) => ({
+        supplier_quote_id: supplierQuote.id,
+        extra_cost_id: ec.extra_cost_id ? ec.extra_cost_id : null,
+        unit_cost: null,
+        unit_cost_1: null,
+        unit_cost_2: null,
+        unit_cost_3: null,
+        unit_cost_4: null,
+        unit_cost_5: null,
+        unit_cost_6: null,
+        unit_cost_7: null,
+        unit_cost_8: null,
+        unit_cost_9: null,
+        unit_cost_10: null,
+        unit_of_measure_id: ec.unit_of_measure_id,
+      }));
+
+    if (standardCostsToInsert.length > 0) {
       const { error: extraCostsError } = await supabase
         .from("supplier_quote_extra_costs")
-        .insert(extraCostsToInsert);
+        .insert(standardCostsToInsert);
 
       if (extraCostsError) {
-        console.error("Error inserting extra costs:", extraCostsError);
-        // Continue execution - we don't want to fail the entire operation if extra costs fail
+        console.error("Error inserting standard extra costs:", extraCostsError);
       }
     }
+
+    if (priceBreakCostsToInsert.length > 0) {
+      const { error: priceBreakError } = await supabase
+        .from("supplier_quote_extra_costs")
+        .insert(priceBreakCostsToInsert);
+
+      if (priceBreakError) {
+        console.error(
+          "Error inserting price break extra costs:",
+          priceBreakError
+        );
+      }
+    }
+
+    // NEW FUNCTIONALITY: Insert extra cost price breaks for unit_of_measure_id = "d53da411-5061-4710-aa1d-75a638c45dc6"
+    await insertSupplierQuoteExtraCostPriceBreaks(
+      supplierQuote.id,
+      priceBreakExtraCosts
+    );
   }
 
   // Insert savings if any
   if (formData.savings && formData.savings.length > 0) {
-    // Log all savings for debugging
-    console.log('Savings before filtering:', formData.savings);
-    
     const savingsToInsert = formData.savings
-      .filter(s => {
+      .filter((s) => {
         // Only insert savings that have any values - either unit_cost or any of unit_cost_1 through unit_cost_10
-        const hasValue = 
-               (s.unit_cost !== null && s.unit_cost !== undefined) || 
-               (s.unit_cost_1 !== null && s.unit_cost_1 !== undefined) || 
-               (s.unit_cost_2 !== null && s.unit_cost_2 !== undefined) ||
-               (s.unit_cost_3 !== null && s.unit_cost_3 !== undefined) ||
-               (s.unit_cost_4 !== null && s.unit_cost_4 !== undefined) ||
-               (s.unit_cost_5 !== null && s.unit_cost_5 !== undefined) ||
-               (s.unit_cost_6 !== null && s.unit_cost_6 !== undefined) ||
-               (s.unit_cost_7 !== null && s.unit_cost_7 !== undefined) ||
-               (s.unit_cost_8 !== null && s.unit_cost_8 !== undefined) ||
-               (s.unit_cost_9 !== null && s.unit_cost_9 !== undefined) ||
-               (s.unit_cost_10 !== null && s.unit_cost_10 !== undefined);
-               
-        // For debugging purposes, log the saving and whether it has values
-        console.log(`Saving ${s.saving_id} has values: ${hasValue}`, s);
-        
+        const hasValue =
+          (s.unit_cost !== null && s.unit_cost !== undefined) ||
+          (s.unit_cost_1 !== null && s.unit_cost_1 !== undefined) ||
+          (s.unit_cost_2 !== null && s.unit_cost_2 !== undefined) ||
+          (s.unit_cost_3 !== null && s.unit_cost_3 !== undefined) ||
+          (s.unit_cost_4 !== null && s.unit_cost_4 !== undefined) ||
+          (s.unit_cost_5 !== null && s.unit_cost_5 !== undefined) ||
+          (s.unit_cost_6 !== null && s.unit_cost_6 !== undefined) ||
+          (s.unit_cost_7 !== null && s.unit_cost_7 !== undefined) ||
+          (s.unit_cost_8 !== null && s.unit_cost_8 !== undefined) ||
+          (s.unit_cost_9 !== null && s.unit_cost_9 !== undefined) ||
+          (s.unit_cost_10 !== null && s.unit_cost_10 !== undefined);
+
         return hasValue;
       })
-      .map(s => ({
+      .map((s) => ({
         supplier_quote_id: supplierQuote.id,
         saving_id: s.saving_id,
         price_break_id: s.price_break_id || null,
@@ -299,11 +518,10 @@ export async function createSupplierQuote(
         unit_cost_8: s.unit_cost_8 === undefined ? null : s.unit_cost_8,
         unit_cost_9: s.unit_cost_9 === undefined ? null : s.unit_cost_9,
         unit_cost_10: s.unit_cost_10 === undefined ? null : s.unit_cost_10,
-        unit_of_measure_id: s.unit_of_measure_id
+        unit_of_measure_id: s.unit_of_measure_id,
       }));
 
     if (savingsToInsert.length > 0) {
-      console.log('Inserting savings:', savingsToInsert);
       const { error: savingsError } = await supabase
         .from("supplier_quote_savings")
         .insert(savingsToInsert);
@@ -316,12 +534,9 @@ export async function createSupplierQuote(
   }
 
   // Record audit entry
-  await recordSupplierQuoteAudit(
-    supplierQuote.id,
-    userId,
-    "create",
-    { new: formData }
-  );
+  await recordSupplierQuoteAudit(supplierQuote.id, userId, "create", {
+    new: formData,
+  });
 
   return supplierQuote.id;
 }

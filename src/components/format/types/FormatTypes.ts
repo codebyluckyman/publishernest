@@ -11,7 +11,14 @@ export interface Format {
   extent: string | null;
   cover_stock_print: string | null;
   internal_stock_print: string | null;
-  binding_type: string | null; // This property is missing from the Format interface
+  binding_type: string | null;
+  cover_material: string | null;
+  internal_material: string | null;
+  orientation: string | null;
+  end_papers_material: string | null;
+  end_papers_print: string | null;
+  spacers_material: string | null;
+  spacers_stock_print: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -3,7 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import DesktopSidebar from "./navigation/DesktopSidebar";
-import NavigationHeader from "./navigation/NavigationHeader";
+import { NavigationHeader } from "./navigation/NavigationHeader";
 import BreadcrumbNavigation from "./navigation/BreadcrumbNavigation";
 import Footer from "./navigation/Footer";
 import { getNavigationMenuItems } from "./navigation/NavigationMenuItems";
@@ -34,13 +34,17 @@ const Layout = () => {
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex flex-col w-full bg-gray-50">
-        <div className="flex flex-1 w-full">
-          {/* Desktop Sidebar - hidden on mobile */}
-          <DesktopSidebar menuItems={menuItems} />
+      <div className="min-h-screen flex w-full bg-gray-50">
+        {/* Desktop Sidebar - hidden on mobile */}
+        <DesktopSidebar menuItems={menuItems} />
+        
+        {/* Main content area with header at top */}
+        <div className="flex-1 flex flex-col">
+          {/* Navigation Header spans full width of main area */}
+          <NavigationHeader onMobileMenuToggle={() => {}} />
           
+          {/* Main content below header */}
           <main className="flex-1 flex flex-col p-4 md:p-8 animate-fadeIn">
-            <NavigationHeader currentPageLabel={currentPageLabel} menuItems={menuItems} />
             <BreadcrumbNavigation />
             <div className="flex-1">
               <Outlet />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -13,7 +12,9 @@ export function FormatTableContainer() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedFormatId, setSelectedFormatId] = useState<string | undefined>(undefined);
+  const [selectedFormatId, setSelectedFormatId] = useState<string | undefined>(
+    undefined
+  );
   const [viewFormatId, setViewFormatId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     cover_stock_print: null,
@@ -47,7 +48,7 @@ export function FormatTableContainer() {
 
   const handleDialogSuccess = () => {
     // Increment the refresh trigger to force a refetch
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
     console.log("Format saved or deleted - refreshing data table");
   };
 
@@ -63,11 +64,20 @@ export function FormatTableContainer() {
   };
 
   const areFiltersActive = () => {
-    return filters.cover_stock_print !== null || 
-           filters.internal_stock_print !== null;
+    return (
+      (filters.cover_stock_print !== null &&
+        filters.cover_stock_print !== "ALL_STOCK") ||
+      (filters.internal_stock_print !== null &&
+        filters.internal_stock_print !== "ALL_STOCK")
+    );
   };
 
-  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    if (value === null || value === "ALL_STOCK") {
+      return false;
+    }
+    return true;
+  }).length;
 
   return (
     <Card>
