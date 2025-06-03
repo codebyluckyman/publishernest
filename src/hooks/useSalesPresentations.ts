@@ -20,13 +20,14 @@ export function useSalesPresentations() {
   const queryClient = useQueryClient();
 
   // Fetch all presentations
-  const usePresentations = (status?: string, limit?: number, page?: number) => {
+  const usePresentations = (status?: string, createdBy?: string, limit?: number, page?: number) => {
     return useQuery({
-      queryKey: ['salesPresentations', currentOrganization?.id, status, limit, page],
+      queryKey: ['salesPresentations', currentOrganization?.id, status, createdBy, limit, page],
       queryFn: () => 
         fetchSalesPresentations({ 
           currentOrganization: currentOrganization!, 
           status, 
+          createdBy,
           limit, 
           page 
         }),

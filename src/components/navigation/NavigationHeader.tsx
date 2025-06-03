@@ -6,39 +6,63 @@ import MobileNavigation from "./MobileNavigation";
 import { MenuItem } from "./NavigationMenuItems";
 import { MessagesPopover } from "../MessagesPopover";
 
+import { OrganizationNotificationsPopover } from "@/components/organizations/OrganizationNotificationsPopover";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 interface NavigationHeaderProps {
-  currentPageLabel: string;
-  menuItems: MenuItem[];
+  onMobileMenuToggle: () => void;
 }
 
-const NavigationHeader = ({
-  currentPageLabel,
-  menuItems,
-}: NavigationHeaderProps) => {
+// const NavigationHeader = ({
+//   currentPageLabel,
+//   menuItems,
+// }: NavigationHeaderProps) => {
+//   return (
+//     <div className="flex justify-between items-center mb-6">
+//       {/* Mobile Navigation */}
+//       <MobileNavigation
+//         menuItems={menuItems}
+//         currentPageLabel={currentPageLabel}
+//       />
+
+//       {/* Desktop Navigation Title - hidden on mobile */}
+//       <div className="hidden md:flex items-center gap-2">
+//         {/* Desktop Sidebar Toggle Button */}
+//         <SidebarTrigger className="text-gray-500 hover:bg-gray-100">
+//           <PanelLeft className="w-5 h-5" />
+//         </SidebarTrigger>
+//         <h1 className="text-2xl font-bold">{currentPageLabel}</h1>
+//       </div>
+
+//       <div className="flex items-center">
+//         <MessagesPopover />
+//         <NotificationsPopover />
+//         <HelpCenterPopover />
+//       </div>
+//     </div>
+export function NavigationHeader({
+  onMobileMenuToggle,
+}: NavigationHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-6">
-      {/* Mobile Navigation */}
-      <MobileNavigation
-        menuItems={menuItems}
-        currentPageLabel={currentPageLabel}
-      />
+    <header className="border-b bg-white w-full">
+      <div className="flex h-14 items-center gap-4 px-4 lg:px-6 w-full">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="md:hidden"
+          onClick={onMobileMenuToggle}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
 
-      {/* Desktop Navigation Title - hidden on mobile */}
-      <div className="hidden md:flex items-center gap-2">
-        {/* Desktop Sidebar Toggle Button */}
-        <SidebarTrigger className="text-gray-500 hover:bg-gray-100">
-          <PanelLeft className="w-5 h-5" />
-        </SidebarTrigger>
-        <h1 className="text-2xl font-bold">{currentPageLabel}</h1>
-      </div>
+        <div className="flex-1" />
 
-      <div className="flex items-center">
-        <MessagesPopover />
-        <NotificationsPopover />
-        <HelpCenterPopover />
+        <div className="flex items-center gap-2">
+          <OrganizationNotificationsPopover />
+          <HelpCenterPopover />
+        </div>
       </div>
-    </div>
+    </header>
   );
-};
-
-export default NavigationHeader;
+}

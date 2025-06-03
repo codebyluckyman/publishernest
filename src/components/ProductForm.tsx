@@ -1,3 +1,4 @@
+
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useProductForm } from "@/hooks/useProductForm";
@@ -12,6 +13,7 @@ import { AdditionalInfoSection } from "./products/form-sections/AdditionalInfoSe
 import { InternalImagesSection } from "./products/form-sections/InternalImagesSection";
 import { PricingSection } from "./products/form-sections/PricingSection";
 import { FormatExtrasSection } from "./products/form-sections/FormatExtrasSection";
+import { CustomFieldsSection } from "./products/custom-fields/CustomFieldsSection";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +50,7 @@ type ProductFormProps = {
   hideButtons?: boolean;
 };
 
-const ProductForm = forwardRef<
+export const ProductForm = forwardRef<
   { deleteProduct: () => Promise<void> },
   ProductFormProps
 >(
@@ -155,20 +157,22 @@ const ProductForm = forwardRef<
           <AdditionalInfoSection form={form} />
           <InternalImagesSection form={form} />
 
-          {productId && <PricingSection form={form} productId={productId} />}
-
           {productId && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Inventory</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <StockTable
-                  productId={productId}
-                  onChange={handleStockChange}
-                />
-              </CardContent>
-            </Card>
+            <>
+              <CustomFieldsSection productId={productId} />
+              <PricingSection form={form} productId={productId} />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Inventory</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StockTable
+                    productId={productId}
+                    onChange={handleStockChange}
+                  />
+                </CardContent>
+              </Card>
+            </>
           )}
 
           {!hideButtons && (

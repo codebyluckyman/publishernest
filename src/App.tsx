@@ -33,6 +33,7 @@ import Organizations from "./pages/Organizations";
 import Stock from "./pages/Stock";
 import EditPurchaseOrder from "./pages/EditPurchaseOrder";
 import ChatComponent from "./components/chat/ChtaComponent";
+import Notifications from "./pages/Notifications";
 
 const router = createBrowserRouter([
   {
@@ -286,6 +287,13 @@ const router = createBrowserRouter([
         ],
       },
     ],
+    //     element: <ProtectedRoute><Organizations /></ProtectedRoute>
+    //   },
+    //   {
+    //     path: "notifications",
+    //     element: <ProtectedRoute><Notifications /></ProtectedRoute>
+    //   }
+    // ]
   },
   {
     path: "/shared/presentation/:accessCode",

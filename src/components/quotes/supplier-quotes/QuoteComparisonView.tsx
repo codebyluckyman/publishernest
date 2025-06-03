@@ -75,16 +75,24 @@ export function QuoteComparisonView({
   }, [quotes]);
   
   const formatGroups = useMemo(() => {
-    const groups: Record<string, { formatName: string, formatId: string, quotes: SupplierQuote[] }> = {};
+    const groups: Record<string, { 
+      formatName: string, 
+      formatId: string, 
+      quoteRequestFormatId: string,
+      quotes: SupplierQuote[] 
+    }> = {};
     
     quotes.forEach(quote => {
       if (quote.formats && quote.formats.length > 0) {
         quote.formats.forEach(format => {
           const formatId = format.format_id;
+          const quoteRequestFormatId = format.quote_request_format_id || formatId;
+          
           if (!groups[formatId]) {
             groups[formatId] = {
               formatName: format.format_name,
               formatId: format.format_id,
+              quoteRequestFormatId: quoteRequestFormatId,
               quotes: []
             };
           }
@@ -99,6 +107,7 @@ export function QuoteComparisonView({
           groups[unknownKey] = {
             formatName: "Unknown Format",
             formatId: unknownKey,
+            quoteRequestFormatId: unknownKey,
             quotes: []
           };
         }
@@ -415,7 +424,7 @@ export function QuoteComparisonView({
                     <CardContent>
                       <PriceBreakComparisonTable 
                         quotes={group.quotes}
-                        formatId={formatId !== "unknown" ? formatId : undefined}
+                        formatId={group.quoteRequestFormatId !== "unknown" ? group.quoteRequestFormatId : undefined}
                         includeExpiredQuotes={includeExpiredQuotes}
                         includeDraftQuotes={includeDraftQuotes}
                       />

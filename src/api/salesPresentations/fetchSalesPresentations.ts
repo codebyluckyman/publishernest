@@ -7,6 +7,7 @@ import { Organization } from '@/types/organization';
 interface FetchSalesPresentationsParams {
   currentOrganization: Organization;
   status?: string;
+  createdBy?: string;
   limit?: number;
   page?: number;
 }
@@ -40,6 +41,7 @@ const defaultDisplaySettings: PresentationDisplaySettings = {
 export async function fetchSalesPresentations({
   currentOrganization,
   status,
+  createdBy,
   limit = 10,
   page = 1,
 }: FetchSalesPresentationsParams): Promise<SalesPresentation[]> {
@@ -50,8 +52,13 @@ export async function fetchSalesPresentations({
       .eq('organization_id', currentOrganization.id)
       .order('created_at', { ascending: false });
 
+    // Apply status filter if provided
     if (status) {
       query = query.eq('status', status);
+    }
+
+    if (createdBy) {
+      query = query.eq('created_by', createdBy);
     }
 
     // Apply pagination

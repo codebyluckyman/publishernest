@@ -3,7 +3,7 @@ import { createContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
 import { useOrganizationApi } from "@/hooks/useOrganizationApi";
-import { Organization, OrganizationContextType, OrganizationMember } from "@/types/organization";
+import { Organization, OrganizationContextType, OrganizationMember, MemberType } from "@/types/organization";
 
 export const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
@@ -98,9 +98,9 @@ export const OrganizationProvider = ({ children }: { children: React.ReactNode }
     }
   };
 
-  const inviteMember = async (organizationId: string, email: string, role: "admin" | "member") => {
+  const inviteMember = async (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => {
     try {
-      await api.inviteOrganizationMember(organizationId, email, role);
+      await api.inviteOrganizationMember(organizationId, email, role, memberType);
       toast.success(`User invited to the organization`);
     } catch (error: any) {
       toast.error(error.message || "Failed to invite member");

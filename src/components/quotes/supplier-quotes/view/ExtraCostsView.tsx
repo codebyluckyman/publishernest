@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,7 +28,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
   // Group savings by whether they use inventory units or not
   const inventorySavings = savings.filter(item => {
     // Find the unit of measure using unit_of_measure_id
-    const unitOfMeasure = unitOfMeasures.find(
+    const unitOfMeasure = item.unit_of_measures || unitOfMeasures.find(
       unit => unit.id === item.unit_of_measure_id
     );
     
@@ -36,7 +37,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
   
   const regularSavings = savings.filter(item => {
     // Find the unit of measure using unit_of_measure_id
-    const unitOfMeasure = unitOfMeasures.find(
+    const unitOfMeasure = item.unit_of_measures || unitOfMeasures.find(
       unit => unit.id === item.unit_of_measure_id
     );
     
@@ -87,7 +88,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                           {item.description || '-'}
                         </td>
                         <td className="py-2 px-4 text-sm">
-                          {item.unit_of_measure_name || '-'}
+                          {item.unit_of_measures?.name || '-'}
                         </td>
                         <td className="py-2 px-4 text-sm text-right">
                           {submittedCost && submittedCost.unit_cost !== null 
@@ -134,7 +135,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                                 {item.description || '-'}
                               </td>
                               <td className="py-2 px-4 text-sm">
-                                {item.unit_of_measure_name || '-'}
+                                {item.unit_of_measures?.name || '-'}
                               </td>
                               <td className="py-2 px-4 text-sm text-right">
                                 {submittedSaving && submittedSaving.unit_cost !== null 
@@ -198,7 +199,7 @@ export function ExtraCostsView({ quote }: ExtraCostsViewProps) {
                         return (
                           <div key={`${savingItem.id}-${format.id}`} className="mt-4">
                             <h4 className="text-sm font-medium mb-2">
-                              {savingItem.name} - {format.format_name}
+                              {savingItem.name} - {format.formats?.format_name}
                             </h4>
                             <PriceBreakTable
                               formatName={`${savingItem.name}`}

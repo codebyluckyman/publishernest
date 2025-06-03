@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { DateFormatter } from "@/utils/formatters";
+import { formatDate } from "@/utils/formatters";
 import { Badge } from "@/components/ui/badge";
 import { PrintRun, PrintRunStatus } from "@/types/printRun";
 import { Input } from "@/components/ui/input";
@@ -321,7 +322,7 @@ const PrintRuns = () => {
                           <PrintRunStatusBadge status={printRun.status} />
                         </TableCell>
                         <TableCell>
-                          {DateFormatter.format(new Date(printRun.created_at))}
+                          {formatDate(printRun.created_at)}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">

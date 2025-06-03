@@ -18,8 +18,12 @@ interface Format {
   cover_stock_print: string | null;
   internal_stock_print: string | null;
   orientation: string | null;
-  created_at: string;  // Added missing property
-  updated_at: string;  // Added missing property
+  end_papers_material: string | null;
+  end_papers_print: string | null;
+  spacers_material: string | null;
+  spacers_stock_print: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function useFormatDetails(formatId: string | null) {
@@ -46,6 +50,10 @@ export function useFormatDetails(formatId: string | null) {
           cover_stock_print,
           internal_stock_print,
           orientation,
+          end_papers_material,
+          end_papers_print,
+          spacers_material,
+          spacers_stock_print,
           created_at,
           updated_at
         `)

@@ -6,7 +6,7 @@ import { Product } from '@/types/product';
 import { Format } from '@/types/format';
 
 // Define a complete format interface for the component needs
-interface FormatLight {
+export interface FormatLight {
   id: string;
   format_name: string | null;
   tps_height_mm: number | null;
@@ -22,6 +22,10 @@ interface FormatLight {
   cover_stock_print: string | null;
   internal_stock_print: string | null;
   orientation: string | null;
+  end_papers_material: string | null;
+  end_papers_print: string | null;
+  spacers_material: string | null;
+  spacers_stock_print: string | null;
 }
 
 export interface ProductWithFormat extends Product {
@@ -55,7 +59,11 @@ export function useProductsWithFormats() {
             internal_material,
             cover_stock_print,
             internal_stock_print,
-            orientation
+            orientation,
+            end_papers_material,
+            end_papers_print,
+            spacers_material,
+            spacers_stock_print
           )
         `)
         .eq('organization_id', currentOrganization.id)

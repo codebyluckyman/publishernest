@@ -12,12 +12,18 @@ export const useOrganizationFetch = (userId: string | undefined) => {
     try {
       const { data: memberships, error: membershipError } = await supabase
         .from('organization_members')
-        .select('organization_id')
+        .select('organization_id, member_type') // Added member_type to the select
         .eq('auth_user_id', userId);
 
       if (membershipError) throw membershipError;
 
       if (memberships && memberships.length > 0) {
+        // Create a map of organization IDs to member types
+        const memberTypeMap = memberships.reduce((acc, membership) => {
+          acc[membership.organization_id] = membership.member_type;
+          return acc;
+        }, {} as Record<string, string | undefined>);
+        
         const orgIds = memberships.map(m => m.organization_id);
         
         const { data: orgs, error: orgsError } = await supabase
@@ -28,6 +34,7 @@ export const useOrganizationFetch = (userId: string | undefined) => {
         if (orgsError) throw orgsError;
         
         // Cast organization_type, default_extra_costs, and default_savings to proper types
+        // Also add the member_type to each organization
         return (orgs || []).map(org => ({
           ...org,
           organization_type: org.organization_type as "publisher" | "printer" | "customer",
@@ -44,7 +51,8 @@ export const useOrganizationFetch = (userId: string | undefined) => {
                 description: saving.description,
                 unit_of_measure_id: saving.unit_of_measure_id
               })) 
-            : [] as DefaultSaving[]
+            : [] as DefaultSaving[],
+          userMemberType: memberTypeMap[org.id] // Add the member_type for this user-organization relationship
         })) as Organization[];
       }
       

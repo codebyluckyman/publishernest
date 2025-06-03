@@ -1,6 +1,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import ProductReadOnlyForm from "./ProductReadOnlyForm";
+import { ProductReadOnlyForm } from "./ProductReadOnlyForm";
 
 type ProductViewDialogProps = {
   open: boolean;

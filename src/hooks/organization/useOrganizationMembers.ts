@@ -1,5 +1,5 @@
 
-import { OrganizationMember } from "@/types/organization";
+import { OrganizationMember, MemberType } from "@/types/organization";
 import { useSupabaseBase } from "./useSupabaseBase";
 
 export const useOrganizationMembers = (userId: string | undefined) => {
@@ -16,7 +16,8 @@ export const useOrganizationMembers = (userId: string | undefined) => {
       
       const members: OrganizationMember[] = (data || []).map(member => ({
         ...member,
-        role: member.role as "owner" | "admin" | "member"
+        role: member.role as "owner" | "admin" | "member",
+        member_type: member.member_type as MemberType
       }));
       
       return members;
@@ -26,7 +27,7 @@ export const useOrganizationMembers = (userId: string | undefined) => {
     }
   };
 
-  const inviteOrganizationMember = async (organizationId: string, email: string, role: "admin" | "member") => {
+  const inviteOrganizationMember = async (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => {
     try {
       const { data: userExists, error: userError } = await supabase
         .from('profiles')
@@ -62,7 +63,8 @@ export const useOrganizationMembers = (userId: string | undefined) => {
         .insert({
           organization_id: organizationId,
           auth_user_id: userExists.id,
-          role
+          role,
+          member_type: memberType
         });
 
       if (insertError) throw insertError;

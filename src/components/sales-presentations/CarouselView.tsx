@@ -81,6 +81,15 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
     `;
   };
   
+  // Function to format column display names
+  const getColumnDisplayName = (column: string) => {
+    if (column === 'isbn13') return 'ISBN-13';
+    if (column === 'isbn10') return 'ISBN-10';
+    
+    // Default formatting for other columns
+    return column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ');
+  };
+  
   const getDisplayValue = (product: ProductWithFormat, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
@@ -234,9 +243,9 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
   };
   
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-hidden">
       <Carousel 
-        className="w-full px-12" 
+        className="w-full relative" 
         setApi={setApi}
       >
         <CarouselContent>
@@ -267,7 +276,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                     {cardColumns.map((column) => (
                       <div key={column} className="flex justify-between text-sm">
                         <span className="font-medium text-muted-foreground">
-                          {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}:
+                          {getColumnDisplayName(column)}:
                         </span>
                         <span>{getDisplayValue(item.product, column, item.customPrice)}</span>
                       </div>
@@ -289,18 +298,20 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                   
                   {/* Cover image and synopsis section */}
                   <div className={`flex ${layoutOptions.imageSide === 'top' ? 'flex-col' : ''}`}>
-                    {/* Cover image section */}
+                    {/* Cover image section - FIXED TO PREVENT STRETCHING */}
                     {item.product.cover_image_url && layoutOptions.showCover && (
                       <div 
                         className={`${layoutOptions.imageSide === 'top' ? 'w-full' : 
                           layoutOptions.imageSide === 'left' ? 'w-2/5' : 'w-2/5 order-2'} 
-                          ${sectionStyles.useBorders ? 'border-r border-b' : ''} p-2`}
+                          ${sectionStyles.useBorders ? 'border-r border-b' : ''} p-2 flex items-center justify-center`}
+                        style={{ height: layoutOptions.imageSide === 'top' ? 'auto' : `${slideHeight}px` }}
                       >
-                        <div className="overflow-hidden" style={{ maxHeight: `${slideHeight}px` }}>
+                        <div className="relative flex items-center justify-center h-full">
                           <Image
                             src={item.product.cover_image_url}
                             alt={item.product.title}
-                            className="w-full h-full object-contain"
+                            className="max-w-full max-h-full object-contain"
+                            style={{ maxHeight: `${slideHeight - 20}px` }} // Subtract padding
                           />
                         </div>
                       </div>
@@ -335,7 +346,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
                                 <TableCell className={`py-2 font-medium w-1/3 text-sm
                                   ${layoutOptions.includeTableBorders ? 'border-r' : ''}`}
                                 >
-                                  {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}
+                                  {getColumnDisplayName(column)}
                                 </TableCell>
                                 <TableCell className="py-2 text-sm">
                                   {getDisplayValue(item.product, column, item.customPrice)}
@@ -352,8 +363,8 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="-left-2" />
-        <CarouselNext className="-right-2" />
+        <CarouselPrevious className="left-0 -translate-x-1/2" />
+        <CarouselNext className="right-0 translate-x-1/2" />
       </Carousel>
       
       {/* Show indicators if enabled */}

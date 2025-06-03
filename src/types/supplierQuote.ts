@@ -1,3 +1,4 @@
+
 export type SupplierQuoteStatus =
   | "draft"
   | "submitted"
@@ -31,52 +32,24 @@ export interface SupplierQuoteExtraCost {
   supplier_quote_id?: string;
   extra_cost_id: string;
   unit_cost?: number | null;
-  unit_cost_1?: number[] | null;
-  unit_cost_2?: number[] | null;
-  unit_cost_3?: number[] | null;
-  unit_cost_4?: number[] | null;
-  unit_cost_5?: number[] | null;
-  unit_cost_6?: number[] | null;
-  unit_cost_7?: number[] | null;
-  unit_cost_8?: number[] | null;
-  unit_cost_9?: number[] | null;
-  unit_cost_10?: number[] | null;
+  unit_cost_1?: number | null;
+  unit_cost_2?: number | null;
+  unit_cost_3?: number | null;
+  unit_cost_4?: number | null;
+  unit_cost_5?: number | null;
+  unit_cost_6?: number | null;
+  unit_cost_7?: number | null;
+  unit_cost_8?: number | null;
+  unit_cost_9?: number | null;
+  unit_cost_10?: number | null;
   unit_of_measure_id?: string | null;
 }
 
-// export interface SupplierQuoteExtraCost {
-//   id?: string;
-//   quote_request_id?: string;
-//   name: string;
-//   description: string | null;
-//   unit_of_measure_id: string;
-//   unit_of_measures?: {
-//     id: string;
-//     name: string;
-//     abbreviation: string;
-//   };
-//   price_breaks: {
-//     id: string;
-//     quantity: number;
-//     unit_cost: number | null;
-//     unit_cost_1: number | null;
-//     unit_cost_2: number | null;
-//     unit_cost_3: number | null;
-//     unit_cost_4: number | null;
-//     unit_cost_5: number | null;
-//     unit_cost_6: number | null;
-//     unit_cost_7: number | null;
-//     unit_cost_8: number | null;
-//     unit_cost_9: number | null;
-//     unit_cost_10: number | null;
-//     unit_of_measure_id: string;
-//   }[];
-// }
 export interface SupplierQuoteSaving {
   id?: string;
   supplier_quote_id?: string;
   saving_id: string;
-  price_break_id?: string | null; // Reference to specific price break for inventory items
+  price_break_id?: string | null;
   unit_cost?: number | null;
   unit_cost_1?: number | null;
   unit_cost_2?: number | null;
@@ -122,7 +95,11 @@ export interface SupplierQuote {
   valid_to: string | null;
   terms: string | null;
   remarks: string | null;
-  production_schedule?: Record<string, string | null> | null;
+  production_schedule?: Array<{
+    stepId: string;
+    plannedDate: string;
+    notes?: string;
+  }> | Record<string, string | null> | null;
 
   approved_at?: string | null;
   approved_by?: string | null;

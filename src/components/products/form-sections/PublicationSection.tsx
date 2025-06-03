@@ -1,150 +1,220 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
 import { format } from "date-fns";
-import { ProductFormValues, productFormOptions } from "@/schemas/productSchema";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PublicationSectionProps {
-  form: UseFormReturn<ProductFormValues>;
+  form: any;
   readOnly?: boolean;
 }
 
+const CURRENCY_OPTIONS = [
+  { value: "USD", label: "USD - US Dollar" },
+  { value: "EUR", label: "EUR - Euro" },
+  { value: "GBP", label: "GBP - British Pound" },
+  { value: "CAD", label: "CAD - Canadian Dollar" },
+  { value: "AUD", label: "AUD - Australian Dollar" },
+  { value: "JPY", label: "JPY - Japanese Yen" },
+  { value: "CHF", label: "CHF - Swiss Franc" },
+  { value: "CNY", label: "CNY - Chinese Yuan" },
+  { value: "SEK", label: "SEK - Swedish Krona" },
+  { value: "NOK", label: "NOK - Norwegian Krone" },
+  { value: "DKK", label: "DKK - Danish Krone" },
+  { value: "PLN", label: "PLN - Polish Zloty" },
+  { value: "CZK", label: "CZK - Czech Koruna" },
+  { value: "HUF", label: "HUF - Hungarian Forint" },
+  { value: "RUB", label: "RUB - Russian Ruble" },
+  { value: "BRL", label: "BRL - Brazilian Real" },
+  { value: "MXN", label: "MXN - Mexican Peso" },
+  { value: "SGD", label: "SGD - Singapore Dollar" },
+  { value: "HKD", label: "HKD - Hong Kong Dollar" },
+  { value: "INR", label: "INR - Indian Rupee" },
+  { value: "KRW", label: "KRW - South Korean Won" },
+  { value: "TRY", label: "TRY - Turkish Lira" },
+  { value: "ZAR", label: "ZAR - South African Rand" },
+  { value: "NZD", label: "NZD - New Zealand Dollar" },
+];
+
 export function PublicationSection({ form, readOnly = false }: PublicationSectionProps) {
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const publicationDate = form.watch('publication_date');
-
   return (
-    <div className="space-y-2">
-      <h3 className="text-lg font-medium">Publication and Pricing</h3>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <FormField
-          control={form.control}
-          name="publication_date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Publication Date</FormLabel>
-              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={`w-full h-10 justify-start text-left font-normal ${
-                        !field.value ? "text-muted-foreground" : ""
-                      } ${readOnly ? "text-black opacity-100 bg-gray-100 hover:bg-gray-100" : ""}`}
-                      onClick={() => !readOnly && setIsCalendarOpen(true)}
-                      disabled={readOnly}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {field.value ? format(field.value, "PPP") : "Pick a date"}
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 z-50" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value || undefined}
-                    onSelect={(date) => {
-                      field.onChange(date);
-                      if (date) {
-                        setIsCalendarOpen(false);
+    <Card>
+      <CardHeader>
+        <CardTitle>Publication Information</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="publication_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Publication Date</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                        disabled={readOnly}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
                       }
-                    }}
-                    defaultMonth={field.value || undefined}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="page_count"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Pages</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  placeholder="Number of pages" 
-                  disabled={readOnly}
-                  {...field}
-                  value={field.value === null ? '' : field.value}
-                  onChange={(e) => {
-                    const value = e.target.value ? parseInt(e.target.value, 10) : null;
-                    field.onChange(value);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="list_price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>List Price</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  step="0.01" 
-                  placeholder="0.00" 
-                  disabled={readOnly}
-                  {...field}
-                  value={field.value === null ? '' : field.value}
-                  onChange={(e) => {
-                    const value = e.target.value ? parseFloat(e.target.value) : null;
-                    field.onChange(value);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="currency_code"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Currency</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
-                disabled={readOnly}
-              >
+          <FormField
+            control={form.control}
+            name="publisher_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Publisher Name</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select currency" />
-                  </SelectTrigger>
+                  <Input {...field} value={field.value || ""} disabled={readOnly} />
                 </FormControl>
-                <SelectContent>
-                  {productFormOptions.currencyCodes.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="list_price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>List Price</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    step="0.01"
+                    {...field} 
+                    value={field.value || ""} 
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                    disabled={readOnly}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="currency_code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Currency</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {CURRENCY_OPTIONS.map((currency) => (
+                      <SelectItem key={currency.value} value={currency.value}>
+                        {currency.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="page_count"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Page Count</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    {...field} 
+                    value={field.value || ""} 
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                    disabled={readOnly}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="synopsis"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Synopsis</FormLabel>
+              <FormControl>
+                <Textarea 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={readOnly}
+                  placeholder="Brief description of the book content..."
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-      </div>
-    </div>
+
+        <FormField
+          control={form.control}
+          name="selling_points"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Selling Points</FormLabel>
+              <FormControl>
+                <Textarea 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={readOnly}
+                  placeholder="Key selling points and marketing highlights..."
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </CardContent>
+    </Card>
   );
 }

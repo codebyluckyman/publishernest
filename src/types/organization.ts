@@ -17,7 +17,10 @@ export type Organization = {
     description?: string;
     unit_of_measure_id?: string;
   }[];
+  userMemberType?: string; // To store the user's member type for this organization
 };
+
+export type MemberType = "publisher" | "customer" | "supplier";
 
 export type OrganizationMember = {
   id: string;
@@ -25,6 +28,7 @@ export type OrganizationMember = {
   auth_user_id: string;
   role: "owner" | "admin" | "member";
   created_at: string;
+  member_type?: MemberType; // Added member_type field to specify the type of member the user is relating to the associated organization
 };
 
 export type OrganizationProductionStep = {
@@ -46,7 +50,7 @@ export type OrganizationContextType = {
   createOrganization: (name: string, type: "publisher" | "printer" | "customer") => Promise<Organization | null>;
   switchOrganization: (organizationId: string) => Promise<void>;
   getOrganizationMembers: (organizationId: string) => Promise<OrganizationMember[]>;
-  inviteMember: (organizationId: string, email: string, role: "admin" | "member") => Promise<void>;
+  inviteMember: (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => Promise<void>;
   updateMemberRole: (memberId: string, role: "admin" | "member") => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
   updateOrganizationSetting: (setting: string, value: any) => Promise<void>;

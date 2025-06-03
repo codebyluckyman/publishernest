@@ -1,165 +1,3 @@
-// import { Organization } from "@/types/organization";
-// import { supabase } from "@/integrations/supabase/client";
-// import { SupplierQuote, SupplierQuoteStatus, SupplierQuoteFormat } from "@/types/supplierQuote";
-
-// interface FetchQuotesParams {
-//   currentOrganization: Organization | null;
-//   status?: string;
-//   supplierId?: string;
-//   quoteRequestId?: string;
-//   searchQuery?: string;
-//   productId?: string;
-//   formatId?: string;
-//   supplier?: string;
-//   selectedFormat?: string;
-// }
-
-// export async function fetchSupplierQuotes(params: FetchQuotesParams): Promise<SupplierQuote[]> {
-//   const { currentOrganization, status, supplierId, quoteRequestId, searchQuery, productId, formatId, supplier, selectedFormat } = params;
-
-//   if (!currentOrganization) {
-//     return [];
-//   }
-
-//   // let query = supabase
-//   //   .from("supplier_quotes")
-//   //   .select(
-//   //     `
-//   //     *,
-//   //     quote_request:quote_requests(
-//   //       id,
-//   //       title,
-//   //       description,
-//   //       due_date,
-//   //       formats:quote_request_formats(
-//   //         id,
-//   //         format_id,
-//   //         format:formats(id, format_name),
-//   //         products:quote_request_format_products(
-//   //           id,
-//   //           product_id,
-//   //           quantity,
-//   //           notes
-//   //         )
-//   //       )
-//   //     ),
-//   //     supplier:suppliers(id, supplier_name),
-//   //     formats:supplier_quote_formats(*, format:formats(id, format_name)),
-//   //     price_breaks:supplier_quote_price_breaks(*)
-//   //   `
-//   //   )
-//   //   .eq("organization_id", currentOrganization.id);
-
-//   let query = supabase.from("quote_management_view").select("*").eq("organization_id", currentOrganization.id);
-
-//   // Apply status filter if provided
-//   if (status) {
-//     const statuses = status.split(",");
-//     if (statuses.length > 0) {
-//       query = query.in("status", statuses);
-//     }
-//   }
-
-//   // Apply supplier filter if provided
-//   if (supplierId) {
-//     query = query.eq("supplier_id", supplierId);
-//   }
-
-//   // Apply quote request filter if provided
-//   if (quoteRequestId) {
-//     query = query.eq("quote_request_id", quoteRequestId);
-//   }
-
-//   if (productId || formatId) {
-//     // Handle product and format filtering based on relationships
-//     // We need to find quote request formats that match our criteria
-//     let formatsQuery = supabase.from("quote_request_formats").select(`
-//         id,
-//         products:quote_request_format_products(
-//           product_id
-//         )
-//       `);
-
-//     if (formatId) {
-//       // Direct format match
-//       formatsQuery = formatsQuery.eq("format_id", formatId);
-//     }
-
-//     if (productId) {
-//       // Find formats with this product linked - use proper join
-//       formatsQuery = formatsQuery.eq("products.product_id", productId);
-//     }
-
-//     const { data: matchingFormats, error: formatsError } = await formatsQuery;
-
-//     if (formatsError) {
-//       console.error("Error finding matching formats:", formatsError);
-//       throw formatsError;
-//     }
-
-//     if (matchingFormats && matchingFormats.length > 0) {
-//       // Get the format IDs to filter by
-//       const formatIds = matchingFormats.map((f) => f.id);
-
-//       // Filter supplier quotes where price breaks have one of these format IDs
-//       query = query.in("price_breaks.quote_request_format_id", formatIds);
-//     } else {
-//       // No matching formats found, return empty result
-//       return [];
-//     }
-//   } else if (searchQuery && searchQuery.trim() !== "") {
-//     // Apply general search if no specific productId/formatId filters
-//     const searchTerm = searchQuery.trim().toLowerCase();
-//     // query = query.or(`
-//     //   reference_id.ilike.%${searchTerm}%,
-//     //   supplier.supplier_name.ilike.%${searchTerm}%,
-//     //   quote_request.title.ilike.%${searchTerm}%
-//     // `);
-//     query = query.or(`title.ilike.%${searchTerm}%`);
-//   }
-
-//   if (selectedFormat && selectedFormat.trim() !== "") {
-//     query = query.or(`quote_request.formats.format_id.ilike.%${supplier}%`);
-//   }
-
-//   if (supplier && supplier.trim() !== "") {
-//     query = query.or(`supplier_name.ilike.%${supplier}%`);
-//   }
-
-//   // Order by created_at in descending order
-//   query = query.order("created_at", { ascending: false });
-
-//   const { data, error } = await query;
-
-//   if (error) {
-//     console.error("Error fetching supplier quotes:", error);
-//     throw error;
-//   }
-
-//   // Transform the data to match the SupplierQuote type
-//   const formattedQuotes = data?.map((quote) => {
-//     // Format the formats array to ensure it has format_name
-//     const formattedFormats: SupplierQuoteFormat[] =
-//       quote.formats && Array.isArray(quote.formats)
-//         ? quote.formats.map((format: any) => ({
-//             id: format.id,
-//             supplier_quote_id: format.supplier_quote_id,
-//             format_id: format.format_id,
-//             quote_request_format_id: format.quote_request_format_id,
-//             format_name: format.format?.format_name || "Unknown Format",
-//           }))
-//         : [];
-
-//     // Return a properly typed SupplierQuote
-//     return {
-//       ...quote,
-//       formats: formattedFormats,
-//     } as SupplierQuote;
-//   }) || [];
-
-//   return formattedQuotes;
-// }
-
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -239,28 +77,87 @@ export async function fetchSupplierQuotes(
     filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
   }
   if (quoteRequestId) {
-    filteredData = filteredData.filter(
-      (q) => q.quote_request_id === quoteRequestId
-    );
+    // Check if quote_request is an object and has an id property
+    filteredData = filteredData.filter((q) => {
+      if (typeof q.quote_request === 'object' && q.quote_request !== null) {
+        return (q.quote_request as any).id === quoteRequestId;
+      }
+      return false;
+    });
   }
 
-  // Transform the data to match the SupplierQuote type
+  // Map the data from the view to match the SupplierQuote type
+  const formattedQuotes: SupplierQuote[] = filteredData.map((item: any) => {
+    // Safely handle quote_request which might be JSON or object
+    let quoteRequestId = null;
+    if (typeof item.quote_request === 'object' && item.quote_request !== null) {
+      quoteRequestId = (item.quote_request as any).id;
+    } else if (typeof item.quote_request === 'string') {
+      try {
+        const parsed = JSON.parse(item.quote_request);
+        quoteRequestId = parsed.id;
+      } catch {
+        // If parsing fails, keep as null
+      }
+    }
+
+    return {
+      id: item.id,
+      organization_id: item.organization_id,
+      quote_request_id: quoteRequestId,
+      supplier_id: item.supplier_id,
+      status: item.status as SupplierQuoteStatus,
+      total_cost: item.total_cost,
+      currency: item.currency,
+      notes: item.notes,
+      submitted_at: item.submitted_at,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      reference_id: item.reference_id,
+      reference: item.reference,
+      supplier_name: item.supplier_name,
+      title: item.title,
+      valid_from: item.valid_from,
+      valid_to: item.valid_to,
+      terms: item.terms,
+      remarks: item.remarks,
+      production_schedule: item.production_schedule,
+      approved_at: item.approved_at,
+      approved_by: item.approved_by,
+      rejected_at: item.rejected_at,
+      rejected_by: item.rejected_by,
+      rejection_reason: item.rejection_reason,
+      packaging_carton_quantity: item.packaging_carton_quantity,
+      packaging_carton_weight: item.packaging_carton_weight,
+      packaging_carton_length: item.packaging_carton_length,
+      packaging_carton_width: item.packaging_carton_width,
+      packaging_carton_height: item.packaging_carton_height,
+      packaging_carton_volume: item.packaging_carton_volume,
+      packaging_cartons_per_pallet: item.packaging_cartons_per_pallet,
+      packaging_copies_per_20ft_palletized: item.packaging_copies_per_20ft_palletized,
+      packaging_copies_per_40ft_palletized: item.packaging_copies_per_40ft_palletized,
+      packaging_copies_per_20ft_unpalletized: item.packaging_copies_per_20ft_unpalletized,
+      packaging_copies_per_40ft_unpalletized: item.packaging_copies_per_40ft_unpalletized,
+      // Include quote_request and supplier with proper typing
+      quote_request: item.quote_request,
+      supplier: item.supplier || { supplier_name: item.supplier_name },
+      // Handle formats and other arrays if needed
+      formats: item.formats ? formatSupplierQuoteFormats(item.formats) : []
+    };
+  });
+
+  return formattedQuotes;
+}
+
+// Helper function to format supplier quote formats
+function formatSupplierQuoteFormats(formats: any[]): SupplierQuoteFormat[] {
+  if (!Array.isArray(formats)) return [];
   
-  // const formattedQuotes = filteredData.map((quote) => {
-  //   const formattedFormats: SupplierQuoteFormat[] =
-  //     quote.formats?.map((format: any) => ({
-  //       id: format.id,
-  //       supplier_quote_id: format.supplier_quote_id,
-  //       format_id: format.format_id,
-  //       quote_request_format_id: format.quote_request_format_id,
-  //       format_name: format.format?.format_name || "Unknown Format",
-  //     })) || [];
-
-  //   return {
-  //     ...quote,
-  //     formats: formattedFormats,
-  //   } as SupplierQuote;
-  // });
-
-  return filteredData;
+  return formats.map(format => ({
+    id: format.id,
+    supplier_quote_id: format.supplier_quote_id,
+    format_id: format.format_id,
+    quote_request_format_id: format.quote_request_format_id,
+    format_name: format.format?.format_name || "Unknown Format",
+  }));
 }

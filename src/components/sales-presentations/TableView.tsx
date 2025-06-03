@@ -178,6 +178,15 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
     }
   };
 
+  // Function to format column display names
+  const getColumnDisplayName = (column: string) => {
+    if (column === 'isbn13') return 'ISBN-13';
+    if (column === 'isbn10') return 'ISBN-10';
+    
+    // Default formatting for other columns
+    return column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ');
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -186,7 +195,7 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
           <TableHead>Title</TableHead>
           {cardColumns.map((column) => (
             <TableHead key={column}>
-              {column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ')}
+              {getColumnDisplayName(column)}
             </TableHead>
           ))}
         </TableRow>

@@ -1,105 +1,98 @@
 
 import { useState } from "react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu";
+import { SupplierQuote } from "@/types/supplierQuote";
 import { Button } from "@/components/ui/button";
-import { 
-  MoreHorizontal, 
-  Eye, 
-  Send, 
-  Edit, 
-  Trash, 
-  FileText 
-} from "lucide-react";
-import { SupplierQuote, SupplierQuoteStatus } from "@/types/supplierQuote";
+import { Eye, MoreHorizontal, Edit, Send, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface SupplierQuoteActionsProps {
   quote: SupplierQuote;
-  onView: (quote: SupplierQuote) => void;
-  onEdit: (quote: SupplierQuote) => void;
-  onSubmit: (quote: SupplierQuote) => void;
-  onDelete: (quote: SupplierQuote) => void;
+  onViewDetails: (quote: SupplierQuote) => void;
+  onEdit?: (quote: SupplierQuote) => void;
+  onSubmit?: (quote: SupplierQuote) => void;
+  onApprove?: (quote: SupplierQuote) => void;
+  onReject?: (quote: SupplierQuote) => void;
+  onDelete?: (quote: SupplierQuote) => void;
 }
 
 export function SupplierQuoteActions({
   quote,
-  onView,
+  onViewDetails,
   onEdit,
   onSubmit,
-  onDelete
+  onApprove,
+  onReject,
+  onDelete,
 }: SupplierQuoteActionsProps) {
-  const [open, setOpen] = useState(false);
-  
-  const handleView = () => {
-    setOpen(false);
-    onView(quote);
-  };
-  
-  const handleEdit = () => {
-    setOpen(false);
-    onEdit(quote);
-  };
-  
-  const handleSubmit = () => {
-    setOpen(false);
-    onSubmit(quote);
-  };
-  
-  const handleDelete = () => {
-    setOpen(false);
-    onDelete(quote);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleAction = (action: () => void) => {
+    setIsMenuOpen(false);
+    action();
   };
 
-  // Determine which actions should be available based on quote status
-  const canEdit = quote.status === "draft";
-  const canSubmit = quote.status === "draft";
-  const canDelete = quote.status === "draft";
-  
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <MoreHorizontal className="h-4 w-4" />
+        <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         
-        <DropdownMenuItem onClick={handleView}>
+        <DropdownMenuItem onClick={() => handleAction(() => onViewDetails(quote))}>
           <Eye className="mr-2 h-4 w-4" />
-          <span>View Details</span>
+          View Details
         </DropdownMenuItem>
         
-        {canEdit && (
-          <DropdownMenuItem onClick={handleEdit}>
+        {onEdit && quote.status === 'draft' && (
+          <DropdownMenuItem onClick={() => handleAction(() => onEdit(quote))}>
             <Edit className="mr-2 h-4 w-4" />
-            <span>Edit</span>
+            Edit
           </DropdownMenuItem>
         )}
         
-        {canSubmit && (
-          <DropdownMenuItem onClick={handleSubmit}>
+        <DropdownMenuSeparator />
+        
+        {onSubmit && quote.status === 'draft' && (
+          <DropdownMenuItem onClick={() => handleAction(() => onSubmit(quote))}>
             <Send className="mr-2 h-4 w-4" />
-            <span>Submit</span>
+            Submit
           </DropdownMenuItem>
         )}
         
-        {canDelete && (
+        {onApprove && quote.status === 'submitted' && (
+          <DropdownMenuItem onClick={() => handleAction(() => onApprove(quote))}>
+            <CheckCircle className="mr-2 h-4 w-4" />
+            Approve
+          </DropdownMenuItem>
+        )}
+        
+        {onReject && quote.status === 'submitted' && (
+          <DropdownMenuItem onClick={() => handleAction(() => onReject(quote))}>
+            <XCircle className="mr-2 h-4 w-4" />
+            Reject
+          </DropdownMenuItem>
+        )}
+        
+        {onDelete && quote.status === 'draft' && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
-              onClick={handleDelete}
-              className="text-red-600 focus:text-red-600"
+              onClick={() => handleAction(() => onDelete(quote))}
+              className="text-red-600"
             >
-              <Trash className="mr-2 h-4 w-4" />
-              <span>Delete</span>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
             </DropdownMenuItem>
           </>
         )}

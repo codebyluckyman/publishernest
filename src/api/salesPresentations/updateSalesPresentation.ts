@@ -35,9 +35,9 @@ export async function updateSalesPresentation({
       // Ensure displaySettings has the expected structure
       const updatedSettings = { ...displaySettings };
       
-      // Set default view if not provided
+      // Set default view if not provided - updated to table instead of card
       if (!updatedSettings.defaultView) {
-        updatedSettings.defaultView = 'card' as PresentationViewMode;
+        updatedSettings.defaultView = 'table' as PresentationViewMode;
       }
       
       console.log("Update Sales Presentation - Display settings before processing:", updatedSettings);
@@ -54,17 +54,17 @@ export async function updateSalesPresentation({
           kanbanGroupByField: 'publisher_name'
         };
       } else {
-        // Ensure required feature flags exist with defaults
+        // Start with feature defaults, THEN apply custom settings
+        // NOTE: Order changed here to prioritize user settings over defaults
         updatedSettings.features = {
-          enabledViews: updatedSettings.features.enabledViews !== undefined 
-            ? updatedSettings.features.enabledViews 
-            : ['card', 'table', 'carousel', 'kanban'],
-          allowViewToggle: updatedSettings.features.allowViewToggle !== false,
-          showProductDetails: updatedSettings.features.showProductDetails !== false,
-          showPricing: updatedSettings.features.showPricing !== false,
-          allowDownload: updatedSettings.features.allowDownload || false,
-          cardWidthType: updatedSettings.features.cardWidthType || 'responsive',
-          kanbanGroupByField: updatedSettings.features.kanbanGroupByField || 'publisher_name',
+          enabledViews: ['card', 'table', 'carousel', 'kanban'],
+          allowViewToggle: true,
+          showProductDetails: true,
+          showPricing: true,
+          allowDownload: false,
+          cardWidthType: 'responsive',
+          kanbanGroupByField: 'publisher_name',
+          // Apply user-provided features (will override defaults)
           ...updatedSettings.features
         };
         
@@ -94,6 +94,52 @@ export async function updateSalesPresentation({
             
             console.log("Update Sales Presentation - Grid layout after processing:", updatedSettings.features.cardGridLayout);
           }
+        }
+        
+        // Process carousel settings if provided
+        if (updatedSettings.features.carouselSettings) {
+          console.log("Update Sales Presentation - Carousel settings before processing:", updatedSettings.features.carouselSettings);
+          
+          const carouselSettings = updatedSettings.features.carouselSettings;
+          
+          // Apply default values for any missing carousel settings
+          updatedSettings.features.carouselSettings = {
+            // Default values
+            slidesPerView: { sm: 1, md: 2, lg: 3 },
+            autoplay: false,
+            autoplayDelay: 3000,
+            slideHeight: 192,
+            showIndicators: true,
+            cardLayout: 'standard',
+            // Override with user-provided values if available
+            ...carouselSettings,
+            
+            // Handle nested objects properly
+            layoutOptions: {
+              // Default layoutOptions
+              showCover: true,
+              showSynopsis: true,
+              showSpecsTable: true,
+              imageSide: 'left',
+              coverToDescriptionRatio: 0.4,
+              includeTableBorders: true,
+              alternateRowColors: false,
+              // Override with user-provided values
+              ...(carouselSettings.layoutOptions || {})
+            },
+            
+            sectionStyles: {
+              // Default sectionStyles
+              useBorders: true,
+              borderColor: 'gray',
+              headerBackground: 'bg-gray-50',
+              sectionPadding: 4,
+              // Override with user-provided values
+              ...(carouselSettings.sectionStyles || {})
+            }
+          };
+          
+          console.log("Update Sales Presentation - Carousel settings after processing:", updatedSettings.features.carouselSettings);
         }
       }
       

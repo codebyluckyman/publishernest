@@ -16,7 +16,7 @@ export function TableView({ products, onProductClick }: TableViewProps) {
           <TableRow>
             <TableHead className="w-[80px]">Cover</TableHead>
             <TableHead>Title</TableHead>
-            <TableHead>ISBN</TableHead>
+            <TableHead>ISBN-13</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
