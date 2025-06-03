@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { Eye, Pencil, Copy, MoreHorizontal } from "lucide-react";
+import { Eye, Pencil, Copy, MoreHorizontal, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Format } from "./types/FormatTypes";
 import { FormatCopyDialog } from "./FormatCopyDialog";
 import { CreateQuoteRequestFromFormat } from "../quotes/CreateQuoteRequestFromFormat";
+import { useNavigate } from "react-router-dom";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -22,9 +23,15 @@ interface FormatActionMenuProps {
 
 export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatCopied }: FormatActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
+  };
+
+  const handleCompareQuotes = () => {
+    setIsOpen(false);
+    navigate(`/quotes/compare?formatId=${format.id}`);
   };
 
   return (
@@ -51,6 +58,11 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
           }}>
             <Pencil className="mr-2 h-4 w-4" />
             <span>Edit Format</span>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem onClick={handleCompareQuotes}>
+            <BarChart2 className="mr-2 h-4 w-4" />
+            <span>Compare Quotes</span>
           </DropdownMenuItem>
           
           <DropdownMenuItem
@@ -81,9 +93,6 @@ export function FormatActionMenu({ format, onViewFormat, onEditFormat, onFormatC
               buttonText="Create Quote Request"
               buttonIcon={true}
               className="flex items-center w-full"
-              // We need to close the dropdown menu first, then show the dialog
-              // but don't call onSuccess in the CreateQuoteRequestFromFormat component
-              // until the quote request is actually created
               onSuccess={() => setIsOpen(false)}
             />
           </DropdownMenuItem>

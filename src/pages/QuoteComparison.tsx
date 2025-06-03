@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useOrganization } from "@/context/OrganizationContext";
 import { useSupplierQuotes } from "@/hooks/useSupplierQuotes";
+import { useFormats } from "@/hooks/useFormats";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -16,20 +17,29 @@ export default function QuoteComparison() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const quoteRequestId = searchParams.get('quoteRequestId');
+  const formatId = searchParams.get('formatId');
   const { currentOrganization } = useOrganization();
   const { useSupplierQuotesComparison, useApproveSupplierQuote } = useSupplierQuotes();
+  const { useFormatById } = useFormats();
   const approveMutation = useApproveSupplierQuote();
   
   const [quoteRequestTitle, setQuoteRequestTitle] = useState<string | undefined>();
+  const [formatName, setFormatName] = useState<string | undefined>();
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
   const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
   
-  // Use the new comparison API which includes price breaks
+  // Get format details if comparing by format
+  const { data: format } = useFormatById(formatId || "");
+  
+  // Use the comparison API with appropriate filters
   const { data: quotes = [], isLoading } = useSupplierQuotesComparison(
     currentOrganization,
     undefined, // All statuses
     undefined, // All suppliers
-    quoteRequestId || undefined
+    quoteRequestId || undefined,
+    undefined, // No search query
+    undefined, // No product filter
+    formatId || undefined // Format filter
   );
   
   // Extract the quote request title if quotes are available
@@ -38,6 +48,13 @@ export default function QuoteComparison() {
       setQuoteRequestTitle(quotes[0].quote_request.title);
     }
   }, [quotes]);
+
+  // Set format name when format data is available
+  useEffect(() => {
+    if (format) {
+      setFormatName(format.format_name);
+    }
+  }, [format]);
   
   const handleSelectQuote = (quote: SupplierQuote) => {
     if (quote.status !== 'submitted') {
@@ -60,16 +77,41 @@ export default function QuoteComparison() {
     setSelectedQuote(quote);
     setDetailsSheetOpen(true);
   };
+
+  const handleBackNavigation = () => {
+    if (formatId) {
+      navigate('/formats');
+    } else {
+      navigate('/quotes');
+    }
+  };
+
+  const getPageTitle = () => {
+    if (formatId && formatName) {
+      return `Quote Comparison: ${formatName}`;
+    } else if (quoteRequestId && quoteRequestTitle) {
+      return `Quote Comparison: ${quoteRequestTitle}`;
+    }
+    return "Quote Comparison";
+  };
+
+  const getPageDescription = () => {
+    if (formatId) {
+      return "Compare quotes from different suppliers for this format";
+    }
+    return "Compare quotes from different suppliers for this quote request";
+  };
   
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-primary mb-2">Quote Comparison</h1>
-          <p className="text-gray-600">Compare quotes from different suppliers</p>
+          <h1 className="text-3xl font-bold text-primary mb-2">{getPageTitle()}</h1>
+          <p className="text-gray-600">{getPageDescription()}</p>
         </div>
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Quotes
+        <Button variant="outline" onClick={handleBackNavigation}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> 
+          {formatId ? 'Back to Formats' : 'Back to Quotes'}
         </Button>
       </div>
       
@@ -90,12 +132,15 @@ export default function QuoteComparison() {
           <CardHeader>
             <CardTitle>No Quotes Found</CardTitle>
             <CardDescription>
-              There are no quotes available for comparison for this quote request.
+              {formatId 
+                ? "There are no quotes available for this format." 
+                : "There are no quotes available for comparison for this quote request."
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate(-1)}>
-              Return to Quotes
+            <Button onClick={handleBackNavigation}>
+              {formatId ? 'Return to Formats' : 'Return to Quotes'}
             </Button>
           </CardContent>
         </Card>
@@ -103,7 +148,7 @@ export default function QuoteComparison() {
         <>
           <QuoteComparisonView 
             quotes={quotes} 
-            quoteRequestTitle={quoteRequestTitle}
+            quoteRequestTitle={formatId ? formatName : quoteRequestTitle}
             onSelectQuote={handleSelectQuote}
           />
           
