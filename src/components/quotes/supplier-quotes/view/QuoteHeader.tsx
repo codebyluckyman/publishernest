@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, ExternalLink } from "lucide-react";
+import { Edit, ExternalLink, History } from "lucide-react";
 import { format } from "date-fns";
 import { QuoteDetailsSheet } from "@/components/quotes/table/QuoteDetailsSheet";
 import { formatCurrency } from "@/utils/formatters";
@@ -11,9 +11,10 @@ import { formatCurrency } from "@/utils/formatters";
 interface QuoteHeaderProps {
   quote: SupplierQuote;
   onEdit?: () => void;
+  onShowHistory?: () => void;
 }
 
-export function QuoteHeader({ quote, onEdit }: QuoteHeaderProps) {
+export function QuoteHeader({ quote, onEdit, onShowHistory }: QuoteHeaderProps) {
   const [showQuoteRequestDetails, setShowQuoteRequestDetails] = useState(false);
 
   const getStatusBadge = (status: string) => {
@@ -91,6 +92,17 @@ export function QuoteHeader({ quote, onEdit }: QuoteHeaderProps) {
           
           <div className="flex items-center gap-2">
             {getStatusBadge(quote.status)}
+            {onShowHistory && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onShowHistory}
+                className="flex items-center gap-2"
+              >
+                <History className="h-4 w-4" />
+                View History
+              </Button>
+            )}
             {onEdit && (
               <Button variant="outline" size="sm" onClick={onEdit}>
                 <Edit className="h-4 w-4 mr-2" />
