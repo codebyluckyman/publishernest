@@ -63,7 +63,7 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
                 className="w-full h-10 min-h-10 resize-none"
               />
             </div>
-            <div className="col-span-3">
+            <div className="col-span-4">
               <UnitOfMeasureSelect
                 value={watch(`extra_costs.${index}.unit_of_measure_id`) || ''}
                 onChange={(value) => {
@@ -74,7 +74,7 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
                 className="w-full"
               />
             </div>
-            <div className="col-span-2 flex justify-end">
+            <div className="col-span-1 flex justify-end">
               <Button
                 type="button"
                 variant="ghost"
