@@ -38,14 +38,17 @@ export async function fetchSharedPresentation(accessCode: string) {
           : defaultDialogColumns)
   };
 
-
     // Update the display_settings with the processed version
     presentation.display_settings = processedDisplaySettings;
     
     // Call the function to increment the access count
-    await supabaseCustom.rpc('increment_presentation_share_access', {
-      code: accessCode
-    }).catch(err => console.error('Failed to increment access count:', err));
+    try {
+      await supabaseCustom.rpc('increment_presentation_share_access', {
+        code: accessCode
+      });
+    } catch (err) {
+      console.error('Failed to increment access count:', err);
+    }
     
     return { data: presentation, error: null };
   } catch (error) {
