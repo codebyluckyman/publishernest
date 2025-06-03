@@ -38,6 +38,7 @@ interface Product {
   format?: {
     id: string;
     format_name: string | null;
+    extent: string | null;
   } | null;
 }
 
