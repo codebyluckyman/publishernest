@@ -31,6 +31,19 @@ interface PriceBreakComparisonData {
   };
 }
 
+// Helper function to get the correct unit cost based on number of products
+const getUnitCostForProducts = (priceBreak: SupplierQuotePriceBreak, numProducts: number): number | null => {
+  const columnName = `unit_cost_${numProducts}` as keyof SupplierQuotePriceBreak;
+  const unitCost = priceBreak[columnName] as number | null;
+  
+  // Fallback to unit_cost if the specific column is null/undefined
+  if (unitCost === null || unitCost === undefined) {
+    return priceBreak.unit_cost || null;
+  }
+  
+  return unitCost;
+};
+
 export function PriceBreakComparisonTable({
   quotes,
   includeExpiredQuotes,
@@ -91,8 +104,11 @@ export function PriceBreakComparisonTable({
           quantityData.productCombinations[numProducts] = {};
         }
 
+        // Use the helper function to get the correct unit cost
+        const unitCost = getUnitCostForProducts(priceBreak, numProducts);
+
         quantityData.productCombinations[numProducts][quote.supplier_id] = {
-          unitCost: priceBreak.unit_cost,
+          unitCost,
           quote,
           priceBreak,
           isExpired,

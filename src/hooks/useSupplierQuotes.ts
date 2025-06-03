@@ -182,7 +182,7 @@ export function useSupplierQuotes() {
    */
   const useSubmitSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, totalCost }: { id: string; totalCost: number }) => {
+      mutationFn: ({ id }: { id: string; totalCost?: number }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }

@@ -42,13 +42,13 @@ export async function submitSupplierQuote(
 
     if (error) throw error;
 
-    // Record the audit trail
+    // Record the audit trail with correct number of parameters
     await recordSupplierQuoteAudit(
       id,
       userId,
       'quote_submitted',
       { status: currentQuote.status },
-      { status: 'submitted' },
+      { status: 'submitted' }
     );
 
     // Create organization notification about the quote submission
