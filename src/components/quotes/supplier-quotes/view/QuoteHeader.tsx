@@ -62,7 +62,7 @@ export function QuoteHeader({ quote, onEdit, onShowHistory }: QuoteHeaderProps) 
                   </div>
                 )}
                 <div className="text-sm text-muted-foreground">
-                  Currency: {quote.currency}
+                  {quote.currency}
                 </div>
               </div>
             </div>
