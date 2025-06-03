@@ -175,7 +175,7 @@ export function CostsAndSavingsTabsField() {
           </TabsList>
 
           <TabsContent value="extra-costs" className="space-y-4">
-            <ExtraCostsList control={control} extraCosts={extraCosts} />
+            <ExtraCostsList control={control} />
             <Button
               variant="outline"
               size="sm"
