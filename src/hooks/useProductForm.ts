@@ -50,7 +50,10 @@ export function useProductForm(productId: string | undefined, onSuccess: () => v
                     formatExtras = parsed;
                   }
                 } else if (Array.isArray(data.format_extras)) {
-                  formatExtras = data.format_extras;
+                    formatExtras = data.format_extras.filter((item: any) => 
+                      item && typeof item === 'object' && 'name' in item
+                ) as { name?: string; unit_of_measure_id?: string; description?: string; }[];
+                  }
                 }
               } catch (error) {
                 console.warn('Failed to parse format_extras:', error);
