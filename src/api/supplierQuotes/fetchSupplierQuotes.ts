@@ -121,7 +121,7 @@ export async function fetchSupplierQuotes(
               unit_cost_8: priceBreak.unit_cost_8,
               unit_cost_9: priceBreak.unit_cost_9,
               unit_cost_10: priceBreak.unit_cost_10,
-              num_products: priceBreak.num_products || 1,
+              num_products: priceBreak.num_products || 1
             });
           });
         }
