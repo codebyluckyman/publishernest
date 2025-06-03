@@ -1,9 +1,8 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Format } from "@/types/format";
 import { Organization } from "@/types/organization";
-import { createFormat, updateFormat, deleteFormat, fetchFormats } from "@/api/formats";
+import { createFormat, updateFormat, deleteFormat, fetchFormats, fetchFormatById } from "@/api/formats";
 import { useAuth } from "@/context/AuthContext";
 import { PageSize } from "./usePagination";
 
@@ -26,15 +25,10 @@ export function useFormats() {
     });
   };
 
-  const useFormatById = (formatId: string) => {
+  const useFormatById = (formatId: string | null) => {
     return useQuery({
       queryKey: ["format", formatId],
-      queryFn: async () => {
-        if (!formatId) return null;
-        // This would need to be implemented in the API
-        // For now, we'll return null as this is just for the format name
-        return null;
-      },
+      queryFn: () => fetchFormatById(formatId as string),
       enabled: !!formatId,
     });
   };
