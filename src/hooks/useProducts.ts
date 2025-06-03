@@ -14,10 +14,13 @@ export function useProducts() {
       
       const { data, error } = await supabaseCustom
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          format:format_id (*)
+        `)
         .eq('organization_id', currentOrganization.id)
         .order('title');
-        
+       
       if (error) throw error;
       
       // Cast the data to Product[] type

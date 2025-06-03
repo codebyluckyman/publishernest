@@ -203,6 +203,8 @@ const SalesPresentations = () => {
             onDelete={handleDelete}
             onShare={handleShare}
             users={users}
+            onView={handleView}
+            onEdit={handleEdit}
           />
         )
       ) : filteredPresentations.length > 0 ? (

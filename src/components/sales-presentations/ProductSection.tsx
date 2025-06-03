@@ -397,7 +397,7 @@ export function ProductSection({
       {products.length > 0 ? <div>
           {viewMode === 'card' && enabledViews.includes('card') && renderCardView()}
           
-          {viewMode === 'table' && enabledViews.includes('table') && <TableView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          {viewMode === 'table' && enabledViews.includes('table') && <TableView products={products as any} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
           
           {viewMode === 'carousel' && enabledViews.includes('carousel') && <CarouselView products={products as any} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
           

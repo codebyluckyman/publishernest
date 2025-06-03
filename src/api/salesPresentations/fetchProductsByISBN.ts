@@ -21,10 +21,13 @@ export async function fetchProductsByISBN(
   try {
     const { data, error } = await supabaseCustom
       .from('products')
-      .select('*')
+      .select(`
+        *,
+        format:format_id (*)
+      `)
       .eq('organization_id', organizationId)
       .in('isbn13', cleanIsbnList);
-    
+
     if (error) {
       console.error('Error fetching products by ISBN:', error);
       return [];

@@ -5,33 +5,6 @@ import { useOrganization } from './useOrganization';
 import { Product } from '@/types/product';
 import { Format } from '@/types/format';
 
-// Define a complete format interface for the component needs
-export interface FormatLight {
-  id: string;
-  format_name: string | null;
-  tps_height_mm: number | null;
-  tps_width_mm: number | null;
-  tps_depth_mm: number | null;
-  tps_plc_height_mm: number | null;
-  tps_plc_width_mm: number | null;
-  tps_plc_depth_mm: number | null;
-  extent: string | null;
-  binding_type: string | null;
-  cover_material: string | null;
-  internal_material: string | null;
-  cover_stock_print: string | null;
-  internal_stock_print: string | null;
-  orientation: string | null;
-  end_papers_material: string | null;
-  end_papers_print: string | null;
-  spacers_material: string | null;
-  spacers_stock_print: string | null;
-}
-
-export interface ProductWithFormat extends Product {
-  format?: FormatLight | null;
-}
-
 export function useProductsWithFormats() {
   const { currentOrganization } = useOrganization();
   
@@ -78,7 +51,7 @@ export function useProductsWithFormats() {
         default_currency: product.currency_code || 'USD',
       }));
       
-      return productsWithDefaults as unknown as ProductWithFormat[];
+      return productsWithDefaults as unknown as Product[];
     },
     enabled: !!currentOrganization,
   });
