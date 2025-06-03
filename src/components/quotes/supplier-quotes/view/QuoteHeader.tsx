@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Edit, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { QuoteDetailsSheet } from "@/components/quotes/table/QuoteDetailsSheet";
+import { formatCurrency } from "@/utils/formatters";
 
 interface QuoteHeaderProps {
   quote: SupplierQuote;
@@ -43,14 +44,51 @@ export function QuoteHeader({ quote, onEdit }: QuoteHeaderProps) {
     <>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">
-              {quote.reference_id || quote.reference || "Quote"}
-            </h2>
-            <p className="text-muted-foreground">
-              Supplier: {quote.supplier_name || "Unknown Supplier"}
-            </p>
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">
+                  {quote.reference_id || quote.reference || "Quote"}
+                </h2>
+                <p className="text-muted-foreground">
+                  Supplier: {quote.supplier_name || "Unknown Supplier"}
+                </p>
+              </div>
+              <div className="text-right space-y-1">
+                {quote.total_cost && (
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(quote.total_cost, quote.currency)}
+                  </div>
+                )}
+                <div className="text-sm text-muted-foreground">
+                  Currency: {quote.currency}
+                </div>
+              </div>
+            </div>
+            
+            {/* Quote Request Details */}
+            <div className="flex items-center gap-2 pt-2 border-t">
+              <span className="text-sm text-muted-foreground">Quote Request:</span>
+              {quote.quote_request?.title ? (
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-sm font-normal text-primary hover:text-primary/80"
+                  onClick={() => setShowQuoteRequestDetails(true)}
+                >
+                  {quote.quote_request.title}
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </Button>
+              ) : (
+                <span className="text-sm">No title</span>
+              )}
+              {quote.quote_request?.reference_id && (
+                <span className="text-sm text-muted-foreground">
+                  ({quote.quote_request.reference_id})
+                </span>
+              )}
+            </div>
           </div>
+          
           <div className="flex items-center gap-2">
             {getStatusBadge(quote.status)}
             {onEdit && (
@@ -85,9 +123,10 @@ export function QuoteHeader({ quote, onEdit }: QuoteHeaderProps) {
               SUBMISSION
             </h3>
             <div className="space-y-1">
-              <p className="text-sm">
-                <span className="font-medium">Status:</span> {quote.status}
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Status:</span>
+                {getStatusBadge(quote.status)}
+              </div>
               <p className="text-sm">
                 <span className="font-medium">Date:</span>{" "}
                 {formatDate(quote.submitted_at)}
@@ -119,24 +158,16 @@ export function QuoteHeader({ quote, onEdit }: QuoteHeaderProps) {
 
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-1">
-              QUOTE REQUEST
+              CREATION
             </h3>
             <div className="space-y-1">
-              {quote.quote_request?.title ? (
-                <Button
-                  variant="link"
-                  className="h-auto p-0 text-sm font-normal justify-start text-primary hover:text-primary/80"
-                  onClick={() => setShowQuoteRequestDetails(true)}
-                >
-                  {quote.quote_request.title}
-                  <ExternalLink className="h-3 w-3 ml-1" />
-                </Button>
-              ) : (
-                <p className="text-sm text-muted-foreground">No title</p>
-              )}
               <p className="text-sm">
-                <span className="font-medium">Ref:</span>{" "}
-                {quote.quote_request?.reference_id || "No reference"}
+                <span className="font-medium">Created:</span>{" "}
+                {formatDate(quote.created_at)}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Updated:</span>{" "}
+                {formatDate(quote.updated_at)}
               </p>
             </div>
           </div>
