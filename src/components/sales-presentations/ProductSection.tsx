@@ -149,23 +149,23 @@ export function ProductSection({
       case 'format_name':
         return product.format?.format_name || 'N/A';
       case 'binding_type':
-        return (product.format as any)?.binding_type || 'N/A';
+        return product.format?.binding_type || 'N/A';
       case 'cover_material':
-        return (product.format as any)?.cover_material || 'N/A';
+        return product.format?.cover_material || 'N/A';
       case 'cover_stock_print':
-        return (product.format as any)?.cover_stock_print || 'N/A';
+        return product.format?.cover_stock_print || 'N/A';
       case 'internal_material':
-        return (product.format as any)?.internal_material || 'N/A';
+        return product.format?.internal_material || 'N/A';
       case 'internal_stock_print':
-        return (product.format as any)?.internal_stock_print || 'N/A';
+        return product.format?.internal_stock_print || 'N/A';
       case 'orientation':
-        return (product.format as any)?.orientation || 'N/A';
+        return product.format?.orientation || 'N/A';
       case 'extent':
-        return (product.format as any)?.extent || 'N/A';
+        return product.format?.extent || 'N/A';
       case 'tps_dimensions':
-        return formatDimensions((product.format as any)?.tps_height_mm, (product.format as any)?.tps_width_mm, (product.format as any)?.tps_depth_mm);
+        return formatDimensions(product.format?.tps_height_mm, product.format?.tps_width_mm, product.format?.tps_depth_mm);
       case 'plc_dimensions':
-        return formatDimensions((product.format as any)?.tps_plc_height_mm, (product.format as any)?.tps_plc_width_mm, (product.format as any)?.tps_plc_depth_mm)
+        return formatDimensions(product.format?.tps_plc_height_mm, product.format?.tps_plc_width_mm, product.format?.tps_plc_depth_mm);
 
       // Physical properties - individual
       case 'height':
@@ -406,9 +406,9 @@ export function ProductSection({
           
           {viewMode === 'table' && enabledViews.includes('table') && <TableView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
           
-          {viewMode === 'carousel' && enabledViews.includes('carousel') && <CarouselView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          {viewMode === 'carousel' && enabledViews.includes('carousel') && <CarouselView products={products as any} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
           
-          {viewMode === 'kanban' && enabledViews.includes('kanban') && <KanbanView products={products} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
+          {viewMode === 'kanban' && enabledViews.includes('kanban') && <KanbanView products={products as any} displaySettings={displaySettings} onSelectProduct={handleProductSelection} />}
         </div> : <div className="text-center py-12 bg-muted/20 rounded-lg">
           <p className="text-muted-foreground">No products in this section</p>
         </div>}
