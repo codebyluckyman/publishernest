@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { DefaultExtraCost } from "@/types/extraCost";
 import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
-import { X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExtraCostsListProps {
@@ -78,12 +78,12 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => handleRemove(index, costName)}
-                className="h-10 w-10 p-0 text-muted-foreground hover:text-destructive"
+                className="h-10 w-10 text-destructive hover:text-destructive"
                 title={`Remove ${costName}`}
               >
-                <X className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
