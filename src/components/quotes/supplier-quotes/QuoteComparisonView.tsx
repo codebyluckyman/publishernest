@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import {
   ColumnDef,
@@ -30,6 +29,8 @@ import { StatusBadge } from "../table/StatusBadge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { SupplierQuoteDetailsSheet } from "./details/SupplierQuoteDetailsSheet";
+import { PriceBreakComparisonTable } from "./PriceBreakComparisonTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface QuoteComparisonViewProps {
   quotes: SupplierQuote[];
@@ -390,14 +391,34 @@ export function QuoteComparisonView({
                 </Card>
               </div>
               
-              <div className="rounded-md border">
-                <ComparisonTable 
-                  quotes={filteredQuotes} 
-                  columns={columns} 
-                  expanded={expanded}
-                  setExpanded={setExpanded}
-                />
-              </div>
+              <Tabs defaultValue="price-comparison" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="price-comparison">Price Break Comparison</TabsTrigger>
+                  <TabsTrigger value="quote-overview">Quote Overview</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="price-comparison" className="mt-4">
+                  <div className="rounded-md border">
+                    <PriceBreakComparisonTable 
+                      quotes={filteredQuotes}
+                      includeExpiredQuotes={includeExpiredQuotes}
+                      includeDraftQuotes={includeDraftQuotes}
+                      onSelectQuote={onSelectQuote}
+                    />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="quote-overview" className="mt-4">
+                  <div className="rounded-md border">
+                    <ComparisonTable 
+                      quotes={filteredQuotes} 
+                      columns={columns} 
+                      expanded={expanded}
+                      setExpanded={setExpanded}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           );
         })}
