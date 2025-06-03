@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useOrganization, OrganizationMember. MemberType } from "@/context/OrganizationContext";
+import { useOrganization, OrganizationMember, MemberType } from "@/context/OrganizationContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
