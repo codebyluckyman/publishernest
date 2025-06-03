@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useOrganization, OrganizationMember, MemberType } from "@/context/OrganizationContext";
+import { useOrganization, OrganizationMember, OrganizationMember } from "@/context/OrganizationContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -78,7 +78,7 @@ const Organizations = () => {
     switchOrganization(updatedOrg.id);
   };
 
-  const handleInviteMember = async (organizationId: string, email: string, role: "admin" | "member", memberType: MemberType) => {
+  const handleInviteMember = async (organizationId: string, email: string, role: "admin" | "member", OrganizationMember: MemberType) => {
     await inviteMember(organizationId, email, role, memberType);
     
     if (currentOrganization) {
