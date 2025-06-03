@@ -3816,7 +3816,6 @@ export type Database = {
           approved_by: string | null
           created_at: string | null
           currency: string | null
-          formats: Json | null
           id: string | null
           notes: string | null
           organization_id: string | null
@@ -4222,7 +4221,6 @@ export type Database = {
           approved_by: string | null
           created_at: string | null
           currency: string | null
-          formats: Json | null
           id: string | null
           notes: string | null
           organization_id: string | null

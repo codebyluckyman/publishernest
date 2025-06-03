@@ -175,8 +175,8 @@ export async function fetchSupplierQuotes(
       // Include quote_request and supplier with proper typing
       quote_request: item.quote_request,
       supplier: item.supplier || { supplier_name: item.supplier_name },
-      // Handle formats and other arrays if needed
-      formats: item.formats ? formatSupplierQuoteFormats(item.formats) : [],
+      // Get formats from the actual supplier quote formats table instead of the view
+      formats: [],
       // Include the extracted price breaks
       price_breaks: priceBreaks,
       // Initialize other required arrays
@@ -189,7 +189,7 @@ export async function fetchSupplierQuotes(
   return formattedQuotes;
 }
 
-// Helper function to format supplier quote formats
+// Helper function to format supplier quote formats (no longer used since formats removed from view)
 function formatSupplierQuoteFormats(formats: any[]): SupplierQuoteFormat[] {
   if (!Array.isArray(formats)) return [];
   

@@ -8,18 +8,20 @@ RETURNS SETOF quote_management_view AS $$
 BEGIN
   RETURN QUERY
   SELECT *
-  FROM quote_management_view
+  FROM quote_management_view qmv
   WHERE
     -- Title search (case-insensitive, partial match)
-    (search_title IS NULL OR title ILIKE '%' || search_title || '%')
+    (search_title IS NULL OR qmv.title ILIKE '%' || search_title || '%')
     -- Supplier_name filter (exact match, case-insensitive)
-    AND (filter_supplier_name IS NULL OR supplier_name ILIKE filter_supplier_name)
-    -- format_id in formats array
+    AND (filter_supplier_name IS NULL OR qmv.supplier_name ILIKE filter_supplier_name)
+    -- Format filtering: Check if supplier quote has price breaks for the specified format
     AND (
       filter_format_id IS NULL OR EXISTS (
         SELECT 1
-        FROM json_array_elements(formats) AS elem
-        WHERE (elem->'format'->>'id') = filter_format_id
+        FROM supplier_quote_price_breaks sqpb
+        JOIN quote_request_formats qrf ON qrf.id = sqpb.quote_request_format_id
+        WHERE sqpb.supplier_quote_id = qmv.id
+        AND qrf.format_id = filter_format_id::uuid
       )
     );
 END;
