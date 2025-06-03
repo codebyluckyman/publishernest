@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,7 @@ export function CostsAndSavingsTabsField() {
   const [activeTab, setActiveTab] = useState("extra-costs");
   const [isExtraCostLibraryOpen, setIsExtraCostLibraryOpen] = useState(false);
   const [isSavingLibraryOpen, setIsSavingLibraryOpen] = useState(false);
+  const [forceRenderKey, setForceRenderKey] = useState(0);
 
   // Set up the field arrays
   const extraCostsFieldArray = useFieldArray({
@@ -38,6 +40,11 @@ export function CostsAndSavingsTabsField() {
   // Force re-render when fields change
   const extraCosts = watch("extra_costs");
   const savings = watch("savings");
+
+  // Debug logging
+  console.log("CostsAndSavingsTabsField render - extraCosts:", extraCosts);
+  console.log("CostsAndSavingsTabsField render - extraCostsFieldArray.fields:", extraCostsFieldArray.fields);
+  console.log("CostsAndSavingsTabsField render - forceRenderKey:", forceRenderKey);
 
   // Add default extra costs from organization settings if available
   useEffect(() => {
@@ -117,8 +124,14 @@ export function CostsAndSavingsTabsField() {
       unit_of_measure_id: cost.unit_of_measure_id || "",
     });
 
+    // Force re-render to ensure the list updates
+    setForceRenderKey(prev => prev + 1);
+
     // Ensure we're on the extra costs tab
     setActiveTab("extra-costs");
+
+    console.log("Added extra cost from library:", cost);
+    console.log("Updated extra costs:", getValues("extra_costs"));
 
     toast.success(`"${cost.name}" added to extra costs`);
   };
@@ -131,6 +144,9 @@ export function CostsAndSavingsTabsField() {
       description: saving.description || "",
       unit_of_measure_id: saving.unit_of_measure_id || "",
     });
+
+    // Force re-render to ensure the list updates
+    setForceRenderKey(prev => prev + 1);
 
     // Ensure we're on the savings tab
     setActiveTab("savings");
@@ -148,6 +164,9 @@ export function CostsAndSavingsTabsField() {
       description: "",
       unit_of_measure_id: "",
     });
+
+    // Force re-render to ensure the list updates
+    setForceRenderKey(prev => prev + 1);
 
     // Log the updated state
     setTimeout(() => {
@@ -175,7 +194,10 @@ export function CostsAndSavingsTabsField() {
           </TabsList>
 
           <TabsContent value="extra-costs" className="space-y-4">
-            <ExtraCostsList control={control} />
+            <ExtraCostsList 
+              control={control} 
+              key={`extra-costs-${extraCostsFieldArray.fields.length}-${forceRenderKey}`}
+            />
             <Button
               variant="outline"
               size="sm"
@@ -195,7 +217,11 @@ export function CostsAndSavingsTabsField() {
           </TabsContent>
 
           <TabsContent value="savings" className="space-y-4">
-            <SavingsList control={control} savings={savings} />
+            <SavingsList 
+              control={control} 
+              savings={savings} 
+              key={`savings-${savingsFieldArray.fields.length}-${forceRenderKey}`}
+            />
 
             <div className="flex space-x-2">
               <Button

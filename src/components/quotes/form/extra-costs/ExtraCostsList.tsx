@@ -7,6 +7,7 @@ import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface ExtraCostsListProps {
   control: Control<QuoteRequestFormValues>;
@@ -19,17 +20,33 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
     name: "extra_costs"
   });
   
+  // Watch for changes to trigger re-renders
+  const extraCosts = watch("extra_costs");
+  
   // For debugging - log fields array when it changes
   console.log("ExtraCostsList rendering with fields:", fields);
-  console.log("Current form value for extra_costs:", watch("extra_costs"));
+  console.log("ExtraCostsList - Current form value for extra_costs:", extraCosts);
+  console.log("ExtraCostsList - Fields length:", fields.length);
+
+  // Add effect to monitor field array changes
+  useEffect(() => {
+    console.log("ExtraCostsList - useEffect triggered, fields changed:", fields);
+  }, [fields]);
+
+  // Add effect to monitor form state changes
+  useEffect(() => {
+    console.log("ExtraCostsList - useEffect triggered, extraCosts changed:", extraCosts);
+  }, [extraCosts]);
 
   const handleRemove = (index: number, costName: string) => {
+    console.log(`Removing extra cost at index ${index}: ${costName}`);
     remove(index);
     toast.success(`"${costName}" removed from extra costs`);
   };
 
   // If there are no fields to display, show a placeholder message
   if (fields.length === 0) {
+    console.log("ExtraCostsList - No fields to display");
     return (
       <div className="text-center p-4 border border-dashed rounded-md">
         <p className="text-muted-foreground text-sm">
@@ -38,6 +55,8 @@ export function ExtraCostsList({ control }: ExtraCostsListProps) {
       </div>
     );
   }
+
+  console.log("ExtraCostsList - Rendering", fields.length, "fields");
 
   return (
     <div className="space-y-3">
