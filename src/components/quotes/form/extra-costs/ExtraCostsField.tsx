@@ -16,7 +16,7 @@ export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Start collapsed
+  const [isOpen, setIsOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   
   // Set up the field array for extra_costs
@@ -25,7 +25,7 @@ export function ExtraCostsField() {
     name: "extra_costs"
   });
   
-  // Force re-render when fields change
+  // Watch the field array to trigger re-renders
   const extraCosts = watch("extra_costs");
   
   // Add default extra costs from organization settings if available
@@ -70,9 +70,6 @@ export function ExtraCostsField() {
       setIsOpen(true);
     }
     
-    // Close the library dialog
-    setIsLibraryOpen(false);
-    
     toast.success(`"${cost.name}" added to extra costs`);
   };
 
@@ -115,7 +112,10 @@ export function ExtraCostsField() {
           </p>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-3">
-              <ExtraCostsList control={control} extraCosts={extraCosts} />
+              <ExtraCostsList 
+                control={control} 
+                key={`extra-costs-${extraCosts?.length || 0}`}
+              />
               
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button 

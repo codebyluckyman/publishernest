@@ -4,17 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
-import { DefaultExtraCost } from "@/types/extraCost";
 import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExtraCostsListProps {
   control: Control<QuoteRequestFormValues>;
-  extraCosts?: DefaultExtraCost[]; // Add this prop to trigger re-renders
 }
 
-export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
+export function ExtraCostsList({ control }: ExtraCostsListProps) {
   const { setValue, watch } = useFormContext<QuoteRequestFormValues>();
   const { fields, remove } = useFieldArray({
     control,
