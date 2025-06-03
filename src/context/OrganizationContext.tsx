@@ -10,6 +10,6 @@ export {
   useOrganization,
   type Organization,
   type OrganizationMember,
-  type OrganizationContextType
+  type OrganizationContextType,
   type MemberType
 };
