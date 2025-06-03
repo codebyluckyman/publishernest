@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+ntimport { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
@@ -155,6 +155,7 @@ export function ProductSection({
       case 'internal_stock_print':
       case 'orientation':
       case 'extent':
+        return product.format?.extent || 'N/A';
       case 'tps_dimensions':
       case 'plc_dimensions':
         return 'N/A'; // Format details not available in basic product data
