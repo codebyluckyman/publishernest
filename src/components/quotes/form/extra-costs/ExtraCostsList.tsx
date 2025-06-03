@@ -2,9 +2,12 @@
 import { useFieldArray, Control, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { QuoteRequestFormValues } from "@/types/quoteRequest";
 import { DefaultExtraCost } from "@/types/extraCost";
 import { UnitOfMeasureSelect } from "@/components/organizations/unitOfMeasures/UnitOfMeasureSelect";
+import { X } from "lucide-react";
+import { toast } from "sonner";
 
 interface ExtraCostsListProps {
   control: Control<QuoteRequestFormValues>;
@@ -13,7 +16,7 @@ interface ExtraCostsListProps {
 
 export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
   const { setValue, watch } = useFormContext<QuoteRequestFormValues>();
-  const { fields } = useFieldArray({
+  const { fields, remove } = useFieldArray({
     control,
     name: "extra_costs"
   });
@@ -21,6 +24,11 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
   // For debugging - log fields array when it changes
   console.log("ExtraCostsList rendering with fields:", fields);
   console.log("Current form value for extra_costs:", watch("extra_costs"));
+
+  const handleRemove = (index: number, costName: string) => {
+    remove(index);
+    toast.success(`"${costName}" removed from extra costs`);
+  };
 
   // If there are no fields to display, show a placeholder message
   if (fields.length === 0) {
@@ -37,16 +45,18 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
     <div className="space-y-3">
       {fields.map((field, index) => {
         console.log(`Rendering field at index ${index}:`, field);
+        const costName = watch(`extra_costs.${index}.name`) || 'Unnamed Cost';
+        
         return (
           <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
-            <div className="col-span-4">
+            <div className="col-span-3">
               <Input 
                 placeholder="Cost name" 
                 {...control.register(`extra_costs.${index}.name` as const)} 
                 className="w-full"
               />
             </div>
-            <div className="col-span-5">
+            <div className="col-span-4">
               <Textarea 
                 placeholder="Description (optional)" 
                 {...control.register(`extra_costs.${index}.description` as const)} 
@@ -63,6 +73,18 @@ export function ExtraCostsList({ control, extraCosts }: ExtraCostsListProps) {
                 placeholder="Unit"
                 className="w-full"
               />
+            </div>
+            <div className="col-span-2 flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRemove(index, costName)}
+                className="h-10 w-10 p-0 text-muted-foreground hover:text-destructive"
+                title={`Remove ${costName}`}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         );
