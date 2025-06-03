@@ -91,7 +91,6 @@ export function QuoteHeader({ quote, onEdit, onShowHistory }: QuoteHeaderProps) 
           </div>
           
           <div className="flex items-center gap-2">
-            /* {getStatusBadge(quote.status)} */
             {onShowHistory && (
               <Button 
                 variant="outline" 
