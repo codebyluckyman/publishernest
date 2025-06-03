@@ -149,23 +149,23 @@ export function ProductSection({
       case 'format_name':
         return product.format?.format_name || 'N/A';
       case 'binding_type':
-        return product.format?.binding_type || 'N/A';
+        return (product.format as any)?.binding_type || 'N/A';
       case 'cover_material':
-        return product.format?.cover_material || 'N/A';
+        return (product.format as any)?.cover_material || 'N/A';
       case 'cover_stock_print':
-        return product.format?.cover_stock_print || 'N/A';
+        return (product.format as any)?.cover_stock_print || 'N/A';
       case 'internal_material':
-        return product.format?.internal_material || 'N/A';
+        return (product.format as any)?.internal_material || 'N/A';
       case 'internal_stock_print':
-        return product.format?.internal_stock_print || 'N/A';
+        return (product.format as any)?.internal_stock_print || 'N/A';
       case 'orientation':
-        return product.format?.orientation || 'N/A';
+        return (product.format as any)?.orientation || 'N/A';
       case 'extent':
-        return product.format?.extent || 'N/A';
+        return (product.format as any)?.extent || 'N/A';
       case 'tps_dimensions':
-        return formatDimensions(product.format?.tps_height_mm, product.format?.tps_width_mm, product.format?.tps_depth_mm);
+        return formatDimensions((product.format as any)?.tps_height_mm, (product.format as any)?.tps_width_mm, (product.format as any)?.tps_depth_mm);
       case 'plc_dimensions':
-        return formatDimensions(product.format?.tps_plc_height_mm, product.format?.tps_plc_width_mm, product.format?.tps_plc_depth_mm);
+        return formatDimensions((product.format as any)?.tps_plc_height_mm, (product.format as any)?.tps_plc_width_mm, (product.format as any)?.tps_plc_depth_mm)
 
       // Physical properties - individual
       case 'height':
