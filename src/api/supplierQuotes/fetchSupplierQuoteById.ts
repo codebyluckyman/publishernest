@@ -31,6 +31,8 @@ async function getPublicUrls(attachments: any[], bucket: string): Promise<Suppli
 }
 
 export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote> {
+  console.log(`🔍 [fetchSupplierQuoteById] Starting fetch for supplier quote ID: ${id}`);
+  
   // Fetch the supplier quote
   const { data: quoteData, error } = await supabase
     .from("supplier_quotes")
@@ -42,12 +44,21 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     .single();
 
   if (error) {
+    console.error(`❌ [fetchSupplierQuoteById] Error fetching supplier quote ${id}:`, error);
     throw new Error(`Error fetching supplier quote: ${error.message}`);
   }
 
   if (!quoteData) {
+    console.error(`❌ [fetchSupplierQuoteById] Supplier quote ${id} not found`);
     throw new Error("Supplier quote not found");
   }
+
+  console.log(`✅ [fetchSupplierQuoteById] Successfully fetched quote data for ${id}:`, {
+    quoteId: quoteData.id,
+    supplierId: quoteData.supplier_id,
+    status: quoteData.status,
+    quoteRequestId: quoteData.quote_request_id
+  });
 
   // Fetch the associated quote request to get format information
   const { data: quoteRequest, error: quoteRequestError } = await supabase
@@ -102,37 +113,49 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     .single();
 
   if (quoteRequestError) {
-    console.error("Error fetching quote request:", quoteRequestError.message);
+    console.error(`⚠️ [fetchSupplierQuoteById] Error fetching quote request for ${id}:`, quoteRequestError.message);
   }
 
   // Fetch price breaks for this quote
+  console.log(`🔍 [fetchSupplierQuoteById] Fetching price breaks for supplier quote ${id}...`);
   const { data: priceBreaks, error: priceBreaksError } = await supabase
     .from("supplier_quote_price_breaks")
     .select("*")
     .eq("supplier_quote_id", id);
 
   if (priceBreaksError) {
-    console.error("Error fetching price breaks:", priceBreaksError.message);
+    console.error(`❌ [fetchSupplierQuoteById] Error fetching price breaks for ${id}:`, priceBreaksError);
+  } else {
+    console.log(`📊 [fetchSupplierQuoteById] Raw price breaks response for ${id}:`, {
+      priceBreaksCount: priceBreaks?.length || 0,
+      priceBreaksData: priceBreaks
+    });
   }
 
   // Fetch extra costs for this quote
+  console.log(`🔍 [fetchSupplierQuoteById] Fetching extra costs for supplier quote ${id}...`);
   const { data: extraCosts, error: extraCostsError } = await supabase
     .from("supplier_quote_extra_costs")
     .select("*")
     .eq("supplier_quote_id", id);
 
   if (extraCostsError) {
-    console.error("Error fetching extra costs:", extraCostsError.message);
+    console.error(`❌ [fetchSupplierQuoteById] Error fetching extra costs for ${id}:`, extraCostsError);
+  } else {
+    console.log(`💰 [fetchSupplierQuoteById] Extra costs fetched for ${id}:`, extraCosts?.length || 0);
   }
 
   // Fetch savings for this quote
+  console.log(`🔍 [fetchSupplierQuoteById] Fetching savings for supplier quote ${id}...`);
   const { data: savings, error: savingsError } = await supabase
     .from("supplier_quote_savings")
     .select("*")
     .eq("supplier_quote_id", id);
 
   if (savingsError) {
-    console.error("Error fetching savings:", savingsError.message);
+    console.error(`❌ [fetchSupplierQuoteById] Error fetching savings for ${id}:`, savingsError);
+  } else {
+    console.log(`💸 [fetchSupplierQuoteById] Savings fetched for ${id}:`, savings?.length || 0);
   }
 
   // Fetch the formats for this quote
@@ -145,7 +168,7 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     .eq("supplier_quote_id", id);
 
   if (formatsError) {
-    console.error("Error fetching formats:", formatsError.message);
+    console.error(`❌ [fetchSupplierQuoteById] Error fetching formats for ${id}:`, formatsError);
   }
 
   // Process formats to include format names
@@ -166,7 +189,7 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     .eq("supplier_quote_id", id);
 
   if (attachmentsError) {
-    console.error("Error fetching attachments:", attachmentsError.message);
+    console.error(`❌ [fetchSupplierQuoteById] Error fetching attachments for ${id}:`, attachmentsError);
   }
 
   // Get public URLs for attachments
@@ -186,10 +209,23 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
         
       productionSchedule = scheduleData as Record<string, string | null>;
     } catch (e) {
-      console.error("Error parsing production schedule:", e);
+      console.error(`❌ [fetchSupplierQuoteById] Error parsing production schedule for ${id}:`, e);
       productionSchedule = null;
     }
   }
+
+  // FIXED: Correct fallback logic - ensure the parentheses are in the right place
+  const processedPriceBreaks = (priceBreaks || []) as SupplierQuotePriceBreak[];
+  const processedExtraCosts = (extraCosts || []) as SupplierQuoteExtraCost[];
+  const processedSavings = (savings || []) as SupplierQuoteSaving[];
+
+  console.log(`📋 [fetchSupplierQuoteById] Final processed data for ${id}:`, {
+    priceBreaksCount: processedPriceBreaks.length,
+    extraCostsCount: processedExtraCosts.length,
+    savingsCount: processedSavings.length,
+    formatsCount: processedFormats.length,
+    attachmentsCount: processedAttachments.length
+  });
 
   // Combine all data into a single supplier quote object
   const supplierQuote: SupplierQuote = {
@@ -199,12 +235,14 @@ export async function fetchSupplierQuoteById(id: string): Promise<SupplierQuote>
     quote_request: quoteRequest || null,
     formats: processedFormats,
     attachments: processedAttachments,
-    price_breaks: priceBreaks as SupplierQuotePriceBreak[] || [],
-    extra_costs: extraCosts as SupplierQuoteExtraCost[] || [],
-    savings: savings as SupplierQuoteSaving[] || [],
+    price_breaks: processedPriceBreaks,
+    extra_costs: processedExtraCosts,
+    savings: processedSavings,
     status: quoteData.status as SupplierQuoteStatus,
     production_schedule: productionSchedule
   };
+
+  console.log(`✅ [fetchSupplierQuoteById] Successfully completed fetch for ${id} with price_breaks.length:`, supplierQuote.price_breaks.length);
 
   return supplierQuote;
 }
