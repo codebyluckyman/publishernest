@@ -15,6 +15,7 @@ BEGIN
     -- Supplier_name filter (exact match, case-insensitive)
     AND (filter_supplier_name IS NULL OR qmv.supplier_name ILIKE filter_supplier_name)
     -- Format filtering: Check if supplier quote has price breaks for the specified format
+    -- by following the proper relationship through quote_request_formats
     AND (
       filter_format_id IS NULL OR EXISTS (
         SELECT 1
