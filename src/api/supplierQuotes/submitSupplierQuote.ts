@@ -47,7 +47,7 @@ export async function submitSupplierQuote(
       id,
       userId,
       'quote_submitted',
-      { old status: currentQuote.status }
+      { status: currentQuote.status }
     );
 
     // Create organization notification about the quote submission
