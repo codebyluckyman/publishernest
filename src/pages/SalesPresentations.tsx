@@ -126,7 +126,7 @@ const SalesPresentations = () => {
   const handleClearSearch = () => {
     setSearchQuery('');
   };
-
+  
   // Check if we're in any loading/filtering state
   const isProcessing = isLoading || isFiltering || deletePresentation.isPending || sharePresentation.isPending;
 
