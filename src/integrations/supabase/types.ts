@@ -1875,6 +1875,13 @@ export type Database = {
             foreignKeyName: "purchase_orders_supplier_quote_id_fkey"
             columns: ["supplier_quote_id"]
             isOneToOne: false
+            referencedRelation: "quote_comparison_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
             referencedRelation: "quote_management_view"
             referencedColumns: ["id"]
           },
@@ -2933,6 +2940,13 @@ export type Database = {
             foreignKeyName: "supplier_quote_attachments_supplier_quote_id_fkey"
             columns: ["supplier_quote_id"]
             isOneToOne: false
+            referencedRelation: "quote_comparison_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_attachments_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
             referencedRelation: "quote_management_view"
             referencedColumns: ["id"]
           },
@@ -2978,6 +2992,13 @@ export type Database = {
           supplier_quote_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "supplier_quote_audit_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quote_comparison_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "supplier_quote_audit_supplier_quote_id_fkey"
             columns: ["supplier_quote_id"]
@@ -3060,6 +3081,13 @@ export type Database = {
           unit_of_measure_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "supplier_quote_extra_cost_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quote_comparison_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "supplier_quote_extra_cost_price_breaks_supplier_quote_id_fkey"
             columns: ["supplier_quote_id"]
@@ -3166,6 +3194,13 @@ export type Database = {
             foreignKeyName: "supplier_quote_extra_costs_supplier_quote_id_fkey"
             columns: ["supplier_quote_id"]
             isOneToOne: false
+            referencedRelation: "quote_comparison_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_extra_costs_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
             referencedRelation: "quote_management_view"
             referencedColumns: ["id"]
           },
@@ -3230,6 +3265,13 @@ export type Database = {
             columns: ["quote_request_format_id"]
             isOneToOne: false
             referencedRelation: "quote_request_formats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_formats_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quote_comparison_view"
             referencedColumns: ["id"]
           },
           {
@@ -3355,6 +3397,13 @@ export type Database = {
             foreignKeyName: "supplier_quote_price_breaks_supplier_quote_id_fkey"
             columns: ["supplier_quote_id"]
             isOneToOne: false
+            referencedRelation: "quote_comparison_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_price_breaks_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
             referencedRelation: "quote_management_view"
             referencedColumns: ["id"]
           },
@@ -3448,6 +3497,13 @@ export type Database = {
             columns: ["saving_id"]
             isOneToOne: false
             referencedRelation: "quote_request_savings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quote_savings_supplier_quote_id_fkey"
+            columns: ["supplier_quote_id"]
+            isOneToOne: false
+            referencedRelation: "quote_comparison_view"
             referencedColumns: ["id"]
           },
           {
@@ -3810,6 +3866,72 @@ export type Database = {
       }
     }
     Views: {
+      quote_comparison_view: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          currency: string | null
+          id: string | null
+          notes: string | null
+          organization_id: string | null
+          packaging_carton_height: number | null
+          packaging_carton_length: number | null
+          packaging_carton_quantity: number | null
+          packaging_carton_volume: number | null
+          packaging_carton_weight: number | null
+          packaging_carton_width: number | null
+          packaging_cartons_per_pallet: number | null
+          packaging_copies_per_20ft_palletized: number | null
+          packaging_copies_per_20ft_unpalletized: number | null
+          packaging_copies_per_40ft_palletized: number | null
+          packaging_copies_per_40ft_unpalletized: number | null
+          price_breaks: Json | null
+          production_schedule: Json | null
+          quote_request: Json | null
+          quote_request_id: string | null
+          reference: string | null
+          reference_id: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          remarks: string | null
+          status: string | null
+          submitted_at: string | null
+          supplier: Json | null
+          supplier_id: string | null
+          supplier_name: string | null
+          terms: string | null
+          title: string | null
+          total_cost: number | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_quotes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_quote_request_id_fkey"
+            columns: ["quote_request_id"]
+            isOneToOne: false
+            referencedRelation: "quote_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_quotes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_management_view: {
         Row: {
           approved_at: string | null
@@ -4209,6 +4331,54 @@ export type Database = {
           p_communication_type: string
         }
         Returns: string
+      }
+      search_quote_comparisons: {
+        Args: {
+          search_title?: string
+          filter_supplier_name?: string
+          filter_format_id?: string
+        }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          currency: string | null
+          id: string | null
+          notes: string | null
+          organization_id: string | null
+          packaging_carton_height: number | null
+          packaging_carton_length: number | null
+          packaging_carton_quantity: number | null
+          packaging_carton_volume: number | null
+          packaging_carton_weight: number | null
+          packaging_carton_width: number | null
+          packaging_cartons_per_pallet: number | null
+          packaging_copies_per_20ft_palletized: number | null
+          packaging_copies_per_20ft_unpalletized: number | null
+          packaging_copies_per_40ft_palletized: number | null
+          packaging_copies_per_40ft_unpalletized: number | null
+          price_breaks: Json | null
+          production_schedule: Json | null
+          quote_request: Json | null
+          quote_request_id: string | null
+          reference: string | null
+          reference_id: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          remarks: string | null
+          status: string | null
+          submitted_at: string | null
+          supplier: Json | null
+          supplier_id: string | null
+          supplier_name: string | null
+          terms: string | null
+          title: string | null
+          total_cost: number | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }[]
       }
       search_quotes: {
         Args: {

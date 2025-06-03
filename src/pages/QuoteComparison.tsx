@@ -17,14 +17,15 @@ export default function QuoteComparison() {
   const [searchParams] = useSearchParams();
   const quoteRequestId = searchParams.get('quoteRequestId');
   const { currentOrganization } = useOrganization();
-  const { useSupplierQuotesList, useApproveSupplierQuote } = useSupplierQuotes();
+  const { useSupplierQuotesComparison, useApproveSupplierQuote } = useSupplierQuotes();
   const approveMutation = useApproveSupplierQuote();
   
   const [quoteRequestTitle, setQuoteRequestTitle] = useState<string | undefined>();
   const [selectedQuote, setSelectedQuote] = useState<SupplierQuote | null>(null);
   const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
   
-  const { data: quotes = [], isLoading } = useSupplierQuotesList(
+  // Use the new comparison API which includes price breaks
+  const { data: quotes = [], isLoading } = useSupplierQuotesComparison(
     currentOrganization,
     undefined, // All statuses
     undefined, // All suppliers
