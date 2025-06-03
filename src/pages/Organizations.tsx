@@ -78,7 +78,7 @@ const Organizations = () => {
     switchOrganization(updatedOrg.id);
   };
 
-  const handleInviteMember = async (organizationId: string, email: string, role: "admin" | "member", OrganizationMember: MemberType) => {
+  const handleInviteMember = async (organizationId: string, email: string, role: "admin" | "member", MemberType: MemberType) => {
     await inviteMember(organizationId, email, role, memberType);
     
     if (currentOrganization) {
