@@ -147,6 +147,7 @@ export function ProductSection({
 
       // Format information from formats table
       case 'format_name':
+        return product.format?.format_name || 'N/A';
       case 'binding_type':
       case 'cover_material':
       case 'cover_stock_print':
