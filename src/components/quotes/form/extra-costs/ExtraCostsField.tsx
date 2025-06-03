@@ -70,6 +70,9 @@ export function ExtraCostsField() {
       setIsOpen(true);
     }
     
+    // Close the library dialog
+    setIsLibraryOpen(false);
+    
     toast.success(`"${cost.name}" added to extra costs`);
   };
 
