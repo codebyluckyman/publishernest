@@ -1,4 +1,4 @@
-# Vasil's branch 2024-05-20
+# Main Branch
 # Welcome to your Lovable project
 
 ## Project info
