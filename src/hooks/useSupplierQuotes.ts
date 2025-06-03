@@ -186,7 +186,7 @@ export function useSupplierQuotes() {
         if (!user) {
           throw new Error("User not authenticated");
         }
-        return submitSupplierQuote(id, totalCost, user.id);
+        return submitSupplierQuote(id, user.id);
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
