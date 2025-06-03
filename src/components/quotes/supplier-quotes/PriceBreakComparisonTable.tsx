@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from "react";
 import { SupplierQuote, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { formatCurrency } from "@/utils/formatters";
@@ -72,7 +73,13 @@ export function PriceBreakComparisonTable({
     totalQuotes: quotes.length,
     includeExpiredQuotes,
     includeDraftQuotes,
-    quotesWithPriceBreaks: quotes.filter(q => q.price_breaks && q.price_breaks.length > 0).length
+    quotesWithPriceBreaks: quotes.filter(q => q.price_breaks && q.price_breaks.length > 0).length,
+    quotesDebug: quotes.map(q => ({
+      id: q.id,
+      supplierId: q.supplier_id,
+      priceBreaksCount: q.price_breaks?.length || 0,
+      hasPriceBreaks: !!q.price_breaks && q.price_breaks.length > 0
+    }))
   });
 
   const filteredQuotes = useMemo(() => {
@@ -83,7 +90,8 @@ export function PriceBreakComparisonTable({
         supplierName: quote.supplier?.supplier_name,
         status: quote.status,
         validTo: quote.valid_to,
-        priceBreaksCount: quote.price_breaks?.length || 0
+        priceBreaksCount: quote.price_breaks?.length || 0,
+        priceBreaksData: quote.price_breaks
       });
 
       if (!includeExpiredQuotes) {

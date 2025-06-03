@@ -1,9 +1,11 @@
+
 import { Organization } from "@/types/organization";
 import { supabase } from "@/integrations/supabase/client";
 import {
   SupplierQuote,
   SupplierQuoteStatus,
   SupplierQuoteFormat,
+  SupplierQuotePriceBreak,
 } from "@/types/supplierQuote";
 
 interface FetchQuotesParams {
@@ -51,7 +53,7 @@ export async function fetchSupplierQuotes(
       : null;
 
   // Call the RPC function with filters
-  const { data, error } = await supabase.rpc("test_search_quotes", {
+  const { data, error } = await supabase.rpc("search_quotes", {
     search_title,
     filter_supplier_name,
     filter_format_id,
@@ -90,8 +92,42 @@ export async function fetchSupplierQuotes(
   const formattedQuotes: SupplierQuote[] = filteredData.map((item: any) => {
     // Safely handle quote_request which might be JSON or object
     let quoteRequestId = null;
+    let priceBreaks: SupplierQuotePriceBreak[] = [];
+    
     if (typeof item.quote_request === 'object' && item.quote_request !== null) {
       quoteRequestId = (item.quote_request as any).id;
+      
+      // Extract price breaks from the quote_request.formats structure
+      const quoteRequestFormats = (item.quote_request as any).formats || [];
+      quoteRequestFormats.forEach((format: any) => {
+        if (format.price_breaks && Array.isArray(format.price_breaks)) {
+          format.price_breaks.forEach((priceBreak: any) => {
+            priceBreaks.push({
+              id: priceBreak.id,
+              supplier_quote_id: priceBreak.supplier_quote_id,
+              quote_request_format_id: priceBreak.quote_request_format_id,
+              price_break_id: priceBreak.price_break_id,
+              product_id: priceBreak.product_id,
+              format_id: priceBreak.format_id,
+              quantity: priceBreak.quantity,
+              unit_cost: priceBreak.unit_cost,
+              unit_cost_1: priceBreak.unit_cost_1,
+              unit_cost_2: priceBreak.unit_cost_2,
+              unit_cost_3: priceBreak.unit_cost_3,
+              unit_cost_4: priceBreak.unit_cost_4,
+              unit_cost_5: priceBreak.unit_cost_5,
+              unit_cost_6: priceBreak.unit_cost_6,
+              unit_cost_7: priceBreak.unit_cost_7,
+              unit_cost_8: priceBreak.unit_cost_8,
+              unit_cost_9: priceBreak.unit_cost_9,
+              unit_cost_10: priceBreak.unit_cost_10,
+              num_products: priceBreak.num_products || 1,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          });
+        }
+      });
     } else if (typeof item.quote_request === 'string') {
       try {
         const parsed = JSON.parse(item.quote_request);
@@ -142,7 +178,13 @@ export async function fetchSupplierQuotes(
       quote_request: item.quote_request,
       supplier: item.supplier || { supplier_name: item.supplier_name },
       // Handle formats and other arrays if needed
-      formats: item.formats ? formatSupplierQuoteFormats(item.formats) : []
+      formats: item.formats ? formatSupplierQuoteFormats(item.formats) : [],
+      // Include the extracted price breaks
+      price_breaks: priceBreaks,
+      // Initialize other required arrays
+      attachments: [],
+      extra_costs: [],
+      savings: []
     };
   });
 
