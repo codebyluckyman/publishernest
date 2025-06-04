@@ -36,7 +36,6 @@ interface QuantityComparisonData {
 
 // Helper function to get the correct unit cost based on product index
 const getUnitCostForProduct = (priceBreak: SupplierQuotePriceBreak, productIndex: number): number | null => {
-  if (productIndex === 1) return priceBreak.unit_cost || null;
   
   const columnName = `unit_cost_${productIndex}` as keyof SupplierQuotePriceBreak;
   const unitCost = priceBreak[columnName] as number | null;
