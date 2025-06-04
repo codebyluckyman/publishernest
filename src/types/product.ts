@@ -20,14 +20,7 @@ export interface Product {
   updated_at: string;
   cover_image_url: string | null;
   format_id?: string | null;
-  format_extras?: {
-    foil: boolean;
-    spot_uv: boolean;
-    glitter: boolean;
-    embossing: boolean;
-    die_cut: boolean;
-    holographic: boolean;
-  } | FormatExtra[];
+  format_extras?: any;
   format_extra_comments?: string | null;
   
   // Physical properties
