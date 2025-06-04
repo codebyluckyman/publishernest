@@ -4,11 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   SupplierQuote,
   SupplierQuoteStatus,
-  SupplierQuoteFormat,
   SupplierQuotePriceBreak,
 } from "@/types/supplierQuote";
 
-interface FetchQuotesParams {
+interface FetchQuotesComparisonParams {
   currentOrganization: Organization | null;
   status?: string;
   supplierId?: string;
@@ -20,8 +19,8 @@ interface FetchQuotesParams {
   selectedFormat?: string;
 }
 
-export async function fetchSupplierQuotes(
-  params: FetchQuotesParams
+export async function fetchSupplierQuotesComparison(
+  params: FetchQuotesComparisonParams
 ): Promise<SupplierQuote[]> {
   const {
     currentOrganization,
@@ -52,19 +51,27 @@ export async function fetchSupplierQuotes(
       ? formatId.trim()
       : null;
 
+  console.log("🔍 Fetching quotes using quote_comparison_view with filters:", {
+    search_title,
+    filter_supplier_name,
+    filter_format_id,
+  });
+
   // Call the RPC function with filters
-  const { data, error } = await supabase.rpc("search_quotes", {
+  const { data, error } = await supabase.rpc("search_quote_comparisons", {
     search_title,
     filter_supplier_name,
     filter_format_id,
   });
 
   if (error) {
-    console.error("Error fetching supplier quotes:", error);
+    console.error("Error fetching supplier quotes comparison:", error);
     throw error;
   }
 
-  // Optionally, filter organization_id, quoteRequestId, supplierId, status in JS (or add to your RPC)
+  console.log("📊 Raw comparison view data:", data);
+
+  // Filter by organization and other criteria in JS
   let filteredData = data || [];
   if (currentOrganization?.id) {
     filteredData = filteredData.filter(
@@ -79,7 +86,6 @@ export async function fetchSupplierQuotes(
     filteredData = filteredData.filter((q) => q.supplier_id === supplierId);
   }
   if (quoteRequestId) {
-    // Check if quote_request is an object and has an id property
     filteredData = filteredData.filter((q) => {
       if (typeof q.quote_request === 'object' && q.quote_request !== null) {
         return (q.quote_request as any).id === quoteRequestId;
@@ -88,57 +94,69 @@ export async function fetchSupplierQuotes(
     });
   }
 
-  // Map the data from the view to match the SupplierQuote type
+  console.log("🎯 Filtered comparison data:", {
+    originalCount: data?.length || 0,
+    filteredCount: filteredData.length,
+    organizationFilter: currentOrganization?.id,
+    statusFilter: status,
+    supplierIdFilter: supplierId,
+    quoteRequestIdFilter: quoteRequestId,
+  });
+
+  // Map the data from the comparison view to match the SupplierQuote type
   const formattedQuotes: SupplierQuote[] = filteredData.map((item: any) => {
-    // Safely handle quote_request which might be JSON or object
-    let quoteRequestId = null;
-    let priceBreaks: SupplierQuotePriceBreak[] = [];
-    
-    if (typeof item.quote_request === 'object' && item.quote_request !== null) {
-      quoteRequestId = (item.quote_request as any).id;
-      
-      // Extract price breaks from the quote_request.formats structure
-      const quoteRequestFormats = (item.quote_request as any).formats || [];
-      quoteRequestFormats.forEach((format: any) => {
-        if (format.price_breaks && Array.isArray(format.price_breaks)) {
-          format.price_breaks.forEach((priceBreak: any) => {
-            priceBreaks.push({
-              id: priceBreak.id,
-              supplier_quote_id: priceBreak.supplier_quote_id,
-              quote_request_format_id: priceBreak.quote_request_format_id,
-              price_break_id: priceBreak.price_break_id,
-              product_id: priceBreak.product_id,
-              format_id: priceBreak.format_id,
-              quantity: priceBreak.quantity,
-              unit_cost: priceBreak.unit_cost,
-              unit_cost_1: priceBreak.unit_cost_1,
-              unit_cost_2: priceBreak.unit_cost_2,
-              unit_cost_3: priceBreak.unit_cost_3,
-              unit_cost_4: priceBreak.unit_cost_4,
-              unit_cost_5: priceBreak.unit_cost_5,
-              unit_cost_6: priceBreak.unit_cost_6,
-              unit_cost_7: priceBreak.unit_cost_7,
-              unit_cost_8: priceBreak.unit_cost_8,
-              unit_cost_9: priceBreak.unit_cost_9,
-              unit_cost_10: priceBreak.unit_cost_10,
-              num_products: priceBreak.num_products || 1
-            });
-          });
-        }
+    console.log("🔄 Processing quote comparison item:", {
+      id: item.id,
+      supplierId: item.supplier_id,
+      priceBreaksCount: item.price_breaks?.length || 0,
+      rawPriceBreaks: item.price_breaks,
+    });
+
+    // Extract price breaks directly from the view
+    const priceBreaks: SupplierQuotePriceBreak[] = [];
+    if (item.price_breaks && Array.isArray(item.price_breaks)) {
+      item.price_breaks.forEach((priceBreak: any) => {
+        priceBreaks.push({
+          id: priceBreak.id,
+          supplier_quote_id: priceBreak.supplier_quote_id,
+          quote_request_format_id: priceBreak.quote_request_format_id,
+          price_break_id: priceBreak.price_break_id,
+          product_id: priceBreak.product_id,
+          format_id: priceBreak.format_id,
+          quantity: priceBreak.quantity,
+          unit_cost: priceBreak.unit_cost,
+          unit_cost_1: priceBreak.unit_cost_1,
+          unit_cost_2: priceBreak.unit_cost_2,
+          unit_cost_3: priceBreak.unit_cost_3,
+          unit_cost_4: priceBreak.unit_cost_4,
+          unit_cost_5: priceBreak.unit_cost_5,
+          unit_cost_6: priceBreak.unit_cost_6,
+          unit_cost_7: priceBreak.unit_cost_7,
+          unit_cost_8: priceBreak.unit_cost_8,
+          unit_cost_9: priceBreak.unit_cost_9,
+          unit_cost_10: priceBreak.unit_cost_10,
+          num_products: priceBreak.num_products || 1
+        });
       });
-    } else if (typeof item.quote_request === 'string') {
-      try {
-        const parsed = JSON.parse(item.quote_request);
-        quoteRequestId = parsed.id;
-      } catch {
-        // If parsing fails, keep as null
-      }
     }
+
+    console.log("💰 Processed price breaks:", {
+      quoteId: item.id,
+      priceBreaksCount: priceBreaks.length,
+      priceBreaks: priceBreaks.map(pb => ({
+        id: pb.id,
+        quantity: pb.quantity,
+        numProducts: pb.num_products,
+        unitCost: pb.unit_cost,
+      }))
+    });
 
     return {
       id: item.id,
       organization_id: item.organization_id,
-      quote_request_id: quoteRequestId,
+      quote_request_id: typeof item.quote_request === 'object' && item.quote_request !== null 
+        ? (item.quote_request as any).id 
+        : null,
       supplier_id: item.supplier_id,
       status: item.status as SupplierQuoteStatus,
       total_cost: item.total_cost,
@@ -175,9 +193,9 @@ export async function fetchSupplierQuotes(
       // Include quote_request and supplier with proper typing
       quote_request: item.quote_request,
       supplier: item.supplier || { supplier_name: item.supplier_name },
-      // Get formats from the actual supplier quote formats table instead of the view
+      // Initialize formats array (not included in comparison view)
       formats: [],
-      // Include the extracted price breaks
+      // Include the price breaks from the view
       price_breaks: priceBreaks,
       // Initialize other required arrays
       attachments: [],
@@ -186,18 +204,14 @@ export async function fetchSupplierQuotes(
     };
   });
 
-  return formattedQuotes;
-}
+  console.log("✅ Final formatted quotes for comparison:", {
+    count: formattedQuotes.length,
+    quotesWithPriceBreaks: formattedQuotes.filter(q => q.price_breaks && q.price_breaks.length > 0).length,
+    sampleQuote: formattedQuotes[0] ? {
+      id: formattedQuotes[0].id,
+      priceBreaksCount: formattedQuotes[0].price_breaks?.length || 0,
+    } : null,
+  });
 
-// Helper function to format supplier quote formats (no longer used since formats removed from view)
-function formatSupplierQuoteFormats(formats: any[]): SupplierQuoteFormat[] {
-  if (!Array.isArray(formats)) return [];
-  
-  return formats.map(format => ({
-    id: format.id,
-    supplier_quote_id: format.supplier_quote_id,
-    format_id: format.format_id,
-    quote_request_format_id: format.quote_request_format_id,
-    format_name: format.format?.format_name || "Unknown Format",
-  }));
+  return formattedQuotes;
 }

@@ -122,12 +122,15 @@ export function useOrganizationProductFields() {
         display_order: field.display_order
       }));
       
-      const { error } = await supabase
+      for (const field of updates) {
+        const { error } = await supabase
         .from('organization_product_fields')
-        .upsert(updates);
-
+        .update({ display_order: field.display_order })
+        .eq('id', field.id);
+    
       if (error) {
         throw error;
+        }
       }
 
       return fields;

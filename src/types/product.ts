@@ -20,14 +20,7 @@ export interface Product {
   updated_at: string;
   cover_image_url: string | null;
   format_id?: string | null;
-  format_extras?: {
-    foil: boolean;
-    spot_uv: boolean;
-    glitter: boolean;
-    embossing: boolean;
-    die_cut: boolean;
-    holographic: boolean;
-  } | FormatExtra[];
+  format_extras?: any;
   format_extra_comments?: string | null;
   
   // Physical properties
@@ -61,6 +54,28 @@ export interface Product {
   format?: {
     id: string;
     format_name: string | null;
+    organization_id: string;
+    created_at: string;
+    updated_at: string;
+    tps_height_mm: number | null;
+    tps_width_mm: number | null;
+    tps_depth_mm: number | null;
+    tps_plc_height_mm: number | null;
+    tps_plc_width_mm: number | null;
+    tps_plc_depth_mm: number | null;
+    extent: string | null;
+    binding_type: string | null;
+    cover_material: string | null;
+    internal_material: string | null;
+    cover_stock_print: string | null;
+    internal_stock_print: string | null;
+    orientation: string | null;
+    end_papers_material: string | null;
+    end_papers_print: string | null;
+    spacers_material: string | null;
+    spacers_stock_print: string | null;
+    sticker_material: string | null;
+    sticker_stock_print: string | null;
   } | null;
 }
 

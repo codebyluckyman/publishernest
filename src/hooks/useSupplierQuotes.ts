@@ -8,16 +8,19 @@ import {
 } from "@/types/supplierQuote";
 import { useAuth } from "@/context/AuthContext";
 import {
+  createSupplierQuote, 
+  updateSupplierQuote, 
+  deleteSupplierQuote,
   fetchSupplierQuotes,
+  fetchSupplierQuotesComparison,
   fetchSupplierQuoteById,
-  createSupplierQuote,
-  updateSupplierQuote,
   submitSupplierQuote,
   approveSupplierQuote,
   rejectSupplierQuote,
-  deleteSupplierQuote,
   acceptSupplierQuote,
   declineSupplierQuote,
+  getAttachments,
+  getSupplierQuoteAttachments
 } from "@/api/supplierQuotes";
 import { api as supplierQuoteApi } from "@/api/supplierQuotes";
 
@@ -182,11 +185,11 @@ export function useSupplierQuotes() {
    */
   const useSubmitSupplierQuote = () => {
     return useMutation({
-      mutationFn: ({ id, totalCost }: { id: string; totalCost: number }) => {
+      mutationFn: ({ id }: { id: string; totalCost?: number }) => {
         if (!user) {
           throw new Error("User not authenticated");
         }
-        return submitSupplierQuote(id, totalCost, user.id);
+        return submitSupplierQuote(id, user.id);
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["supplierQuotes"] });
@@ -323,6 +326,50 @@ export function useSupplierQuotes() {
     });
   };
 
+  /**
+   * Hook to fetch supplier quotes comparison
+   */
+  const useSupplierQuotesComparison = (
+    currentOrganization: Organization | null,
+    status?: string,
+    supplierId?: string,
+    quoteRequestId?: string,
+    searchQuery?: string,
+    productId?: string,
+    formatId?: string,
+    supplier?: string,
+    selectedFormat?: string
+  ) => {
+    return useQuery({
+      queryKey: [
+        "supplier-quotes-comparison",
+        currentOrganization?.id,
+        status,
+        supplierId,
+        quoteRequestId,
+        searchQuery,
+        productId,
+        formatId,
+        supplier,
+        selectedFormat,
+      ],
+      queryFn: () =>
+        fetchSupplierQuotesComparison({
+          currentOrganization,
+          status,
+          supplierId,
+          quoteRequestId,
+          searchQuery,
+          productId,
+          formatId,
+          supplier,
+          selectedFormat,
+        }),
+      enabled: !!currentOrganization,
+      staleTime: 30000,
+    });
+  };
+
   return {
     useSupplierQuotesList,
     useSupplierQuoteById,
@@ -335,5 +382,6 @@ export function useSupplierQuotes() {
     useApproveSupplierQuote,
     useRejectSupplierQuote,
     useSupplierQuoteAudit,
+    useSupplierQuotesComparison,
   };
 }

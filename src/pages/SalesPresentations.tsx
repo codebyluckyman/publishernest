@@ -126,7 +126,7 @@ const SalesPresentations = () => {
   const handleClearSearch = () => {
     setSearchQuery('');
   };
-
+  
   // Check if we're in any loading/filtering state
   const isProcessing = isLoading || isFiltering || deletePresentation.isPending || sharePresentation.isPending;
 
@@ -203,6 +203,8 @@ const SalesPresentations = () => {
             onDelete={handleDelete}
             onShare={handleShare}
             users={users}
+            onView={handleView}
+            onEdit={handleEdit}
           />
         )
       ) : filteredPresentations.length > 0 ? (

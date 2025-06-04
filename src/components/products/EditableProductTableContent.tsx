@@ -3,7 +3,8 @@ import { BookOpen, Image, PlusCircle, ArrowUpDown, ChevronUp, ChevronDown } from
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SortDirection, SortField } from "@/types/product";
+import { Product, SortDirection, SortField } from "@/types/product";
+import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
 import { useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { usePagination } from "@/hooks/usePagination";
@@ -17,32 +18,8 @@ import { useProductEdit } from "@/context/ProductEditContext";
 import { ProductActionMenu } from "./ProductActionMenu";
 import { formatMonthYear } from "@/utils/productUtils";
 
-interface Product {
-  id: string;
-  title: string;
-  isbn13: string | null;
-  isbn10: string | null;
-  product_form: string | null;
-  publisher_name: string | null;
-  publication_date: string | null;
-  list_price: number | null;
-  default_price: number | null;
-  default_currency: string | null;
-  created_at: string;
-  updated_at: string;
-  cover_image_url: string | null;
-  format_id: string | null;
-  series_name: string | null;
-  license: string | null;
-  age_range: string | null;
-  format?: {
-    id: string;
-    format_name: string | null;
-  } | null;
-}
-
 interface EditableProductTableContentProps {
-  products: Product[] | undefined;
+  products: ProductWithFormat[] | undefined;
   isLoading: boolean;
   currentOrganization: any;
   handleViewProduct: (id: string) => void;

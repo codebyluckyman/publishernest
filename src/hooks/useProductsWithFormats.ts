@@ -5,31 +5,9 @@ import { useOrganization } from './useOrganization';
 import { Product } from '@/types/product';
 import { Format } from '@/types/format';
 
-// Define a complete format interface for the component needs
-export interface FormatLight {
-  id: string;
-  format_name: string | null;
-  tps_height_mm: number | null;
-  tps_width_mm: number | null;
-  tps_depth_mm: number | null;
-  tps_plc_height_mm: number | null;
-  tps_plc_width_mm: number | null;
-  tps_plc_depth_mm: number | null;
-  extent: string | null;
-  binding_type: string | null;
-  cover_material: string | null;
-  internal_material: string | null;
-  cover_stock_print: string | null;
-  internal_stock_print: string | null;
-  orientation: string | null;
-  end_papers_material: string | null;
-  end_papers_print: string | null;
-  spacers_material: string | null;
-  spacers_stock_print: string | null;
-}
-
 export interface ProductWithFormat extends Product {
-  format?: FormatLight | null;
+  default_price: number | null;
+  default_currency: string;
 }
 
 export function useProductsWithFormats() {
@@ -44,26 +22,7 @@ export function useProductsWithFormats() {
         .from('products')
         .select(`
           *,
-          format:format_id (
-            id,
-            format_name,
-            tps_height_mm,
-            tps_width_mm,
-            tps_depth_mm,
-            tps_plc_height_mm,
-            tps_plc_width_mm,
-            tps_plc_depth_mm,
-            extent,
-            binding_type,
-            cover_material,
-            internal_material,
-            cover_stock_print,
-            internal_stock_print,
-            orientation,
-            end_papers_material,
-            end_papers_print,
-            spacers_material,
-            spacers_stock_print
+          format:format_id ( *
           )
         `)
         .eq('organization_id', currentOrganization.id)
@@ -76,17 +35,21 @@ export function useProductsWithFormats() {
         ...product,
         default_price: product.list_price,
         default_currency: product.currency_code || 'USD',
+        format_extras: typeof product.format_extras === 'object' ? product.format_extras : null,
       }));
+
       
-      return productsWithDefaults as unknown as ProductWithFormat[];
+      return productsWithDefaults as ProductWithFormat[];
     },
     enabled: !!currentOrganization,
   });
-  
+
   return {
-    products: query.data || [],
+    products: query.data || [] as ProductWithFormat[],
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
   };
 }
+
+
