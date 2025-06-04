@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from "react";
 import { SupplierQuote, SupplierQuotePriceBreak } from "@/types/supplierQuote";
 import { formatCurrency } from "@/utils/formatters";
@@ -300,24 +299,47 @@ export function PriceBreakComparisonTable({
               )).flat()}
             </tr>
 
-            {/* Quote reference row - under each supplier */}
+            {/* Quote reference and status row - under each supplier */}
             <tr>
               {Array.from({ length: globalMaxProducts }, (_, productIndex) => (
                 supplierQuoteGroups.map(group => 
                   group.quoteIds.map(quoteId => {
                     const quote = filteredQuotes.find(q => q.id === quoteId);
                     const quoteReference = quote?.reference || quote?.reference_id || quoteId.slice(0, 8);
+                    
+                    // Calculate quote status
+                    const isExpired = quote?.valid_to ? new Date(quote.valid_to) < new Date() : false;
+                    const isDraft = quote?.status === 'draft';
+                    const isValid = quote?.status === 'submitted' && !isExpired;
+                    
                     return (
                       <th
                         key={`${productIndex + 1}-quote-${quoteId}`}
                         className="border border-gray-300 p-1 bg-gray-50 text-xs font-medium text-center"
                       >
-                        {quoteReference}
+                        <div className="space-y-1">
+                          <div>{quoteReference}</div>
+                          <div>
+                            {isDraft ? (
+                              <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-xs">
+                                Draft
+                              </Badge>
+                            ) : isExpired ? (
+                              <Badge variant="outline" className="bg-red-50 text-red-800 border-red-200 text-xs">
+                                Expired
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200 text-xs">
+                                Valid
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </th>
                     );
                   })
                 )
-              )).flat()}
+              )).flat().flat()}
             </tr>
           </thead>
           
@@ -355,49 +377,27 @@ export function PriceBreakComparisonTable({
                       return (
                         <td
                           key={`${productIndex + 1}-${quoteId}`}
-                          className="border border-gray-300 p-2 text-center"
+                          className="border border-gray-300 p-3 text-center"
                         >
-                          <div className="space-y-1">
-                            {/* Status badge */}
-                            <div className="text-xs">
-                              {productCell.isDraft ? (
-                                <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
-                                  Draft
-                                </Badge>
-                              ) : productCell.isExpired ? (
-                                <Badge variant="outline" className="bg-red-50 text-red-800 border-red-200">
-                                  Expired
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">
-                                  Valid
-                                </Badge>
+                          {productCell.unitCost !== null ? (
+                            <button
+                              onClick={() => handleCellClick(productCell)}
+                              className={cn(
+                                "text-sm font-medium hover:underline cursor-pointer",
+                                productCell.isExpired && "line-through text-gray-400",
+                                productCell.isDraft && "text-gray-500"
                               )}
-                            </div>
-                            
-                            {/* Price */}
-                            <div>
-                              {productCell.unitCost !== null ? (
-                                <button
-                                  onClick={() => handleCellClick(productCell)}
-                                  className={cn(
-                                    "text-sm font-medium hover:underline cursor-pointer",
-                                    productCell.isExpired && "line-through text-gray-400",
-                                    productCell.isDraft && "text-gray-500"
-                                  )}
-                                >
-                                  {formatCurrency(productCell.unitCost, currency)}
-                                  {isBest && (
-                                    <span className="ml-1 text-xs font-bold text-green-600">
-                                      BEST
-                                    </span>
-                                  )}
-                                </button>
-                              ) : (
-                                <span className="text-gray-400 text-sm">No price</span>
+                            >
+                              {formatCurrency(productCell.unitCost, currency)}
+                              {isBest && (
+                                <span className="ml-1 text-xs font-bold text-green-600">
+                                  BEST
+                                </span>
                               )}
-                            </div>
-                          </div>
+                            </button>
+                          ) : (
+                            <span className="text-gray-400 text-sm">No price</span>
+                          )}
                         </td>
                       );
                     })
