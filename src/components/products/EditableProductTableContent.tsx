@@ -3,7 +3,7 @@ import { BookOpen, Image, PlusCircle, ArrowUpDown, ChevronUp, ChevronDown } from
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SortDirection, SortField } from "@/types/product";
+import { Product, SortDirection, SortField } from "@/types/product";
 import { useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { usePagination } from "@/hooks/usePagination";
@@ -16,52 +16,6 @@ import { EditableSelectCell } from "./editable-cells/EditableSelectCell";
 import { useProductEdit } from "@/context/ProductEditContext";
 import { ProductActionMenu } from "./ProductActionMenu";
 import { formatMonthYear } from "@/utils/productUtils";
-
-interface Product {
-  id: string;
-  title: string;
-  isbn13: string | null;
-  isbn10: string | null;
-  product_form: string | null;
-  publisher_name: string | null;
-  publication_date: string | null;
-  list_price: number | null;
-  default_price: number | null;
-  default_currency: string | null;
-  created_at: string;
-  updated_at: string;
-  cover_image_url: string | null;
-  format_id: string | null;
-  series_name: string | null;
-  license: string | null;
-  age_range: string | null;
-  format?: {
-    id: string;
-    format_name: string | null;
-    organization_id: string;
-    created_at: string;
-    updated_at: string;
-    tps_height_mm: number | null;
-    tps_width_mm: number | null;
-    tps_depth_mm: number | null;
-    tps_plc_height_mm: number | null;
-    tps_plc_width_mm: number | null;
-    tps_plc_depth_mm: number | null;
-    extent: string | null;
-    binding_type: string | null;
-    cover_material: string | null;
-    internal_material: string | null;
-    cover_stock_print: string | null;
-    internal_stock_print: string | null;
-    orientation: string | null;
-    end_papers_material: string | null;
-    end_papers_print: string | null;
-    spacers_material: string | null;
-    spacers_stock_print: string | null;
-    sticker_material: string | null;
-    sticker_stock_print: string | null;
-  } | null;
-}
 
 interface EditableProductTableContentProps {
   products: Product[] | undefined;
