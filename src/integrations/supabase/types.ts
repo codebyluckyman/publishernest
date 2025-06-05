@@ -518,6 +518,158 @@ export type Database = {
           },
         ]
       }
+      invoice_line_items: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          invoice_id: string
+          quantity?: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          billing_period_end: string
+          billing_period_start: string
+          created_at: string | null
+          currency: string | null
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          organization_id: string
+          organization_license_id: string | null
+          status: Database["public"]["Enums"]["invoice_status"] | null
+          subtotal: number
+          tax_amount: number
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          billing_period_end: string
+          billing_period_start: string
+          created_at?: string | null
+          currency?: string | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          organization_id: string
+          organization_license_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"] | null
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Update: {
+          billing_period_end?: string
+          billing_period_start?: string
+          created_at?: string | null
+          currency?: string | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          organization_id?: string
+          organization_license_id?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"] | null
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_organization_license_id_fkey"
+            columns: ["organization_license_id"]
+            isOneToOne: false
+            referencedRelation: "organization_licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_plans: {
+        Row: {
+          annual_price_per_seat: number
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          max_seats: number | null
+          monthly_price_per_seat: number
+          name: string
+          plan_type: Database["public"]["Enums"]["license_plan_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          annual_price_per_seat: number
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_seats?: number | null
+          monthly_price_per_seat: number
+          name: string
+          plan_type: Database["public"]["Enums"]["license_plan_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          annual_price_per_seat?: number
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_seats?: number | null
+          monthly_price_per_seat?: number
+          name?: string
+          plan_type?: Database["public"]["Enums"]["license_plan_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       message_reads: {
         Row: {
           created_at: string | null
@@ -651,6 +803,95 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "organization_default_price_breaks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_invoice_counters: {
+        Row: {
+          next_invoice_number: number
+          organization_id: string
+        }
+        Insert: {
+          next_invoice_number?: number
+          organization_id: string
+        }
+        Update: {
+          next_invoice_number?: number
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invoice_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_licenses: {
+        Row: {
+          auto_renew: boolean | null
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
+          created_at: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          license_plan_id: string
+          organization_id: string
+          seat_count: number
+          start_date: string
+          tax_jurisdiction: string | null
+          tax_rate: number | null
+          tax_type: Database["public"]["Enums"]["tax_type"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_renew?: boolean | null
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          license_plan_id: string
+          organization_id: string
+          seat_count?: number
+          start_date?: string
+          tax_jurisdiction?: string | null
+          tax_rate?: number | null
+          tax_type?: Database["public"]["Enums"]["tax_type"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_renew?: boolean | null
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          license_plan_id?: string
+          organization_id?: string
+          seat_count?: number
+          start_date?: string
+          tax_jurisdiction?: string | null
+          tax_rate?: number | null
+          tax_type?: Database["public"]["Enums"]["tax_type"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_licenses_license_plan_id_fkey"
+            columns: ["license_plan_id"]
+            isOneToOne: false
+            referencedRelation: "license_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_licenses_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -1610,6 +1851,182 @@ export type Database = {
           {
             foreignKeyName: "profiles_current_organization_id_fkey"
             columns: ["current_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_formats: {
+        Row: {
+          budget_allocation: number | null
+          created_at: string
+          format_id: string
+          id: string
+          notes: string | null
+          program_id: string
+          status: string
+          target_quantity: number | null
+          timeline_end: string | null
+          timeline_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          budget_allocation?: number | null
+          created_at?: string
+          format_id: string
+          id?: string
+          notes?: string | null
+          program_id: string
+          status?: string
+          target_quantity?: number | null
+          timeline_end?: string | null
+          timeline_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budget_allocation?: number | null
+          created_at?: string
+          format_id?: string
+          id?: string
+          notes?: string | null
+          program_id?: string
+          status?: string
+          target_quantity?: number | null
+          timeline_end?: string | null
+          timeline_start?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_formats_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "formats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_formats_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "publishing_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_titles: {
+        Row: {
+          content_brief: string | null
+          created_at: string
+          estimated_cost: number | null
+          id: string
+          notes: string | null
+          planned_pub_date: string | null
+          product_id: string | null
+          program_format_id: string
+          status: string
+          target_isbn: string | null
+          target_quantity: number | null
+          updated_at: string
+          working_title: string
+        }
+        Insert: {
+          content_brief?: string | null
+          created_at?: string
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          planned_pub_date?: string | null
+          product_id?: string | null
+          program_format_id: string
+          status?: string
+          target_isbn?: string | null
+          target_quantity?: number | null
+          updated_at?: string
+          working_title: string
+        }
+        Update: {
+          content_brief?: string | null
+          created_at?: string
+          estimated_cost?: number | null
+          id?: string
+          notes?: string | null
+          planned_pub_date?: string | null
+          product_id?: string | null
+          program_format_id?: string
+          status?: string
+          target_isbn?: string | null
+          target_quantity?: number | null
+          updated_at?: string
+          working_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_titles_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_titles_program_format_id_fkey"
+            columns: ["program_format_id"]
+            isOneToOne: false
+            referencedRelation: "program_formats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      publishing_programs: {
+        Row: {
+          created_at: string
+          created_by: string
+          currency: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          organization_id: string
+          program_year: number | null
+          start_date: string | null
+          status: string
+          target_budget: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          currency?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          program_year?: number | null
+          start_date?: string | null
+          status?: string
+          target_budget?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          currency?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          program_year?: number | null
+          start_date?: string | null
+          status?: string
+          target_budget?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publishing_programs_organization_id_fkey"
+            columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
@@ -3683,6 +4100,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          status: string
           supplier_id: string
           updated_at: string
           user_id: string
@@ -3691,6 +4109,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          status?: string
           supplier_id: string
           updated_at?: string
           user_id: string
@@ -3699,6 +4118,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          status?: string
           supplier_id?: string
           updated_at?: string
           user_id?: string
@@ -4534,6 +4954,9 @@ export type Database = {
       }
     }
     Enums: {
+      billing_cycle: "monthly" | "annual"
+      invoice_status: "draft" | "sent" | "paid" | "overdue" | "cancelled"
+      license_plan_type: "basic" | "professional" | "enterprise"
       requirement_type:
         | "packaging"
         | "shipping"
@@ -4542,6 +4965,7 @@ export type Database = {
         | "approval"
         | "payment"
         | "other"
+      tax_type: "vat" | "gst" | "sales_tax" | "none"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4657,6 +5081,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      billing_cycle: ["monthly", "annual"],
+      invoice_status: ["draft", "sent", "paid", "overdue", "cancelled"],
+      license_plan_type: ["basic", "professional", "enterprise"],
       requirement_type: [
         "packaging",
         "shipping",
@@ -4666,6 +5093,7 @@ export const Constants = {
         "payment",
         "other",
       ],
+      tax_type: ["vat", "gst", "sales_tax", "none"],
     },
   },
 } as const
