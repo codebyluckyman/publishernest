@@ -37,7 +37,7 @@ export interface ProductWithFormat extends Product {
   format?: Format | null;
 }
 
-export interface ProductWithMinimalFormat extends Product {
+export interface ProductWithMinimalFormat extends Omit<Product, 'format'> {
   format?: MinimalFormat | null;
 }
 

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -22,16 +22,7 @@ interface SupplierUserFormValues {
   status: string;
 }
 
-interface UserProfile {
-  id: string;
-  email: string;
-  first_name: string | null;
-  last_name: string | null;
-}
-
 export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSuccess }: AddSupplierUserDialogProps) {
-  const [searchEmail, setSearchEmail] = useState("");
-
   const {
     register,
     handleSubmit,
@@ -47,25 +38,6 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
   });
 
   const statusValue = watch("status");
-  const userEmailValue = watch("user_email");
-
-  // Search for users by email
-  const { data: searchResults, isLoading: isSearching } = useQuery({
-    queryKey: ["search-users", searchEmail],
-    queryFn: async () => {
-      if (!searchEmail || searchEmail.length < 3) return [];
-      
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, first_name, last_name")
-        .ilike("email", `%${searchEmail}%`)
-        .limit(10);
-
-      if (error) throw error;
-      return data as UserProfile[];
-    },
-    enabled: searchEmail.length >= 3,
-  });
 
   const addSupplierUser = useMutation({
     mutationFn: async (data: SupplierUserFormValues) => {
@@ -132,7 +104,6 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
     onSuccess: () => {
       toast.success("User added to supplier successfully");
       reset();
-      setSearchEmail("");
       onSuccess();
       onOpenChange(false);
     },
@@ -145,14 +116,8 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
     addSupplierUser.mutate(data);
   };
 
-  const handleUserSelect = (email: string) => {
-    setValue("user_email", email);
-    setSearchEmail("");
-  };
-
   const handleClose = () => {
     reset();
-    setSearchEmail("");
     onOpenChange(false);
   };
 
@@ -166,40 +131,12 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="user_email">User Email</Label>
-            <div className="relative">
-              <Input
-                id="user_email"
-                type="email"
-                placeholder="Search user by email..."
-                value={userEmailValue || searchEmail}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setValue("user_email", value);
-                  setSearchEmail(value);
-                }}
-                {...register("user_email", { required: "User email is required" })}
-              />
-              
-              {searchResults && searchResults.length > 0 && searchEmail && (
-                <div className="absolute top-full left-0 right-0 z-10 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                  {searchResults.map((user) => (
-                    <button
-                      key={user.id}
-                      type="button"
-                      className="w-full px-3 py-2 text-left hover:bg-gray-100 border-b last:border-b-0"
-                      onClick={() => handleUserSelect(user.email)}
-                    >
-                      <div className="font-medium">{user.email}</div>
-                      {(user.first_name || user.last_name) && (
-                        <div className="text-sm text-gray-600">
-                          {`${user.first_name || ""} ${user.last_name || ""}`.trim()}
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Input
+              id="user_email"
+              type="email"
+              placeholder="Enter user email"
+              {...register("user_email", { required: "User email is required" })}
+            />
             {errors.user_email && (
               <p className="text-sm text-red-600">{errors.user_email.message}</p>
             )}
@@ -219,7 +156,7 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
           </div>
 
           <div className="text-sm text-gray-600">
-            <p><strong>Note:</strong> Users must already be members of the organization before they can be added to a supplier. The user's role will be inherited from their organization membership.</p>
+            <p><strong>Note:</strong> Users must already be members of the organization before they can be added to a supplier.</p>
           </div>
 
           <DialogFooter>

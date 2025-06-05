@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useOrganization } from "@/context/OrganizationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { EditableProductTableHeader } from "./EditableProductTableHeader";
-import { EditableProductTableContent } from "./EditableProductTableContent";
+import EditableProductTableContent from "./EditableProductTableContent";
 import { ProductWithMinimalFormat } from "./types/ProductTypes";
 
-export function EditableProductTable() {
+export default function EditableProductTable() {
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
@@ -43,7 +43,6 @@ export function EditableProductTable() {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Transform the data to ensure consistent format structure
       return data.map(product => ({
         ...product,
         default_price: product.list_price || 0,

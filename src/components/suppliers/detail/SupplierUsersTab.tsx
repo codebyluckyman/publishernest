@@ -41,7 +41,6 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
   const { data: supplierUsers, isLoading } = useQuery({
     queryKey: ["supplier-users", supplierId],
     queryFn: async () => {
-      // First get the supplier's organization_id
       const { data: supplier, error: supplierError } = await supabase
         .from("suppliers")
         .select("organization_id")
@@ -50,12 +49,11 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
 
       if (supplierError) throw supplierError;
 
-      // Then get supplier users with proper joins
       const { data, error } = await supabase
         .from("supplier_users")
         .select(`
           *,
-          profiles!inner (
+          profiles (
             id,
             email,
             first_name,
@@ -67,9 +65,8 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
 
       if (error) throw error;
 
-      // Now get organization member roles for each user
       const usersWithRoles = await Promise.all(
-        data.map(async (user) => {
+        (data || []).map(async (user) => {
           const { data: orgMember } = await supabase
             .from("organization_members")
             .select("role")
@@ -80,11 +77,11 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
           return {
             ...user,
             organization_members: orgMember
-          };
+          } as SupplierUser;
         })
       );
 
-      return usersWithRoles as SupplierUser[];
+      return usersWithRoles;
     },
   });
 
@@ -170,7 +167,6 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Added</TableHead>
                     <TableHead className="w-[120px]">Actions</TableHead>
@@ -183,11 +179,6 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
                         {getUserDisplayName(user)}
                       </TableCell>
                       <TableCell>{user.profiles?.email || "N/A"}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {user.organization_members?.role || "No Role"}
-                        </Badge>
-                      </TableCell>
                       <TableCell>
                         <Badge variant={user.status === "active" ? "default" : "secondary"}>
                           {user.status}
