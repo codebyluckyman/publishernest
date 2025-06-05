@@ -39,19 +39,9 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
     queryKey: ["supplier-users", supplierId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("supplier_users")
-        .select(`
-          *,
-          profiles (
-            id,
-            email,
-            first_name,
-            last_name
-          )
-        `)
-        .eq("supplier_id", supplierId)
-        .order("created_at", { ascending: false });
-
+        .rpc('get_supplier_users_with_profiles', { p_supplier_id: supplierId }
+        );
+        
       if (error) throw error;
       return data as SupplierUser[];
     },
