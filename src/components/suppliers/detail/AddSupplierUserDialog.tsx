@@ -19,7 +19,6 @@ interface AddSupplierUserDialogProps {
 
 interface SupplierUserFormValues {
   user_email: string;
-  role: string;
   status: string;
 }
 
@@ -43,12 +42,10 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
   } = useForm<SupplierUserFormValues>({
     defaultValues: {
       user_email: "",
-      role: "user",
       status: "active",
     },
   });
 
-  const roleValue = watch("role");
   const statusValue = watch("status");
   const userEmailValue = watch("user_email");
 
@@ -83,6 +80,29 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
         throw new Error("User not found with this email");
       }
 
+      // Get supplier's organization to check if user is a member
+      const { data: supplier, error: supplierError } = await supabase
+        .from("suppliers")
+        .select("organization_id")
+        .eq("id", supplierId)
+        .single();
+
+      if (supplierError) {
+        throw new Error("Failed to get supplier information");
+      }
+
+      // Check if user is a member of the supplier's organization
+      const { data: orgMember, error: orgError } = await supabase
+        .from("organization_members")
+        .select("id")
+        .eq("auth_user_id", userProfile.id)
+        .eq("organization_id", supplier.organization_id)
+        .single();
+
+      if (orgError || !orgMember) {
+        throw new Error("User must be a member of the organization before being added to a supplier");
+      }
+
       // Check if user is already assigned to this supplier
       const { data: existingRelation, error: checkError } = await supabase
         .from("supplier_users")
@@ -101,7 +121,6 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
         .insert({
           supplier_id: supplierId,
           user_id: userProfile.id,
-          role: data.role,
           status: data.status,
         })
         .select()
@@ -187,20 +206,6 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Select value={roleValue} onValueChange={(value) => setValue("role", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="viewer">Viewer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select value={statusValue} onValueChange={(value) => setValue("status", value)}>
               <SelectTrigger>
@@ -211,6 +216,10 @@ export function AddSupplierUserDialog({ open, onOpenChange, supplierId, onSucces
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="text-sm text-gray-600">
+            <p><strong>Note:</strong> Users must already be members of the organization before they can be added to a supplier. The user's role will be inherited from their organization membership.</p>
           </div>
 
           <DialogFooter>

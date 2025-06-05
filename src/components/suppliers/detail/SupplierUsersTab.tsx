@@ -15,7 +15,6 @@ interface SupplierUser {
   id: string;
   supplier_id: string;
   user_id: string;
-  role: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -24,6 +23,9 @@ interface SupplierUser {
     email: string;
     first_name: string | null;
     last_name: string | null;
+  } | null;
+  organization_members: {
+    role: string;
   } | null;
 }
 
@@ -39,11 +41,21 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
   const { data: supplierUsers, isLoading } = useQuery({
     queryKey: ["supplier-users", supplierId],
     queryFn: async () => {
+      // First get the supplier's organization_id
+      const { data: supplier, error: supplierError } = await supabase
+        .from("suppliers")
+        .select("organization_id")
+        .eq("id", supplierId)
+        .single();
+
+      if (supplierError) throw supplierError;
+
+      // Then get supplier users with proper joins
       const { data, error } = await supabase
         .from("supplier_users")
         .select(`
           *,
-          profiles (
+          profiles!inner (
             id,
             email,
             first_name,
@@ -54,7 +66,25 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as SupplierUser[];
+
+      // Now get organization member roles for each user
+      const usersWithRoles = await Promise.all(
+        data.map(async (user) => {
+          const { data: orgMember } = await supabase
+            .from("organization_members")
+            .select("role")
+            .eq("auth_user_id", user.user_id)
+            .eq("organization_id", supplier.organization_id)
+            .single();
+
+          return {
+            ...user,
+            organization_members: orgMember
+          };
+        })
+      );
+
+      return usersWithRoles as SupplierUser[];
     },
   });
 
@@ -155,7 +185,7 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
                       <TableCell>{user.profiles?.email || "N/A"}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {user.role}
+                          {user.organization_members?.role || "No Role"}
                         </Badge>
                       </TableCell>
                       <TableCell>
