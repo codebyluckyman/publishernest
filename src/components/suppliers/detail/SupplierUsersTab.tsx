@@ -18,12 +18,10 @@ interface SupplierUser {
   status: string;
   created_at: string;
   updated_at: string;
-  profiles: {
-    id: string;
-    email: string;
-    first_name: string | null;
-    last_name: string | null;
-  } | null;
+  profiles_id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
 }
 
 interface SupplierUsersTabProps {
@@ -41,7 +39,7 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
       const { data, error } = await supabase
         .rpc('get_supplier_users_with_profiles', { p_supplier_id: supplierId }
         );
-        
+
       if (error) throw error;
       return data as SupplierUser[];
     },
