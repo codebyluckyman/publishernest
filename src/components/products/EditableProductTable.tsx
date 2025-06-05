@@ -5,7 +5,7 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { EditableProductTableHeader } from "./EditableProductTableHeader";
 import EditableProductTableContent from "./EditableProductTableContent";
-import { ProductWithMinimalFormat } from "./types/ProductTypes";
+import { ProductWithFormat } from "./hooks/useProductsWithFormats.ts";
 
 export default function EditableProductTable() {
   const { currentOrganization } = useOrganization();
@@ -108,7 +108,7 @@ export default function EditableProductTable() {
   });
 
   const filteredProducts = useMemo(() => {
-    return products as ProductWithMinimalFormat[];
+    return products as ProductswithFormats[];
   }, [products]);
 
   const paginatedProducts = useMemo(() => {
