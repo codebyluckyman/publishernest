@@ -16,12 +16,20 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
   const { currentOrganization: orgFromContext } = useOrganization();
   const currentOrganization = currentOrganizationParam || orgFromContext;
 
+  // Add this logging
+  console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
+
   const query = useQuery({
     queryKey: ["formats-for-select", currentOrganization?.id],
     queryFn: async () => {
-      if (!currentOrganization) return [];
+      if (!currentOrganization) {
+        console.log("❌ useFormatsForSelect - No organization, returning empty array");
+        return [];
+      }
 
       try {
+        console.log("📡 useFormatsForSelect - Fetching formats for org:", currentOrganization.id);
+        
         const { data, error } = await supabase
           .from("formats")
           .select("id, format_name")
@@ -29,9 +37,11 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
           .order("format_name", { ascending: true });
 
         if (error) {
-          console.error("Error fetching formats:", error);
+          console.error("❌ useFormatsForSelect - Error fetching formats:", error);
           return [];
         }
+
+        console.log("📊 useFormatsForSelect - Raw data from Supabase:", data);
 
         // Transform data to include both original data and FormatOption format
         const transformedData = Array.isArray(data)
@@ -43,23 +53,32 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
             }))
           : [];
 
+        console.log("✅ useFormatsForSelect - Transformed data:", transformedData);
         return transformedData;
       } catch (err) {
-        console.error("Exception fetching formats:", err);
+        console.error("💥 useFormatsForSelect - Exception fetching formats:", err);
         return [];
       }
     },
     enabled: !!currentOrganization,
-    initialData: [], // Always provide empty array as initial data
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes to improve performance
+    initialData: [],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Add this logging for the final result
+  console.log("📤 useFormatsForSelect - Returning:", {
+    formats: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error
   });
 
   return {
     formats: query.data,
-    data: query.data, // Keep for backward compatibility
+    data: query.data,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
-    refetch: query.refetch, // Add the refetch method
+    refetch: query.refetch,
   };
 }
