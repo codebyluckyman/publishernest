@@ -122,7 +122,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "supplier_conversations_user_id_fkey"
+            foreignKeyName: "conversations_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1657,9 +1657,12 @@ export type Database = {
           format_id: string | null
           id: string
           product_id: string
+          production_quantity: number | null
           purchase_order_id: string
           quantity: number
+          received_quantity: number | null
           total_cost: number
+          transit_quantity: number | null
           unit_cost: number
           updated_at: string
         }
@@ -1668,9 +1671,12 @@ export type Database = {
           format_id?: string | null
           id?: string
           product_id: string
+          production_quantity?: number | null
           purchase_order_id: string
           quantity: number
+          received_quantity?: number | null
           total_cost: number
+          transit_quantity?: number | null
           unit_cost: number
           updated_at?: string
         }
@@ -1679,9 +1685,12 @@ export type Database = {
           format_id?: string | null
           id?: string
           product_id?: string
+          production_quantity?: number | null
           purchase_order_id?: string
           quantity?: number
+          received_quantity?: number | null
           total_cost?: number
+          transit_quantity?: number | null
           unit_cost?: number
           updated_at?: string
         }
@@ -3714,7 +3723,6 @@ export type Database = {
           id: string
           notes: string | null
           organization_id: string
-          profile_id: string | null
           status: string | null
           supplier_name: string
           updated_at: string
@@ -3729,7 +3737,6 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id: string
-          profile_id?: string | null
           status?: string | null
           supplier_name: string
           updated_at?: string
@@ -3744,7 +3751,6 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id?: string
-          profile_id?: string | null
           status?: string | null
           supplier_name?: string
           updated_at?: string
@@ -3756,13 +3762,6 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "suppliers_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -4260,6 +4259,14 @@ export type Database = {
       get_user_organizations: {
         Args: { user_id?: string }
         Returns: string[]
+      }
+      get_user_supplier_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          member_type: string
+          supplier_ids: string[]
+          organization_ids: string[]
+        }[]
       }
       get_user_supplier_organizations: {
         Args: { user_id?: string }

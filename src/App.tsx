@@ -26,6 +26,7 @@ import Quotes from "./pages/Quotes";
 import QuoteComparison from "./pages/QuoteComparison";
 import PrintRuns from "./pages/PrintRuns";
 import Suppliers from "./pages/Suppliers";
+import SupplierDetail from "./pages/SupplierDetail";
 import Customers from "./pages/Customers";
 import CustomerDetail from "./pages/CustomerDetail";
 import CreateCustomer from "./pages/CreateCustomer";
@@ -132,6 +133,10 @@ const router = createBrowserRouter([
       {
         path: "suppliers",
         element: <ProtectedRoute><Suppliers /></ProtectedRoute>
+      },
+      {
+        path: "suppliers/:id",
+        element: <ProtectedRoute><SupplierDetail /></ProtectedRoute>
       },
       {
         path: "customers",

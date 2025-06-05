@@ -25,11 +25,6 @@ export function SupplierTableContainer() {
     setIsDialogOpen(true);
   };
 
-  const handleEditSupplier = (supplierId: string) => {
-    setSelectedSupplierId(supplierId);
-    setIsDialogOpen(true);
-  };
-
   const handleDialogSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
   };
@@ -68,7 +63,7 @@ export function SupplierTableContainer() {
           searchQuery={searchQuery}
           filters={filters}
           organizationId={currentOrganization?.id}
-          onEditSupplier={handleEditSupplier}
+          onEditSupplier={() => {}} // No longer needed since we navigate to detail page
           onAddSupplier={handleAddSupplier}
           refreshTrigger={refreshTrigger}
         />
