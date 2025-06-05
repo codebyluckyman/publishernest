@@ -101,10 +101,10 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
   };
 
   const getUserDisplayName = (user: SupplierUser) => {
-    if (user.profiles?.first_name || user.profiles?.last_name) {
-      return `${user.profiles.first_name || ""} ${user.profiles.last_name || ""}`.trim();
+    if (user.first_name || user.last_name) {
+      return `${user.first_name || ""} ${user.last_name || ""}`.trim();
     }
-    return user.profiles?.email || "Unknown User";
+    return user.email || "Unknown User";
   };
 
   return (
