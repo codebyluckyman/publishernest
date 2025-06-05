@@ -8,7 +8,7 @@ import { Combobox } from "@/components/ui/combobox";
 interface FormatSelectFieldProps {
   control: Control<QuoteRequestFormValues>;
   index: number;
-  formats: FormatOption[];
+  formats: FormatForSelect[];
   isLoading: boolean;
 }
 
@@ -21,8 +21,8 @@ export function FormatSelectField({
   // Transform formats data for the combobox - ensure this is always an array
   const FormatForSelect = Array.isArray(formats) 
     ? formats.map(format => ({
-        label: format.label,
-        value: format.value
+        label: format.format_name,
+        value: format.id
       }))
     : [];
 
