@@ -29,7 +29,7 @@ export function FormatSelectField({
   return (
     <FormField
       control={control}
-      name={`formats.${index}.id`}
+      name={`formats.${index}.format_name`}
       render={({ field }) => (
         <FormItem className="flex flex-col">
           <FormLabel>Format</FormLabel>
