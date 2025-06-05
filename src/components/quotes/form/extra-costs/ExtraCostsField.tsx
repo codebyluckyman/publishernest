@@ -7,7 +7,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ExtraCostsList } from "./ExtraCostsList";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Library } from "lucide-react";
+import { ChevronDown, ChevronUp, Library, RotateCcw } from "lucide-react";
 import { ExtraCostLibraryDialog } from "./ExtraCostLibraryDialog";
 import { ExtraCostTableItem } from "@/types/extraCost";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ export function ExtraCostsField() {
   const { currentOrganization } = useOrganization();
   const { control, setValue, getValues, watch } = useFormContext<QuoteRequestFormValues>();
   const [defaultCostsAdded, setDefaultCostsAdded] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Start collapsed
+  const [isOpen, setIsOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   
   // Set up the field array for extra_costs
@@ -25,7 +25,7 @@ export function ExtraCostsField() {
     name: "extra_costs"
   });
   
-  // Force re-render when fields change
+  // Watch the field array to trigger re-renders
   const extraCosts = watch("extra_costs");
   
   // Add default extra costs from organization settings if available
@@ -73,6 +73,28 @@ export function ExtraCostsField() {
     toast.success(`"${cost.name}" added to extra costs`);
   };
 
+  // Reset to organization defaults
+  const handleResetToDefaults = () => {
+    if (currentOrganization?.default_extra_costs && currentOrganization.default_extra_costs.length > 0) {
+      const defaultCosts = currentOrganization.default_extra_costs.map((cost) => ({
+        name: cost.name,
+        description: cost.description || "",
+        unit_of_measure_id: cost.unit_of_measure_id || ""
+      }));
+      setValue("extra_costs", defaultCosts);
+      setDefaultCostsAdded(true);
+      
+      // Ensure the collapsible is open when resetting
+      if (!isOpen) {
+        setIsOpen(true);
+      }
+      
+      toast.success("Reset to organization default extra costs");
+    } else {
+      toast.info("No default extra costs configured for this organization");
+    }
+  };
+
   return (
     <Card className="mt-6">
       <CardHeader className="pb-5">
@@ -86,22 +108,40 @@ export function ExtraCostsField() {
             </CollapsibleTrigger>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Extra costs included on the quote request
+            Extra costs included on the quote request. Default costs can be removed if not applicable.
           </p>
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-3">
-              <ExtraCostsList control={control} extraCosts={extraCosts} />
+              <ExtraCostsList 
+                control={control} 
+                key={`extra-costs-${extraCosts?.length || 0}`}
+              />
               
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsLibraryOpen(true)}
-                className="w-full"
-                type="button"
-              >
-                <Library className="h-4 w-4 mr-2" />
-                Add from Library
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsLibraryOpen(true)}
+                  className="flex-1"
+                  type="button"
+                >
+                  <Library className="h-4 w-4 mr-2" />
+                  Add from Library
+                </Button>
+                
+                {currentOrganization?.default_extra_costs && currentOrganization.default_extra_costs.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleResetToDefaults}
+                    className="flex-1"
+                    type="button"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset to Defaults
+                  </Button>
+                )}
+              </div>
               
               <ExtraCostLibraryDialog
                 open={isLibraryOpen}

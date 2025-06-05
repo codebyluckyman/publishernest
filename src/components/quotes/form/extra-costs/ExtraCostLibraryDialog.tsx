@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Library, Plus, PlusCircle } from "lucide-react";
@@ -26,7 +27,7 @@ interface ExtraCostLibraryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddFromLibrary: (cost: ExtraCostTableItem) => void;
-  onOpen?: () => void; // Make this prop optional
+  onOpen?: () => void;
   organizationId?: string;
 }
 
@@ -34,7 +35,7 @@ export function ExtraCostLibraryDialog({
   open,
   onOpenChange,
   onAddFromLibrary,
-  onOpen = () => {}, // Provide a default empty function
+  onOpen = () => {},
   organizationId,
 }: ExtraCostLibraryDialogProps) {
   const [extraCostLibrary, setExtraCostLibrary] = useState<
@@ -70,15 +71,18 @@ export function ExtraCostLibraryDialog({
     setExtraCostLibrary((prevLibrary) => [...prevLibrary, newExtraCost]);
   };
 
+  // Handle adding from library with immediate dialog close
+  const handleAddFromLibraryClick = (cost: ExtraCostTableItem) => {
+    // Close dialog first to provide immediate feedback
+    onOpenChange(false);
+    
+    // Then add the cost
+    onAddFromLibrary(cost);
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        {/* <DialogTrigger asChild>
-          <Button variant="outline" size="sm" onClick={onOpen} type="button">
-            <Library className="h-4 w-4 mr-2" />
-            Add from Library
-          </Button>
-        </DialogTrigger> */}
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <div className="flex items-center justify-between">
@@ -132,7 +136,7 @@ export function ExtraCostLibraryDialog({
                           size="sm"
                           variant="ghost"
                           className="h-8 w-8 p-0 text-primary"
-                          onClick={() => onAddFromLibrary(cost)}
+                          onClick={() => handleAddFromLibraryClick(cost)}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>

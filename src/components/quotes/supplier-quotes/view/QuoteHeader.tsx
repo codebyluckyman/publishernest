@@ -1,10 +1,12 @@
 
+import React, { useState } from "react";
 import { SupplierQuote } from "@/types/supplierQuote";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Clock, FileText, History } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Edit, ExternalLink, History } from "lucide-react";
 import { format } from "date-fns";
+import { QuoteDetailsSheet } from "@/components/quotes/table/QuoteDetailsSheet";
+import { formatCurrency } from "@/utils/formatters";
 
 interface QuoteHeaderProps {
   quote: SupplierQuote;
@@ -13,91 +15,194 @@ interface QuoteHeaderProps {
 }
 
 export function QuoteHeader({ quote, onEdit, onShowHistory }: QuoteHeaderProps) {
-  // Format dates for display
-  const submittedDate = quote.submitted_at 
-    ? format(new Date(quote.submitted_at), 'MMM d, yyyy')
-    : null;
-  
-  const validFrom = quote.valid_from
-    ? format(new Date(quote.valid_from), 'MMM d, yyyy')
-    : null;
-  
-  const validTo = quote.valid_to
-    ? format(new Date(quote.valid_to), 'MMM d, yyyy')
-    : null;
+  const [showQuoteRequestDetails, setShowQuoteRequestDetails] = useState(false);
 
-  // Determine status color
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-gray-200 text-gray-800';
-      case 'submitted': return 'bg-blue-100 text-blue-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'declined': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "draft":
+        return <Badge variant="outline">Draft</Badge>;
+      case "submitted":
+        return <Badge variant="default">Submitted</Badge>;
+      case "approved":
+        return <Badge variant="secondary">Approved</Badge>;
+      case "rejected":
+        return <Badge variant="destructive">Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
-  
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Not specified";
+    try {
+      return format(new Date(dateString), "MMM d, yyyy");
+    } catch {
+      return "Invalid date";
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle className="text-xl">
-              {quote.quote_request?.title || 'Quote'}
-              <Badge className={`ml-2 ${getStatusColor(quote.status)}`}>
-                {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
-              </Badge>
-            </CardTitle>
-            <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground mt-1">
-              {quote.supplier?.supplier_name && (
-                <div className="flex items-center gap-1">
-                  <FileText className="h-4 w-4" />
-                  <span>{quote.supplier.supplier_name}</span>
+    <>
+      <div className="bg-white border rounded-lg p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">
+                  {quote.reference_id || quote.reference || "Quote"}
+                </h2>
+                <p className="text-muted-foreground">
+                  Supplier: {quote.supplier_name || "Unknown Supplier"}
+                </p>
+              </div>
+              <div className="text-right space-y-1">
+                {quote.total_cost && (
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(quote.total_cost, quote.currency)}
+                  </div>
+                )}
+                <div className="text-sm text-muted-foreground">
+                  Currency: {quote.currency}
                 </div>
+              </div>
+            </div>
+            
+            {/* Quote Request Details */}
+            <div className="flex items-center gap-2 pt-2 border-t">
+              <span className="text-sm text-muted-foreground">Quote Request:</span>
+              {quote.quote_request?.title ? (
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-sm font-normal text-primary hover:text-primary/80"
+                  onClick={() => setShowQuoteRequestDetails(true)}
+                >
+                  {quote.quote_request.title}
+                  <ExternalLink className="h-3 w-3 ml-1" />
+                </Button>
+              ) : (
+                <span className="text-sm">No title</span>
               )}
-              
-              {submittedDate && (
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>Submitted: {submittedDate}</span>
-                </div>
-              )}
-              
-              {(validFrom || validTo) && (
-                <div className="flex items-center gap-1">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>
-                    Valid: {validFrom || 'N/A'} - {validTo || 'N/A'}
-                  </span>
-                </div>
+              {quote.quote_request?.reference_id && (
+                <span className="text-sm text-muted-foreground">
+                  ({quote.quote_request.reference_id})
+                </span>
               )}
             </div>
           </div>
           
-          <div className="flex gap-2">
-            {onEdit && quote.status === 'draft' && (
-              <Button variant="outline" size="sm" onClick={onEdit}>
-                Edit Quote
+          <div className="flex items-center gap-2">
+            {onShowHistory && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onShowHistory}
+                className="flex items-center gap-2"
+              >
+                <History className="h-4 w-4" />
+                View History
               </Button>
             )}
-            
-            {onShowHistory && (
-              <Button variant="outline" size="sm" onClick={onShowHistory}>
-                <History className="mr-1 h-4 w-4" />
-                History
+            {onEdit && (
+              <Button variant="outline" size="sm" onClick={onEdit}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
               </Button>
             )}
           </div>
         </div>
-      </CardHeader>
-      
-      {(quote.reference || quote.reference_id) && (
-        <CardContent className="pt-0">
-          <div className="text-sm">
-            <span className="font-medium">Reference:</span> {quote.reference || quote.reference_id}
+
+        {/* Summary Grid - Updated to 4 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 p-4 border rounded-lg bg-muted/20">
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-1">
+              SUPPLIER REFERENCE
+            </h3>
+            <div className="space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">Suppliers Ref:</span>{" "}
+                {quote.reference}
+              </p>
+            </div>
+          </div>          
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-1">
+              VALIDITY PERIOD
+            </h3>
+            <div className="space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">From:</span>{" "}
+                {formatDate(quote.valid_from)}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">To:</span>{" "}
+                {formatDate(quote.valid_to)}
+              </p>
+            </div>
           </div>
-        </CardContent>
-      )}
-    </Card>
+
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-1">
+              SUBMISSION
+            </h3>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Status:</span>
+                {getStatusBadge(quote.status)}
+              </div>
+              <p className="text-sm">
+                <span className="font-medium">Date:</span>{" "}
+                {formatDate(quote.submitted_at)}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-1">
+              FORMATS
+            </h3>
+            <div className="space-y-1">
+              {quote.formats && quote.formats.length > 0 ? (
+                quote.formats.slice(0, 2).map((format, index) => (
+                  <p key={index} className="text-sm">
+                    {format.format_name}
+                  </p>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No formats</p>
+              )}
+              {quote.formats && quote.formats.length > 2 && (
+                <p className="text-xs text-muted-foreground">
+                  +{quote.formats.length - 2} more
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-1">
+              CREATION
+            </h3>
+            <div className="space-y-1">
+              <p className="text-sm">
+                <span className="font-medium">Created:</span>{" "}
+                {formatDate(quote.created_at)}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Updated:</span>{" "}
+                {formatDate(quote.updated_at)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quote Request Details Sheet */}
+      <QuoteDetailsSheet
+        isOpen={showQuoteRequestDetails}
+        onOpenChange={setShowQuoteRequestDetails}
+        selectedRequest={quote.quote_request}
+        isSubmitting={false}
+      />
+    </>
   );
 }

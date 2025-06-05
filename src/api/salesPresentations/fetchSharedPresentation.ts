@@ -23,28 +23,32 @@ export async function fetchSharedPresentation(accessCode: string) {
     // Ensure display_settings has both cardColumns and dialogColumns
     const displaySettings = presentation.display_settings || {};
     
-    // Create a properly typed displaySettings object
-    const processedDisplaySettings: PresentationDisplaySettings = {
-      cardColumns: Array.isArray(displaySettings.cardColumns) 
-        ? displaySettings.cardColumns
-        : (Array.isArray(displaySettings.displayColumns) 
-            ? displaySettings.displayColumns 
-            : defaultCardColumns),
-      
-      dialogColumns: Array.isArray(displaySettings.dialogColumns) 
-        ? displaySettings.dialogColumns
-        : (Array.isArray(displaySettings.displayColumns) 
-            ? [...displaySettings.displayColumns, 'synopsis'] 
-            : defaultDialogColumns)
-    };
+  // Create a properly typed displaySettings object with type guards
+  const processedDisplaySettings: PresentationDisplaySettings = {
+    cardColumns: Array.isArray((displaySettings as any)?.cardColumns) 
+      ? (displaySettings as any).cardColumns
+      : (Array.isArray((displaySettings as any)?.displayColumns) 
+          ? (displaySettings as any).displayColumns 
+          : defaultCardColumns),
+  
+    dialogColumns: Array.isArray((displaySettings as any)?.dialogColumns) 
+      ? (displaySettings as any).dialogColumns
+      : (Array.isArray((displaySettings as any)?.displayColumns) 
+          ? [...(displaySettings as any).displayColumns, 'synopsis'] 
+          : defaultDialogColumns)
+  };
 
     // Update the display_settings with the processed version
     presentation.display_settings = processedDisplaySettings;
     
     // Call the function to increment the access count
-    await supabaseCustom.rpc('increment_presentation_share_access', {
-      code: accessCode
-    }).catch(err => console.error('Failed to increment access count:', err));
+    try {
+      await supabaseCustom.rpc('increment_presentation_share_access', {
+        code: accessCode
+      });
+    } catch (err) {
+      console.error('Failed to increment access count:', err);
+    }
     
     return { data: presentation, error: null };
   } catch (error) {

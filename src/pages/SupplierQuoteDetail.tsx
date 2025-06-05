@@ -6,15 +6,12 @@ import { useOrganization } from "@/context/OrganizationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, FileText, Edit, Printer, Download } from "lucide-react";
+import { ArrowLeft, FileText, Printer, Download } from "lucide-react";
 import { SupplierQuoteDetail } from "@/components/quotes/supplier-quotes/view/SupplierQuoteDetail";
 import { SupplierQuoteAuditHistory } from "@/components/quotes/supplier-quotes/SupplierQuoteAuditHistory";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogContent, AlertDialogAction, AlertDialogCancel, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { format } from "date-fns";
-import { formatCurrency } from "@/utils/formatters";
 
 const SupplierQuoteDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -125,21 +122,6 @@ const SupplierQuoteDetailPage = () => {
     toast.info("Export functionality coming soon");
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "draft":
-        return "bg-gray-100 text-gray-800";
-      case "submitted":
-        return "bg-blue-100 text-blue-800";
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-6 space-y-6">
@@ -183,28 +165,17 @@ const SupplierQuoteDetailPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* Header Section */}
+      {/* Header Navigation */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => navigate("/quotes")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Quotes
-          </Button>
-          
-          <div>
-            <h1 className="text-2xl font-bold">
-              Supplier Quote Details
-            </h1>
-            <p className="text-muted-foreground">
-              Quote Request: {quote.title || quote.quote_request?.title || "Untitled"}
-            </p>
-          </div>
-        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate("/quotes")}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Quotes
+        </Button>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handlePrint}>
@@ -217,77 +188,6 @@ const SupplierQuoteDetailPage = () => {
           </Button>
         </div>
       </div>
-
-      {/* Quote Summary Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <CardTitle className="text-xl">
-                  {quote.reference || quote.reference_id || "No Reference"}
-                </CardTitle>
-                <Badge className={getStatusColor(quote.status)}>
-                  {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground">
-                From: <span className="font-medium">{quote.supplier_name || "Unknown Supplier"}</span>
-              </p>
-            </div>
-            
-            <div className="text-right space-y-1">
-              {quote.total_cost && (
-                <div className="text-2xl font-bold">
-                  {formatCurrency(quote.total_cost, quote.currency)}
-                </div>
-              )}
-              <div className="text-sm text-muted-foreground">
-                Currency: {quote.currency}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm text-muted-foreground">VALIDITY PERIOD</h4>
-              <div className="space-y-1">
-                <div className="text-sm">
-                  <span className="text-muted-foreground">From:</span> {quote.valid_from ? format(new Date(quote.valid_from), "MMM d, yyyy") : "Not specified"}
-                </div>
-                <div className="text-sm">
-                  <span className="text-muted-foreground">To:</span> {quote.valid_to ? format(new Date(quote.valid_to), "MMM d, yyyy") : "Not specified"}
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm text-muted-foreground">SUBMISSION</h4>
-              <div className="space-y-1">
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Submitted:</span> {quote.submitted_at ? format(new Date(quote.submitted_at), "MMM d, yyyy") : "Not submitted"}
-                </div>
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Created:</span> {format(new Date(quote.created_at), "MMM d, yyyy")}
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm text-muted-foreground">FORMATS</h4>
-              <div className="text-sm">
-                {quote.formats && quote.formats.length > 0 ? (
-                  <span>{quote.formats.length} format{quote.formats.length !== 1 ? 's' : ''} included</span>
-                ) : (
-                  <span className="text-muted-foreground">No formats</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Main Content */}
       {showAuditHistory ? (

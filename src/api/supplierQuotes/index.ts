@@ -2,6 +2,7 @@
 import { createSupplierQuote } from './createSupplierQuote';
 import { deleteSupplierQuote } from './deleteSupplierQuote';
 import { fetchSupplierQuotes } from './fetchSupplierQuotes';
+import { fetchSupplierQuotesComparison } from './fetchSupplierQuotesComparison';
 import { updateSupplierQuote } from './updateSupplierQuote';
 import { fetchSupplierQuoteById } from './fetchSupplierQuoteById';
 import { submitSupplierQuote } from './submitSupplierQuote';
@@ -18,6 +19,7 @@ const api = {
   createSupplierQuote,
   deleteSupplierQuote,
   fetchSupplierQuotes,
+  fetchSupplierQuotesComparison,
   fetchSupplierQuoteById,
   updateSupplierQuote,
   submitSupplierQuote,
@@ -38,6 +40,7 @@ export {
   createSupplierQuote,
   deleteSupplierQuote,
   fetchSupplierQuotes,
+  fetchSupplierQuotesComparison,
   fetchSupplierQuoteById,
   updateSupplierQuote,
   submitSupplierQuote,

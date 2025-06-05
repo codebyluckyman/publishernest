@@ -1,3 +1,4 @@
+
 CREATE VIEW quote_management_view AS
 SELECT
   sq.*,
@@ -50,27 +51,7 @@ SELECT
     )
     FROM suppliers s2
     WHERE s2.id = sq.supplier_id
-  ) AS supplier,
-  (
-    SELECT COALESCE(json_agg(
-      json_build_object(
-        'id', sqf.id,
-        'supplier_quote_id', sqf.supplier_quote_id,
-        'format_id', sqf.format_id,
-        'format', (
-          SELECT json_build_object(
-            'id', f2.id,
-            'format_name', f2.format_name
-          )
-          FROM formats f2
-          WHERE f2.id = sqf.format_id
-        )
-      )
-    ), '[]'::json)
-    FROM supplier_quote_formats sqf
-    WHERE sqf.supplier_quote_id = sq.id
-  ) AS formats
+  ) AS supplier
 FROM supplier_quotes sq
 JOIN suppliers s ON s.id = sq.supplier_id
-JOIN quote_requests qr ON qr.id = sq.quote_request_id
-JOIN supplier_quote_formats sqf ON sqf.supplier_quote_id = sq.id;
+JOIN quote_requests qr ON qr.id = sq.quote_request_id;
