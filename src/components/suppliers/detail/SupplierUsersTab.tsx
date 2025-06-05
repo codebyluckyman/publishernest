@@ -15,7 +15,6 @@ interface SupplierUser {
   id: string;
   supplier_id: string;
   user_id: string;
-  role: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -140,7 +139,6 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Added</TableHead>
                     <TableHead className="w-[120px]">Actions</TableHead>
@@ -153,11 +151,6 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
                         {getUserDisplayName(user)}
                       </TableCell>
                       <TableCell>{user.profiles?.email || "N/A"}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {user.role}
-                        </Badge>
-                      </TableCell>
                       <TableCell>
                         <Badge variant={user.status === "active" ? "default" : "secondary"}>
                           {user.status}
