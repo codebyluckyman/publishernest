@@ -61,7 +61,8 @@ export function useFormatsForSelect() {
         return [];
       }
     },
-    // enabled: !!currentOrganization, ## NOT REQUIRED AS ORG IS ALWAYS PRESENT
+    enabled: !!currentOrganization, 
+    // ## NOT REQUIRED AS ORG IS ALWAYS PRESENT
     // enabled: true,
     // initialData: [],
     staleTime: 5 * 60 * 1000,
