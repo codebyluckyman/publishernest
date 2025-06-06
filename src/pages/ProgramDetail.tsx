@@ -1,9 +1,10 @@
 
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, Calendar, DollarSign } from "lucide-react";
+import { ArrowLeft, Edit, Calendar, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
 import { ProgramFormatsSection } from "@/components/publishing-programs/detail/ProgramFormatsSection";
 import { EditProgramDialog } from "@/components/publishing-programs/detail/EditProgramDialog";
@@ -16,6 +17,7 @@ const ProgramDetail = () => {
   const [showEditDialog, setShowEditDialog] = React.useState(false);
 
   const program = programs.find(p => p.id === id);
+  const currentProgramIndex = programs.findIndex(p => p.id === id);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -24,6 +26,24 @@ const ProgramDetail = () => {
       case 'completed': return 'bg-green-100 text-green-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleProgramChange = (programId: string) => {
+    navigate(`/publishing-programs/${programId}`);
+  };
+
+  const handlePreviousProgram = () => {
+    if (currentProgramIndex > 0) {
+      const previousProgram = programs[currentProgramIndex - 1];
+      navigate(`/publishing-programs/${previousProgram.id}`);
+    }
+  };
+
+  const handleNextProgram = () => {
+    if (currentProgramIndex < programs.length - 1) {
+      const nextProgram = programs[currentProgramIndex + 1];
+      navigate(`/publishing-programs/${nextProgram.id}`);
     }
   };
 
@@ -64,10 +84,11 @@ const ProgramDetail = () => {
         </Button>
       </div>
 
-      {/* Compact program info header */}
+      {/* Enhanced program info header */}
       <div className="flex items-center justify-between bg-white border rounded-lg p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Status:</span>
             <Badge className={getStatusColor(program.status)}>
               {program.status}
             </Badge>
@@ -90,6 +111,7 @@ const ProgramDetail = () => {
             )}
             {program.start_date && (
               <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-700">Program Start and End Date:</span>
                 <Calendar className="h-4 w-4" />
                 <span>
                   {format(new Date(program.start_date), 'MMM yyyy')}
@@ -100,10 +122,47 @@ const ProgramDetail = () => {
           </div>
         </div>
         
-        <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)}>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Program
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select value={program.id} onValueChange={handleProgramChange}>
+            <SelectTrigger className="w-[250px]">
+              <SelectValue placeholder="Select program">
+                {program.name}
+                {program.program_year && ` (${program.program_year})`}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {programs.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                  {p.program_year && ` (${p.program_year})`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handlePreviousProgram}
+            disabled={currentProgramIndex <= 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleNextProgram}
+            disabled={currentProgramIndex >= programs.length - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Program
+          </Button>
+        </div>
       </div>
 
       <ProgramFormatsSection programId={program.id} />
