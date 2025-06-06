@@ -28,8 +28,7 @@ interface AddFormatDialogProps {
 }
 
 export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDialogProps) {
-  const { currentOrganization } = useOrganization();
-  const { formats, isLoading: formatsLoading } = useFormatsForSelect(currentOrganization);
+  const { formats, isLoading: formatsLoading } = useFormatsForSelect();
 
   const form = useForm<CreateProgramFormatInput>({
     resolver: zodResolver(addFormatSchema),

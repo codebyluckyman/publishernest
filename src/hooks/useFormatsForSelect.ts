@@ -12,9 +12,9 @@ export interface FormatForSelect {
   format_name: string;
 }
 
-export function useFormatsForSelect(currentOrganizationParam?: any) {
+export function useFormatsForSelect() {
   const { currentOrganization: orgFromContext } = useOrganization();
-  const currentOrganization = currentOrganizationParam || orgFromContext;
+  const currentOrganization = orgFromContext;
 
   // Add this logging
   console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
@@ -60,8 +60,8 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
         return [];
       }
     },
-    // enabled: !!currentOrganization,
-    enabled: true,
+    enabled: !!currentOrganization,
+    // enabled: true,
     initialData: [],
     staleTime: 5 * 60 * 1000,
   });
