@@ -13,7 +13,7 @@ interface ProgramTitlesSectionProps {
 
 export function ProgramTitlesSection({ programFormatId }: ProgramTitlesSectionProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const { data: titles, isLoading } = useProgramTitles(programFormatId);
+  const { titles: titles, isLoading } = useProgramTitles(programFormatId);
 
   const getStatusColor = (status: string) => {
     switch (status) {
