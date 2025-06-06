@@ -62,9 +62,7 @@ export function useFormatsForSelect() {
       }
     },
     enabled: !!currentOrganization, 
-    // ## NOT REQUIRED AS ORG IS ALWAYS PRESENT
-    // enabled: true,
-    initialData: [],
+    // initialData: [], // ## NOT REQUIRED AS INITIAL DATA IS HANDLED IN FUNCTION
     staleTime: 5 * 60 * 1000,
   });
 
