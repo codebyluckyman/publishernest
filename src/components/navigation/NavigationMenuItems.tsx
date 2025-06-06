@@ -1,153 +1,98 @@
+import { LucideIcon } from "lucide-react"
+import { Book, Package, FileText, Users, BarChart3, BookOpen, Calendar, Printer, ShoppingCart, DollarSign, Truck, Package2, Presentation } from "lucide-react";
 
-import { 
-  LayoutDashboard, 
-  Book, 
-  Landmark, 
-  ShoppingCart, 
-  FileText, 
-  ClipboardList,
-  Presentation,
-  Settings, 
-  Users,
-  Building,
-  CreditCard,
-  Truck,
-  Map,
-  Calculator,
-  FileSpreadsheet,
-  FileCog,
-  Store,
-  BookOpen,
-  BoxesIcon,
-  Package
-} from 'lucide-react';
-
-export interface MenuItem {
+interface MenuItem {
   label: string;
   path: string;
-  icon: React.ElementType;
+  icon: LucideIcon | string;
   submenu?: MenuItem[];
 }
 
-/**
- * Navigation Menu Structure
- * 
- * This file defines the application's navigation structure with three main categories:
- * 1. Quotes - For managing quote requests and supplier quotes
- * 2. Production - For managing suppliers, print runs, and purchase orders
- * 3. Sales - For managing customers and sales orders
- * 
- * Each main category has its own submenu items to provide organized access to related features.
- * DO NOT remove or restructure these main categories as they represent core application functionality.
- */
-export const NavigationMenuItems: MenuItem[] = [
+export const getNavigationMenuItems = (): MenuItem[] => [
   {
-    label: 'Dashboard',
-    path: '/',
-    icon: LayoutDashboard,
+    label: "Formats",
+    path: "/formats",
+    icon: Book
   },
   {
-    label: 'Titles',
-    path: '#',
+    label: "Products",
+    path: "/products",
+    icon: Package
+  },
+  {
+    label: "Quotes",
+    path: "/quotes",
+    icon: FileText,
+    submenu: [
+      {
+        label: "Quote Requests",
+        path: "/quote-requests",
+        icon: FileText
+      },
+      {
+        label: "Supplier Quotes",
+        path: "/supplier-quotes",
+        icon: Users
+      },
+      {
+        label: "Quote Comparison",
+        path: "/quote-comparison",
+        icon: BarChart3
+      }
+    ]
+  },
+  {
+    label: "Publishing",
+    path: "/publishing",
     icon: BookOpen,
     submenu: [
       {
-        label: 'Products',
-        path: '/products',
-        icon: Book,
+        label: "Publishing Program",
+        path: "/publishing-program",
+        icon: Calendar
       },
       {
-        label: 'Formats',
-        path: '/formats',
-        icon: ClipboardList,
-      },
-      {
-        label: 'Stock',
-        path: '/stock',
-        icon: Package,
+        label: "Print Runs",
+        path: "/print-runs",
+        icon: Printer
       }
     ]
   },
   {
-    label: 'Publishing',
-    path: '#',
-    icon: Book,
+    label: "Orders",
+    path: "/orders",
+    icon: ShoppingCart,
     submenu: [
       {
-        label: 'Publishing Program',
-        path: '/publishing-program',
-        icon: ClipboardList,
+        label: "Purchase Orders",
+        path: "/purchase-orders",
+        icon: ShoppingCart
+      },
+      {
+        label: "Sales Orders",
+        path: "/sales-orders",
+        icon: DollarSign
       }
     ]
   },
   {
-    label: 'Quotes',
-    path: '#',
-    icon: FileSpreadsheet,
-    submenu: [
-      {
-        label: 'Quote Requests',
-        path: '/quote-requests',
-        icon: FileText,
-      },
-      {
-        label: 'Quotes',
-        path: '/quotes',
-        icon: FileCog,
-      }
-    ]
+    label: "Customers",
+    path: "/customers",
+    icon: Users
   },
   {
-    label: 'Production',
-    path: '#',
-    icon: Building,
-    submenu: [
-      {
-        label: 'Suppliers',
-        path: '/suppliers',
-        icon: Store,
-      },
-      {
-        label: 'Print Runs',
-        path: '/print-runs',
-        icon: Map,
-      },
-      {
-        label: 'Purchase Orders',
-        path: '/purchase-orders',
-        icon: ShoppingCart,
-      }
-    ]
+    label: "Suppliers",
+    path: "/suppliers",
+    icon: Truck
   },
   {
-    label: 'Sales',
-    path: '#',
-    icon: Calculator,
-    submenu: [
-      {
-        label: 'Customers',
-        path: '/customers',
-        icon: Users,
-      },
-      {
-        label: 'Sales Orders',
-        path: '/sales-orders',
-        icon: CreditCard,
-      },
-      {
-        label: 'Sales Presentations',
-        path: '/sales-presentations',
-        icon: Presentation,
-      }
-    ]
+    label: "Stock",
+    path: "/stock",
+    icon: Package2
   },
   {
-    label: 'Organization',
-    path: '/organization-settings',
-    icon: Landmark,
-  },
+    label: "Sales Presentations",
+    path: "/sales-presentations",
+    icon: Presentation
+  }
 ];
-
-export const getNavigationMenuItems = (): MenuItem[] => {
-  return NavigationMenuItems;
-};
