@@ -12,11 +12,13 @@ export interface FormatForSelect {
   format_name: string;
 }
 
-export function useFormatsForSelect() {
-  const { currentOrganization } = useOrganization();
+const { currentOrganization: orgFromContext } = useOrganization();
+const currentOrganization = orgFromContext;
 
-  // Add this logging
-  console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
+// Add this logging
+console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
+
+export function useFormatsForSelect() {
 
   const query = useQuery({
     queryKey: ["formats-for-select", currentOrganization?.id],
