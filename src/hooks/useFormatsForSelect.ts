@@ -61,7 +61,7 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
       }
     },
     enabled: !!currentOrganization,
-    initialData: [],
+    // initialData: [],
     staleTime: 5 * 60 * 1000,
   });
 
