@@ -13,5 +13,8 @@ export async function fetchPublishingPrograms(organizationId: string): Promise<P
     throw new Error(`Error fetching publishing programs: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []).map(item => ({
+    ...item,
+    status: item.status as 'planning' | 'active' | 'completed' | 'cancelled'
+  }));
 }

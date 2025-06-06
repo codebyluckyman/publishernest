@@ -16,7 +16,7 @@ export async function createProgramFormat(input: CreateProgramFormatInput): Prom
     })
     .select(`
       *,
-      format:formats(id, format_name, description)
+      format:formats(id, format_name)
     `)
     .single();
 
@@ -24,5 +24,8 @@ export async function createProgramFormat(input: CreateProgramFormatInput): Prom
     throw new Error(`Error creating program format: ${error.message}`);
   }
 
-  return data;
+  return {
+    ...data,
+    status: data.status as 'concept' | 'approved' | 'in_production' | 'completed'
+  };
 }

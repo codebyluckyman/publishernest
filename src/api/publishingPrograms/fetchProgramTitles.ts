@@ -16,5 +16,8 @@ export async function fetchProgramTitles(programFormatId: string): Promise<Progr
     throw new Error(`Error fetching program titles: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []).map(item => ({
+    ...item,
+    status: item.status as 'concept' | 'editorial' | 'design' | 'production' | 'published'
+  }));
 }

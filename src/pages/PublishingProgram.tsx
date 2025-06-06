@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { PublishingProgramList } from "@/components/publishing-programs/PublishingProgramList";
 import { CreateProgramDialog } from "@/components/publishing-programs/CreateProgramDialog";
-import { PublishingProgram } from "@/types/publishingProgram";
+import type { PublishingProgram } from "@/types/publishingProgram";
 
 const PublishingProgram = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);

@@ -21,5 +21,8 @@ export async function createPublishingProgram(
     throw new Error(`Error creating publishing program: ${error.message}`);
   }
 
-  return data;
+  return {
+    ...data,
+    status: data.status as 'planning' | 'active' | 'completed' | 'cancelled'
+  };
 }

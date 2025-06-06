@@ -26,5 +26,8 @@ export async function createProgramTitle(input: CreateProgramTitleInput): Promis
     throw new Error(`Error creating program title: ${error.message}`);
   }
 
-  return data;
+  return {
+    ...data,
+    status: data.status as 'concept' | 'editorial' | 'design' | 'production' | 'published'
+  };
 }

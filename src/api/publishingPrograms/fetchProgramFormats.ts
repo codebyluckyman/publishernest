@@ -16,5 +16,8 @@ export async function fetchProgramFormats(programId: string): Promise<ProgramFor
     throw new Error(`Error fetching program formats: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []).map(item => ({
+    ...item,
+    status: item.status as 'concept' | 'approved' | 'in_production' | 'completed'
+  }));
 }
