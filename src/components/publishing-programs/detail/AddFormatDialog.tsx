@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +15,7 @@ import { CreateProgramFormatInput } from "@/types/publishingProgram";
 import { useProgramFormats } from "@/hooks/usePublishingPrograms";
 
 const addFormatSchema = z.object({
+  program_id: z.string().min(1, "Program ID is required"),
   format_id: z.string().min(1, "Format is required"),
   target_quantity: z.number().optional(),
   budget_allocation: z.number().optional(),
@@ -54,9 +54,18 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
       return;
     }
 
+    // Ensure program_id is always set to the current programId
+    const formDataWithProgramId = {
+      ...data,
+      program_id: programId
+    };
+
+    console.log('Submitting format creation with data:', formDataWithProgramId);
+    console.log('Program ID from props:', programId);
+    console.log('Program ID in form data:', formDataWithProgramId.program_id);
+
     try {
-      console.log('Submitting format creation with user:', user.id, 'and data:', data);
-      await createFormat(data);
+      await createFormat(formDataWithProgramId);
       form.reset();
       onOpenChange(false);
     } catch (error) {
@@ -85,6 +94,15 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Hidden field to ensure program_id is maintained */}
+            <FormField
+              control={form.control}
+              name="program_id"
+              render={({ field }) => (
+                <input type="hidden" {...field} value={programId} />
+              )}
+            />
+
             <FormField
               control={form.control}
               name="format_id"
