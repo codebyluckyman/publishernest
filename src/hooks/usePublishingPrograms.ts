@@ -79,7 +79,7 @@ export const useProgramFormats = (programId: string) => {
   });
 
   return {
-    formats: formatsQuery.data || [],
+    data: formatsQuery.data || [],
     isLoading: formatsQuery.isLoading,
     error: formatsQuery.error,
     createFormat: createFormatMutation.mutate,
