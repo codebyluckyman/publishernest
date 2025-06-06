@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Calendar, DollarSign, BookOpen } from "lucide-react";
@@ -6,6 +5,7 @@ import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
 import { PublishingProgram } from "@/types/publishingProgram";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface PublishingProgramListProps {
   onCreateProgram: () => void;
@@ -14,6 +14,7 @@ interface PublishingProgramListProps {
 
 export function PublishingProgramList({ onCreateProgram, onViewProgram }: PublishingProgramListProps) {
   const { programs, isLoading } = usePublishingPrograms();
+  const navigate = useNavigate();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -23,6 +24,11 @@ export function PublishingProgramList({ onCreateProgram, onViewProgram }: Publis
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleViewProgram = (program: PublishingProgram) => {
+    navigate(`/publishing-programs/${program.id}`);
+    onViewProgram(program);
   };
 
   if (isLoading) {
@@ -73,7 +79,7 @@ export function PublishingProgramList({ onCreateProgram, onViewProgram }: Publis
       ) : (
         <div className="grid gap-6">
           {programs.map((program) => (
-            <Card key={program.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewProgram(program)}>
+            <Card key={program.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleViewProgram(program)}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>

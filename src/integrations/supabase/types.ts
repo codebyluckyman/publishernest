@@ -4655,6 +4655,21 @@ export type Database = {
           uploaded_by: string | null
         }[]
       }
+      get_supplier_users_with_profiles: {
+        Args: { p_supplier_id: string }
+        Returns: {
+          id: string
+          supplier_id: string
+          user_id: string
+          status: string
+          created_at: string
+          updated_at: string
+          profile_id: string
+          email: string
+          first_name: string
+          last_name: string
+        }[]
+      }
       get_unread_count: {
         Args: { p_room_id: string; p_user_id: string }
         Returns: number

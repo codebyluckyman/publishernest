@@ -1,21 +1,24 @@
 
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ProgramForm } from "./ProgramForm";
+import { PublishingProgram } from "@/types/publishingProgram";
+import { ProgramForm } from "../ProgramForm";
 
-interface CreateProgramDialogProps {
+interface EditProgramDialogProps {
+  program: PublishingProgram;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreateProgramDialog({ open, onOpenChange }: CreateProgramDialogProps) {
+export function EditProgramDialog({ program, open, onOpenChange }: EditProgramDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create Publishing Program</DialogTitle>
+          <DialogTitle>Edit Publishing Program</DialogTitle>
         </DialogHeader>
         <ProgramForm 
+          program={program}
           onSuccess={() => onOpenChange(false)}
           onCancel={() => onOpenChange(false)}
         />

@@ -1,4 +1,3 @@
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
@@ -7,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Formats from "./pages/Formats";
 import Products from "./pages/Products";
 import PublishingProgram from "./pages/PublishingProgram";
+import ProgramDetail from "./pages/ProgramDetail";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
 import CreatePurchaseOrder from "./pages/CreatePurchaseOrder";
@@ -61,6 +61,10 @@ const router = createBrowserRouter([
       {
         path: "publishing-program",
         element: <ProtectedRoute><PublishingProgram /></ProtectedRoute>
+      },
+      {
+        path: "publishing-programs/:id",
+        element: <ProtectedRoute><ProgramDetail /></ProtectedRoute>
       },
       {
         path: "quote-requests",
