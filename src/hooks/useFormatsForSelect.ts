@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganization } from "./useOrganization";
@@ -12,12 +13,9 @@ export interface FormatForSelect {
   format_name: string;
 }
 
-
 export function useFormatsForSelect() {
-  const { currentOrganization: orgFromContext } = useOrganization();
-  const currentOrganization = orgFromContext;
+  const { currentOrganization } = useOrganization();
 
-  // Add this logging
   console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
 
   const query = useQuery({
@@ -62,11 +60,9 @@ export function useFormatsForSelect() {
       }
     },
     enabled: !!currentOrganization, 
-    // initialData: [], // ## NOT REQUIRED AS INITIAL DATA IS HANDLED IN FUNCTION
     staleTime: 5 * 60 * 1000,
   });
 
-  // Add this logging for the final result
   console.log("📤 useFormatsForSelect - Returning:", {
     formats: query.data,
     isLoading: query.isLoading,

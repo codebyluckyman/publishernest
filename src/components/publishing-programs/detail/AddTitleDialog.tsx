@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { CreateProgramTitleInput } from "@/types/publishingProgram";
+import { useProgramTitles } from "@/hooks/usePublishingPrograms";
 
 const addTitleSchema = z.object({
   working_title: z.string().min(1, "Working title is required"),
@@ -28,6 +29,8 @@ interface AddTitleDialogProps {
 }
 
 export function AddTitleDialog({ programFormatId, open, onOpenChange }: AddTitleDialogProps) {
+  const { createTitle, isCreatingTitle } = useProgramTitles(programFormatId);
+
   const form = useForm<CreateProgramTitleInput>({
     resolver: zodResolver(addTitleSchema),
     defaultValues: {
@@ -43,9 +46,12 @@ export function AddTitleDialog({ programFormatId, open, onOpenChange }: AddTitle
   });
 
   const onSubmit = (data: CreateProgramTitleInput) => {
-    console.log("Add title to program format:", data);
-    // TODO: Implement createProgramTitle mutation
-    onOpenChange(false);
+    createTitle(data, {
+      onSuccess: () => {
+        form.reset();
+        onOpenChange(false);
+      }
+    });
   };
 
   return (
@@ -173,8 +179,8 @@ export function AddTitleDialog({ programFormatId, open, onOpenChange }: AddTitle
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Add Title
+              <Button type="submit" disabled={isCreatingTitle}>
+                {isCreatingTitle ? "Adding..." : "Add Title"}
               </Button>
             </div>
           </form>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
 import { Combobox } from "@/components/ui/combobox";
 import { CreateProgramFormatInput } from "@/types/publishingProgram";
+import { useProgramFormats } from "@/hooks/usePublishingPrograms";
 
 const addFormatSchema = z.object({
   format_id: z.string().min(1, "Format is required"),
@@ -29,6 +31,7 @@ interface AddFormatDialogProps {
 
 export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDialogProps) {
   const { formats, isLoading: formatsLoading } = useFormatsForSelect();
+  const { createFormat, isCreatingFormat } = useProgramFormats(programId);
 
   const form = useForm<CreateProgramFormatInput>({
     resolver: zodResolver(addFormatSchema),
@@ -44,9 +47,12 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
   });
 
   const onSubmit = (data: CreateProgramFormatInput) => {
-    console.log("Add format to program:", data);
-    // TODO: Implement addFormatToProgram mutation
-    onOpenChange(false);
+    createFormat(data, {
+      onSuccess: () => {
+        form.reset();
+        onOpenChange(false);
+      }
+    });
   };
 
   // Transform formats data for the combobox - ensure this is always an array
@@ -181,8 +187,8 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Add Format
+              <Button type="submit" disabled={isCreatingFormat}>
+                {isCreatingFormat ? "Adding..." : "Add Format"}
               </Button>
             </div>
           </form>
