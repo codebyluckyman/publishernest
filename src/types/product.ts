@@ -88,3 +88,4 @@ export interface ProductFilters {
   license: string | string[] | null;
   format_id: string | string[] | null;
   series_name: string | string[] | null;
+}
