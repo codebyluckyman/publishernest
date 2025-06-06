@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useOrganization } from "@/hooks/useOrganization";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +29,17 @@ interface AddFormatDialogProps {
 }
 
 export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDialogProps) {
-  const { data: formats, isLoading: formatsLoading } = useFormats();
+  const { useFormatsList } = useFormats();
+  const { data: formats, isLoading: formatsLoading } = useFormatsList(
+    // You'll need the organization ID here
+    currentOrganization?.id || "",
+    undefined, // search
+    'format_name', // sort
+    'asc', // order
+    0, // page
+    100 // pageSize - get all formats
+  );
+
 
   const form = useForm<CreateProgramFormatInput>({
     resolver: zodResolver(addFormatSchema),

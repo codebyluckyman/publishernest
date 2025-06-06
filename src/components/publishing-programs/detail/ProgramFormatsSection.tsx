@@ -27,6 +27,7 @@ export function ProgramFormatsSection({ programId }: ProgramFormatsSectionProps)
     }
   };
 
+
   if (isLoading) {
     return (
       <Card>

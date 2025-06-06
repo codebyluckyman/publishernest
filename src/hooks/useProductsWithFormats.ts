@@ -5,10 +5,10 @@ import { useOrganization } from './useOrganization';
 import { Product } from '@/types/product';
 import { Format } from '@/types/format';
 
-export interface ProductWithFormat extends Product {
-  default_price: number | null;
-  default_currency: string;
-}
+// export interface ProductWithFormat extends Product {
+//   default_price: number | null;
+//   default_currency: string;
+// }
 
 export function useProductsWithFormats() {
   const { currentOrganization } = useOrganization();
@@ -39,13 +39,13 @@ export function useProductsWithFormats() {
       }));
 
       
-      return productsWithDefaults as ProductWithFormat[];
+      return productsWithDefaults as Product[];
     },
     enabled: !!currentOrganization,
   });
 
   return {
-    products: query.data || [] as ProductWithFormat[],
+    products: query.data || [] as Product[],
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
