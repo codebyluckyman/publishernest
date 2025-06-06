@@ -1865,7 +1865,7 @@ export type Database = {
           id: string
           notes: string | null
           program_id: string
-          status: string
+          status: string | null
           target_quantity: number | null
           timeline_end: string | null
           timeline_start: string | null
@@ -1878,7 +1878,7 @@ export type Database = {
           id?: string
           notes?: string | null
           program_id: string
-          status?: string
+          status?: string | null
           target_quantity?: number | null
           timeline_end?: string | null
           timeline_start?: string | null
@@ -1891,7 +1891,7 @@ export type Database = {
           id?: string
           notes?: string | null
           program_id?: string
-          status?: string
+          status?: string | null
           target_quantity?: number | null
           timeline_end?: string | null
           timeline_start?: string | null

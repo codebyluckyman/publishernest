@@ -1,6 +1,7 @@
 
 import React from "react";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,7 @@ interface AddFormatDialogProps {
 export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDialogProps) {
   const { formats, isLoading: formatsLoading } = useFormatsForSelect();
   const { createFormat, isCreatingFormat } = useProgramFormats(programId);
+  const { user } = useAuth();
 
   const form = useForm<CreateProgramFormatInput>({
     resolver: zodResolver(addFormatSchema),
@@ -47,15 +49,25 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
   });
 
   const onSubmit = async (data: CreateProgramFormatInput) => {
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
+
     try {
+      console.log('Submitting format creation with user:', user.id, 'and data:', data);
       await createFormat(data);
       form.reset();
       onOpenChange(false);
     } catch (error) {
-      // Error handling is already done in the mutation's onError
       console.error('Failed to create format:', error);
     }
   };
+
+  // Don't render if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   // Transform formats data for the combobox - ensure this is always an array
   const formatOptions = Array.isArray(formats) 

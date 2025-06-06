@@ -27,13 +27,18 @@ export const usePublishingPrograms = () => {
   });
 
   const createProgramMutation = useMutation({
-    mutationFn: (input: CreatePublishingProgramInput) =>
-      createPublishingProgram(input, currentOrganization!.id, user!.id),
+    mutationFn: (input: CreatePublishingProgramInput) => {
+      if (!user) {
+        throw new Error('User must be authenticated');
+      }
+      return createPublishingProgram(input, currentOrganization!.id, user!.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publishing-programs'] });
       toast.success('Publishing program created successfully');
     },
     onError: (error: Error) => {
+      console.error('Create program error:', error);
       toast.error(`Failed to create program: ${error.message}`);
     },
   });
@@ -48,6 +53,7 @@ export const usePublishingPrograms = () => {
 };
 
 export const useProgramFormats = (programId: string) => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const formatsQuery = useQuery({
@@ -57,23 +63,36 @@ export const useProgramFormats = (programId: string) => {
   });
 
   const createFormatMutation = useMutation({
-    mutationFn: createProgramFormat,
+    mutationFn: (input: CreateProgramFormatInput) => {
+      if (!user) {
+        throw new Error('User must be authenticated');
+      }
+      console.log('Creating format with authenticated user:', user.id);
+      return createProgramFormat(input);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-formats', programId] });
       toast.success('Format added to program successfully');
     },
     onError: (error: Error) => {
+      console.error('Create format error:', error);
       toast.error(`Failed to add format: ${error.message}`);
     },
   });
 
   const deleteFormatMutation = useMutation({
-    mutationFn: deleteProgramFormat,
+    mutationFn: (formatId: string) => {
+      if (!user) {
+        throw new Error('User must be authenticated');
+      }
+      return deleteProgramFormat(formatId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-formats', programId] });
       toast.success('Format removed from program successfully');
     },
     onError: (error: Error) => {
+      console.error('Delete format error:', error);
       toast.error(`Failed to remove format: ${error.message}`);
     },
   });
@@ -90,6 +109,7 @@ export const useProgramFormats = (programId: string) => {
 };
 
 export const useProgramTitles = (programFormatId: string) => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const titlesQuery = useQuery({
@@ -99,23 +119,35 @@ export const useProgramTitles = (programFormatId: string) => {
   });
 
   const createTitleMutation = useMutation({
-    mutationFn: createProgramTitle,
+    mutationFn: (input: CreateProgramTitleInput) => {
+      if (!user) {
+        throw new Error('User must be authenticated');
+      }
+      return createProgramTitle(input);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-titles', programFormatId] });
       toast.success('Title added successfully');
     },
     onError: (error: Error) => {
+      console.error('Create title error:', error);
       toast.error(`Failed to add title: ${error.message}`);
     },
   });
 
   const deleteTitleMutation = useMutation({
-    mutationFn: deleteProgramTitle,
+    mutationFn: (titleId: string) => {
+      if (!user) {
+        throw new Error('User must be authenticated');
+      }
+      return deleteProgramTitle(titleId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-titles', programFormatId] });
       toast.success('Title deleted successfully');
     },
     onError: (error: Error) => {
+      console.error('Delete title error:', error);
       toast.error(`Failed to delete title: ${error.message}`);
     },
   });
