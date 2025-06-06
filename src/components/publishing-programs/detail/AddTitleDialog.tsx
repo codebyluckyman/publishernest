@@ -7,7 +7,6 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { CreateProgramTitleInput } from "@/types/publishingProgram";
 import { useProgramTitles } from "@/hooks/usePublishingPrograms";
@@ -45,13 +44,15 @@ export function AddTitleDialog({ programFormatId, open, onOpenChange }: AddTitle
     },
   });
 
-  const onSubmit = (data: CreateProgramTitleInput) => {
-    createTitle(data, {
-      onSuccess: () => {
-        form.reset();
-        onOpenChange(false);
-      }
-    });
+  const onSubmit = async (data: CreateProgramTitleInput) => {
+    try {
+      await createTitle(data);
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      // Error handling is already done in the mutation's onError
+      console.error('Failed to create title:', error);
+    }
   };
 
   return (

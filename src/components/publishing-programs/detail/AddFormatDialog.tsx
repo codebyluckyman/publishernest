@@ -46,13 +46,15 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
     },
   });
 
-  const onSubmit = (data: CreateProgramFormatInput) => {
-    createFormat(data, {
-      onSuccess: () => {
-        form.reset();
-        onOpenChange(false);
-      }
-    });
+  const onSubmit = async (data: CreateProgramFormatInput) => {
+    try {
+      await createFormat(data);
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      // Error handling is already done in the mutation's onError
+      console.error('Failed to create format:', error);
+    }
   };
 
   // Transform formats data for the combobox - ensure this is always an array

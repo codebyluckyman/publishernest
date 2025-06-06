@@ -42,7 +42,7 @@ export const usePublishingPrograms = () => {
     programs: programsQuery.data || [],
     isLoading: programsQuery.isLoading,
     error: programsQuery.error,
-    createProgram: createProgramMutation.mutate,
+    createProgram: createProgramMutation.mutateAsync,
     isCreating: createProgramMutation.isPending,
   };
 };
@@ -82,9 +82,9 @@ export const useProgramFormats = (programId: string) => {
     data: formatsQuery.data || [],
     isLoading: formatsQuery.isLoading,
     error: formatsQuery.error,
-    createFormat: createFormatMutation.mutate,
+    createFormat: createFormatMutation.mutateAsync,
     isCreatingFormat: createFormatMutation.isPending,
-    deleteFormat: deleteFormatMutation.mutate,
+    deleteFormat: deleteFormatMutation.mutateAsync,
     isDeletingFormat: deleteFormatMutation.isPending,
   };
 };
@@ -124,9 +124,9 @@ export const useProgramTitles = (programFormatId: string) => {
     titles: titlesQuery.data || [],
     isLoading: titlesQuery.isLoading,
     error: titlesQuery.error,
-    createTitle: createTitleMutation.mutate,
+    createTitle: createTitleMutation.mutateAsync,
     isCreatingTitle: createTitleMutation.isPending,
-    deleteTitle: deleteTitleMutation.mutate,
+    deleteTitle: deleteTitleMutation.mutateAsync,
     isDeletingTitle: deleteTitleMutation.isPending,
   };
 };
