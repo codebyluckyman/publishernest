@@ -13,8 +13,7 @@ export interface FormatForSelect {
 }
 
 export function useFormatsForSelect() {
-  const { currentOrganization: orgFromContext } = useOrganization();
-  const currentOrganization = orgFromContext;
+  const { currentOrganization } = useOrganization();
 
   // Add this logging
   console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
