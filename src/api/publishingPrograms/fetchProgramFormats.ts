@@ -7,7 +7,7 @@ export async function fetchProgramFormats(programId: string): Promise<ProgramFor
     .from('program_formats')
     .select(`
       *,
-      format:formats(id, format_name, description)
+      format:formats(id, format_name)
     `)
     .eq('program_id', programId)
     .order('created_at', { ascending: true });

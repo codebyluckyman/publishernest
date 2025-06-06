@@ -27,7 +27,6 @@ export function ProgramFormatsSection({ programId }: ProgramFormatsSectionProps)
     }
   };
 
-
   if (isLoading) {
     return (
       <Card>
@@ -65,11 +64,6 @@ export function ProgramFormatsSection({ programId }: ProgramFormatsSectionProps)
                       <h3 className="font-semibold text-lg">
                         {programFormat.format?.format_name || 'Unknown Format'}
                       </h3>
-                      {programFormat.format?.description && (
-                        <p className="text-gray-600 text-sm mt-1">
-                          {programFormat.format.description}
-                        </p>
-                      )}
                     </div>
                     <Badge className={getStatusColor(programFormat.status)}>
                       {programFormat.status.replace('_', ' ')}

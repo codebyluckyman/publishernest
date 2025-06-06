@@ -1,4 +1,3 @@
-
 export interface PublishingProgram {
   id: string;
   organization_id: string;
@@ -31,7 +30,6 @@ export interface ProgramFormat {
   format?: {
     id: string;
     format_name: string;
-    description?: string;
   };
 }
 
