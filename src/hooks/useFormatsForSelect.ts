@@ -60,8 +60,9 @@ export function useFormatsForSelect(currentOrganizationParam?: any) {
         return [];
       }
     },
-    enabled: !!currentOrganization,
-    // initialData: [],
+    // enabled: !!currentOrganization,
+    enabled: true,
+    initialData: [],
     staleTime: 5 * 60 * 1000,
   });
 
