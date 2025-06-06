@@ -3,18 +3,17 @@ import { Product } from "@/types/product";
 import Image from "@/components/ui/img";
 import { formatPrice } from "@/utils/productUtils";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
-import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
 import { format, parse, isValid } from "date-fns";
 
 interface KanbanViewProps {
   products: Array<{
-    product: ProductWithFormat;
+    product: Product;
     customPrice?: number;
     customDescription?: string;
   }>;
   displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
-    product: ProductWithFormat;
+    product: Product;
     customPrice?: number;
     customDescription?: string;
   }) => void;
@@ -86,7 +85,7 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
   }, {} as Record<string, { items: typeof products, sortValue: any }>);
 
   // Helper function to format price display
-  const getPrice = (product: ProductWithFormat, customPrice?: number) => {
+  const getPrice = (product: Product, customPrice?: number) => {
     if (!showPricing) {
       return 'Contact for pricing';
     }
@@ -97,7 +96,7 @@ export function KanbanView({ products, displaySettings, onSelectProduct }: Kanba
   };
 
   // Helper function to get formatted format display
-  const getFormatDisplay = (product: ProductWithFormat) => {
+  const getFormatDisplay = (product: Product) => {
     if (product.format && product.format.format_name) {
       return product.format.format_name;
     } else if (product.format_id) {

@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
 import { formatPrice } from "@/utils/productUtils";
 import Image from "@/components/ui/img";
-import { Product } from "@/types/product.ts";
+import { Product } from "@/types/product";
 import { useEffect, useState } from "react";
 
 interface CarouselViewProps {

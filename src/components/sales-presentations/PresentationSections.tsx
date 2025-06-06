@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { PresentationSection, PresentationItem, PresentationDisplaySettings } from '@/types/salesPresentation';
 import { usePresentationSections } from '@/hooks/usePresentationSections';
 import { useSectionItems } from '@/hooks/useSectionItems';
-import { useProductsWithFormats, ProductWithFormat } from '@/hooks/useProductsWithFormats';
+import { Product } from '@/types/product';
+import { useProducts } from '@/hooks/useProducts'
 import { ProductSection } from './ProductSection';
 import { AddSectionDialog } from './AddSectionDialog';
 import { Button } from '@/components/ui/button';
@@ -29,8 +30,8 @@ export function PresentationSections({
     addItem
   } = usePresentationSections(presentationId);
   
-  // Changed from useProducts to useProductsWithFormats to get format data
-  const { products } = useProductsWithFormats();
+  // use Products now has format data
+  const { products } = useProducts();
   
   const sectionIds = sections.data?.map(section => section.id) || [];
   const { data: sectionItemsMap, isLoading: isLoadingItems } = useSectionItems(sectionIds);
@@ -80,7 +81,7 @@ export function PresentationSections({
   };
   
   // Create a map of product IDs to products with format data
-  const productMap = new Map<string, ProductWithFormat>();
+  const productMap = new Map<string, Product>();
   if (products) {
     products.forEach(product => {
       productMap.set(product.id, product);
@@ -95,7 +96,7 @@ export function PresentationSections({
         const product = item.item_id ? productMap.get(item.item_id) : undefined;
         
         return {
-          product: product as ProductWithFormat,
+          product: product as Product,
           customPrice: item.custom_price,
           customDescription: item.description
         };
