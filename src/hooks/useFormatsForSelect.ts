@@ -64,7 +64,7 @@ export function useFormatsForSelect() {
     // enabled: !!currentOrganization, ## NOT REQUIRED AS ORG IS ALWAYS PRESENT
     // enabled: true,
     // initialData: [],
-    // staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   // Add this logging for the final result
