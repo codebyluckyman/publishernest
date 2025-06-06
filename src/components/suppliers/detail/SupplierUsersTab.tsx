@@ -18,7 +18,7 @@ interface SupplierUser {
   status: string;
   created_at: string;
   updated_at: string;
-  profiles_id: string;
+  profile_id: string;
   email: string;
   first_name: string | null;
   last_name: string | null;
