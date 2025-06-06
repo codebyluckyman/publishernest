@@ -138,7 +138,7 @@ export function SupplierUsersTab({ supplierId }: SupplierUsersTabProps) {
                       <TableCell className="font-medium">
                         {getUserDisplayName(user)}
                       </TableCell>
-                      <TableCell>{user.profiles?.email || "N/A"}</TableCell>
+                      <TableCell>{user.email || "N/A"}</TableCell>
                       <TableCell>
                         <Badge variant={user.status === "active" ? "default" : "secondary"}>
                           {user.status}
