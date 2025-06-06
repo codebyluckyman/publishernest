@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useOrganization } from "@/hooks/useOrganization";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,9 +7,9 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useFormats } from "@/hooks/useFormats";
+import { useFormatsForSelect } from "@/hooks/useFormatsForSelect";
+import { Combobox } from "@/components/ui/combobox";
 import { CreateProgramFormatInput } from "@/types/publishingProgram";
 
 const addFormatSchema = z.object({
@@ -29,17 +28,8 @@ interface AddFormatDialogProps {
 }
 
 export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDialogProps) {
-  const { useFormatsList } = useFormats();
-  const { data: formats, isLoading: formatsLoading } = useFormatsList(
-    // You'll need the organization ID here
-    currentOrganization?.id || "",
-    undefined, // search
-    'format_name', // sort
-    'asc', // order
-    0, // page
-    100 // pageSize - get all formats
-  );
-
+  const { currentOrganization } = useOrganization();
+  const { formats, isLoading: formatsLoading } = useFormatsForSelect(currentOrganization);
 
   const form = useForm<CreateProgramFormatInput>({
     resolver: zodResolver(addFormatSchema),
@@ -60,6 +50,14 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
     onOpenChange(false);
   };
 
+  // Transform formats data for the combobox - ensure this is always an array
+  const formatOptions = Array.isArray(formats) 
+    ? formats.map(format => ({
+        label: format.format_name,
+        value: format.id
+      }))
+    : [];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -72,26 +70,22 @@ export function AddFormatDialog({ programId, open, onOpenChange }: AddFormatDial
               control={form.control}
               name="format_id"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Format</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a format" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {formatsLoading ? (
-                        <SelectItem value="loading" disabled>Loading formats...</SelectItem>
-                      ) : (
-                        formats?.data?.map((format) => (
-                          <SelectItem key={format.id} value={format.id}>
-                            {format.format_name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Combobox
+                      items={formatOptions}
+                      value={field.value || ""}
+                      onChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      placeholder="Select a format"
+                      searchPlaceholder="Search formats..."
+                      emptyMessage="No format found."
+                      disabled={formatsLoading}
+                      isLoading={formatsLoading}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
