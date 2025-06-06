@@ -12,13 +12,13 @@ export interface FormatForSelect {
   format_name: string;
 }
 
-const { currentOrganization: orgFromContext } = useOrganization();
-const currentOrganization = orgFromContext;
-
-// Add this logging
-console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
 
 export function useFormatsForSelect() {
+  const { currentOrganization: orgFromContext } = useOrganization();
+  const currentOrganization = orgFromContext;
+
+  // Add this logging
+  console.log("🔍 useFormatsForSelect - Current Organization:", currentOrganization);
 
   const query = useQuery({
     queryKey: ["formats-for-select", currentOrganization?.id],
@@ -61,8 +61,8 @@ export function useFormatsForSelect() {
         return [];
       }
     },
-    enabled: !!currentOrganization,
-    // enabled: true,
+    // enabled: !!currentOrganization, ## NOT REQUIRED AS ORG IS ALWAYS PRESENT
+    enabled: true,
     initialData: [],
     staleTime: 5 * 60 * 1000,
   });
