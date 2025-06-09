@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCustomers } from '@/hooks/useCustomers';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,15 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '@/components/ui/skeleton';
+import { SortableTableHeader } from '@/components/common/SortableTableHeader';
+import { CustomerSortField, SortDirection, SortConfig } from '@/types/sorting';
 
 const Customers = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState<SortConfig<CustomerSortField>>({
+    field: 'customer_name',
+    direction: 'asc'
+  });
   
   const { 
     customers, 
@@ -28,17 +34,62 @@ const Customers = () => {
     errorCustomers
   } = useCustomers();
 
-  // Filter customers based on search query
-  const filteredCustomers = customers.filter((customer) => {
-    if (!searchQuery.trim()) return true;
-    
-    const query = searchQuery.toLowerCase();
-    return (
-      customer.customer_name.toLowerCase().includes(query) ||
-      (customer.contact_name && customer.contact_name.toLowerCase().includes(query)) ||
-      (customer.contact_email && customer.contact_email.toLowerCase().includes(query))
-    );
-  });
+  // Filter and sort customers
+  const filteredAndSortedCustomers = useMemo(() => {
+    let filtered = customers.filter((customer) => {
+      if (!searchQuery.trim()) return true;
+      
+      const query = searchQuery.toLowerCase();
+      return (
+        customer.customer_name.toLowerCase().includes(query) ||
+        (customer.contact_name && customer.contact_name.toLowerCase().includes(query)) ||
+        (customer.contact_email && customer.contact_email.toLowerCase().includes(query))
+      );
+    });
+
+    // Sort the filtered customers
+    filtered.sort((a, b) => {
+      let aValue: string | undefined;
+      let bValue: string | undefined;
+
+      switch (sortConfig.field) {
+        case 'customer_name':
+          aValue = a.customer_name;
+          bValue = b.customer_name;
+          break;
+        case 'contact_name':
+          aValue = a.contact_name || '';
+          bValue = b.contact_name || '';
+          break;
+        case 'contact_email':
+          aValue = a.contact_email || '';
+          bValue = b.contact_email || '';
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        default:
+          return 0;
+      }
+
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return 1;
+      if (!bValue) return -1;
+
+      const comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [customers, searchQuery, sortConfig]);
+
+  const handleSort = (field: CustomerSortField) => {
+    setSortConfig(prev => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -105,9 +156,27 @@ const Customers = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Status</TableHead>
+              <SortableTableHeader
+                field="customer_name"
+                label="Name"
+                currentSortField={sortConfig.field}
+                sortDirection={sortConfig.direction}
+                onSort={handleSort}
+              />
+              <SortableTableHeader
+                field="contact_name"
+                label="Contact"
+                currentSortField={sortConfig.field}
+                sortDirection={sortConfig.direction}
+                onSort={handleSort}
+              />
+              <SortableTableHeader
+                field="status"
+                label="Status"
+                currentSortField={sortConfig.field}
+                sortDirection={sortConfig.direction}
+                onSort={handleSort}
+              />
               <TableHead>Special Requirements</TableHead>
             </TableRow>
           </TableHeader>
@@ -121,7 +190,7 @@ const Customers = () => {
                   <TableCell><Skeleton className="h-6 w-40" /></TableCell>
                 </TableRow>
               ))
-            ) : filteredCustomers.length === 0 ? (
+            ) : filteredAndSortedCustomers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8">
                   <div className="flex flex-col items-center justify-center text-center">
@@ -153,7 +222,7 @@ const Customers = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCustomers.map((customer) => (
+              filteredAndSortedCustomers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="font-medium">
                     <Link to={`/customers/${customer.id}`} className="hover:underline text-blue-600">
