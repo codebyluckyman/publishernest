@@ -9,8 +9,8 @@ import { Supplier } from "@/types/supplier";
 import { SupplierTableRow } from "./SupplierTableRow";
 import { SupplierEmptyState } from "./SupplierEmptyState";
 import { FilterOptions } from "./SupplierFilters";
-import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SortableTableHeader } from "@/components/common/SortableTableHeader";
+import { SupplierSortField, SortDirection, SortConfig } from "@/types/sorting";
 
 interface SupplierTableProps {
   searchQuery: string;
@@ -21,9 +21,6 @@ interface SupplierTableProps {
   refreshTrigger?: number;
 }
 
-type SortField = 'supplier_name' | 'created_at' | 'status';
-type SortDirection = 'asc' | 'desc';
-
 export function SupplierTable({
   searchQuery,
   filters,
@@ -32,16 +29,16 @@ export function SupplierTable({
   onAddSupplier,
   refreshTrigger = 0,
 }: SupplierTableProps) {
-  const [sortField, setSortField] = useState<SortField>('supplier_name');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortConfig, setSortConfig] = useState<SortConfig<SupplierSortField>>({
+    field: 'supplier_name',
+    direction: 'asc'
+  });
 
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
+  const handleSort = (field: SupplierSortField) => {
+    setSortConfig(prev => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
   };
 
   const fetchSuppliers = async () => {
@@ -62,7 +59,7 @@ export function SupplierTable({
       query = query.eq("status", filters.status);
     }
 
-    const { data, error } = await query.order(sortField, { ascending: sortDirection === 'asc' });
+    const { data, error } = await query.order(sortConfig.field, { ascending: sortConfig.direction === 'asc' });
 
     if (error) {
       console.error("Error fetching suppliers:", error);
@@ -73,7 +70,7 @@ export function SupplierTable({
   };
 
   const { data: suppliers, isLoading, error, refetch } = useQuery({
-    queryKey: ["suppliers", organizationId, searchQuery, filters, refreshTrigger, sortField, sortDirection],
+    queryKey: ["suppliers", organizationId, searchQuery, filters, refreshTrigger, sortConfig.field, sortConfig.direction],
     queryFn: fetchSuppliers,
     enabled: !!organizationId,
   });
@@ -93,15 +90,6 @@ export function SupplierTable({
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
-  };
-
-  const renderSortIcon = (field: SortField) => {
-    if (field !== sortField) {
-      return <ArrowUpDown className="ml-1 h-4 w-4" />;
-    }
-    return sortDirection === 'asc' ? 
-      <ChevronUp className="ml-1 h-4 w-4" /> : 
-      <ChevronDown className="ml-1 h-4 w-4" />;
   };
 
   if (isLoading) {
@@ -124,39 +112,30 @@ export function SupplierTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 px-1 -ml-3 font-medium flex items-center"
-                onClick={() => handleSort('supplier_name')}
-              >
-                Supplier Name {renderSortIcon('supplier_name')}
-              </Button>
-            </TableHead>
+            <SortableTableHeader
+              field="supplier_name"
+              label="Supplier Name"
+              currentSortField={sortConfig.field}
+              sortDirection={sortConfig.direction}
+              onSort={handleSort}
+            />
             <TableHead>Contact Name</TableHead>
             <TableHead>Contact Email</TableHead>
             <TableHead>Contact Phone</TableHead>
-            <TableHead>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 px-1 -ml-3 font-medium flex items-center"
-                onClick={() => handleSort('status')}
-              >
-                Status {renderSortIcon('status')}
-              </Button>
-            </TableHead>
-            <TableHead>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 px-1 -ml-3 font-medium flex items-center"
-                onClick={() => handleSort('created_at')}
-              >
-                Created {renderSortIcon('created_at')}
-              </Button>
-            </TableHead>
+            <SortableTableHeader
+              field="status"
+              label="Status"
+              currentSortField={sortConfig.field}
+              sortDirection={sortConfig.direction}
+              onSort={handleSort}
+            />
+            <SortableTableHeader
+              field="created_at"
+              label="Created"
+              currentSortField={sortConfig.field}
+              sortDirection={sortConfig.direction}
+              onSort={handleSort}
+            />
             <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
