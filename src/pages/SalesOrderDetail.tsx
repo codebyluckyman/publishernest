@@ -200,6 +200,12 @@ const SalesOrderDetail = () => {
                     <span>{salesOrder.customer.contact_phone}</span>
                   </div>
                 )}
+                {salesOrder.customer_contact_name && (
+                  <div className="flex justify-between">
+                    <span>Customer Contact</span>
+                    <span>{salesOrder.customer_contact_name}</span>
+                  </div>
+                )}
                 {salesOrder.customer_purchase_order && (
                   <div className="flex justify-between">
                     <span>Customer PO</span>
@@ -225,12 +231,6 @@ const SalesOrderDetail = () => {
                     {` (${getSymbolForCurrency(salesOrder.currency)})`}
                   </span>
                 </div>
-                {salesOrder.customer_contact_name && (
-                  <div className="flex justify-between">
-                    <span>Customer Contact</span>
-                    <span>{salesOrder.customer_contact_name}</span>
-                  </div>
-                )}
                 {salesOrder.sales_person && (
                   <div className="flex justify-between">
                     <span>Sales Person</span>
