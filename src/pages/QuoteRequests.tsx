@@ -1,5 +1,5 @@
+
 import React, { useState, useMemo } from 'react';
-import { useQuoteRequests } from '@/hooks/useQuoteRequests';
 import { useOrganization } from '@/hooks/useOrganization';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Plus } from 'lucide-react';
@@ -18,13 +18,14 @@ import { QuoteRequestRow } from '@/components/quotes/table/QuoteRequestRow';
 import { QuoteRequestTableHeader } from '@/components/quotes/table/QuoteRequestTableHeader';
 import { EmptyState } from '@/components/quotes/table/EmptyState';
 import { BulkActions } from '@/components/quotes/table/BulkActions';
-import { QuoteFilters } from '@/components/quotes/QuoteFilters';
+import QuoteFilters from '@/components/quotes/QuoteFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { QuoteRequest } from '@/types/quoteRequest';
 import { useQuoteRequestSort } from '@/hooks/useQuoteRequestSort';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuoteDetailsSheet } from '@/components/quotes/table/QuoteDetailsSheet';
+import { useQuoteRequests } from '@/hooks/useQuoteRequests';
 
 const QuoteRequests = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,54 +36,16 @@ const QuoteRequests = () => {
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
   
   const { currentOrganization } = useOrganization();
+  const { useQuoteRequestsList } = useQuoteRequests();
+  
   const { 
-    quoteRequests, 
+    data: quoteRequests = [], 
     isLoading: isLoadingQuotes, 
     isError: isErrorQuotes,
     error: errorQuotes 
-  } = useQuoteRequests();
+  } = useQuoteRequestsList(currentOrganization, statusFilter !== 'all' ? statusFilter : undefined, searchQuery);
 
-  const { sortConfig, handleSort } = useQuoteRequestSort();
-
-  const filteredQuoteRequests = useMemo(() => {
-    let filtered = quoteRequests;
-
-    if (searchQuery) {
-      filtered = filtered.filter(qr =>
-        qr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        qr.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        qr.id.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(qr => qr.status === statusFilter);
-    }
-
-    return filtered;
-  }, [quoteRequests, searchQuery, statusFilter]);
-
-  const sortedQuoteRequests = useMemo(() => {
-    if (!filteredQuoteRequests) return [];
-
-    return [...filteredQuoteRequests].sort((a, b) => {
-      const aValue = a[sortConfig.field];
-      const bValue = b[sortConfig.field];
-
-      if (aValue === null || aValue === undefined) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (bValue === null || bValue === undefined) return sortConfig.direction === 'asc' ? 1 : -1;
-
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
-      }
-
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-      }
-
-      return 0;
-    });
-  }, [filteredQuoteRequests, sortConfig]);
+  const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
 
   const onRowsSelected = (rows: string[]) => {
     setSelectedRows(rows);
@@ -113,10 +76,10 @@ const QuoteRequests = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <QuoteFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
+          filterOption="supplier"
+          options={[]}
+          value={statusFilter}
+          onChange={setStatusFilter}
         />
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Create Quote Request
@@ -125,8 +88,8 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedRows={selectedRows} 
-          setSelectedRows={setSelectedRows}
+          onBulkAction={() => {}}
+          onClearSelection={() => setSelectedRows([])}
         />
       )}
 
@@ -135,10 +98,12 @@ const QuoteRequests = () => {
           <TableHeader>
             <TableRow>
               <QuoteRequestTableHeader 
-                sortConfig={sortConfig} 
-                handleSort={handleSort} 
-                onRowsSelected={onRowsSelected} 
-                selectedRows={selectedRows}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+                onSelectAll={() => {}}
+                selectedCount={selectedRows.length}
+                totalCount={sortedQuoteRequests.length}
               />
             </TableRow>
           </TableHeader>
@@ -158,27 +123,36 @@ const QuoteRequests = () => {
               sortedQuoteRequests.map((quoteRequest) => (
                 <QuoteRequestRow
                   key={quoteRequest.id}
-                  quoteRequest={quoteRequest}
-                  selectedRows={selectedRows}
-                  onRowClick={() => handleRowClick(quoteRequest)}
-                  onRowsSelected={onRowsSelected}
+                  id={quoteRequest.id}
+                  title={quoteRequest.title}
+                  status={quoteRequest.status}
+                  createdAt={quoteRequest.created_at}
+                  isSelected={selectedRows.includes(quoteRequest.id)}
+                  onClick={() => handleRowClick(quoteRequest)}
+                  onSelect={(selected) => {
+                    if (selected) {
+                      setSelectedRows(prev => [...prev, quoteRequest.id]);
+                    } else {
+                      setSelectedRows(prev => prev.filter(id => id !== quoteRequest.id));
+                    }
+                  }}
                 />
               ))
             ) : (
-              <EmptyState />
+              <EmptyState isLoading={false} />
             )}
           </TableBody>
         </Table>
       </div>
 
       <QuoteRequestDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
       />
 
       <QuoteDetailsSheet
         isOpen={isDetailsSheetOpen}
-        onClose={closeDetailsSheet}
+        onOpenChange={setIsDetailsSheetOpen}
         quoteRequest={selectedQuoteRequest}
       />
     </div>

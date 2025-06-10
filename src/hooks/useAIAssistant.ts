@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useOrganization } from './useOrganization';
@@ -127,15 +126,20 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
           navigate(action.data.route);
           break;
         case 'create':
-          // Handle create actions based on entity type
-          handleCreateAction(action.data);
+          if (action.data.entity === 'format') {
+            handleFormatCreation(action.data);
+          } else {
+            handleCreateAction(action.data);
+          }
           break;
         case 'update':
-          // Handle update actions
-          handleUpdateAction(action.data);
+          if (action.data.entity === 'format') {
+            handleFormatUpdate(action.data);
+          } else {
+            handleUpdateAction(action.data);
+          }
           break;
         case 'search':
-          // Handle search actions
           handleSearchAction(action.data);
           break;
         default:
@@ -146,6 +150,33 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
     } catch (error) {
       console.error('Action execution error:', error);
       toast.error(`Failed to execute: ${action.label}`);
+    }
+  }, [navigate]);
+
+  const handleFormatCreation = useCallback((data: any) => {
+    console.log('Creating format with specifications:', data.specifications);
+    
+    // Navigate to formats page with pre-filled data
+    navigate('/formats', { 
+      state: { 
+        createFormat: true, 
+        specifications: data.specifications,
+        template: data.template 
+      } 
+    });
+  }, [navigate]);
+
+  const handleFormatUpdate = useCallback((data: any) => {
+    console.log('Updating format:', data);
+    
+    if (data.formatId) {
+      navigate(`/formats/${data.formatId}/edit`, {
+        state: { suggestions: data.suggestions }
+      });
+    } else {
+      navigate('/formats', {
+        state: { searchMode: true, updateContext: data }
+      });
     }
   }, [navigate]);
 
@@ -171,15 +202,17 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
     // Generate suggestions based on current page
     if (currentPath.includes('/formats')) {
       contextSuggestions.push(
-        'Create a new format for children\'s books',
-        'Show me popular format specifications',
-        'Compare format costs'
+        'Create a hardcover format for children\'s picture books',
+        'Create a paperback format for adult novels',
+        'Update format specifications for binding type',
+        'Show me format usage analytics',
+        'Suggest optimal dimensions for board books'
       );
     } else if (currentPath.includes('/products')) {
       contextSuggestions.push(
         'Suggest optimal format for this product',
-        'Find products missing ISBN numbers',
-        'Analyze pricing trends'
+        'Find products missing format assignments',
+        'Analyze format-product relationships'
       );
     } else if (currentPath.includes('/quotes')) {
       contextSuggestions.push(
