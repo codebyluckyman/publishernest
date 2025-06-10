@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useOrganization } from './useOrganization';
 import { useAuth } from '@/context/AuthContext';
+import { useFormats } from './useFormats';
 import { AIMessage, AIConversation, AISuggestion, AIContext } from '@/types/aiAssistant';
 import { aiService } from '@/services/aiService';
 import { toast } from 'sonner';
@@ -16,6 +17,8 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
   const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
   const { user } = useAuth();
+  const { useCreateFormat } = useFormats();
+  const createFormatMutation = useCreateFormat();
   
   const [conversation, setConversation] = useState<AIConversation>({
     id: `conv_${Date.now()}`,
@@ -33,6 +36,7 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
   
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [pendingFormatCreation, setPendingFormatCreation] = useState<any>(null);
 
   // Update context when location or data changes
   useEffect(() => {
@@ -98,6 +102,14 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
         setSuggestions(response.suggestions);
       }
 
+      // Check if this is a format creation response and store pending creation
+      if (response.actions?.some(action => action.type === 'create' && action.data.entity === 'format')) {
+        const formatAction = response.actions.find(action => action.type === 'create' && action.data.entity === 'format');
+        if (formatAction) {
+          setPendingFormatCreation(formatAction.data);
+        }
+      }
+
     } catch (error) {
       console.error('AI Assistant error:', error);
       
@@ -127,7 +139,7 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
           break;
         case 'create':
           if (action.data.entity === 'format') {
-            handleFormatCreation(action.data);
+            handleFormatCreationRequest(action.data);
           } else {
             handleCreateAction(action.data);
           }
@@ -153,18 +165,112 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
     }
   }, [navigate]);
 
-  const handleFormatCreation = useCallback((data: any) => {
-    console.log('Creating format with specifications:', data.specifications);
+  const handleFormatCreationRequest = useCallback((data: any) => {
+    if (!currentOrganization?.id) {
+      toast.error('No organization selected');
+      return;
+    }
+
+    // Show confirmation dialog through AI conversation
+    const confirmationMessage: AIMessage = {
+      role: 'assistant',
+      content: `I've prepared the format specifications. Would you like me to create this format now?\n\n**${data.specifications.format_name}**\n- Size: ${data.specifications.tps_width_mm}mm × ${data.specifications.tps_height_mm}mm\n- Binding: ${data.specifications.binding_type}\n- Cover Material: ${data.specifications.cover_material}\n- Internal Material: ${data.specifications.internal_material}\n- Extent: ${data.specifications.extent}`,
+      timestamp: new Date(),
+      actions: [{
+        type: 'confirm_create_format',
+        label: 'Yes, Create Format',
+        handler: () => createFormatDirectly(data.specifications)
+      }, {
+        type: 'cancel',
+        label: 'Cancel',
+        handler: () => cancelFormatCreation()
+      }]
+    };
+
+    setConversation(prev => ({
+      ...prev,
+      messages: [...prev.messages, confirmationMessage],
+      updatedAt: new Date()
+    }));
+  }, [currentOrganization?.id]);
+
+  const createFormatDirectly = useCallback(async (specifications: any) => {
+    if (!currentOrganization?.id) {
+      toast.error('No organization selected');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const formatData = {
+        ...specifications,
+        organization_id: currentOrganization.id
+      };
+
+      await createFormatMutation.mutateAsync(formatData);
+
+      const successMessage: AIMessage = {
+        role: 'assistant',
+        content: `✅ Successfully created format "${specifications.format_name}"! The format has been added to your formats library.`,
+        timestamp: new Date(),
+        actions: [{
+          type: 'navigate',
+          label: 'View All Formats',
+          handler: () => navigate('/formats')
+        }]
+      };
+
+      setConversation(prev => ({
+        ...prev,
+        messages: [...prev.messages, successMessage],
+        updatedAt: new Date()
+      }));
+
+      setPendingFormatCreation(null);
+      toast.success('Format created successfully!');
+
+    } catch (error: any) {
+      console.error('Format creation error:', error);
+      
+      const errorMessage: AIMessage = {
+        role: 'assistant',
+        content: `❌ Failed to create format: ${error.message || 'Unknown error occurred'}. Please try again or create the format manually.`,
+        timestamp: new Date(),
+        actions: [{
+          type: 'navigate',
+          label: 'Go to Formats Page',
+          handler: () => navigate('/formats')
+        }]
+      };
+
+      setConversation(prev => ({
+        ...prev,
+        messages: [...prev.messages, errorMessage],
+        updatedAt: new Date()
+      }));
+
+      toast.error('Failed to create format');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentOrganization?.id, createFormatMutation, navigate]);
+
+  const cancelFormatCreation = useCallback(() => {
+    setPendingFormatCreation(null);
     
-    // Navigate to formats page with pre-filled data
-    navigate('/formats', { 
-      state: { 
-        createFormat: true, 
-        specifications: data.specifications,
-        template: data.template 
-      } 
-    });
-  }, [navigate]);
+    const cancelMessage: AIMessage = {
+      role: 'assistant',
+      content: 'Format creation cancelled. Is there anything else I can help you with?',
+      timestamp: new Date()
+    };
+
+    setConversation(prev => ({
+      ...prev,
+      messages: [...prev.messages, cancelMessage],
+      updatedAt: new Date()
+    }));
+  }, []);
 
   const handleFormatUpdate = useCallback((data: any) => {
     console.log('Updating format:', data);
@@ -252,6 +358,7 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
       messages: [],
       updatedAt: new Date()
     }));
+    setPendingFormatCreation(null);
   }, []);
 
   return {
@@ -261,6 +368,7 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
     sendMessage,
     getSuggestions,
     clearConversation,
-    executeAction
+    executeAction,
+    pendingFormatCreation
   };
 }

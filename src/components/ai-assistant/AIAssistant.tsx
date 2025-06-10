@@ -12,7 +12,9 @@ import {
   Maximize2, 
   X, 
   Sparkles,
-  Loader2 
+  Loader2,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAIAssistant } from '@/hooks/useAIAssistant';
@@ -34,7 +36,8 @@ export function AIAssistant({ contextData, currentPage }: AIAssistantProps) {
     isLoading,
     sendMessage,
     getSuggestions,
-    clearConversation
+    clearConversation,
+    pendingFormatCreation
   } = useAIAssistant({ contextData, currentPage });
 
   const scrollToBottom = () => {
@@ -58,6 +61,26 @@ export function AIAssistant({ contextData, currentPage }: AIAssistantProps) {
   };
 
   const suggestions = getSuggestions();
+
+  const getActionIcon = (action: any) => {
+    if (action.type === 'confirm_create_format') {
+      return <CheckCircle className="h-3 w-3" />;
+    }
+    if (action.type === 'cancel') {
+      return <X className="h-3 w-3" />;
+    }
+    return null;
+  };
+
+  const getActionVariant = (action: any) => {
+    if (action.type === 'confirm_create_format') {
+      return 'default';
+    }
+    if (action.type === 'cancel') {
+      return 'outline';
+    }
+    return 'outline';
+  };
 
   if (!isOpen) {
     return (
@@ -94,6 +117,11 @@ export function AIAssistant({ contextData, currentPage }: AIAssistantProps) {
               <Sparkles className="h-3 w-3 absolute -top-1 -right-1 text-yellow-500" />
             </div>
             <CardTitle className="text-sm">WorkflowGPT</CardTitle>
+            {pendingFormatCreation && (
+              <Badge variant="secondary" className="text-xs">
+                Format Ready
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -122,7 +150,7 @@ export function AIAssistant({ contextData, currentPage }: AIAssistantProps) {
                   <div className="text-center py-8 text-muted-foreground">
                     <Bot className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                     <p className="text-sm">Hi! I'm WorkflowGPT, your AI assistant.</p>
-                    <p className="text-xs mt-1">Ask me anything about your publishing workflows!</p>
+                    <p className="text-xs mt-1">Try: "Create a children's picture book format"</p>
                   </div>
                 )}
                 
@@ -147,22 +175,24 @@ export function AIAssistant({ contextData, currentPage }: AIAssistantProps) {
                       )}
                     </div>
                     <div className={cn(
-                      "rounded-lg px-3 py-2 text-sm",
+                      "rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
                       msg.role === 'user'
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     )}>
                       {msg.content}
                       {msg.actions && msg.actions.length > 0 && (
-                        <div className="mt-2 space-y-1">
+                        <div className="mt-3 space-y-2">
                           {msg.actions.map((action, actionIndex) => (
                             <Button
                               key={actionIndex}
-                              variant="outline"
+                              variant={getActionVariant(action)}
                               size="sm"
-                              className="h-7 text-xs"
+                              className="h-8 text-xs mr-2"
                               onClick={() => action.handler()}
+                              disabled={isLoading}
                             >
+                              {getActionIcon(action)}
                               {action.label}
                             </Button>
                           ))}
@@ -179,7 +209,7 @@ export function AIAssistant({ contextData, currentPage }: AIAssistantProps) {
                     </div>
                     <div className="bg-muted rounded-lg px-3 py-2 text-sm flex items-center gap-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                      Thinking...
+                      {pendingFormatCreation ? 'Creating format...' : 'Thinking...'}
                     </div>
                   </div>
                 )}
@@ -200,6 +230,7 @@ export function AIAssistant({ contextData, currentPage }: AIAssistantProps) {
                       size="sm"
                       className="h-6 text-xs"
                       onClick={() => handleSuggestionClick(suggestion)}
+                      disabled={isLoading}
                     >
                       {suggestion}
                     </Button>

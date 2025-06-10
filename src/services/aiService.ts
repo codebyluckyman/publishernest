@@ -1,3 +1,4 @@
+
 import { AIContext, AIMessage, AISuggestion } from '@/types/aiAssistant';
 import { aiFormatService } from './aiFormatService';
 
@@ -66,11 +67,11 @@ class AIService {
 - Internal Material: ${specifications.internal_material}
 - Extent: ${specifications.extent}
 
-Would you like me to create this format or would you like to modify any specifications?`,
+Would you like me to create this format now? I can add it directly to your formats library.`,
       actions: [
         {
           type: 'create',
-          label: 'Create Format',
+          label: 'Create Format Now',
           data: { 
             entity: 'format', 
             specifications,
@@ -84,11 +85,11 @@ Would you like me to create this format or would you like to modify any specific
         }
       ],
       suggestions: [
-        { text: 'Adjust the dimensions', category: 'workflow', priority: 1, context: 'formats' },
-        { text: 'Change the binding type', category: 'workflow', priority: 2, context: 'formats' },
-        { text: 'Modify materials', category: 'workflow', priority: 3, context: 'formats' }
+        { text: 'Create another format', category: 'workflow', priority: 1, context: 'formats' },
+        { text: 'Show me all formats', category: 'data', priority: 2, context: 'formats' },
+        { text: 'Suggest format improvements', category: 'automation', priority: 3, context: 'formats' }
       ],
-      confidence: 0.9
+      confidence: 0.95
     };
   }
 
@@ -126,24 +127,20 @@ Which format would you like to update? I can help you:
     
     if (lowerMessage.includes('format')) {
       return {
-        content: "I can help you create a new format! Based on your current context, I'd suggest starting with these steps:",
+        content: "I can help you create a new format! What type of format would you like to create? For example:\n\n• Children's picture book format\n• Adult novel paperback format\n• Hardcover textbook format\n• Board book format\n\nJust describe what you need and I'll generate the specifications for you.",
         actions: [
           {
             type: 'navigate',
             label: 'Go to Formats',
             data: { route: '/formats' }
-          },
-          {
-            type: 'create',
-            label: 'Create Format',
-            data: { entity: 'format', template: 'standard' }
           }
         ],
         suggestions: [
           { text: 'Create hardcover format', category: 'workflow', priority: 1, context: 'formats' },
-          { text: 'Create paperback format', category: 'workflow', priority: 2, context: 'formats' }
+          { text: 'Create paperback format', category: 'workflow', priority: 2, context: 'formats' },
+          { text: 'Create board book format', category: 'workflow', priority: 3, context: 'formats' }
         ],
-        confidence: 0.8
+        confidence: 0.9
       };
     }
     
@@ -231,10 +228,10 @@ Which format would you like to update? I can help you:
     return {
       content: `I'm WorkflowGPT, your AI assistant for publishing and print management. I can help you with:
 
-• Creating and managing formats, products, and quotes
-• Finding and analyzing data across your workflow
-• Suggesting optimizations and best practices
-• Automating routine tasks
+• **Creating formats** - Just tell me what type of format you need (e.g., "create a children's picture book format")
+• **Managing products** - Finding, organizing, and analyzing your product catalog
+• **Quote requests** - Creating, tracking, and optimizing quote workflows
+• **Data analysis** - Providing insights and recommendations
 
 Currently you're on ${currentPage}. What would you like to do?`,
       suggestions: this.getContextualSuggestions(context),
@@ -264,7 +261,7 @@ Currently you're on ${currentPage}. What would you like to do?`,
     
     return [
       { text: 'Show me today\'s priorities', category: 'workflow', priority: 1, context: 'general' },
-      { text: 'What needs my attention?', category: 'workflow', priority: 2, context: 'general' },
+      { text: 'Create a new format', category: 'workflow', priority: 2, context: 'general' },
       { text: 'Analyze recent performance', category: 'analysis', priority: 3, context: 'general' }
     ];
   }

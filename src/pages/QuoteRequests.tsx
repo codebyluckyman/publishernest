@@ -120,7 +120,7 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedQuoteRequests={selectedRows.map(id => sortedQuoteRequests.find(r => r.id === id)!)}
+          selectedQuoteRequestIds={selectedRows}
           onClearSelection={() => setSelectedRows([])}
         />
       )}
@@ -168,12 +168,12 @@ const QuoteRequests = () => {
       </div>
 
       <QuoteRequestDialog 
-        open={isDialogOpen} 
+        isOpen={isDialogOpen} 
         onOpenChange={setIsDialogOpen} 
       />
 
       <QuoteDetailsSheet
-        isOpen={isDetailsSheetOpen}
+        open={isDetailsSheetOpen}
         onOpenChange={setIsDetailsSheetOpen}
         quoteRequest={selectedQuoteRequest}
       />
