@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
 import { Button } from '@/components/ui/button';
@@ -124,11 +123,7 @@ const SalesOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Sales Orders</h1>
-          <p className="text-muted-foreground">Manage your sales orders and track customer orders</p>
-        </div>
+      <div className="flex justify-end">
         <Button asChild>
           <Link to="/create-sales-order">
             <Plus className="mr-2 h-4 w-4" /> Create Sales Order
