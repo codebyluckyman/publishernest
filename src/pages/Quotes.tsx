@@ -1,10 +1,8 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrganization } from "@/context/OrganizationContext";
@@ -115,22 +113,11 @@ const Quotes = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">Quotes</h1>
-        <p className="text-gray-600">View and manage quotes from suppliers</p>
-      </div>
-
+    <div className="space-y-6">
       <div className="grid gap-6">
         <Card className="w-full overflow-auto">
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="w-full">
-                <CardTitle>Quotes</CardTitle>
-                <CardDescription>
-                  View and manage quotes from suppliers
-                </CardDescription>
-              </div>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
               <div className="flex gap-2 w-full">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -180,8 +167,6 @@ const Quotes = () => {
                 )}
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
             <Tabs
               defaultValue="active"
               className="space-y-4 w-full overflow-auto"

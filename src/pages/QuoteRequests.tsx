@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useQuoteRequests } from '@/hooks/useQuoteRequests';
 import { useOrganization } from '@/hooks/useOrganization';
@@ -18,7 +19,7 @@ import { QuoteRequestRow } from '@/components/quotes/table/QuoteRequestRow';
 import { QuoteRequestTableHeader } from '@/components/quotes/table/QuoteRequestTableHeader';
 import { EmptyState } from '@/components/quotes/table/EmptyState';
 import { BulkActions } from '@/components/quotes/table/BulkActions';
-import { QuoteFilters } from '@/components/quotes/QuoteFilters';
+import QuoteFilters from '@/components/quotes/QuoteFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { QuoteRequest } from '@/types/quoteRequest';
@@ -42,10 +43,10 @@ const QuoteRequests = () => {
     error: errorQuotes 
   } = useQuoteRequests();
 
-  const { sortConfig, handleSort } = useQuoteRequestSort();
+  const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
 
   const filteredQuoteRequests = useMemo(() => {
-    let filtered = quoteRequests;
+    let filtered = sortedQuoteRequests;
 
     if (searchQuery) {
       filtered = filtered.filter(qr =>
@@ -60,29 +61,7 @@ const QuoteRequests = () => {
     }
 
     return filtered;
-  }, [quoteRequests, searchQuery, statusFilter]);
-
-  const sortedQuoteRequests = useMemo(() => {
-    if (!filteredQuoteRequests) return [];
-
-    return [...filteredQuoteRequests].sort((a, b) => {
-      const aValue = a[sortConfig.field];
-      const bValue = b[sortConfig.field];
-
-      if (aValue === null || aValue === undefined) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (bValue === null || bValue === undefined) return sortConfig.direction === 'asc' ? 1 : -1;
-
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
-      }
-
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-      }
-
-      return 0;
-    });
-  }, [filteredQuoteRequests, sortConfig]);
+  }, [sortedQuoteRequests, searchQuery, statusFilter]);
 
   const onRowsSelected = (rows: string[]) => {
     setSelectedRows(rows);
@@ -113,10 +92,10 @@ const QuoteRequests = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <QuoteFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
+          filterOption="supplier"
+          options={[]}
+          value=""
+          onChange={() => {}}
         />
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Create Quote Request
@@ -125,8 +104,8 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedRows={selectedRows} 
-          setSelectedRows={setSelectedRows}
+          selectedQuoteRequestIds={selectedRows} 
+          onClearSelection={() => setSelectedRows([])}
         />
       )}
 
@@ -135,7 +114,8 @@ const QuoteRequests = () => {
           <TableHeader>
             <TableRow>
               <QuoteRequestTableHeader 
-                sortConfig={sortConfig} 
+                sortField={sortField} 
+                sortDirection={sortDirection}
                 handleSort={handleSort} 
                 onRowsSelected={onRowsSelected} 
                 selectedRows={selectedRows}
@@ -154,31 +134,31 @@ const QuoteRequests = () => {
                   <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 </TableRow>
               ))
-            ) : sortedQuoteRequests.length > 0 ? (
-              sortedQuoteRequests.map((quoteRequest) => (
+            ) : filteredQuoteRequests.length > 0 ? (
+              filteredQuoteRequests.map((quoteRequest) => (
                 <QuoteRequestRow
                   key={quoteRequest.id}
-                  quoteRequest={quoteRequest}
+                  quote={quoteRequest}
                   selectedRows={selectedRows}
                   onRowClick={() => handleRowClick(quoteRequest)}
                   onRowsSelected={onRowsSelected}
                 />
               ))
             ) : (
-              <EmptyState />
+              <EmptyState isLoading={isLoadingQuotes} />
             )}
           </TableBody>
         </Table>
       </div>
 
       <QuoteRequestDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)}
       />
 
       <QuoteDetailsSheet
         isOpen={isDetailsSheetOpen}
-        onClose={closeDetailsSheet}
+        onOpenChange={setIsDetailsSheetOpen}
         quoteRequest={selectedQuoteRequest}
       />
     </div>
