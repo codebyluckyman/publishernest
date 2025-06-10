@@ -4,7 +4,6 @@ import { useLocation, Outlet } from 'react-router-dom';
 import { NavigationHeader } from './navigation/NavigationHeader';
 import DesktopSidebar from './navigation/DesktopSidebar';
 import MobileNavigation from './navigation/MobileNavigation';
-import BreadcrumbNavigation from './navigation/BreadcrumbNavigation';
 import Footer from './navigation/Footer';
 import { AIAssistant } from './ai-assistant/AIAssistant';
 import { getNavigationMenuItems } from './navigation/NavigationMenuItems';
@@ -45,11 +44,6 @@ const Layout = () => {
         <div className="flex flex-1">
           <DesktopSidebar menuItems={menuItems} />
           <main className="flex-1 flex flex-col min-w-0">
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-16 z-40">
-              <div className="px-4 py-3">
-                <BreadcrumbNavigation />
-              </div>
-            </div>
             <div className="flex-1 p-4 bg-gray-50">
               <Outlet />
             </div>

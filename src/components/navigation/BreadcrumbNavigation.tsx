@@ -69,7 +69,7 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
   });
 
   return (
-    <nav aria-label="Breadcrumb" className={cn("mb-4", className)}>
+    <nav aria-label="Breadcrumb" className={cn(className)}>
       <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
         <li className="flex items-center">
           <a
