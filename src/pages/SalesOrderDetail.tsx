@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
@@ -173,21 +171,39 @@ const SalesOrderDetail = () => {
               <CardHeader>
                 <CardTitle>Customer Information</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="font-medium">{salesOrder.customer?.customer_name}</p>
-                <p className="text-sm text-gray-500">{salesOrder.customer?.address}</p>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Customer Name</span>
+                  <span>{salesOrder.customer?.customer_name}</span>
+                </div>
+                {salesOrder.customer?.address && (
+                  <div className="flex justify-between">
+                    <span>Address</span>
+                    <span className="text-right">{salesOrder.customer.address}</span>
+                  </div>
+                )}
                 {salesOrder.customer?.contact_name && (
-                  <div className="mt-4">
-                    <p className="font-medium">Contact</p>
-                    <p>{salesOrder.customer.contact_name}</p>
-                    <p>{salesOrder.customer.contact_email}</p>
-                    <p>{salesOrder.customer.contact_phone}</p>
+                  <div className="flex justify-between">
+                    <span>Contact Name</span>
+                    <span>{salesOrder.customer.contact_name}</span>
+                  </div>
+                )}
+                {salesOrder.customer?.contact_email && (
+                  <div className="flex justify-between">
+                    <span>Contact Email</span>
+                    <span>{salesOrder.customer.contact_email}</span>
+                  </div>
+                )}
+                {salesOrder.customer?.contact_phone && (
+                  <div className="flex justify-between">
+                    <span>Contact Phone</span>
+                    <span>{salesOrder.customer.contact_phone}</span>
                   </div>
                 )}
                 {salesOrder.customer_purchase_order && (
-                  <div className="mt-4">
-                    <p className="font-medium">Customer PO</p>
-                    <p>{salesOrder.customer_purchase_order}</p>
+                  <div className="flex justify-between">
+                    <span>Customer PO</span>
+                    <span>{salesOrder.customer_purchase_order}</span>
                   </div>
                 )}
               </CardContent>
@@ -403,4 +419,3 @@ const SalesOrderDetail = () => {
 };
 
 export default SalesOrderDetail;
-
