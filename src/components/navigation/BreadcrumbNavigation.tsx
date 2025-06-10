@@ -27,7 +27,7 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
    
   // If we're on the root path, don't show breadcrumbs
   if (pathSegments.length === 0) {
-    console.log("Breadcrumb Debug - On root path, not showing breadcrumbs");
+    //console.log("Breadcrumb Debug - On root path, not showing breadcrumbs");
     return null;
   }
   
@@ -77,7 +77,7 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
     };
   });
 
-  console.log("Breadcrumb Debug - Generated items:", breadcrumbItems);
+  // console.log("Breadcrumb Debug - Generated items:", breadcrumbItems);
 
   return (
     <nav aria-label="Breadcrumb" className={cn("flex items-center", className)}>
