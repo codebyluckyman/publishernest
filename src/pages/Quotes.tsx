@@ -116,12 +116,8 @@ const Quotes = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">Quotes</h1>
-        <p className="text-gray-600">View and manage quotes from suppliers</p>
-      </div>
-
-      <div className="grid gap-6">
+    {/* Removed H1 and descripiton from page. Do not re-insert! */}
+      <div className="grid gap-5">
         <Card className="w-full overflow-auto">
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
