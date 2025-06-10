@@ -27,10 +27,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuoteDetailsSheet } from '@/components/quotes/table/QuoteDetailsSheet';
 import { useQuoteRequests } from '@/hooks/useQuoteRequests';
 
+// Define proper status filter types
+type StatusFilter = 'all' | 'pending' | 'approved' | 'declined';
+
 const QuoteRequests = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [selectedQuoteRequest, setSelectedQuoteRequest] = useState<QuoteRequest | null>(null);
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
@@ -38,14 +41,45 @@ const QuoteRequests = () => {
   const { currentOrganization } = useOrganization();
   const { useQuoteRequestsList, useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
   
+  // Fix hook parameters - provide all 5 parameters as expected
   const { 
-    data: quoteRequests = [], 
+    data: rawQuoteRequests = [], 
     isLoading: isLoadingQuotes, 
     isError: isErrorQuotes,
     error: errorQuotes 
-  } = useQuoteRequestsList(currentOrganization, statusFilter !== 'all' ? statusFilter : undefined, searchQuery);
+  } = useQuoteRequestsList(
+    currentOrganization, 
+    statusFilter !== 'all' ? statusFilter : undefined, 
+    searchQuery,
+    undefined, // users parameter
+    undefined  // supplier parameter
+  );
 
-  const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
+  // Add runtime type validation and safety checks
+  const validatedQuoteRequests = useMemo(() => {
+    try {
+      if (!Array.isArray(rawQuoteRequests)) {
+        console.warn('Quote requests data is not an array:', rawQuoteRequests);
+        return [];
+      }
+
+      return rawQuoteRequests.filter((request): request is QuoteRequest => {
+        // Basic validation to ensure we have required fields
+        return (
+          request &&
+          typeof request === 'object' &&
+          typeof request.id === 'string' &&
+          typeof request.title === 'string' &&
+          ['pending', 'approved', 'declined'].includes(request.status)
+        );
+      });
+    } catch (error) {
+      console.error('Error validating quote requests:', error);
+      return [];
+    }
+  }, [rawQuoteRequests]);
+
+  const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(validatedQuoteRequests);
 
   const updateStatusMutation = useUpdateQuoteRequestStatus();
   const deleteQuoteRequestMutation = useDeleteQuoteRequest();
@@ -55,16 +89,28 @@ const QuoteRequests = () => {
   };
 
   const handleRowClick = (quoteRequest: QuoteRequest) => {
-    setSelectedQuoteRequest(quoteRequest);
-    setIsDetailsSheetOpen(true);
+    try {
+      setSelectedQuoteRequest(quoteRequest);
+      setIsDetailsSheetOpen(true);
+    } catch (error) {
+      console.error('Error handling row click:', error);
+    }
   };
 
   const handleStatusChange = (id: string, status: "approved" | "declined" | "pending") => {
-    updateStatusMutation.mutate({ id, status });
+    try {
+      updateStatusMutation.mutate({ id, status });
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   const handleDelete = (id: string) => {
-    deleteQuoteRequestMutation.mutate(id);
+    try {
+      deleteQuoteRequestMutation.mutate(id);
+    } catch (error) {
+      console.error('Error deleting quote request:', error);
+    }
   };
 
   const handleEdit = (request: QuoteRequest) => {
@@ -73,18 +119,26 @@ const QuoteRequests = () => {
   };
 
   const handleSelectAll = (selected: boolean) => {
-    if (selected) {
-      setSelectedRows(sortedQuoteRequests.map(r => r.id));
-    } else {
-      setSelectedRows([]);
+    try {
+      if (selected) {
+        setSelectedRows(sortedQuoteRequests.map(r => r.id));
+      } else {
+        setSelectedRows([]);
+      }
+    } catch (error) {
+      console.error('Error selecting all rows:', error);
     }
   };
 
   const handleSelectRow = (id: string, selected: boolean) => {
-    if (selected) {
-      setSelectedRows(prev => [...prev, id]);
-    } else {
-      setSelectedRows(prev => prev.filter(rowId => rowId !== id));
+    try {
+      if (selected) {
+        setSelectedRows(prev => [...prev, id]);
+      } else {
+        setSelectedRows(prev => prev.filter(rowId => rowId !== id));
+      }
+    } catch (error) {
+      console.error('Error selecting row:', error);
     }
   };
 
@@ -92,17 +146,27 @@ const QuoteRequests = () => {
     setIsDetailsSheetOpen(false);
   };
 
+  // Enhanced error handling
   if (isErrorQuotes) {
+    const errorMessage = errorQuotes?.message || 'Failed to load quote requests. Please try again later.';
+    
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
-          Failed to load quote requests. Please try again later.
+          {errorMessage}
         </AlertDescription>
       </Alert>
     );
   }
+
+  // Handle status filter change with proper typing
+  const handleStatusFilterChange = (value: string) => {
+    if (value === 'all' || value === 'pending' || value === 'approved' || value === 'declined') {
+      setStatusFilter(value as StatusFilter);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -111,7 +175,7 @@ const QuoteRequests = () => {
           filterOption="supplier"
           options={[]}
           value={statusFilter}
-          onChange={setStatusFilter}
+          onChange={handleStatusFilterChange}
         />
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Create Quote Request
