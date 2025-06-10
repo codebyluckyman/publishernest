@@ -50,7 +50,7 @@ const Layout = () => {
                 <BreadcrumbNavigation />
               </div>
             </div>
-            <div className="flex-1 p-4">
+            <div className="flex-1 p-4 bg-gray-50">
               <Outlet />
             </div>
             <Footer />
