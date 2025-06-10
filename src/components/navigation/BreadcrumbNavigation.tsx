@@ -19,14 +19,19 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
     const { programs: fetchedPrograms } = usePublishingPrograms();
     programs = fetchedPrograms || [];
   } catch (error) {
-    // Silently handle error - programs will remain empty array
+    console.log("Publishing programs hook error:", error);
   }
   
   // Split the current path into segments
   const pathSegments = location.pathname.split('/').filter(Boolean);
   
+  // Debug logging
+  console.log("Breadcrumb Debug - Current path:", location.pathname);
+  console.log("Breadcrumb Debug - Path segments:", pathSegments);
+  
   // If we're on the root path, don't show breadcrumbs
   if (pathSegments.length === 0) {
+    console.log("Breadcrumb Debug - On root path, not showing breadcrumbs");
     return null;
   }
   
@@ -75,6 +80,8 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
       path
     };
   });
+
+  console.log("Breadcrumb Debug - Generated items:", breadcrumbItems);
 
   return (
     <nav aria-label="Breadcrumb" className={cn("flex items-center", className)}>

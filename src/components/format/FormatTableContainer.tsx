@@ -1,195 +1,130 @@
-
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Plus, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useOrganization } from "@/hooks/useOrganization";
-import { useFormats } from "@/hooks/useFormats";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useOrganization } from "@/context/OrganizationContext";
+import FormatDialog from "@/components/FormatDialog";
+import FormatViewDialog from "@/components/FormatViewDialog";
+import { FormatTableHeader } from "./FormatTableHeader";
+import { FormatFilters, FilterOptions } from "./FormatFilters";
 import { FormatTable } from "./FormatTable";
-import { FormatEmptyState } from "./FormatEmptyState";
-import { FormatFilters, FilterOptions, FILTER_VALUES } from "./FormatFilters";
-import { FormatDialog } from "@/components/FormatDialog";
-import { FormatViewDialog } from "@/components/FormatViewDialog";
-import { toast } from "sonner";
-
-// AI navigation state interface
-interface AIFormatCreationState {
-  createFormat: boolean;
-  specifications: any;
-  template: string;
-  aiGenerated?: boolean;
-  source?: string;
-}
 
 export function FormatTableContainer() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { currentOrganization } = useOrganization();
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [isFormatDialogOpen, setIsFormatDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
-  const [aiGeneratedSpecs, setAiGeneratedSpecs] = useState<any>(null);
-  
+  const [selectedFormatId, setSelectedFormatId] = useState<string | undefined>(
+    undefined
+  );
+  const [viewFormatId, setViewFormatId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
-    cover_stock_print: FILTER_VALUES.ALL_STOCK,
-    internal_stock_print: FILTER_VALUES.ALL_STOCK,
+    cover_stock_print: null,
+    internal_stock_print: null,
   });
+  const [filterOptions, setFilterOptions] = useState<{
+    cover_stock_print: string[];
+    internal_stock_print: string[];
+  }>({
+    cover_stock_print: [],
+    internal_stock_print: [],
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  // Add a refresh trigger state
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const {
-    data: formats = [],
-    isLoading,
-    error,
-    refetch,
-  } = useFormats(currentOrganization?.id, searchQuery, filters);
-
-  // Handle AI navigation state
-  useEffect(() => {
-    const navigationState = location.state as AIFormatCreationState | null;
-    
-    if (navigationState?.createFormat && navigationState?.specifications && navigationState?.source === 'ai-assistant') {
-      console.log('AI Format Creation State detected:', navigationState);
-      
-      // Set the AI generated specifications
-      setAiGeneratedSpecs(navigationState.specifications);
-      
-      // Open the format dialog
-      setIsFormatDialogOpen(true);
-      
-      // Clear the navigation state to prevent re-triggering
-      navigate(location.pathname, { replace: true, state: null });
-      
-      // Show success message
-      toast.success('AI generated format specifications loaded. Please review and save.');
-    }
-  }, [location.state, location.pathname, navigate]);
-
-  const resetFilters = () => {
-    setFilters({
-      cover_stock_print: FILTER_VALUES.ALL_STOCK,
-      internal_stock_print: FILTER_VALUES.ALL_STOCK,
-    });
+  const handleViewFormat = (formatId: string) => {
+    setViewFormatId(formatId);
+    setIsViewDialogOpen(true);
   };
 
   const handleAddFormat = () => {
-    setAiGeneratedSpecs(null); // Clear any AI specs when manually adding
-    setIsFormatDialogOpen(true);
-  };
-
-  const handleViewFormat = (formatId: string) => {
-    setSelectedFormatId(formatId);
-    setIsViewDialogOpen(true);
+    setSelectedFormatId(undefined);
+    setIsDialogOpen(true);
   };
 
   const handleEditFormat = (formatId: string) => {
     setSelectedFormatId(formatId);
-    setAiGeneratedSpecs(null); // Clear AI specs when editing existing format
-    setIsFormatDialogOpen(true);
+    setIsDialogOpen(true);
   };
 
-  const handleFormatDialogClose = () => {
-    setIsFormatDialogOpen(false);
-    setSelectedFormatId(null);
-    setAiGeneratedSpecs(null); // Clear AI specs when dialog closes
+  const handleDialogSuccess = () => {
+    // Increment the refresh trigger to force a refetch
+    setRefreshTrigger((prev) => prev + 1);
+    console.log("Format saved or deleted - refreshing data table");
   };
 
-  const handleFormatCopied = (newFormatId?: string) => {
-    if (newFormatId) {
-      toast.success("Format copied successfully");
-      refetch();
+  const resetFilters = () => {
+    setFilters({
+      cover_stock_print: null,
+      internal_stock_print: null,
+    });
+  };
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
+  const areFiltersActive = () => {
+    return (
+      (filters.cover_stock_print !== null &&
+        filters.cover_stock_print !== "ALL_STOCK") ||
+      (filters.internal_stock_print !== null &&
+        filters.internal_stock_print !== "ALL_STOCK")
+    );
+  };
+
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    if (value === null || value === "ALL_STOCK") {
+      return false;
     }
-  };
-
-  const handleFormatSaved = () => {
-    setAiGeneratedSpecs(null); // Clear AI specs after successful save
-    refetch();
-  };
-
-  if (error) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-destructive">Error loading formats: {error.message}</p>
-        <Button onClick={() => refetch()} className="mt-4">
-          Try Again
-        </Button>
-      </div>
-    );
-  }
-
-  if (!currentOrganization) {
-    return (
-      <div className="p-6">
-        <FormatEmptyState hasOrganization={false} onAddFormat={handleAddFormat} />
-      </div>
-    );
-  }
+    return true;
+  }).length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <input
-            type="text"
-            placeholder="Search formats..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-3 py-2 border rounded-md w-64"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-        </div>
-        <Button onClick={handleAddFormat}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Format
-        </Button>
-      </div>
+    <Card>
+      <CardHeader>
+        <FormatTableHeader
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          showFilters={showFilters}
+          toggleFilters={toggleFilters}
+          onAddFormat={handleAddFormat}
+          areFiltersActive={areFiltersActive}
+          activeFiltersCount={activeFiltersCount}
+        />
 
-      <FormatFilters
-        filters={filters}
-        setFilters={setFilters}
-        filterOptions={{
-          cover_stock_print: [...new Set(formats.map(f => f.cover_stock_print).filter(Boolean))],
-          internal_stock_print: [...new Set(formats.map(f => f.internal_stock_print).filter(Boolean))],
-        }}
-        showFilters={showFilters}
-        resetFilters={resetFilters}
-      />
-
-      {isLoading ? (
-        <div className="p-6 text-center">Loading formats...</div>
-      ) : formats.length === 0 ? (
-        <FormatEmptyState hasOrganization={true} onAddFormat={handleAddFormat} />
-      ) : (
+        <FormatFilters
+          filters={filters}
+          setFilters={setFilters}
+          filterOptions={filterOptions}
+          showFilters={showFilters}
+          resetFilters={resetFilters}
+        />
+      </CardHeader>
+      <CardContent>
         <FormatTable
-          formats={formats}
+          searchQuery={searchQuery}
+          filters={filters}
+          organizationId={currentOrganization?.id}
           onViewFormat={handleViewFormat}
           onEditFormat={handleEditFormat}
-          onFormatCopied={handleFormatCopied}
+          onAddFormat={handleAddFormat}
+          setFilterOptions={setFilterOptions}
+          refreshTrigger={refreshTrigger}
         />
-      )}
+      </CardContent>
 
       <FormatDialog
-        open={isFormatDialogOpen}
-        onOpenChange={handleFormatDialogClose}
+        open={isDialogOpen}
         formatId={selectedFormatId}
-        initialValues={aiGeneratedSpecs}
-        aiGenerated={!!aiGeneratedSpecs}
-        onSuccess={handleFormatSaved}
+        onOpenChange={setIsDialogOpen}
+        onSuccess={handleDialogSuccess}
       />
 
       <FormatViewDialog
         open={isViewDialogOpen}
+        formatId={viewFormatId}
         onOpenChange={setIsViewDialogOpen}
-        formatId={selectedFormatId}
       />
-    </div>
+    </Card>
   );
 }

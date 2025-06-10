@@ -1,144 +1,114 @@
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+
 import { Form } from "@/components/ui/form";
-import { useOrganization } from "@/hooks/useOrganization";
-import { useFormats } from "@/hooks/useFormats";
+import { Button } from "@/components/ui/button";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FormatFormFields } from "./form/FormatFormFields";
-import { toast } from "sonner";
+import { useFormatForm } from "@/hooks/useFormatForm";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
+import { Dispatch, SetStateAction, useEffect, forwardRef, useImperativeHandle } from "react";
 
-const formatSchema = z.object({
-  format_name: z.string().min(1, "Format name is required"),
-  tps_height_mm: z.number().nullable(),
-  tps_width_mm: z.number().nullable(),
-  tps_depth_mm: z.number().nullable(),
-  tps_plc_height_mm: z.number().nullable(),
-  tps_plc_width_mm: z.number().nullable(),
-  tps_plc_depth_mm: z.number().nullable(),
-  extent: z.string().nullable(),
-  cover_stock_print: z.string().nullable(),
-  internal_stock_print: z.string().nullable(),
-  binding_type: z.string().nullable(),
-  cover_material: z.string().nullable(),
-  internal_material: z.string().nullable(),
-  orientation: z.string().nullable(),
-  end_papers_material: z.string().nullable(),
-  end_papers_print: z.string().nullable(),
-  spacers_material: z.string().nullable(),
-  spacers_stock_print: z.string().nullable(),
-});
-
-type FormatFormData = z.infer<typeof formatSchema>;
-
-interface FormatFormProps {
-  format?: any;
-  initialValues?: any;
+type FormatFormProps = {
+  formatId?: string;
   onSuccess: () => void;
   onCancel: () => void;
-}
+  onDelete?: () => void;
+  formId?: string;
+  setIsLoading?: Dispatch<SetStateAction<boolean>>;
+  hideButtons?: boolean;
+};
 
-export function FormatForm({ format, initialValues, onSuccess, onCancel }: FormatFormProps) {
-  const { currentOrganization } = useOrganization();
-  const { useCreateFormat, useUpdateFormat } = useFormats();
-  
-  const createFormatMutation = useCreateFormat();
-  const updateFormatMutation = useUpdateFormat();
-
-  const form = useForm<FormatFormData>({
-    resolver: zodResolver(formatSchema),
-    defaultValues: {
-      format_name: "",
-      tps_height_mm: null,
-      tps_width_mm: null,
-      tps_depth_mm: null,
-      tps_plc_height_mm: null,
-      tps_plc_width_mm: null,
-      tps_plc_depth_mm: null,
-      extent: null,
-      cover_stock_print: null,
-      internal_stock_print: null,
-      binding_type: null,
-      cover_material: null,
-      internal_material: null,
-      orientation: null,
-      end_papers_material: null,
-      end_papers_print: null,
-      spacers_material: null,
-      spacers_stock_print: null,
-    }
+// Define the component with forwardRef to expose methods
+const FormatForm = forwardRef<{ deleteFormat: () => Promise<void> }, FormatFormProps>(({ 
+  formatId, 
+  onSuccess, 
+  onCancel, 
+  onDelete,
+  formId = "format-form",
+  setIsLoading: setParentIsLoading,
+  hideButtons = false
+}, ref) => {
+  const { form, isLoading, isEditMode, onSubmit, deleteFormat } = useFormatForm({ 
+    formatId, 
+    onSuccess 
   });
 
-  // Handle initial values and format data
+  // Expose the deleteFormat method via ref
+  useImperativeHandle(ref, () => ({
+    deleteFormat: async () => {
+      console.log("FormatForm deleteFormat called");
+      await deleteFormat();
+    }
+  }));
+
+  // Debug log to check formatId
   useEffect(() => {
-    if (initialValues) {
-      // AI-generated initial values
-      console.log('Setting AI-generated initial values:', initialValues);
-      Object.keys(initialValues).forEach(key => {
-        if (key in form.getValues()) {
-          form.setValue(key as keyof FormatFormData, initialValues[key]);
-        }
-      });
-    } else if (format) {
-      // Existing format data for editing
-      Object.keys(format).forEach(key => {
-        if (key in form.getValues()) {
-          form.setValue(key as keyof FormatFormData, format[key]);
-        }
-      });
-    }
-  }, [format, initialValues, form]);
+    console.log("FormatForm isEditMode:", isEditMode, "formatId:", formatId);
+  }, [isEditMode, formatId]);
 
-  const onSubmit = async (data: FormatFormData) => {
-    if (!currentOrganization) {
-      toast.error("No organization selected");
-      return;
+  // Sync loading state with parent if provided
+  useEffect(() => {
+    if (setParentIsLoading) {
+      setParentIsLoading(isLoading);
     }
+  }, [isLoading, setParentIsLoading]);
 
-    try {
-      if (format?.id) {
-        await updateFormatMutation.mutateAsync({
-          id: format.id,
-          data: { ...data, organization_id: currentOrganization.id }
-        });
-        toast.success("Format updated successfully");
-      } else {
-        await createFormatMutation.mutateAsync({
-          ...data,
-          organization_id: currentOrganization.id
-        });
-        toast.success("Format created successfully");
-      }
-      onSuccess();
-    } catch (error) {
-      console.error("Error saving format:", error);
-      toast.error("Failed to save format");
+  const handleDelete = async () => {
+    if (formatId) {
+      console.log("FormatForm handleDelete called");
+      await deleteFormat();
+      if (onDelete) onDelete();
     }
   };
 
-  const isSubmitting = createFormatMutation.isPending || updateFormatMutation.isPending;
-  const isEditing = !!format?.id;
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormatFormFields form={form} />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" id={formId}>
+        <FormatFormFields form={form} formatId={formatId} />
         
-        <div className="flex justify-end gap-3 pt-6 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : isEditing ? "Update Format" : "Create Format"}
-          </Button>
-        </div>
+        {!hideButtons && (
+          <div className="flex justify-end space-x-2">
+            {isEditMode && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" type="button" disabled={isLoading}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete this format and cannot be undone. This may also affect products that use this format.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            <Button variant="outline" type="button" onClick={onCancel} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isLoading} 
+              variant={isEditMode ? "success" : "default"}
+            >
+              {isLoading ? "Saving..." : isEditMode ? "Update Format" : "Create Format"}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );
-}
+});
+
+FormatForm.displayName = "FormatForm";
+
+export default FormatForm;

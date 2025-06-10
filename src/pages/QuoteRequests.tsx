@@ -26,7 +26,6 @@ import { useQuoteRequestSort } from '@/hooks/useQuoteRequestSort';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuoteDetailsSheet } from '@/components/quotes/table/QuoteDetailsSheet';
 import { useQuoteRequests } from '@/hooks/useQuoteRequests';
-import { useSuppliers } from '@/hooks/useSuppliers';
 
 const QuoteRequests = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,7 +37,6 @@ const QuoteRequests = () => {
   
   const { currentOrganization } = useOrganization();
   const { useQuoteRequestsList, useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
-  const { data: suppliers = [] } = useSuppliers();
   
   const { 
     data: quoteRequests = [], 
@@ -94,34 +92,6 @@ const QuoteRequests = () => {
     setIsDetailsSheetOpen(false);
   };
 
-  const handleBulkApprove = () => {
-    selectedRows.forEach(id => {
-      handleStatusChange(id, 'approved');
-    });
-    setSelectedRows([]);
-  };
-
-  const handleBulkDecline = () => {
-    selectedRows.forEach(id => {
-      handleStatusChange(id, 'declined');
-    });
-    setSelectedRows([]);
-  };
-
-  const handleBulkMarkPending = () => {
-    selectedRows.forEach(id => {
-      handleStatusChange(id, 'pending');
-    });
-    setSelectedRows([]);
-  };
-
-  const handleBulkDelete = () => {
-    selectedRows.forEach(id => {
-      handleDelete(id);
-    });
-    setSelectedRows([]);
-  };
-
   if (isErrorQuotes) {
     return (
       <Alert variant="destructive">
@@ -150,11 +120,7 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedCount={selectedRows.length}
-          onApprove={handleBulkApprove}
-          onDecline={handleBulkDecline}
-          onMarkPending={handleBulkMarkPending}
-          onDelete={handleBulkDelete}
+          selectedQuoteRequests={selectedRows.map(id => sortedQuoteRequests.find(r => r.id === id)!)}
           onClearSelection={() => setSelectedRows([])}
         />
       )}
@@ -202,17 +168,14 @@ const QuoteRequests = () => {
       </div>
 
       <QuoteRequestDialog 
-        suppliers={suppliers}
-        onSuccess={() => setIsDialogOpen(false)}
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
       />
 
       <QuoteDetailsSheet
         isOpen={isDetailsSheetOpen}
         onOpenChange={setIsDetailsSheetOpen}
-        selectedRequest={selectedQuoteRequest}
-        onEdit={handleEdit}
-        onStatusChange={handleStatusChange}
-        isSubmitting={updateStatusMutation.isPending}
+        quoteRequest={selectedQuoteRequest}
       />
     </div>
   );
