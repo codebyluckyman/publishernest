@@ -10,14 +10,14 @@ interface FormatCreationRequest {
 
 interface FormatSpecifications {
   format_name: string;
-  tps_height_mm: number;
-  tps_width_mm: number;
-  tps_depth_mm: number;
-  binding_type: string;
-  cover_material: string;
-  internal_material: string;
-  orientation: string;
-  extent: string;
+  tps_height_mm?: number;
+  tps_width_mm?: number;
+  tps_depth_mm?: number;
+  binding_type?: string;
+  cover_material?: string;
+  internal_material?: string;
+  orientation?: string;
+  extent?: string;
 }
 
 class AIFormatService {

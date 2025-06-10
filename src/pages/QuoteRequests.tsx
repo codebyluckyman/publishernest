@@ -36,7 +36,7 @@ const QuoteRequests = () => {
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
   
   const { currentOrganization } = useOrganization();
-  const { useQuoteRequestsList } = useQuoteRequests();
+  const { useQuoteRequestsList, useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
   
   const { 
     data: quoteRequests = [], 
@@ -47,6 +47,9 @@ const QuoteRequests = () => {
 
   const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests);
 
+  const updateStatusMutation = useUpdateQuoteRequestStatus();
+  const deleteQuoteRequestMutation = useDeleteQuoteRequest();
+
   const onRowsSelected = (rows: string[]) => {
     setSelectedRows(rows);
   };
@@ -54,6 +57,35 @@ const QuoteRequests = () => {
   const handleRowClick = (quoteRequest: QuoteRequest) => {
     setSelectedQuoteRequest(quoteRequest);
     setIsDetailsSheetOpen(true);
+  };
+
+  const handleStatusChange = (id: string, status: "approved" | "declined" | "pending") => {
+    updateStatusMutation.mutate({ id, status });
+  };
+
+  const handleDelete = (id: string) => {
+    deleteQuoteRequestMutation.mutate(id);
+  };
+
+  const handleEdit = (request: QuoteRequest) => {
+    // Implementation for editing
+    console.log('Edit request:', request);
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedRows(sortedQuoteRequests.map(r => r.id));
+    } else {
+      setSelectedRows([]);
+    }
+  };
+
+  const handleSelectRow = (id: string, selected: boolean) => {
+    if (selected) {
+      setSelectedRows(prev => [...prev, id]);
+    } else {
+      setSelectedRows(prev => prev.filter(rowId => rowId !== id));
+    }
   };
 
   const closeDetailsSheet = () => {
@@ -88,25 +120,21 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          onBulkAction={() => {}}
+          selectedQuoteRequests={selectedRows.map(id => sortedQuoteRequests.find(r => r.id === id)!)}
           onClearSelection={() => setSelectedRows([])}
         />
       )}
 
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <QuoteRequestTableHeader 
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onSort={handleSort}
-                onSelectAll={() => {}}
-                selectedCount={selectedRows.length}
-                totalCount={sortedQuoteRequests.length}
-              />
-            </TableRow>
-          </TableHeader>
+          <QuoteRequestTableHeader 
+            sortField={sortField}
+            sortDirection={sortDirection}
+            handleSort={handleSort}
+            selectedRows={selectedRows}
+            allRowIds={sortedQuoteRequests.map(r => r.id)}
+            onSelectAll={handleSelectAll}
+          />
           <TableBody>
             {isLoadingQuotes ? (
               Array.from({ length: 5 }).map((_, i) => (
@@ -123,19 +151,13 @@ const QuoteRequests = () => {
               sortedQuoteRequests.map((quoteRequest) => (
                 <QuoteRequestRow
                   key={quoteRequest.id}
-                  id={quoteRequest.id}
-                  title={quoteRequest.title}
-                  status={quoteRequest.status}
-                  createdAt={quoteRequest.created_at}
+                  request={quoteRequest}
+                  onStatusChange={handleStatusChange}
+                  onDelete={handleDelete}
+                  onViewDetails={handleRowClick}
+                  onEdit={handleEdit}
                   isSelected={selectedRows.includes(quoteRequest.id)}
-                  onClick={() => handleRowClick(quoteRequest)}
-                  onSelect={(selected) => {
-                    if (selected) {
-                      setSelectedRows(prev => [...prev, quoteRequest.id]);
-                    } else {
-                      setSelectedRows(prev => prev.filter(id => id !== quoteRequest.id));
-                    }
-                  }}
+                  onSelectRow={handleSelectRow}
                 />
               ))
             ) : (
@@ -146,8 +168,8 @@ const QuoteRequests = () => {
       </div>
 
       <QuoteRequestDialog 
-        isOpen={isDialogOpen} 
-        onClose={() => setIsDialogOpen(false)} 
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
       />
 
       <QuoteDetailsSheet
