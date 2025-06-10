@@ -12,23 +12,23 @@ interface NavigationHeaderProps {
 export function NavigationHeader({ onMobileMenuToggle }: NavigationHeaderProps) {
   return (
     <header className="border-b bg-white w-full">
-      <div className="flex h-14 items-center gap-4 px-4 lg:px-6 w-full">
-        <div className="flex items-center gap-4 flex-1">
+      <div className="flex h-16 items-center gap-4 px-4 lg:px-6 w-full">
+        <div className="flex items-center gap-4 flex-1 min-w-0">
           <Button
             variant="ghost"
             size="sm"
-            className="md:hidden"
+            className="md:hidden flex-shrink-0"
             onClick={onMobileMenuToggle}
           >
             <Menu className="h-5 w-5" />
           </Button>
           
-          <div className="flex-1">
-            <BreadcrumbNavigation className="mb-0" />
+          <div className="flex-1 min-w-0">
+            <BreadcrumbNavigation />
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <OrganizationNotificationsPopover />
           <HelpCenterPopover />
         </div>

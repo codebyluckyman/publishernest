@@ -12,13 +12,26 @@ interface BreadcrumbNavigationProps {
 export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) => {
   const location = useLocation();
   const menuItems = getNavigationMenuItems();
-  const { programs } = usePublishingPrograms();
+  
+  // Make the publishing programs hook conditional to avoid errors
+  let programs: any[] = [];
+  try {
+    const { programs: fetchedPrograms } = usePublishingPrograms();
+    programs = fetchedPrograms || [];
+  } catch (error) {
+    console.log("Publishing programs hook error:", error);
+  }
   
   // Split the current path into segments
   const pathSegments = location.pathname.split('/').filter(Boolean);
   
+  // Debug logging
+  console.log("Breadcrumb Debug - Current path:", location.pathname);
+  console.log("Breadcrumb Debug - Path segments:", pathSegments);
+  
   // If we're on the root path, don't show breadcrumbs
   if (pathSegments.length === 0) {
+    console.log("Breadcrumb Debug - On root path, not showing breadcrumbs");
     return null;
   }
   
@@ -68,13 +81,15 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
     };
   });
 
+  console.log("Breadcrumb Debug - Generated items:", breadcrumbItems);
+
   return (
-    <nav aria-label="Breadcrumb" className={cn(className)}>
-      <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
+    <nav aria-label="Breadcrumb" className={cn("flex items-center", className)}>
+      <ol className="flex items-center space-x-1 text-sm text-gray-700">
         <li className="flex items-center">
           <a
             href="/"
-            className="flex items-center hover:text-foreground transition-colors"
+            className="flex items-center hover:text-gray-900 transition-colors text-gray-600"
           >
             <Home className="h-4 w-4" />
             <span className="sr-only">Home</span>
@@ -83,12 +98,12 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
         
         {breadcrumbItems.map((item, index) => (
           <li key={item.path} className="flex items-center">
-            <ChevronRight className="h-4 w-4 mx-1" />
+            <ChevronRight className="h-4 w-4 mx-1 text-gray-400" />
             <a
               href={item.path}
               className={cn(
-                "hover:text-foreground transition-colors", 
-                index === breadcrumbItems.length - 1 ? "font-medium text-foreground" : ""
+                "hover:text-gray-900 transition-colors truncate", 
+                index === breadcrumbItems.length - 1 ? "font-medium text-gray-900" : "text-gray-600"
               )}
               aria-current={index === breadcrumbItems.length - 1 ? "page" : undefined}
             >
