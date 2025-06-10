@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useQuoteRequests } from '@/hooks/useQuoteRequests';
 import { useOrganization } from '@/hooks/useOrganization';
@@ -19,7 +18,7 @@ import { QuoteRequestRow } from '@/components/quotes/table/QuoteRequestRow';
 import { QuoteRequestTableHeader } from '@/components/quotes/table/QuoteRequestTableHeader';
 import { EmptyState } from '@/components/quotes/table/EmptyState';
 import { BulkActions } from '@/components/quotes/table/BulkActions';
-import QuoteFilters from '@/components/quotes/QuoteFilters';
+import { QuoteFilters } from '@/components/quotes/QuoteFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { QuoteRequest } from '@/types/quoteRequest';
@@ -36,34 +35,17 @@ const QuoteRequests = () => {
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
   
   const { currentOrganization } = useOrganization();
-  
-  // Use the proper hook structure
   const { 
-    useQuoteRequestsList, 
-    useFetchSuppliers,
-    useUpdateQuoteRequestStatus,
-    useDeleteQuoteRequest
-  } = useQuoteRequests();
-  
-  const { 
-    data: quoteRequests = [], 
+    quoteRequests, 
     isLoading: isLoadingQuotes, 
     isError: isErrorQuotes,
     error: errorQuotes 
-  } = useQuoteRequestsList(
-    currentOrganization,
-    statusFilter !== 'all' ? statusFilter : undefined,
-    searchQuery || undefined
-  );
+  } = useQuoteRequests();
 
-  const { data: suppliers = [] } = useFetchSuppliers();
-  const updateStatusMutation = useUpdateQuoteRequestStatus();
-  const deleteMutation = useDeleteQuoteRequest();
-
-  const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(quoteRequests || []);
+  const { sortConfig, handleSort } = useQuoteRequestSort();
 
   const filteredQuoteRequests = useMemo(() => {
-    let filtered = sortedQuoteRequests;
+    let filtered = quoteRequests;
 
     if (searchQuery) {
       filtered = filtered.filter(qr =>
@@ -78,59 +60,32 @@ const QuoteRequests = () => {
     }
 
     return filtered;
-  }, [sortedQuoteRequests, searchQuery, statusFilter]);
+  }, [quoteRequests, searchQuery, statusFilter]);
 
-  // Get all quote request IDs for bulk operations
-  const allQuoteRequestIds = useMemo(
-    () => filteredQuoteRequests.map((req) => req.id),
-    [filteredQuoteRequests]
-  );
+  const sortedQuoteRequests = useMemo(() => {
+    if (!filteredQuoteRequests) return [];
 
-  // Handlers for bulk actions
-  const handleBulkStatusChange = (status: "approved" | "declined" | "pending") => {
-    selectedRows.forEach(id => {
-      updateStatusMutation.mutate({ id, status });
+    return [...filteredQuoteRequests].sort((a, b) => {
+      const aValue = a[sortConfig.field];
+      const bValue = b[sortConfig.field];
+
+      if (aValue === null || aValue === undefined) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (bValue === null || bValue === undefined) return sortConfig.direction === 'asc' ? 1 : -1;
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+
+      return 0;
     });
-    setSelectedRows([]);
-  };
+  }, [filteredQuoteRequests, sortConfig]);
 
-  const handleBulkDelete = () => {
-    selectedRows.forEach(id => {
-      deleteMutation.mutate(id);
-    });
-    setSelectedRows([]);
-  };
-
-  const handleBulkUpdateDueDate = () => {
-    // This would need a proper implementation with a date picker
-    console.log('Bulk update due date for:', selectedRows);
-    setSelectedRows([]);
-  };
-
-  // Handlers for row selection
-  const handleSelectAll = (selected: boolean) => {
-    if (selected) {
-      setSelectedRows(allQuoteRequestIds);
-    } else {
-      setSelectedRows([]);
-    }
-  };
-
-  const handleSelectRow = (id: string, selected: boolean) => {
-    if (selected) {
-      setSelectedRows(prev => [...prev, id]);
-    } else {
-      setSelectedRows(prev => prev.filter(rowId => rowId !== id));
-    }
-  };
-
-  // Handlers for individual actions
-  const handleStatusChange = (id: string, status: "approved" | "declined" | "pending") => {
-    updateStatusMutation.mutate({ id, status });
-  };
-
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+  const onRowsSelected = (rows: string[]) => {
+    setSelectedRows(rows);
   };
 
   const handleRowClick = (quoteRequest: QuoteRequest) => {
@@ -138,14 +93,8 @@ const QuoteRequests = () => {
     setIsDetailsSheetOpen(true);
   };
 
-  const handleEdit = (quoteRequest: QuoteRequest) => {
-    // This would open an edit dialog
-    console.log('Edit quote request:', quoteRequest.id);
-  };
-
   const closeDetailsSheet = () => {
     setIsDetailsSheetOpen(false);
-    setSelectedQuoteRequest(null);
   };
 
   if (isErrorQuotes) {
@@ -164,10 +113,10 @@ const QuoteRequests = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <QuoteFilters
-          filterOption="supplier"
-          options={[]}
-          value=""
-          onChange={() => {}}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
         />
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Create Quote Request
@@ -176,13 +125,8 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedCount={selectedRows.length}
-          onApprove={() => handleBulkStatusChange("approved")}
-          onDecline={() => handleBulkStatusChange("declined")}
-          onMarkPending={() => handleBulkStatusChange("pending")}
-          onDelete={handleBulkDelete}
-          onUpdateDueDate={handleBulkUpdateDueDate}
-          onClearSelection={() => setSelectedRows([])}
+          selectedRows={selectedRows} 
+          setSelectedRows={setSelectedRows}
         />
       )}
 
@@ -191,12 +135,10 @@ const QuoteRequests = () => {
           <TableHeader>
             <TableRow>
               <QuoteRequestTableHeader 
-                sortField={sortField} 
-                sortDirection={sortDirection}
+                sortConfig={sortConfig} 
                 handleSort={handleSort} 
+                onRowsSelected={onRowsSelected} 
                 selectedRows={selectedRows}
-                allRowIds={allQuoteRequestIds}
-                onSelectAll={handleSelectAll}
               />
             </TableRow>
           </TableHeader>
@@ -212,38 +154,32 @@ const QuoteRequests = () => {
                   <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 </TableRow>
               ))
-            ) : filteredQuoteRequests.length > 0 ? (
-              filteredQuoteRequests.map((quoteRequest) => (
+            ) : sortedQuoteRequests.length > 0 ? (
+              sortedQuoteRequests.map((quoteRequest) => (
                 <QuoteRequestRow
                   key={quoteRequest.id}
-                  request={quoteRequest}
-                  onStatusChange={handleStatusChange}
-                  onDelete={handleDelete}
-                  onViewDetails={handleRowClick}
-                  onEdit={handleEdit}
-                  isSelected={selectedRows.includes(quoteRequest.id)}
-                  onSelectRow={handleSelectRow}
+                  quoteRequest={quoteRequest}
+                  selectedRows={selectedRows}
+                  onRowClick={() => handleRowClick(quoteRequest)}
+                  onRowsSelected={onRowsSelected}
                 />
               ))
             ) : (
-              <EmptyState isLoading={isLoadingQuotes} />
+              <EmptyState />
             )}
           </TableBody>
         </Table>
       </div>
 
       <QuoteRequestDialog 
-        suppliers={suppliers}
-        onSuccess={() => setIsDialogOpen(false)}
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
       />
 
       <QuoteDetailsSheet
         isOpen={isDetailsSheetOpen}
-        onOpenChange={setIsDetailsSheetOpen}
-        selectedRequest={selectedQuoteRequest}
-        onEdit={handleEdit}
-        onStatusChange={handleStatusChange}
-        isSubmitting={updateStatusMutation.isPending || deleteMutation.isPending}
+        onClose={closeDetailsSheet}
+        quoteRequest={selectedQuoteRequest}
       />
     </div>
   );

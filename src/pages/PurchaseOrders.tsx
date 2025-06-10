@@ -68,7 +68,11 @@ const PurchaseOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Purchase Orders</h1>
+          <p className="text-muted-foreground">Manage your purchase orders and supplier relationships</p>
+        </div>
         <Button onClick={handleCreatePurchaseOrder}>
           <Plus className="mr-2 h-4 w-4" />
           Create Purchase Order
