@@ -340,24 +340,12 @@ const SalesOrderDetail = () => {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="font-semibold">
-                      <td colSpan={3} className="p-2 text-right">Subtotal:</td>
-                      <td className="p-2 text-right">{formatCurrency(salesOrder.total_amount || 0)}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={3} className="p-2 text-right">Tax ({salesOrder.tax_rate}%):</td>
-                      <td className="p-2 text-right">{formatCurrency(salesOrder.tax_amount || 0)}</td>
-                    </tr>
                     {salesOrder.charges?.map((charge) => (
                       <tr key={charge.id}>
                         <td colSpan={3} className="p-2 text-right">{charge.description}:</td>
                         <td className="p-2 text-right">{formatCurrency(charge.amount)}</td>
                       </tr>
                     ))}
-                    <tr className="font-bold">
-                      <td colSpan={3} className="p-2 text-right">Total:</td>
-                      <td className="p-2 text-right">{formatCurrency(salesOrder.grand_total || 0)}</td>
-                    </tr>
                   </tfoot>
                 </table>
               </div>
