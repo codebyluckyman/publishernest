@@ -1,59 +1,47 @@
+import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { NavigationHeader } from './navigation/NavigationHeader';
+import { DesktopSidebar } from './navigation/DesktopSidebar';
+import { MobileNavigation } from './navigation/MobileNavigation';
+import { BreadcrumbNavigation } from './navigation/BreadcrumbNavigation';
+import { Footer } from './navigation/Footer';
+import { AIAssistant } from './ai-assistant/AIAssistant';
 
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { useLocation } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
-import DesktopSidebar from "./navigation/DesktopSidebar";
-import { NavigationHeader } from "./navigation/NavigationHeader";
-import BreadcrumbNavigation from "./navigation/BreadcrumbNavigation";
-import Footer from "./navigation/Footer";
-import { getNavigationMenuItems } from "./navigation/NavigationMenuItems";
-import { Outlet } from "react-router-dom";
+interface LayoutProps {
+  children: React.ReactNode;
+}
 
-const Layout = () => {
+const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
-  const isMobile = useIsMobile();
-  
-  const menuItems = getNavigationMenuItems();
-  
-  // Find the current page label - either direct match or from submenu
-  let currentPageLabel = "Dashboard";
-  
-  menuItems.forEach(item => {
-    if (item.path === location.pathname) {
-      currentPageLabel = item.label;
-    } else if (item.submenu) {
-      const subItem = item.submenu.find(subItem => 
-        location.pathname === subItem.path || 
-        (location.pathname.includes(subItem.path) && subItem.path !== '/')
-      );
-      if (subItem) {
-        currentPageLabel = subItem.label;
-      }
-    }
-  });
-  
+
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        {/* Desktop Sidebar - hidden on mobile */}
-        <DesktopSidebar menuItems={menuItems} />
-        
-        {/* Main content area with header at top */}
-        <div className="flex-1 flex flex-col">
-          {/* Navigation Header spans full width of main area */}
-          <NavigationHeader onMobileMenuToggle={() => {}} />
-          
-          {/* Main content below header */}
-          <main className="flex-1 flex flex-col p-4 md:p-8 animate-fadeIn">
-            <BreadcrumbNavigation />
-            <div className="flex-1">
-              <Outlet />
+    <div className="min-h-screen bg-background flex flex-col">
+      <NavigationHeader />
+      <div className="flex flex-1">
+        <DesktopSidebar />
+        <main className="flex-1 flex flex-col min-w-0">
+          <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-16 z-40">
+            <div className="container mx-auto px-4 py-3">
+              <BreadcrumbNavigation />
             </div>
-            <Footer />
-          </main>
-        </div>
+          </div>
+          <div className="flex-1 container mx-auto p-4">
+            {children}
+          </div>
+          <Footer />
+        </main>
       </div>
-    </SidebarProvider>
+      <MobileNavigation />
+      
+      {/* AI Assistant - now integrated into every page */}
+      <AIAssistant 
+        currentPage={location.pathname}
+        contextData={{
+          route: location.pathname,
+          search: location.search
+        }}
+      />
+    </div>
   );
 };
 
