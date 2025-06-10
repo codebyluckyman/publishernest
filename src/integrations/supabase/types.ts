@@ -2958,10 +2958,14 @@ export type Database = {
           created_at: string
           created_by: string
           currency: string
+          customer_contact_name: string | null
           customer_id: string
+          customer_purchase_order: string | null
           delivery_date: string | null
           delivery_location_id: string | null
+          departing_port: string | null
           file_approval_status: string | null
+          fob_date: string | null
           grand_total: number | null
           id: string
           issue_date: string | null
@@ -2969,6 +2973,7 @@ export type Database = {
           organization_id: string
           payment_terms: string | null
           print_run_id: string | null
+          sales_person: string | null
           so_number: string
           status: string
           tax_amount: number | null
@@ -2986,10 +2991,14 @@ export type Database = {
           created_at?: string
           created_by: string
           currency?: string
+          customer_contact_name?: string | null
           customer_id: string
+          customer_purchase_order?: string | null
           delivery_date?: string | null
           delivery_location_id?: string | null
+          departing_port?: string | null
           file_approval_status?: string | null
+          fob_date?: string | null
           grand_total?: number | null
           id?: string
           issue_date?: string | null
@@ -2997,6 +3006,7 @@ export type Database = {
           organization_id: string
           payment_terms?: string | null
           print_run_id?: string | null
+          sales_person?: string | null
           so_number: string
           status?: string
           tax_amount?: number | null
@@ -3014,10 +3024,14 @@ export type Database = {
           created_at?: string
           created_by?: string
           currency?: string
+          customer_contact_name?: string | null
           customer_id?: string
+          customer_purchase_order?: string | null
           delivery_date?: string | null
           delivery_location_id?: string | null
+          departing_port?: string | null
           file_approval_status?: string | null
+          fob_date?: string | null
           grand_total?: number | null
           id?: string
           issue_date?: string | null
@@ -3025,6 +3039,7 @@ export type Database = {
           organization_id?: string
           payment_terms?: string | null
           print_run_id?: string | null
+          sales_person?: string | null
           so_number?: string
           status?: string
           tax_amount?: number | null

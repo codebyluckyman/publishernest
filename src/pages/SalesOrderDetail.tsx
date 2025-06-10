@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
@@ -182,12 +183,18 @@ const SalesOrderDetail = () => {
                     <p>{salesOrder.customer.contact_phone}</p>
                   </div>
                 )}
+                {salesOrder.customer_purchase_order && (
+                  <div className="mt-4">
+                    <p className="font-medium">Customer PO</p>
+                    <p>{salesOrder.customer_purchase_order}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Order Details</CardTitle>
+                <CardTitle>Order Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
@@ -201,6 +208,26 @@ const SalesOrderDetail = () => {
                     {` (${getSymbolForCurrency(salesOrder.currency)})`}
                   </span>
                 </div>
+                {salesOrder.customer_contact_name && (
+                  <div className="flex justify-between">
+                    <span>Customer Contact</span>
+                    <span>{salesOrder.customer_contact_name}</span>
+                  </div>
+                )}
+                {salesOrder.sales_person && (
+                  <div className="flex justify-between">
+                    <span>Sales Person</span>
+                    <span>{salesOrder.sales_person}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {salesOrder.payment_terms && (
                   <div className="flex justify-between">
                     <span>Payment Terms</span>
@@ -213,30 +240,42 @@ const SalesOrderDetail = () => {
                     <span>{format(new Date(salesOrder.delivery_date), 'MMM d, yyyy')}</span>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Totals</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax ({salesOrder.tax_rate}%)</span>
-                  <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
-                </div>
-                <Separator className="my-2" />
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
-                </div>
+                {salesOrder.fob_date && (
+                  <div className="flex justify-between">
+                    <span>FOB Date</span>
+                    <span>{format(new Date(salesOrder.fob_date), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
+                {salesOrder.departing_port && (
+                  <div className="flex justify-between">
+                    <span>Departing Port</span>
+                    <span>{salesOrder.departing_port}</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Order Totals</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tax ({salesOrder.tax_rate}%)</span>
+                <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex justify-between font-bold">
+                <span>Total</span>
+                <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="mb-6">
             <CardHeader>

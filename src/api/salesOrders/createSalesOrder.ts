@@ -15,6 +15,11 @@ interface CreateSalesOrderParams {
   taxRate?: number;
   paymentTerms?: string;
   deliveryDate?: string;
+  customerPurchaseOrder?: string;
+  customerContactName?: string;
+  fobDate?: string;
+  departingPort?: string;
+  salesPerson?: string;
   createdBy: string;
 }
 
@@ -30,6 +35,11 @@ export async function createSalesOrder({
   taxRate = 0,
   paymentTerms,
   deliveryDate,
+  customerPurchaseOrder,
+  customerContactName,
+  fobDate,
+  departingPort,
+  salesPerson,
   createdBy
 }: CreateSalesOrderParams) {
   // Calculate totals
@@ -58,6 +68,11 @@ export async function createSalesOrder({
       notes,
       payment_terms: paymentTerms,
       delivery_date: deliveryDate,
+      customer_purchase_order: customerPurchaseOrder,
+      customer_contact_name: customerContactName,
+      fob_date: fobDate,
+      departing_port: departingPort,
+      sales_person: salesPerson,
       status: 'draft',
       created_by: createdBy
     } as any)
