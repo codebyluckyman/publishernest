@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
@@ -220,6 +219,25 @@ const SalesOrderDetail = () => {
                     <span>{salesOrder.sales_person}</span>
                   </div>
                 )}
+                
+                <Separator className="my-4" />
+                
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={`https://www.gravatar.com/avatar/${salesOrder.created_by_user?.email}?d=mp`} />
+                    <AvatarFallback className="text-xs">{getInitials(getCreatorName())}</AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <div className="flex items-center text-sm">
+                      <User className="h-3 w-3 text-muted-foreground mr-1" />
+                      <span>{getCreatorName()}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      <span>{format(new Date(salesOrder.created_at), 'MMM d, yyyy HH:mm')}</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -273,33 +291,6 @@ const SalesOrderDetail = () => {
               <div className="flex justify-between font-bold">
                 <span>Total</span>
                 <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Order Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-4 py-2">
-                <div className="flex-shrink-0">
-                  <Avatar>
-                    <AvatarImage src={`https://www.gravatar.com/avatar/${salesOrder.created_by_user?.email}?d=mp`} />
-                    <AvatarFallback>{getInitials(getCreatorName())}</AvatarFallback>
-                  </Avatar>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Created by</p>
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 text-muted-foreground mr-1" />
-                    <p className="text-sm">{getCreatorName()}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 text-muted-foreground mr-1" />
-                    <p className="text-sm">{format(new Date(salesOrder.created_at), 'MMM d, yyyy HH:mm')}</p>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
