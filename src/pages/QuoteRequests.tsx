@@ -26,6 +26,7 @@ import { useQuoteRequestSort } from '@/hooks/useQuoteRequestSort';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuoteDetailsSheet } from '@/components/quotes/table/QuoteDetailsSheet';
 import { useQuoteRequests } from '@/hooks/useQuoteRequests';
+import { useSuppliersApi } from '@/hooks/useSuppliersApi';
 
 // Define proper status filter types
 type StatusFilter = 'all' | 'pending' | 'approved' | 'declined';
@@ -40,6 +41,9 @@ const QuoteRequests = () => {
   
   const { currentOrganization, isLoading: isLoadingOrganization } = useOrganization();
   const { useQuoteRequestsList, useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
+  
+  // Get suppliers for the dialog
+  const { data: suppliers = [] } = useSuppliersApi(currentOrganization);
   
   // Fix hook parameters - provide all 5 parameters as expected
   const { 
@@ -146,6 +150,33 @@ const QuoteRequests = () => {
     setIsDetailsSheetOpen(false);
   };
 
+  // Bulk action handlers
+  const handleBulkApprove = () => {
+    selectedRows.forEach(id => handleStatusChange(id, 'approved'));
+    setSelectedRows([]);
+  };
+
+  const handleBulkDecline = () => {
+    selectedRows.forEach(id => handleStatusChange(id, 'declined'));
+    setSelectedRows([]);
+  };
+
+  const handleBulkMarkPending = () => {
+    selectedRows.forEach(id => handleStatusChange(id, 'pending'));
+    setSelectedRows([]);
+  };
+
+  const handleBulkDelete = () => {
+    selectedRows.forEach(id => handleDelete(id));
+    setSelectedRows([]);
+  };
+
+  const handleBulkUpdateDueDate = () => {
+    // Implementation for bulk due date update
+    console.log('Bulk update due date for:', selectedRows);
+    setSelectedRows([]);
+  };
+
   // Enhanced error handling
   if (isErrorQuotes) {
     const errorMessage = errorQuotes?.message || 'Failed to load quote requests. Please try again later.';
@@ -184,7 +215,12 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedIds={selectedRows}
+          selectedCount={selectedRows.length}
+          onApprove={handleBulkApprove}
+          onDecline={handleBulkDecline}
+          onMarkPending={handleBulkMarkPending}
+          onDelete={handleBulkDelete}
+          onUpdateDueDate={handleBulkUpdateDueDate}
           onClearSelection={() => setSelectedRows([])}
         />
       )}
@@ -232,14 +268,17 @@ const QuoteRequests = () => {
       </div>
 
       <QuoteRequestDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
+        suppliers={suppliers}
+        onSuccess={() => setIsDialogOpen(false)}
       />
 
       <QuoteDetailsSheet
         isOpen={isDetailsSheetOpen}
-        onClose={closeDetailsSheet}
-        quoteRequest={selectedQuoteRequest}
+        onOpenChange={setIsDetailsSheetOpen}
+        selectedRequest={selectedQuoteRequest}
+        onEdit={handleEdit}
+        onStatusChange={handleStatusChange}
+        isSubmitting={updateStatusMutation.isPending}
       />
     </div>
   );
