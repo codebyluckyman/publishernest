@@ -122,8 +122,8 @@ class AIService {
     return {
       content: "Based on your current workflow and data patterns, here are my recommendations:",
       suggestions: [
-        { text: 'Optimize quote pricing strategy', category: 'efficiency', priority: 1, context: 'quotes' },
-        { text: 'Standardize format specifications', category: 'quality', priority: 2, context: 'formats' },
+        { text: 'Optimize quote pricing strategy', category: 'automation', priority: 1, context: 'quotes' },
+        { text: 'Standardize format specifications', category: 'workflow', priority: 2, context: 'formats' },
         { text: 'Improve supplier performance tracking', category: 'automation', priority: 3, context: 'suppliers' }
       ],
       confidence: 0.8
@@ -173,7 +173,7 @@ Currently you're on ${currentPage}. What would you like to do?`,
       return [
         { text: 'Create a new format', category: 'workflow', priority: 1, context: 'formats' },
         { text: 'Analyze format usage', category: 'analysis', priority: 2, context: 'formats' },
-        { text: 'Suggest format optimizations', category: 'efficiency', priority: 3, context: 'formats' }
+        { text: 'Suggest format optimizations', category: 'automation', priority: 3, context: 'formats' }
       ];
     }
     

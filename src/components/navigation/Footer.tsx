@@ -1,7 +1,7 @@
 
 import React from "react";
 
-const Footer = () => {
+export const Footer = () => {
   return (
     <footer className="py-4 px-6 bg-gray-50 border-t border-gray-200">
       <div className="container mx-auto flex justify-center items-center">

@@ -9,7 +9,7 @@ interface BreadcrumbNavigationProps {
   className?: string;
 }
 
-const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) => {
+export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) => {
   const location = useLocation();
   const menuItems = getNavigationMenuItems();
   const { programs } = usePublishingPrograms();
