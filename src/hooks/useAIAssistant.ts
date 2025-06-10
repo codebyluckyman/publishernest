@@ -156,12 +156,14 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
   const handleFormatCreation = useCallback((data: any) => {
     console.log('Creating format with specifications:', data.specifications);
     
-    // Navigate to formats page with pre-filled data
+    // Navigate to formats page with enhanced navigation state
     navigate('/formats', { 
       state: { 
         createFormat: true, 
         specifications: data.specifications,
-        template: data.template 
+        template: data.template,
+        aiGenerated: true,
+        source: 'ai-assistant'
       } 
     });
   }, [navigate]);

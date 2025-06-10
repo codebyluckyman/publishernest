@@ -26,6 +26,7 @@ import { useQuoteRequestSort } from '@/hooks/useQuoteRequestSort';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuoteDetailsSheet } from '@/components/quotes/table/QuoteDetailsSheet';
 import { useQuoteRequests } from '@/hooks/useQuoteRequests';
+import { useSuppliers } from '@/hooks/useSuppliers';
 
 const QuoteRequests = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -37,6 +38,7 @@ const QuoteRequests = () => {
   
   const { currentOrganization } = useOrganization();
   const { useQuoteRequestsList, useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
+  const { data: suppliers = [] } = useSuppliers();
   
   const { 
     data: quoteRequests = [], 
@@ -92,6 +94,34 @@ const QuoteRequests = () => {
     setIsDetailsSheetOpen(false);
   };
 
+  const handleBulkApprove = () => {
+    selectedRows.forEach(id => {
+      handleStatusChange(id, 'approved');
+    });
+    setSelectedRows([]);
+  };
+
+  const handleBulkDecline = () => {
+    selectedRows.forEach(id => {
+      handleStatusChange(id, 'declined');
+    });
+    setSelectedRows([]);
+  };
+
+  const handleBulkMarkPending = () => {
+    selectedRows.forEach(id => {
+      handleStatusChange(id, 'pending');
+    });
+    setSelectedRows([]);
+  };
+
+  const handleBulkDelete = () => {
+    selectedRows.forEach(id => {
+      handleDelete(id);
+    });
+    setSelectedRows([]);
+  };
+
   if (isErrorQuotes) {
     return (
       <Alert variant="destructive">
@@ -120,6 +150,11 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
+          selectedCount={selectedRows.length}
+          onApprove={handleBulkApprove}
+          onDecline={handleBulkDecline}
+          onMarkPending={handleBulkMarkPending}
+          onDelete={handleBulkDelete}
           onClearSelection={() => setSelectedRows([])}
         />
       )}
@@ -167,14 +202,17 @@ const QuoteRequests = () => {
       </div>
 
       <QuoteRequestDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
+        suppliers={suppliers}
+        onSuccess={() => setIsDialogOpen(false)}
       />
 
       <QuoteDetailsSheet
         isOpen={isDetailsSheetOpen}
         onOpenChange={setIsDetailsSheetOpen}
-        quoteRequest={selectedQuoteRequest}
+        selectedRequest={selectedQuoteRequest}
+        onEdit={handleEdit}
+        onStatusChange={handleStatusChange}
+        isSubmitting={updateStatusMutation.isPending}
       />
     </div>
   );
