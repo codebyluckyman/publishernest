@@ -38,7 +38,7 @@ const QuoteRequests = () => {
   const [selectedQuoteRequest, setSelectedQuoteRequest] = useState<QuoteRequest | null>(null);
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
   
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization, isLoading: isLoadingOrganization } = useOrganization();
   const { useQuoteRequestsList, useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
   
   // Fix hook parameters - provide all 5 parameters as expected
@@ -184,7 +184,7 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedQuoteRequestIds={selectedRows}
+          selectedIds={selectedRows}
           onClearSelection={() => setSelectedRows([])}
         />
       )}
@@ -232,13 +232,13 @@ const QuoteRequests = () => {
       </div>
 
       <QuoteRequestDialog 
-        isOpen={isDialogOpen} 
+        open={isDialogOpen} 
         onOpenChange={setIsDialogOpen} 
       />
 
       <QuoteDetailsSheet
-        open={isDetailsSheetOpen}
-        onOpenChange={setIsDetailsSheetOpen}
+        isOpen={isDetailsSheetOpen}
+        onClose={closeDetailsSheet}
         quoteRequest={selectedQuoteRequest}
       />
     </div>

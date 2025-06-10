@@ -15,7 +15,7 @@ interface UseAIAssistantProps {
 export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization, isLoading: isLoadingOrganization } = useOrganization();
   const { user } = useAuth();
   const { useCreateFormat } = useFormats();
   const createFormatMutation = useCreateFormat();
@@ -166,10 +166,37 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
   }, [navigate]);
 
   const handleFormatCreationRequest = useCallback((data: any) => {
-    if (!currentOrganization?.id) {
-      toast.error('No organization selected');
+    // Add comprehensive debugging for organization context
+    console.log('🔍 AI Assistant Format Creation Debug - Start');
+    console.log('📊 Organization loading state:', isLoadingOrganization);
+    console.log('🏢 Current organization object:', currentOrganization);
+    console.log('🆔 Organization ID:', currentOrganization?.id);
+    console.log('📝 Organization name:', currentOrganization?.name);
+    console.log('🔧 Organization type:', currentOrganization?.organization_type);
+    console.log('👤 Current user:', user?.id);
+    console.log('📋 Format data to create:', data);
+    console.log('⏰ Context at creation time:', {
+      isLoadingOrganization,
+      hasCurrentOrganization: !!currentOrganization,
+      organizationId: currentOrganization?.id,
+      userId: user?.id,
+      timestamp: new Date().toISOString()
+    });
+
+    if (isLoadingOrganization) {
+      console.warn('⚠️ Organization is still loading, cannot create format yet');
+      toast.error('Organization is still loading. Please wait a moment and try again.');
       return;
     }
+
+    if (!currentOrganization?.id) {
+      console.error('❌ No organization selected for format creation');
+      console.log('🔍 Full organization object:', currentOrganization);
+      toast.error('No organization selected. Please ensure you have an organization set up.');
+      return;
+    }
+
+    console.log('✅ Proceeding with format creation confirmation');
 
     // Show confirmation dialog through AI conversation
     const confirmationMessage: AIMessage = {
@@ -192,10 +219,24 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
       messages: [...prev.messages, confirmationMessage],
       updatedAt: new Date()
     }));
-  }, [currentOrganization?.id]);
+  }, [currentOrganization?.id, isLoadingOrganization, user?.id]);
 
   const createFormatDirectly = useCallback(async (specifications: any) => {
+    // Add debugging at the actual creation point
+    console.log('🚀 AI Assistant Direct Format Creation - Start');
+    console.log('📊 Organization loading state at creation:', isLoadingOrganization);
+    console.log('🏢 Current organization at creation:', currentOrganization);
+    console.log('🆔 Organization ID at creation:', currentOrganization?.id);
+
+    if (isLoadingOrganization) {
+      console.warn('⚠️ Organization still loading during direct creation');
+      toast.error('Organization is still loading. Please wait a moment and try again.');
+      return;
+    }
+
     if (!currentOrganization?.id) {
+      console.error('❌ No organization ID available during direct creation');
+      console.log('🔍 Organization object during creation:', currentOrganization);
       toast.error('No organization selected');
       return;
     }
@@ -208,7 +249,11 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
         organization_id: currentOrganization.id
       };
 
+      console.log('📝 Final format data being sent:', formatData);
+
       await createFormatMutation.mutateAsync(formatData);
+
+      console.log('✅ Format creation successful');
 
       const successMessage: AIMessage = {
         role: 'assistant',
@@ -231,7 +276,13 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
       toast.success('Format created successfully!');
 
     } catch (error: any) {
-      console.error('Format creation error:', error);
+      console.error('❌ Format creation error:', error);
+      console.log('🔍 Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
       
       const errorMessage: AIMessage = {
         role: 'assistant',
@@ -254,9 +305,10 @@ export function useAIAssistant({ contextData, currentPage }: UseAIAssistantProps
     } finally {
       setIsLoading(false);
     }
-  }, [currentOrganization?.id, createFormatMutation, navigate]);
+  }, [currentOrganization?.id, isLoadingOrganization, createFormatMutation, navigate]);
 
   const cancelFormatCreation = useCallback(() => {
+    console.log('🚫 Format creation cancelled by user');
     setPendingFormatCreation(null);
     
     const cancelMessage: AIMessage = {
