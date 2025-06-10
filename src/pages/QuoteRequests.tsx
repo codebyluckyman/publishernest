@@ -120,7 +120,6 @@ const QuoteRequests = () => {
 
       {selectedRows.length > 0 && (
         <BulkActions 
-          selectedQuoteRequests={selectedRows.map(id => sortedQuoteRequests.find(r => r.id === id)!)}
           onClearSelection={() => setSelectedRows([])}
         />
       )}
