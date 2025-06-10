@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { NavigationHeader } from './navigation/NavigationHeader';
 import DesktopSidebar from './navigation/DesktopSidebar';
 import MobileNavigation from './navigation/MobileNavigation';
@@ -9,11 +9,7 @@ import Footer from './navigation/Footer';
 import { AIAssistant } from './ai-assistant/AIAssistant';
 import { getNavigationMenuItems } from './navigation/NavigationMenuItems';
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-const Layout = ({ children }: LayoutProps) => {
+const Layout = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuItems = getNavigationMenuItems();
@@ -53,7 +49,7 @@ const Layout = ({ children }: LayoutProps) => {
             </div>
           </div>
           <div className="flex-1 container mx-auto p-4">
-            {children}
+            <Outlet />
           </div>
           <Footer />
         </main>
