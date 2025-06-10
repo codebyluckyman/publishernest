@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuoteRequestDialog } from '@/components/quotes/QuoteRequestDialog';
+import { EditQuoteRequestDialog } from '@/components/quotes/EditQuoteRequestDialog';
 import { QuoteRequestRow } from '@/components/quotes/table/QuoteRequestRow';
 import { QuoteRequestTableHeader } from '@/components/quotes/table/QuoteRequestTableHeader';
 import { EmptyState } from '@/components/quotes/table/EmptyState';
@@ -21,7 +22,7 @@ import { BulkActions } from '@/components/quotes/table/BulkActions';
 import QuoteFilters from '@/components/quotes/QuoteFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { QuoteRequest } from '@/types/quoteRequest';
+import { QuoteRequest, QuoteRequestFormValues } from '@/types/quoteRequest';
 import { useQuoteRequestSort } from '@/hooks/useQuoteRequestSort';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuoteDetailsSheet } from '@/components/quotes/table/QuoteDetailsSheet';
@@ -38,9 +39,16 @@ const QuoteRequests = () => {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [selectedQuoteRequest, setSelectedQuoteRequest] = useState<QuoteRequest | null>(null);
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingQuoteRequest, setEditingQuoteRequest] = useState<QuoteRequest | null>(null);
   
   const { currentOrganization, isLoading: isLoadingOrganization } = useOrganization();
-  const { useQuoteRequestsList, useUpdateQuoteRequestStatus, useDeleteQuoteRequest } = useQuoteRequests();
+  const { 
+    useQuoteRequestsList, 
+    useUpdateQuoteRequestStatus, 
+    useDeleteQuoteRequest,
+    useUpdateQuoteRequest 
+  } = useQuoteRequests();
   
   // Get suppliers for the dialog
   const { data: suppliers = [] } = useSuppliersApi(currentOrganization);
@@ -87,6 +95,7 @@ const QuoteRequests = () => {
 
   const updateStatusMutation = useUpdateQuoteRequestStatus();
   const deleteQuoteRequestMutation = useDeleteQuoteRequest();
+  const updateQuoteRequestMutation = useUpdateQuoteRequest();
 
   const onRowsSelected = (rows: string[]) => {
     setSelectedRows(rows);
@@ -118,8 +127,21 @@ const QuoteRequests = () => {
   };
 
   const handleEdit = (request: QuoteRequest) => {
-    // Implementation for editing
     console.log('Edit request:', request);
+    setEditingQuoteRequest(request);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = (id: string, data: QuoteRequestFormValues) => {
+    updateQuoteRequestMutation.mutate(
+      { id, updates: data },
+      {
+        onSuccess: () => {
+          setIsEditDialogOpen(false);
+          setEditingQuoteRequest(null);
+        }
+      }
+    );
   };
 
   const handleSelectAll = (selected: boolean) => {
@@ -270,6 +292,15 @@ const QuoteRequests = () => {
       <QuoteRequestDialog 
         suppliers={suppliers}
         onSuccess={() => setIsDialogOpen(false)}
+      />
+
+      <EditQuoteRequestDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        quoteRequest={editingQuoteRequest}
+        suppliers={suppliers}
+        onSubmit={handleEditSubmit}
+        isSubmitting={updateQuoteRequestMutation.isPending}
       />
 
       <QuoteDetailsSheet
