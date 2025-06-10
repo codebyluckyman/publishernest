@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
@@ -221,6 +222,8 @@ const SalesOrderDetail = () => {
                 )}
                 
                 <Separator className="my-4" />
+                
+                <p className="font-medium">Created By User Details</p>
                 
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-8 w-8">
