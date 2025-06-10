@@ -46,11 +46,11 @@ const Layout = () => {
           <DesktopSidebar menuItems={menuItems} />
           <main className="flex-1 flex flex-col min-w-0">
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-16 z-40">
-              <div className="container mx-auto px-4 py-3">
+              <div className="px-4 py-3">
                 <BreadcrumbNavigation />
               </div>
             </div>
-            <div className="flex-1 container mx-auto p-4">
+            <div className="flex-1 p-4">
               <Outlet />
             </div>
             <Footer />
