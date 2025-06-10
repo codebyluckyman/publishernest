@@ -9,7 +9,7 @@ export interface AIMessage {
 
 export interface AIAction {
   label: string;
-  type: 'navigate' | 'create' | 'update' | 'delete' | 'search' | 'suggest';
+  type: 'navigate' | 'create' | 'update' | 'delete' | 'search' | 'suggest' | 'confirm_create_format' | 'cancel';
   handler: () => void;
   data?: any;
 }
