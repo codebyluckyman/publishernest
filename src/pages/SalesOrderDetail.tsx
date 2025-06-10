@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
@@ -279,27 +280,6 @@ const SalesOrderDetail = () => {
 
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Order Totals</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax ({salesOrder.tax_rate}%)</span>
-                <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
-              </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between font-bold">
-                <span>Total</span>
-                <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-6">
-            <CardHeader>
               <CardTitle>Line Items</CardTitle>
             </CardHeader>
             <CardContent>
@@ -368,6 +348,27 @@ const SalesOrderDetail = () => {
             </CardContent>
           </Card>
 
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Order Totals</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tax ({salesOrder.tax_rate}%)</span>
+                <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex justify-between font-bold">
+                <span>Total</span>
+                <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
           {salesOrder.notes && (
             <Card className="mb-6">
               <CardHeader>
@@ -402,3 +403,4 @@ const SalesOrderDetail = () => {
 };
 
 export default SalesOrderDetail;
+
