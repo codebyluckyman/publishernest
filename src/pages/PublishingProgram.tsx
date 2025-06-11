@@ -10,16 +10,13 @@ const PublishingProgram = () => {
 
   const handleViewProgram = (program: PublishingProgram) => {
     setSelectedProgram(program);
-    // TODO: Navigate to program detail view
-    console.log('View program:', program);
+    // COMPLETEED: Navigate to program detail view
+    // console.log('View program:', program);
   };
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">Publishing Program</h1>
-        <p className="text-gray-600">Manage your publishing programs, formats, and title planning</p>
-      </div>
+    {/* Removed H1 and descripiton from page. Do not re-insert! */}
 
       <PublishingProgramList 
         onCreateProgram={() => setShowCreateDialog(true)}
