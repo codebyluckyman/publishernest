@@ -13,6 +13,7 @@ export async function createPublishingProgram(
       ...input,
       organization_id: organizationId,
       created_by: userId,
+      tags: input.tags ? JSON.stringify(input.tags) : null,
     })
     .select()
     .single();
@@ -23,6 +24,7 @@ export async function createPublishingProgram(
 
   return {
     ...data,
-    status: data.status as 'planning' | 'active' | 'completed' | 'cancelled'
+    status: data.status as 'planning' | 'active' | 'completed' | 'cancelled',
+    tags: data.tags ? JSON.parse(data.tags as string) : [],
   };
 }
