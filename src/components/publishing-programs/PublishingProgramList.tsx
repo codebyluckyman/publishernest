@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar, DollarSign, BookOpen } from "lucide-react";
+import { PlusCircle, Calendar, DollarSign, BookOpen } from "lucide-react";
 import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
 import { PublishingProgram } from "@/types/publishingProgram";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +54,7 @@ export function PublishingProgramList({ onCreateProgram, onViewProgram }: Publis
       <div className="flex justify-between items-center">
         {/* Removed H2 and descripiton from page. Do not re-insert! */}
         <Button onClick={onCreateProgram}>
-          <Plus className="h-4 w-4 mr-2" />
+          <PlusCircle className="h-4 w-4 mr-2" />
           Create Program
         </Button>
       </div>
