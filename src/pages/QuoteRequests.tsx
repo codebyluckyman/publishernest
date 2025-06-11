@@ -71,6 +71,10 @@ const QuoteRequests = () => {
     }
   }, [location.search]);
 
+ const statusFilter = 
+    activeTab !== "all" ? activeTab 
+    as 'pending' | 'approved' | 'declined' : undefined;
+
   const { useQuoteRequestsList } = useQuoteRequests();
   const { data: suppliers = [], isLoading: isSuppliersLoading } =
     useSuppliersApi(currentOrganization);
@@ -80,7 +84,7 @@ const QuoteRequests = () => {
     refetch,
   } = useQuoteRequestsList(
     currentOrganization,
-    activeTab !== "all" ? activeTab : undefined,
+    statusFilter,
     searchQuery,
     users,
     supplier
