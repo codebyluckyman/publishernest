@@ -16,6 +16,8 @@ export async function fetchPublishingPrograms(organizationId: string): Promise<P
   return (data || []).map(item => ({
     ...item,
     status: item.status as 'planning' | 'active' | 'completed' | 'cancelled',
-    tags: item.tags ? JSON.parse(item.tags as string) : [] // Parse JSON string to array
+    tags: item.tags ? ( typeof item.tags === 'string' ? JSON.parse(item.tags) : item.tags
+) : []
+
   }));
 }
