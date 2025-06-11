@@ -23,6 +23,7 @@ export async function createPublishingProgram(
 
   return {
     ...data,
-    status: data.status as 'planning' | 'active' | 'completed' | 'cancelled'
+    status: data.status as 'planning' | 'active' | 'completed' | 'cancelled',
+    tags: data.tags ? JSON.parse(data.tags as string ): [] // Parse back to array
   };
 }

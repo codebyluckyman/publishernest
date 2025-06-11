@@ -134,7 +134,7 @@ const SalesOrders = () => {
     setSelectedStatus('all');
   };
 
-  const hasActiveFilters = searchQuery || selectedCustomer !== 'all' || selectedStatus !== 'all';
+  const hasActiveFilters = Boolean(searchQuery || selectedCustomer !== 'all' || selectedStatus !== 'all');
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
