@@ -1,3 +1,8 @@
+export interface ProgramTag {
+  name: string;
+  color: 'green' | 'blue' | 'purple' | 'orange' | 'red' | 'yellow' | 'pink' | 'gray';
+}
+
 export interface PublishingProgram {
   id: string;
   organization_id: string;
@@ -9,6 +14,7 @@ export interface PublishingProgram {
   currency?: string;
   start_date?: string;
   end_date?: string;
+  tags?: ProgramTag[];
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -63,6 +69,7 @@ export interface CreatePublishingProgramInput {
   currency?: string;
   start_date?: string;
   end_date?: string;
+  tags?: ProgramTag[];
 }
 
 export interface CreateProgramFormatInput {

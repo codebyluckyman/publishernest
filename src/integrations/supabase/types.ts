@@ -1990,6 +1990,7 @@ export type Database = {
           program_year: number | null
           start_date: string | null
           status: string
+          tags: Json | null
           target_budget: number | null
           updated_at: string
         }
@@ -2005,6 +2006,7 @@ export type Database = {
           program_year?: number | null
           start_date?: string | null
           status?: string
+          tags?: Json | null
           target_budget?: number | null
           updated_at?: string
         }
@@ -2020,6 +2022,7 @@ export type Database = {
           program_year?: number | null
           start_date?: string | null
           status?: string
+          tags?: Json | null
           target_budget?: number | null
           updated_at?: string
         }

@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
-import { PublishingProgram, CreatePublishingProgramInput } from "@/types/publishingProgram";
+import { PublishingProgram, CreatePublishingProgramInput, ProgramTag } from "@/types/publishingProgram";
+import { TagsInput } from "./TagsInput";
 
 const programSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -19,6 +20,10 @@ const programSchema = z.object({
   currency: z.string().optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
+  tags: z.array(z.object({
+    name: z.string(),
+    color: z.enum(['green', 'blue', 'purple', 'orange', 'red', 'yellow', 'pink', 'gray'])
+  })).optional(),
 });
 
 interface ProgramFormProps {
@@ -40,6 +45,7 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
       currency: program?.currency || "USD",
       start_date: program?.start_date || "",
       end_date: program?.end_date || "",
+      tags: program?.tags || [],
     },
   });
 
@@ -50,6 +56,7 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
       target_budget: data.target_budget || undefined,
       start_date: data.start_date || undefined,
       end_date: data.end_date || undefined,
+      tags: data.tags || [],
     };
 
     createProgram(submitData);
@@ -81,6 +88,24 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea {...field} placeholder="Brief description of the program..." />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <TagsInput
+                  tags={field.value || []}
+                  onChange={field.onChange}
+                  placeholder="Add tags to categorize this program..."
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

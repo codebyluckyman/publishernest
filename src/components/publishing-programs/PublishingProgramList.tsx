@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Calendar, DollarSign, BookOpen } from "lucide-react";
@@ -6,6 +7,7 @@ import { PublishingProgram } from "@/types/publishingProgram";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { ProgramTag } from "./ProgramTag";
 
 interface PublishingProgramListProps {
   onCreateProgram: () => void;
@@ -52,7 +54,6 @@ export function PublishingProgramList({ onCreateProgram, onViewProgram }: Publis
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        {/* Removed H2 and descripiton from page. Do not re-insert! */}
         <Button onClick={onCreateProgram}>
           <PlusCircle className="h-4 w-4 mr-2" />
           Create Program
@@ -68,7 +69,7 @@ export function PublishingProgramList({ onCreateProgram, onViewProgram }: Publis
               Get started by creating your first publishing program to organize formats and titles.
             </p>
             <Button onClick={onCreateProgram}>
-              <Plus className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-4 w-4 mr-2" />
               Create Your First Program
             </Button>
           </CardContent>
@@ -79,7 +80,7 @@ export function PublishingProgramList({ onCreateProgram, onViewProgram }: Publis
             <Card key={program.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handleViewProgram(program)}>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <CardTitle className="flex items-center gap-2">
                       {program.name}
                       {program.program_year && (
@@ -88,6 +89,18 @@ export function PublishingProgramList({ onCreateProgram, onViewProgram }: Publis
                     </CardTitle>
                     {program.description && (
                       <p className="text-gray-600 mt-1">{program.description}</p>
+                    )}
+                    {program.tags && program.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {program.tags.slice(0, 3).map((tag, index) => (
+                          <ProgramTag key={index} tag={tag} />
+                        ))}
+                        {program.tags.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{program.tags.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
                     )}
                   </div>
                   <Badge className={getStatusColor(program.status)}>
