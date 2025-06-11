@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Plus, FileText } from 'lucide-react';
+import { AlertCircle, PlusCircle, FileText } from 'lucide-react';
 import { 
   Table,
   TableBody, 
@@ -22,8 +22,8 @@ import { SalesOrderSortField, SortDirection, SortConfig } from '@/types/sorting'
 
 const SalesOrders = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig<SalesOrderSortField>>({
-    field: 'issue_date',
-    direction: 'desc'
+    field: 'so_number',
+    direction: 'asc'
   });
 
   const { 
@@ -126,7 +126,7 @@ const SalesOrders = () => {
       <div className="flex justify-end">
         <Button asChild>
           <Link to="/create-sales-order">
-            <Plus className="mr-2 h-4 w-4" /> Create Sales Order
+            <PlusCircle className="mr-2 h-4 w-4" /> Create Sales Order
           </Link>
         </Button>
       </div>
