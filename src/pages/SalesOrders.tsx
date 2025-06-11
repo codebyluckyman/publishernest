@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useSalesOrders } from '@/hooks/useSalesOrders';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,9 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SortableTableHeader } from '@/components/common/SortableTableHeader';
+import { SalesOrderFilters } from '@/components/sales-orders/SalesOrderFilters';
 import { SalesOrderSortField, SortDirection, SortConfig } from '@/types/sorting';
+import { useDebouncedValue } from '@/hooks/useDebounce';
 
 const SalesOrders = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig<SalesOrderSortField>>({
@@ -26,17 +29,50 @@ const SalesOrders = () => {
     direction: 'asc'
   });
 
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  
+  // Debounce search query to avoid excessive filtering
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
+
   const { 
     salesOrders, 
     isLoadingSalesOrders, 
     isErrorSalesOrders
   } = useSalesOrders();
 
-  // Sort sales orders
-  const sortedSalesOrders = useMemo(() => {
+  // Filter and sort sales orders
+  const filteredAndSortedSalesOrders = useMemo(() => {
     if (!salesOrders.length) return [];
 
-    return [...salesOrders].sort((a, b) => {
+    // First filter the data
+    let filtered = salesOrders.filter((order) => {
+      // Search filter
+      if (debouncedSearchQuery) {
+        const searchLower = debouncedSearchQuery.toLowerCase();
+        const matchesSearch = 
+          order.so_number.toLowerCase().includes(searchLower) ||
+          order.customer?.customer_name?.toLowerCase().includes(searchLower);
+        if (!matchesSearch) return false;
+      }
+
+      // Customer filter
+      if (selectedCustomer !== 'all' && order.customer_id !== selectedCustomer) {
+        return false;
+      }
+
+      // Status filter
+      if (selectedStatus !== 'all' && order.status.toLowerCase() !== selectedStatus.toLowerCase()) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Then sort the filtered data
+    return filtered.sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
@@ -83,7 +119,7 @@ const SalesOrders = () => {
       const comparison = aValue.toString().toLowerCase().localeCompare(bValue.toString().toLowerCase());
       return sortConfig.direction === 'asc' ? comparison : -comparison;
     });
-  }, [salesOrders, sortConfig]);
+  }, [salesOrders, sortConfig, debouncedSearchQuery, selectedCustomer, selectedStatus]);
 
   const handleSort = (field: SalesOrderSortField) => {
     setSortConfig(prev => ({
@@ -91,6 +127,14 @@ const SalesOrders = () => {
       direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
     }));
   };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedCustomer('all');
+    setSelectedStatus('all');
+  };
+
+  const hasActiveFilters = searchQuery || selectedCustomer !== 'all' || selectedStatus !== 'all';
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -123,7 +167,19 @@ const SalesOrders = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      {/* Filters and Create Button Section */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <SalesOrderFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCustomer={selectedCustomer}
+          onCustomerChange={setSelectedCustomer}
+          selectedStatus={selectedStatus}
+          onStatusChange={setSelectedStatus}
+          onClearFilters={handleClearFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
+        
         <Button asChild>
           <Link to="/create-sales-order">
             <PlusCircle className="mr-2 h-4 w-4" /> Create Sales Order
@@ -184,25 +240,32 @@ const SalesOrders = () => {
                   <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                 </TableRow>
               ))
-            ) : sortedSalesOrders.length === 0 ? (
+            ) : filteredAndSortedSalesOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8">
                   <div className="flex flex-col items-center justify-center text-center">
                     <FileText className="h-16 w-16 text-gray-400 mb-2" />
-                    <h3 className="text-lg font-medium">No Sales Orders</h3>
+                    <h3 className="text-lg font-medium">
+                      {hasActiveFilters ? 'No Sales Orders Found' : 'No Sales Orders'}
+                    </h3>
                     <p className="text-sm text-gray-500 mt-2 mb-4">
-                      You haven't created any sales orders yet.
+                      {hasActiveFilters 
+                        ? 'Try adjusting your search or filters to find what you\'re looking for.'
+                        : 'You haven\'t created any sales orders yet.'
+                      }
                     </p>
-                    <Button asChild>
-                      <Link to="/create-sales-order">
-                        <Plus className="mr-2 h-4 w-4" /> Create Sales Order
-                      </Link>
-                    </Button>
+                    {!hasActiveFilters && (
+                      <Button asChild>
+                        <Link to="/create-sales-order">
+                          <PlusCircle className="mr-2 h-4 w-4" /> Create Sales Order
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
-              sortedSalesOrders.map((order) => (
+              filteredAndSortedSalesOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">
                     <Link to={`/sales-orders/${order.id}`} className="hover:underline text-blue-600">
