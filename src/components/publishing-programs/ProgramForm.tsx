@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EnhancedTagsInput } from "./EnhancedTagsInput";
-import { CreatePublishingProgramInput, PublishingProgram, ProgramTag } from "@/types/publishingProgram";
+import { CreatePublishingProgramInput, PublishingProgram } from "@/types/publishingProgram";
 import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
 import { toast } from "sonner";
 
@@ -69,7 +69,7 @@ export function ProgramForm({ onSuccess, onCancel, program }: ProgramFormProps) 
       currency: program?.currency || "USD",
       start_date: program?.start_date || "",
       end_date: program?.end_date || "",
-      tags: program?.tags as ProgramTag[] || [],
+      tags: program?.tags || [],
     },
   });
 
@@ -81,12 +81,6 @@ export function ProgramForm({ onSuccess, onCancel, program }: ProgramFormProps) 
         return;
       }
 
-      // Make sure all tags have required properties
-      const validatedTags: ProgramTag[] = (values.tags || []).map(tag => ({
-        name: tag.name,
-        color: tag.color
-      }));
-
       const programData: CreatePublishingProgramInput = {
         name: values.name,
         description: values.description,
@@ -95,7 +89,7 @@ export function ProgramForm({ onSuccess, onCancel, program }: ProgramFormProps) 
         currency: values.currency,
         start_date: values.start_date,
         end_date: values.end_date,
-        tags: validatedTags,
+        tags: values.tags || [],
       };
 
       await createProgram(programData);
@@ -243,8 +237,8 @@ export function ProgramForm({ onSuccess, onCancel, program }: ProgramFormProps) 
               <FormLabel>Tags</FormLabel>
               <FormControl>
                 <EnhancedTagsInput
-                  tags={field.value as ProgramTag[] || []}
-                  onChange={(tags: ProgramTag[]) => field.onChange(tags)}
+                  tags={field.value || []}
+                  onChange={field.onChange}
                   placeholder="Add tags to categorize this program..."
                 />
               </FormControl>

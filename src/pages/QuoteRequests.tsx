@@ -11,7 +11,6 @@ import { QuoteRequest } from "@/types/quoteRequest";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useOrganization } from "@/hooks/useOrganization";
 
 const QuoteRequests = () => {
   const navigate = useNavigate();
@@ -20,28 +19,20 @@ const QuoteRequests = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [supplierFilter, setSupplierFilter] = useState("all");
   const [formatFilter, setFormatFilter] = useState("all");
-  const { currentOrganization } = useOrganization();
   
-  // Initialize hooks properly
   const { 
-    useQuoteRequestsList,
-    useCreateQuoteRequest,
-    useUpdateQuoteRequest,
-    useDeleteQuoteRequest
+    quoteRequests, 
+    isLoading, 
+    createQuoteRequest, 
+    updateQuoteRequest,
+    deleteQuoteRequest,
+    isCreating,
+    isUpdating,
+    isDeleting
   } = useQuoteRequests();
   
-  // Use the hooks to get the actual data and functions
-  const { 
-    data: quoteRequests = [], 
-    isLoading 
-  } = useQuoteRequestsList(currentOrganization, undefined, searchQuery);
-  
-  const { mutateAsync: createQuoteRequest, isPending: isCreating } = useCreateQuoteRequest();
-  const { mutateAsync: updateQuoteRequest, isPending: isUpdating } = useUpdateQuoteRequest();
-  const { mutateAsync: deleteQuoteRequest, isPending: isDeleting } = useDeleteQuoteRequest();
-  
-  const { data: formats = [] } = useFormats();
-  const { data: suppliers = [] } = useSuppliers();
+  const { formats } = useFormats();
+  const { suppliers } = useSuppliers();
 
   const filteredQuoteRequests = useMemo(() => {
     return quoteRequests.filter((request) => {
@@ -63,16 +54,7 @@ const QuoteRequests = () => {
 
   const handleCreateQuoteRequest = async (data: any) => {
     try {
-      if (!currentOrganization?.id) {
-        toast.error("No organization selected");
-        return;
-      }
-      
-      const newQuoteRequest = await createQuoteRequest({
-        formData: data,
-        organizationId: currentOrganization.id
-      });
-      
+      const newQuoteRequest = await createQuoteRequest(data);
       setShowCreateDialog(false);
       toast.success("Quote request created successfully");
       
@@ -86,10 +68,7 @@ const QuoteRequests = () => {
 
   const handleUpdateQuoteRequest = async (id: string, data: any) => {
     try {
-      await updateQuoteRequest({
-        id,
-        updates: data
-      });
+      await updateQuoteRequest(id, data);
       toast.success("Quote request updated successfully");
     } catch (error) {
       console.error("Error updating quote request:", error);
@@ -109,28 +88,13 @@ const QuoteRequests = () => {
 
   const handleStatusChange = async (quoteRequest: QuoteRequest, newStatus: "approved" | "pending" | "declined") => {
     try {
-      await updateQuoteRequest({
-        id: quoteRequest.id, 
-        updates: { status: newStatus }
-      });
+      await updateQuoteRequest(quoteRequest.id, { status: newStatus });
       toast.success(`Quote request ${newStatus} successfully`);
     } catch (error) {
       console.error("Error updating quote request status:", error);
       toast.error(`Failed to ${newStatus} quote request`);
     }
   };
-
-  // Convert formats to the expected format for the filter component
-  const formatOptions = formats.map(format => ({
-    value: format.id,
-    label: format.format_name
-  }));
-  
-  // Convert suppliers to the expected format for the filter component
-  const supplierOptions = suppliers.map(supplier => ({
-    value: supplier.id,
-    label: supplier.supplier_name
-  }));
 
   return (
     <div className="space-y-8">
@@ -147,23 +111,18 @@ const QuoteRequests = () => {
         </Button>
       </div>
 
-      <div className="flex gap-2">
-        <QuoteFilters
-          filterOption="supplier"
-          options={supplierOptions}
-          value={supplierFilter}
-          isLoading={false}
-          onChange={setSupplierFilter}
-        />
-        
-        <QuoteFilters
-          filterOption="formats"
-          options={formatOptions}
-          value={formatFilter}
-          isLoading={false}
-          onChange={setFormatFilter}
-        />
-      </div>
+      <QuoteFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        supplierFilter={supplierFilter}
+        onSupplierChange={setSupplierFilter}
+        formatFilter={formatFilter}
+        onFormatChange={setFormatFilter}
+        suppliers={suppliers}
+        formats={formats}
+      />
 
       <QuoteRequestTable
         quoteRequests={filteredQuoteRequests}
