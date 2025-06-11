@@ -12,7 +12,7 @@ interface NavigationHeaderProps {
 export function NavigationHeader({ onMobileMenuToggle }: NavigationHeaderProps) {
   return (
     <header className="border-b bg-white w-full">
-      <div className="flex h-16 items-center gap-4 px-4 lg:px-6 w-full">
+      <div className="flex h-12 items-center gap-4 px-2 lg:px-4 w-full">
         <div className="flex items-center gap-4 flex-1 min-w-0">
           <Button
             variant="ghost"
