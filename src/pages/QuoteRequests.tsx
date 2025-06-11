@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { QuoteRequestTable } from "@/components/quotes/QuoteRequestTable";
 import { QuoteRequestDialog } from "@/components/quotes/QuoteRequestDialog";
-import { QuoteFilters } from "@/components/quotes/QuoteFilters";
+import QuoteFilters from "@/components/quotes/QuoteFilters";
 import { useQuoteRequests } from "@/hooks/useQuoteRequests";
 import { useFormats } from "@/hooks/useFormats";
 import { useSuppliers } from "@/hooks/useSuppliers";
@@ -127,7 +127,7 @@ const QuoteRequests = () => {
       <QuoteRequestTable
         quoteRequests={filteredQuoteRequests}
         isLoading={isLoading}
-        onUpdate={handleUpdateQuoteRequest}
+        onEdit={handleUpdateQuoteRequest}
         onDelete={handleDeleteQuoteRequest}
         onStatusChange={handleStatusChange}
         isUpdating={isUpdating}
@@ -135,8 +135,8 @@ const QuoteRequests = () => {
       />
 
       <QuoteRequestDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
+        isOpen={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
         onSubmit={handleCreateQuoteRequest}
         isSubmitting={isCreating}
       />

@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { ProgramTag } from "@/types/publishingProgram";
 import { OrganizationTag } from "./fetchOrganizationTags";
 
 export async function getTagSuggestions(
@@ -18,5 +19,8 @@ export async function getTagSuggestions(
     throw new Error(`Error fetching tag suggestions: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []).map(item => ({
+    ...item,
+    color: item.color as ProgramTag['color']
+  }));
 }

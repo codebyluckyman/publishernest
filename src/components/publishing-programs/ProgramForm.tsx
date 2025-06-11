@@ -22,7 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EnhancedTagsInput } from "./EnhancedTagsInput";
-import { CreatePublishingProgramInput } from "@/types/publishingProgram";
+import { CreatePublishingProgramInput, PublishingProgram } from "@/types/publishingProgram";
+import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(1, "Program name is required"),
@@ -41,9 +43,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface ProgramFormProps {
-  onSubmit: (data: CreatePublishingProgramInput) => void;
-  isSubmitting?: boolean;
-  initialData?: Partial<CreatePublishingProgramInput>;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+  program?: PublishingProgram;
 }
 
 const currencies = [
@@ -54,23 +56,47 @@ const currencies = [
   { value: "AUD", label: "Australian Dollar (AUD)" },
 ];
 
-export function ProgramForm({ onSubmit, isSubmitting = false, initialData }: ProgramFormProps) {
+export function ProgramForm({ onSuccess, onCancel, program }: ProgramFormProps) {
+  const { createProgram, isCreating } = usePublishingPrograms();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      description: initialData?.description || "",
-      program_year: initialData?.program_year || new Date().getFullYear(),
-      target_budget: initialData?.target_budget || undefined,
-      currency: initialData?.currency || "USD",
-      start_date: initialData?.start_date || "",
-      end_date: initialData?.end_date || "",
-      tags: initialData?.tags || [],
+      name: program?.name || "",
+      description: program?.description || "",
+      program_year: program?.program_year || new Date().getFullYear(),
+      target_budget: program?.target_budget || undefined,
+      currency: program?.currency || "USD",
+      start_date: program?.start_date || "",
+      end_date: program?.end_date || "",
+      tags: program?.tags || [],
     },
   });
 
-  const handleSubmit = (values: FormValues) => {
-    onSubmit(values);
+  const handleSubmit = async (values: FormValues) => {
+    try {
+      // Ensure name is provided (TypeScript will enforce this, but runtime check for safety)
+      if (!values.name) {
+        toast.error("Program name is required");
+        return;
+      }
+
+      const programData: CreatePublishingProgramInput = {
+        name: values.name,
+        description: values.description,
+        program_year: values.program_year,
+        target_budget: values.target_budget,
+        currency: values.currency,
+        start_date: values.start_date,
+        end_date: values.end_date,
+        tags: values.tags || [],
+      };
+
+      await createProgram(programData);
+      onSuccess?.();
+    } catch (error) {
+      console.error("Error creating program:", error);
+    }
   };
 
   return (
@@ -222,8 +248,13 @@ export function ProgramForm({ onSubmit, isSubmitting = false, initialData }: Pro
         />
 
         <div className="flex justify-end space-x-2">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Program"}
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" disabled={isCreating}>
+            {isCreating ? "Creating..." : "Create Program"}
           </Button>
         </div>
       </form>
