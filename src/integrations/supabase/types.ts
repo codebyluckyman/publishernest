@@ -1977,44 +1977,6 @@ export type Database = {
           },
         ]
       }
-      publishing_program_tags: {
-        Row: {
-          color: string
-          created_at: string
-          id: string
-          name: string
-          organization_id: string
-          updated_at: string
-          usage_count: number
-        }
-        Insert: {
-          color: string
-          created_at?: string
-          id?: string
-          name: string
-          organization_id: string
-          updated_at?: string
-          usage_count?: number
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          id?: string
-          name?: string
-          organization_id?: string
-          updated_at?: string
-          usage_count?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_publishing_program_tags_organization"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       publishing_programs: {
         Row: {
           created_at: string
@@ -4773,10 +4735,6 @@ export type Database = {
       }
       increment_presentation_share_access: {
         Args: { code: string }
-        Returns: undefined
-      }
-      increment_tag_usage: {
-        Args: { tag_id: string }
         Returns: undefined
       }
       insert_quote_request_format_products: {
