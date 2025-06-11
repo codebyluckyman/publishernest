@@ -4,6 +4,7 @@ import { Home, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MenuItem, getNavigationMenuItems } from "./NavigationMenuItems";
 import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
+import { useSalesOrders } from "@/hooks/useSalesOrders";
 
 interface BreadcrumbNavigationProps {
   className?: string;
@@ -20,6 +21,15 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
     programs = fetchedPrograms || [];
   } catch (error) {
     console.log("Publishing programs hook error:", error);
+  }
+
+  // Make the sales orders hook conditional to avoid errors
+  let salesOrders: any[] = [];
+  try {
+    const { salesOrders: fetchedSalesOrders } = useSalesOrders();
+    salesOrders = fetchedSalesOrders || [];
+  } catch (error) {
+    console.log("Sales orders hook error:", error);
   }
   
   // Split the current path into segments
@@ -41,6 +51,16 @@ export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) =
       const program = programs.find(p => p.id === segment);
       return {
         label: program ? program.name : 'Loading...',
+        path
+      };
+    }
+
+    // Special handling for sales order detail pages
+    if (pathSegments[0] === 'sales-orders' && index === 1) {
+      // This is the sales order ID segment, try to find the sales order number
+      const salesOrder = salesOrders.find(so => so.id === segment);
+      return {
+        label: salesOrder ? salesOrder.so_number : 'Loading...',
         path
       };
     }
