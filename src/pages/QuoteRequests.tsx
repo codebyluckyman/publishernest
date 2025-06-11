@@ -1,316 +1,239 @@
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useOrganization } from "@/hooks/useOrganization";
+import { useQuoteRequests } from "@/hooks/useQuoteRequests";
+import { useSuppliersApi } from "@/hooks/useSuppliersApi";
+import { QuoteRequestTable } from "@/components/quotes/QuoteRequestTable";
+import { QuoteRequestDialog } from "@/components/quotes/QuoteRequestDialog";
+import { Input } from "@/components/ui/input";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
+import QuoteFilters from "@/components/quotes/QuoteFilters";
 
-import React, { useState, useMemo } from 'react';
-import { useOrganization } from '@/hooks/useOrganization';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, Plus } from 'lucide-react';
-import { 
-  Table,
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { QuoteRequestDialog } from '@/components/quotes/QuoteRequestDialog';
-import { EditQuoteRequestDialog } from '@/components/quotes/EditQuoteRequestDialog';
-import { QuoteRequestRow } from '@/components/quotes/table/QuoteRequestRow';
-import { QuoteRequestTableHeader } from '@/components/quotes/table/QuoteRequestTableHeader';
-import { EmptyState } from '@/components/quotes/table/EmptyState';
-import { BulkActions } from '@/components/quotes/table/BulkActions';
-import QuoteFilters from '@/components/quotes/QuoteFilters';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { QuoteRequest, QuoteRequestFormValues } from '@/types/quoteRequest';
-import { useQuoteRequestSort } from '@/hooks/useQuoteRequestSort';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QuoteDetailsSheet } from '@/components/quotes/table/QuoteDetailsSheet';
-import { useQuoteRequests } from '@/hooks/useQuoteRequests';
-import { useSuppliersApi } from '@/hooks/useSuppliersApi';
+import { supabase } from "@/integrations/supabase/client";
+import { OrganizationMember } from "@/types/organization";
+import { debounce } from "lodash";
 
-// Define proper status filter types
-type StatusFilter = 'all' | 'pending' | 'approved' | 'declined';
+interface FilterState {
+  title: string;
+  supplier: string;
+  formats: string;
+  quote_requests: string;
+  users: string;
+}
+
+type UserProfile = {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
 
 const QuoteRequests = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [selectedQuoteRequest, setSelectedQuoteRequest] = useState<QuoteRequest | null>(null);
-  const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingQuoteRequest, setEditingQuoteRequest] = useState<QuoteRequest | null>(null);
-  
-  const { currentOrganization, isLoading: isLoadingOrganization } = useOrganization();
-  const { 
-    useQuoteRequestsList, 
-    useUpdateQuoteRequestStatus, 
-    useDeleteQuoteRequest,
-    useUpdateQuoteRequest 
-  } = useQuoteRequests();
-  
-  // Get suppliers for the dialog
-  const { data: suppliers = [] } = useSuppliersApi(currentOrganization);
-  
-  // Fix hook parameters - provide all 5 parameters as expected
-  const { 
-    data: rawQuoteRequests = [], 
-    isLoading: isLoadingQuotes, 
-    isError: isErrorQuotes,
-    error: errorQuotes 
-  } = useQuoteRequestsList(
-    currentOrganization, 
-    statusFilter !== 'all' ? statusFilter : undefined, 
-    searchQuery,
-    undefined, // users parameter
-    undefined  // supplier parameter
+  const { currentOrganization, getOrganizationMembers } = useOrganization();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [inputValue, setInputValue] = useState(searchQuery);
+
+  const [activeTab, setActiveTab] = useState("pending");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [members, setMembers] = useState<
+    (OrganizationMember & { profile?: UserProfile })[]
+  >([]);
+
+  const [users, setUsers] = useState("");
+  const [supplier, setSupplier] = useState("");
+
+  const debouncedSetSearchQuery = useMemo(
+    () => debounce((query: string) => setSearchQuery(query), 500),
+    [setSearchQuery]
   );
 
-  // Add runtime type validation and safety checks
-  const validatedQuoteRequests = useMemo(() => {
-    try {
-      if (!Array.isArray(rawQuoteRequests)) {
-        console.warn('Quote requests data is not an array:', rawQuoteRequests);
-        return [];
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    debouncedSetSearchQuery(value);
+  };
+
+  // Check for tab parameter in URL query string when component mounts
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const tabParam = queryParams.get("tab");
+    if (
+      tabParam &&
+      ["pending", "approved", "declined", "all"].includes(tabParam)
+    ) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
+
+  const { useQuoteRequestsList } = useQuoteRequests();
+  const { data: suppliers = [], isLoading: isSuppliersLoading } =
+    useSuppliersApi(currentOrganization);
+  const {
+    data: quoteRequests = [],
+    isLoading: isQuoteRequestsLoading,
+    refetch,
+  } = useQuoteRequestsList(
+    currentOrganization,
+    activeTab !== "all" ? activeTab : undefined,
+    searchQuery,
+    users,
+    supplier
+  );
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value);
+  }, []);
+
+  const handleQuoteRequestSuccess = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const navigateToQuotes = useCallback(() => {
+    navigate("/quotes");
+  }, [navigate]);
+
+  useEffect(() => {
+    refetch();
+  }, [users, supplier, refetch]);
+
+  useEffect(() => {
+    if (!currentOrganization) return;
+
+    const fetchMembers = async () => {
+      try {
+        const memberData = await getOrganizationMembers(currentOrganization.id);
+
+        const memberIds = memberData.map((m) => m.auth_user_id);
+
+        const { data: profiles, error } = await supabase
+          .from("profiles")
+          .select("id, email, first_name, last_name, avatar_url")
+          .in("id", memberIds);
+
+        if (error) throw error;
+
+        const membersWithProfiles = memberData.map((member) => {
+          const profile = profiles?.find((p) => p.id === member.auth_user_id);
+          return { ...member, profile };
+        });
+
+        setMembers(membersWithProfiles);
+      } catch (error) {
+        console.error("Error fetching members:", error);
       }
+    };
 
-      return rawQuoteRequests.filter((request): request is QuoteRequest => {
-        // Basic validation to ensure we have required fields
-        return (
-          request &&
-          typeof request === 'object' &&
-          typeof request.id === 'string' &&
-          typeof request.title === 'string' &&
-          ['pending', 'approved', 'declined'].includes(request.status)
-        );
-      });
-    } catch (error) {
-      console.error('Error validating quote requests:', error);
-      return [];
-    }
-  }, [rawQuoteRequests]);
-
-  const { sortField, sortDirection, handleSort, sortedQuoteRequests } = useQuoteRequestSort(validatedQuoteRequests);
-
-  const updateStatusMutation = useUpdateQuoteRequestStatus();
-  const deleteQuoteRequestMutation = useDeleteQuoteRequest();
-  const updateQuoteRequestMutation = useUpdateQuoteRequest();
-
-  const onRowsSelected = (rows: string[]) => {
-    setSelectedRows(rows);
-  };
-
-  const handleRowClick = (quoteRequest: QuoteRequest) => {
-    try {
-      setSelectedQuoteRequest(quoteRequest);
-      setIsDetailsSheetOpen(true);
-    } catch (error) {
-      console.error('Error handling row click:', error);
-    }
-  };
-
-  const handleStatusChange = (id: string, status: "approved" | "declined" | "pending") => {
-    try {
-      updateStatusMutation.mutate({ id, status });
-    } catch (error) {
-      console.error('Error updating status:', error);
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    try {
-      deleteQuoteRequestMutation.mutate(id);
-    } catch (error) {
-      console.error('Error deleting quote request:', error);
-    }
-  };
-
-  const handleEdit = (request: QuoteRequest) => {
-    console.log('Edit request:', request);
-    setEditingQuoteRequest(request);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleEditSubmit = (id: string, data: QuoteRequestFormValues) => {
-    updateQuoteRequestMutation.mutate(
-      { id, updates: data },
-      {
-        onSuccess: () => {
-          setIsEditDialogOpen(false);
-          setEditingQuoteRequest(null);
-        }
-      }
-    );
-  };
-
-  const handleSelectAll = (selected: boolean) => {
-    try {
-      if (selected) {
-        setSelectedRows(sortedQuoteRequests.map(r => r.id));
-      } else {
-        setSelectedRows([]);
-      }
-    } catch (error) {
-      console.error('Error selecting all rows:', error);
-    }
-  };
-
-  const handleSelectRow = (id: string, selected: boolean) => {
-    try {
-      if (selected) {
-        setSelectedRows(prev => [...prev, id]);
-      } else {
-        setSelectedRows(prev => prev.filter(rowId => rowId !== id));
-      }
-    } catch (error) {
-      console.error('Error selecting row:', error);
-    }
-  };
-
-  const closeDetailsSheet = () => {
-    setIsDetailsSheetOpen(false);
-  };
-
-  // Bulk action handlers
-  const handleBulkApprove = () => {
-    selectedRows.forEach(id => handleStatusChange(id, 'approved'));
-    setSelectedRows([]);
-  };
-
-  const handleBulkDecline = () => {
-    selectedRows.forEach(id => handleStatusChange(id, 'declined'));
-    setSelectedRows([]);
-  };
-
-  const handleBulkMarkPending = () => {
-    selectedRows.forEach(id => handleStatusChange(id, 'pending'));
-    setSelectedRows([]);
-  };
-
-  const handleBulkDelete = () => {
-    selectedRows.forEach(id => handleDelete(id));
-    setSelectedRows([]);
-  };
-
-  const handleBulkUpdateDueDate = () => {
-    // Implementation for bulk due date update
-    console.log('Bulk update due date for:', selectedRows);
-    setSelectedRows([]);
-  };
-
-  // Enhanced error handling
-  if (isErrorQuotes) {
-    const errorMessage = errorQuotes?.message || 'Failed to load quote requests. Please try again later.';
-    
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          {errorMessage}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  // Handle status filter change with proper typing
-  const handleStatusFilterChange = (value: string) => {
-    if (value === 'all' || value === 'pending' || value === 'approved' || value === 'declined') {
-      setStatusFilter(value as StatusFilter);
-    }
-  };
+    fetchMembers();
+  }, [currentOrganization, getOrganizationMembers]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <QuoteFilters
-          filterOption="supplier"
-          options={[]}
-          value={statusFilter}
-          onChange={handleStatusFilterChange}
-        />
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Create Quote Request
-        </Button>
-      </div>
-
-      {selectedRows.length > 0 && (
-        <BulkActions 
-          selectedCount={selectedRows.length}
-          onApprove={handleBulkApprove}
-          onDecline={handleBulkDecline}
-          onMarkPending={handleBulkMarkPending}
-          onDelete={handleBulkDelete}
-          onUpdateDueDate={handleBulkUpdateDueDate}
-          onClearSelection={() => setSelectedRows([])}
-        />
-      )}
-
-      <div className="rounded-md border">
-        <Table>
-          <QuoteRequestTableHeader 
-            sortField={sortField}
-            sortDirection={sortDirection}
-            handleSort={handleSort}
-            selectedRows={selectedRows}
-            allRowIds={sortedQuoteRequests.map(r => r.id)}
-            onSelectAll={handleSelectAll}
-          />
-          <TableBody>
-            {isLoadingQuotes ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                </TableRow>
-              ))
-            ) : sortedQuoteRequests.length > 0 ? (
-              sortedQuoteRequests.map((quoteRequest) => (
-                <QuoteRequestRow
-                  key={quoteRequest.id}
-                  request={quoteRequest}
-                  onStatusChange={handleStatusChange}
-                  onDelete={handleDelete}
-                  onViewDetails={handleRowClick}
-                  onEdit={handleEdit}
-                  isSelected={selectedRows.includes(quoteRequest.id)}
-                  onSelectRow={handleSelectRow}
+    <div className="space-y-8">
+    {/* Removed H1 and descripiton from page. Do not re-insert! */}
+      <div className="grid gap-5">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex space-x-2">
+              <QuoteRequestDialog
+                suppliers={suppliers}
+                onSuccess={handleQuoteRequestSuccess}
+              />
+              <Button variant="outline" onClick={navigateToQuotes}>
+                <FileText className="mr-2 h-4 w-4" />
+                View All Supplier Quotes
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center w-full">
+                <Input
+                  placeholder="Search quote requests..."
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  className="max-w-sm"
                 />
-              ))
-            ) : (
-              <EmptyState isLoading={false} />
-            )}
-          </TableBody>
-        </Table>
+                <QuoteFilters
+                  filterOption="supplier"
+                  options={suppliers?.map((supplier) => ({
+                    value: supplier.id,
+                    label: supplier.supplier_name,
+                  }))}
+                  value={supplier}
+                  isLoading={isSuppliersLoading}
+                  // onChange={(value) => handleFilterChange("supplier", value)}
+                  onChange={(value) => setSupplier(value)}
+                />
+                <QuoteFilters
+                  filterOption="users"
+                  options={members?.map((member) => ({
+                    value: member.auth_user_id,
+                    label:
+                      member.profile?.first_name +
+                      " " +
+                      member?.profile?.last_name,
+                  }))}
+                  value={users}
+                  isLoading={isSuppliersLoading}
+                  onChange={(value) => setUsers(value)}
+                />
+              </div>
+              {(users || supplier) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setUsers("");
+                    setSupplier("");
+                  }}
+                >
+                  Reset Filters
+                </Button>
+              )}
+            </div>
+            <Tabs
+              value={activeTab}
+              className="space-y-4"
+              onValueChange={handleTabChange}
+            >
+              <TabsList>
+                <TabsTrigger value="pending">Pending</TabsTrigger>
+                <TabsTrigger value="approved">Active</TabsTrigger>
+                <TabsTrigger value="declined">Inactive</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
+              </TabsList>
+              <TabsContent value="pending" className="space-y-4">
+                <QuoteRequestTable
+                  quoteRequests={quoteRequests}
+                  isLoading={isQuoteRequestsLoading}
+                />
+              </TabsContent>
+              <TabsContent value="approved" className="space-y-4">
+                <QuoteRequestTable
+                  quoteRequests={quoteRequests}
+                  isLoading={isQuoteRequestsLoading}
+                />
+              </TabsContent>
+              <TabsContent value="declined" className="space-y-4">
+                <QuoteRequestTable
+                  quoteRequests={quoteRequests}
+                  isLoading={isQuoteRequestsLoading}
+                />
+              </TabsContent>
+              <TabsContent value="all" className="space-y-4">
+                <QuoteRequestTable
+                  quoteRequests={quoteRequests}
+                  isLoading={isQuoteRequestsLoading}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
-
-      <QuoteRequestDialog 
-        suppliers={suppliers}
-        onSuccess={() => setIsDialogOpen(false)}
-      />
-
-      <EditQuoteRequestDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        quoteRequest={editingQuoteRequest}
-        suppliers={suppliers}
-        onSubmit={handleEditSubmit}
-        isSubmitting={updateQuoteRequestMutation.isPending}
-      />
-
-      <QuoteDetailsSheet
-        isOpen={isDetailsSheetOpen}
-        onOpenChange={setIsDetailsSheetOpen}
-        selectedRequest={selectedQuoteRequest}
-        onEdit={handleEdit}
-        onStatusChange={handleStatusChange}
-        isSubmitting={updateStatusMutation.isPending}
-      />
     </div>
   );
 };
