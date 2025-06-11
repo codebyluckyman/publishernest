@@ -22,8 +22,5 @@ export async function fetchOrganizationTags(organizationId: string): Promise<Org
     throw new Error(`Error fetching organization tags: ${error.message}`);
   }
 
-  return (data || []).map(item => ({
-    ...item,
-    color: item.color as ProgramTag['color']
-  }));
+  return data || [];
 }

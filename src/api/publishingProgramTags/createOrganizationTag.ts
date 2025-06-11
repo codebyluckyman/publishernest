@@ -22,8 +22,5 @@ export async function createOrganizationTag(
     throw new Error(`Error creating organization tag: ${error.message}`);
   }
 
-  return {
-    ...data,
-    color: data.color as ProgramTag['color']
-  };
+  return data;
 }
