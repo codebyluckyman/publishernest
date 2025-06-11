@@ -22,8 +22,8 @@ import { SalesOrderSortField, SortDirection, SortConfig } from '@/types/sorting'
 
 const SalesOrders = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig<SalesOrderSortField>>({
-    field: 'issue_date',
-    direction: 'desc'
+    field: 'so_number',
+    direction: 'asc'
   });
 
   const { 
