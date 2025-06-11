@@ -1,19 +1,31 @@
 
 import React from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
-import { PublishingProgram, CreatePublishingProgramInput, ProgramTag } from "@/types/publishingProgram";
-import { TagsInput } from "./TagsInput";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { EnhancedTagsInput } from "./EnhancedTagsInput";
+import { CreatePublishingProgramInput } from "@/types/publishingProgram";
 
-const programSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+const formSchema = z.object({
+  name: z.string().min(1, "Program name is required"),
   description: z.string().optional(),
   program_year: z.number().optional(),
   target_budget: z.number().optional(),
@@ -26,46 +38,44 @@ const programSchema = z.object({
   })).optional(),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 interface ProgramFormProps {
-  program?: PublishingProgram;
-  onSuccess: () => void;
-  onCancel: () => void;
+  onSubmit: (data: CreatePublishingProgramInput) => void;
+  isSubmitting?: boolean;
+  initialData?: Partial<CreatePublishingProgramInput>;
 }
 
-export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) {
-  const { createProgram, isCreating } = usePublishingPrograms();
+const currencies = [
+  { value: "USD", label: "US Dollar (USD)" },
+  { value: "EUR", label: "Euro (EUR)" },
+  { value: "GBP", label: "British Pound (GBP)" },
+  { value: "CAD", label: "Canadian Dollar (CAD)" },
+  { value: "AUD", label: "Australian Dollar (AUD)" },
+];
 
-  const form = useForm<CreatePublishingProgramInput>({
-    resolver: zodResolver(programSchema),
+export function ProgramForm({ onSubmit, isSubmitting = false, initialData }: ProgramFormProps) {
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      name: program?.name || "",
-      description: program?.description || "",
-      program_year: program?.program_year || new Date().getFullYear(),
-      target_budget: program?.target_budget || undefined,
-      currency: program?.currency || "USD",
-      start_date: program?.start_date || "",
-      end_date: program?.end_date || "",
-      tags: program?.tags || [],
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      program_year: initialData?.program_year || new Date().getFullYear(),
+      target_budget: initialData?.target_budget || undefined,
+      currency: initialData?.currency || "USD",
+      start_date: initialData?.start_date || "",
+      end_date: initialData?.end_date || "",
+      tags: initialData?.tags || [],
     },
   });
 
-  const onSubmit = (data: CreatePublishingProgramInput) => {
-    const submitData = {
-      ...data,
-      program_year: data.program_year || undefined,
-      target_budget: data.target_budget || undefined,
-      start_date: data.start_date || undefined,
-      end_date: data.end_date || undefined,
-      tags: data.tags || [],
-    };
-
-    createProgram(submitData);
-    onSuccess();
+  const handleSubmit = (values: FormValues) => {
+    onSubmit(values);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="name"
@@ -73,7 +83,7 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
             <FormItem>
               <FormLabel>Program Name</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="e.g., 2024 Children's Books Program" />
+                <Input placeholder="Enter program name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -87,24 +97,9 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Brief description of the program..." />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="tags"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tags</FormLabel>
-              <FormControl>
-                <TagsInput
-                  tags={field.value || []}
-                  onChange={field.onChange}
-                  placeholder="Add tags to categorize this program..."
+                <Textarea
+                  placeholder="Enter program description"
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -112,7 +107,7 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="program_year"
@@ -120,11 +115,11 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
               <FormItem>
                 <FormLabel>Program Year</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    {...field} 
+                  <Input
+                    type="number"
+                    placeholder="2024"
+                    {...field}
                     onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -145,10 +140,11 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="GBP">GBP</SelectItem>
-                    <SelectItem value="AUD">AUD</SelectItem>
+                    {currencies.map((currency) => (
+                      <SelectItem key={currency.value} value={currency.value}>
+                        {currency.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -164,13 +160,12 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
             <FormItem>
               <FormLabel>Target Budget</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
+                <Input
+                  type="number"
                   step="0.01"
-                  {...field} 
+                  placeholder="Enter target budget"
+                  {...field}
                   onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                  value={field.value || ""}
-                  placeholder="0.00"
                 />
               </FormControl>
               <FormMessage />
@@ -178,7 +173,7 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="start_date"
@@ -208,12 +203,27 @@ export function ProgramForm({ program, onSuccess, onCancel }: ProgramFormProps) 
           />
         </div>
 
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? "Saving..." : program ? "Update Program" : "Create Program"}
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <EnhancedTagsInput
+                  tags={field.value || []}
+                  onChange={field.onChange}
+                  placeholder="Add tags to categorize this program..."
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-2">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create Program"}
           </Button>
         </div>
       </form>
