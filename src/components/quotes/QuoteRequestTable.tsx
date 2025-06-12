@@ -103,7 +103,7 @@ export function QuoteRequestTable({
         onClearSelection={clearSelection}
       />
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-md border">
         <div className="min-w-[1000px]">
           <Table>
             <QuoteRequestTableHeader

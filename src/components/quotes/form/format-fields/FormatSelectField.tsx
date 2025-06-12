@@ -32,11 +32,11 @@ export function FormatSelectField({
       name={`formats.${index}.format_id`}
       render={({ field }) => (
         <FormItem className="flex flex-col">
-          <FormLabel>Format</FormLabel>
+          <FormLabel></FormLabel>
           <FormControl>
             <Combobox
               items={formatOptions}
-              value={field.value || ""}
+              value={ field.value|| ""}
               onChange={(value) => {
                 field.onChange(value);
               }}

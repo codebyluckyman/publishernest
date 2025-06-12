@@ -22,6 +22,11 @@ export interface SalesOrder {
   cancelled_at?: string;
   cancelled_by?: string;
   cancellation_reason?: string;
+  customer_purchase_order?: string;
+  customer_contact_name?: string;
+  fob_date?: string;
+  departing_port?: string;
+  sales_person?: string;
   created_at: string;
   updated_at: string;
   created_by: string;

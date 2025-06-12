@@ -105,10 +105,6 @@ export default function QuoteComparison() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-primary mb-2">{getPageTitle()}</h1>
-          <p className="text-gray-600">{getPageDescription()}</p>
-        </div>
         <Button variant="outline" onClick={handleBackNavigation}>
           <ArrowLeft className="mr-2 h-4 w-4" /> 
           {formatId ? 'Back to Formats' : 'Back to Quotes'}

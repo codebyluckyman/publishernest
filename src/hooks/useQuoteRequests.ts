@@ -22,17 +22,17 @@ export function useQuoteRequests() {
   const { user } = useAuth();
 
   /**
-   * Hook to fetch quote requests
+   * Hook to fetch quote requests - updated parameter order and types
    */
   const useQuoteRequestsList = (
     currentOrganization: Organization | null,
-    status?: string,
+    status?: 'pending' | 'approved' | 'declined',
     searchQuery?: string,
     users?: string,
     supplier?: string
   ) => {
     return useQuery({
-      queryKey: ["quoteRequests", currentOrganization?.id, status, searchQuery],
+      queryKey: ["quoteRequests", currentOrganization?.id, status, searchQuery, users, supplier],
       queryFn: () =>
         fetchQuoteRequests({
           currentOrganization,
@@ -44,6 +44,7 @@ export function useQuoteRequests() {
       enabled: !!currentOrganization,
       meta: {
         onError: (error: any) => {
+          console.error("Quote requests fetch error:", error);
           toast.error(error.message || "Failed to load quote requests");
         },
       },
@@ -67,6 +68,7 @@ export function useQuoteRequests() {
       },
       meta: {
         onError: (error: any) => {
+          console.error("Suppliers fetch error:", error);
           toast.error(error.message || "Failed to load suppliers");
         },
       },
@@ -95,6 +97,7 @@ export function useQuoteRequests() {
         toast.success("Quote request created successfully");
       },
       onError: (error: any) => {
+        console.error("Quote request creation error:", error);
         toast.error(error.message || "Failed to create quote request");
       },
     });
@@ -122,6 +125,7 @@ export function useQuoteRequests() {
         toast.success("Quote request updated successfully");
       },
       onError: (error: any) => {
+        console.error("Quote request update error:", error);
         toast.error(error.message || "Failed to update quote request");
       },
     });
@@ -155,6 +159,7 @@ export function useQuoteRequests() {
         toast.success(`Quote request ${statusMessage} successfully`);
       },
       onError: (error: any, variables) => {
+        console.error("Quote request status update error:", error);
         const statusText =
           variables.status === "approved"
             ? "mark active"
@@ -182,6 +187,7 @@ export function useQuoteRequests() {
         toast.success("Quote request deleted successfully");
       },
       onError: (error: any) => {
+        console.error("Quote request deletion error:", error);
         toast.error(error.message || "Failed to delete quote request");
       },
     });
@@ -197,6 +203,7 @@ export function useQuoteRequests() {
       enabled: !!quoteRequestId,
       meta: {
         onError: (error: any) => {
+          console.error("Quote request audit fetch error:", error);
           toast.error(error.message || "Failed to load audit history");
         },
       },
