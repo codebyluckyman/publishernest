@@ -285,7 +285,6 @@ const PrintRuns = () => {
               <Button onClick={openCreateDialog}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Create Print Run
               </Button>
-              />
             </div>
           </div>
 
