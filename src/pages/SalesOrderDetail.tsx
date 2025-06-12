@@ -171,15 +171,45 @@ const SalesOrderDetail = () => {
               <CardHeader>
                 <CardTitle>Customer Information</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="font-medium">{salesOrder.customer?.customer_name}</p>
-                <p className="text-sm text-gray-500">{salesOrder.customer?.address}</p>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Customer Name</span>
+                  <span>{salesOrder.customer?.customer_name}</span>
+                </div>
+                {salesOrder.customer?.address && (
+                  <div className="flex justify-between">
+                    <span>Address</span>
+                    <span className="text-right">{salesOrder.customer.address}</span>
+                  </div>
+                )}
                 {salesOrder.customer?.contact_name && (
-                  <div className="mt-4">
-                    <p className="font-medium">Contact</p>
-                    <p>{salesOrder.customer.contact_name}</p>
-                    <p>{salesOrder.customer.contact_email}</p>
-                    <p>{salesOrder.customer.contact_phone}</p>
+                  <div className="flex justify-between">
+                    <span>Contact Name</span>
+                    <span>{salesOrder.customer.contact_name}</span>
+                  </div>
+                )}
+                {salesOrder.customer?.contact_email && (
+                  <div className="flex justify-between">
+                    <span>Contact Email</span>
+                    <span>{salesOrder.customer.contact_email}</span>
+                  </div>
+                )}
+                {salesOrder.customer?.contact_phone && (
+                  <div className="flex justify-between">
+                    <span>Contact Phone</span>
+                    <span>{salesOrder.customer.contact_phone}</span>
+                  </div>
+                )}
+                {salesOrder.customer_contact_name && (
+                  <div className="flex justify-between">
+                    <span>Customer Contact</span>
+                    <span>{salesOrder.customer_contact_name}</span>
+                  </div>
+                )}
+                {salesOrder.customer_purchase_order && (
+                  <div className="flex justify-between">
+                    <span>Customer PO</span>
+                    <span>{salesOrder.customer_purchase_order}</span>
                   </div>
                 )}
               </CardContent>
@@ -187,7 +217,7 @@ const SalesOrderDetail = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Order Details</CardTitle>
+                <CardTitle>Order Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex justify-between">
@@ -201,6 +231,41 @@ const SalesOrderDetail = () => {
                     {` (${getSymbolForCurrency(salesOrder.currency)})`}
                   </span>
                 </div>
+                {salesOrder.sales_person && (
+                  <div className="flex justify-between">
+                    <span>Sales Person</span>
+                    <span>{salesOrder.sales_person}</span>
+                  </div>
+                )}
+                
+                <Separator className="my-4" />
+                
+                <p className="font-medium">Created By User Details</p>
+                
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={`https://www.gravatar.com/avatar/${salesOrder.created_by_user?.email}?d=mp`} />
+                    <AvatarFallback className="text-xs">{getInitials(getCreatorName())}</AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <div className="flex items-center text-sm">
+                      <User className="h-3 w-3 text-muted-foreground mr-1" />
+                      <span>{getCreatorName()}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      <span>{format(new Date(salesOrder.created_at), 'MMM d, yyyy HH:mm')}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 {salesOrder.payment_terms && (
                   <div className="flex justify-between">
                     <span>Payment Terms</span>
@@ -213,57 +278,21 @@ const SalesOrderDetail = () => {
                     <span>{format(new Date(salesOrder.delivery_date), 'MMM d, yyyy')}</span>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Totals</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax ({salesOrder.tax_rate}%)</span>
-                  <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
-                </div>
-                <Separator className="my-2" />
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
-                </div>
+                {salesOrder.fob_date && (
+                  <div className="flex justify-between">
+                    <span>FOB Date</span>
+                    <span>{format(new Date(salesOrder.fob_date), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
+                {salesOrder.departing_port && (
+                  <div className="flex justify-between">
+                    <span>Departing Port</span>
+                    <span>{salesOrder.departing_port}</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
-
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Order Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-4 py-2">
-                <div className="flex-shrink-0">
-                  <Avatar>
-                    <AvatarImage src={`https://www.gravatar.com/avatar/${salesOrder.created_by_user?.email}?d=mp`} />
-                    <AvatarFallback>{getInitials(getCreatorName())}</AvatarFallback>
-                  </Avatar>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Created by</p>
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 text-muted-foreground mr-1" />
-                    <p className="text-sm">{getCreatorName()}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 text-muted-foreground mr-1" />
-                    <p className="text-sm">{format(new Date(salesOrder.created_at), 'MMM d, yyyy HH:mm')}</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           <Card className="mb-6">
             <CardHeader>
@@ -311,26 +340,35 @@ const SalesOrderDetail = () => {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="font-semibold">
-                      <td colSpan={3} className="p-2 text-right">Subtotal:</td>
-                      <td className="p-2 text-right">{formatCurrency(salesOrder.total_amount || 0)}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={3} className="p-2 text-right">Tax ({salesOrder.tax_rate}%):</td>
-                      <td className="p-2 text-right">{formatCurrency(salesOrder.tax_amount || 0)}</td>
-                    </tr>
                     {salesOrder.charges?.map((charge) => (
                       <tr key={charge.id}>
                         <td colSpan={3} className="p-2 text-right">{charge.description}:</td>
                         <td className="p-2 text-right">{formatCurrency(charge.amount)}</td>
                       </tr>
                     ))}
-                    <tr className="font-bold">
-                      <td colSpan={3} className="p-2 text-right">Total:</td>
-                      <td className="p-2 text-right">{formatCurrency(salesOrder.grand_total || 0)}</td>
-                    </tr>
                   </tfoot>
                 </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Order Totals</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>{formatCurrency(salesOrder.total_amount || 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tax ({salesOrder.tax_rate}%)</span>
+                <span>{formatCurrency(salesOrder.tax_amount || 0)}</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex justify-between font-bold">
+                <span>Total</span>
+                <span>{formatCurrency(salesOrder.grand_total || 0)}</span>
               </div>
             </CardContent>
           </Card>

@@ -71,6 +71,8 @@ const QuoteRequests = () => {
     }
   }, [location.search]);
 
+ const statusFilter = activeTab !== "all" ? activeTab as 'pending' | 'approved' | 'declined' : undefined;
+
   const { useQuoteRequestsList } = useQuoteRequests();
   const { data: suppliers = [], isLoading: isSuppliersLoading } =
     useSuppliersApi(currentOrganization);
@@ -80,7 +82,7 @@ const QuoteRequests = () => {
     refetch,
   } = useQuoteRequestsList(
     currentOrganization,
-    activeTab !== "all" ? activeTab : undefined,
+    statusFilter,
     searchQuery,
     users,
     supplier
@@ -134,14 +136,8 @@ const QuoteRequests = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">Quote Requests</h1>
-        <p className="text-gray-600">
-          Create and manage quote requests to suppliers
-        </p>
-      </div>
-
-      <div className="grid gap-6">
+    {/* Removed H1 and descripiton from page. Do not re-insert! */}
+      <div className="grid gap-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex space-x-2">

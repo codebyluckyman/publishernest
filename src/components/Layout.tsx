@@ -1,57 +1,68 @@
 
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { useLocation } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
-import DesktopSidebar from "./navigation/DesktopSidebar";
-import { NavigationHeader } from "./navigation/NavigationHeader";
-import BreadcrumbNavigation from "./navigation/BreadcrumbNavigation";
-import Footer from "./navigation/Footer";
-import { getNavigationMenuItems } from "./navigation/NavigationMenuItems";
-import { Outlet } from "react-router-dom";
+import React, { useState } from 'react';
+import { useLocation, Outlet } from 'react-router-dom';
+import { NavigationHeader } from './navigation/NavigationHeader';
+import DesktopSidebar from './navigation/DesktopSidebar';
+import MobileNavigation from './navigation/MobileNavigation';
+import Footer from './navigation/Footer';
+import { AIAssistant } from './ai-assistant/AIAssistant';
+import { getNavigationMenuItems } from './navigation/NavigationMenuItems';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 const Layout = () => {
   const location = useLocation();
-  const isMobile = useIsMobile();
-  
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuItems = getNavigationMenuItems();
-  
-  // Find the current page label - either direct match or from submenu
-  let currentPageLabel = "Dashboard";
-  
-  menuItems.forEach(item => {
-    if (item.path === location.pathname) {
-      currentPageLabel = item.label;
-    } else if (item.submenu) {
-      const subItem = item.submenu.find(subItem => 
-        location.pathname === subItem.path || 
-        (location.pathname.includes(subItem.path) && subItem.path !== '/')
-      );
-      if (subItem) {
-        currentPageLabel = subItem.label;
+
+  // Get current page label for mobile navigation
+  const getCurrentPageLabel = () => {
+    const currentPath = location.pathname;
+    
+    // Check main menu items
+    const menuItem = menuItems.find(item => item.path === currentPath);
+    if (menuItem) return menuItem.label;
+    
+    // Check submenu items
+    for (const item of menuItems) {
+      if (item.submenu) {
+        const subItem = item.submenu.find(subItem => 
+          currentPath === subItem.path || 
+          (currentPath.includes(subItem.path) && subItem.path !== '/')
+        );
+        if (subItem) return subItem.label;
       }
     }
-  });
-  
+    
+    // Default fallback
+    return 'Dashboard';
+  };
+
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex w-full bg-gray-50">
-        {/* Desktop Sidebar - hidden on mobile */}
-        <DesktopSidebar menuItems={menuItems} />
-        
-        {/* Main content area with header at top */}
-        <div className="flex-1 flex flex-col">
-          {/* Navigation Header spans full width of main area */}
-          <NavigationHeader onMobileMenuToggle={() => {}} />
-          
-          {/* Main content below header */}
-          <main className="flex-1 flex flex-col p-4 md:p-8 animate-fadeIn">
-            <BreadcrumbNavigation />
-            <div className="flex-1">
+    <SidebarProvider>
+      <div className="min-h-screen bg-background flex flex-col w-full">
+        <div className="flex flex-1">
+          <DesktopSidebar menuItems={menuItems} />
+          <main className="flex-1 flex flex-col min-w-0">
+            <NavigationHeader onMobileMenuToggle={() => setMobileMenuOpen(true)} />
+            <div className="flex-1 p-4 bg-gray-50">
               <Outlet />
             </div>
             <Footer />
           </main>
         </div>
+        <MobileNavigation 
+          menuItems={menuItems} 
+          currentPageLabel={getCurrentPageLabel()}
+        />
+        
+        {/* AI Assistant - now integrated into every page */}
+        <AIAssistant 
+          currentPage={location.pathname}
+          contextData={{
+            route: location.pathname,
+            search: location.search
+          }}
+        />
       </div>
     </SidebarProvider>
   );

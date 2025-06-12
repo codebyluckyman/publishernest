@@ -3,41 +3,109 @@ import { useLocation } from "react-router-dom";
 import { Home, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MenuItem, getNavigationMenuItems } from "./NavigationMenuItems";
+import { usePublishingPrograms } from "@/hooks/usePublishingPrograms";
+import { useSalesOrders } from "@/hooks/useSalesOrders";
 
 interface BreadcrumbNavigationProps {
   className?: string;
 }
 
-const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) => {
+export const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) => {
   const location = useLocation();
   const menuItems = getNavigationMenuItems();
   
+  // Make the publishing programs hook conditional to avoid errors
+  let programs: any[] = [];
+  try {
+    const { programs: fetchedPrograms } = usePublishingPrograms();
+    programs = fetchedPrograms || [];
+  } catch (error) {
+    console.log("Publishing programs hook error:", error);
+  }
+
+  // Make the sales orders hook conditional to avoid errors
+  let salesOrders: any[] = [];
+  try {
+    const { salesOrders: fetchedSalesOrders } = useSalesOrders();
+    salesOrders = fetchedSalesOrders || [];
+  } catch (error) {
+    console.log("Sales orders hook error:", error);
+  }
+  
   // Split the current path into segments
   const pathSegments = location.pathname.split('/').filter(Boolean);
-  
+   
   // If we're on the root path, don't show breadcrumbs
   if (pathSegments.length === 0) {
+    //console.log("Breadcrumb Debug - On root path, not showing breadcrumbs");
     return null;
   }
   
   // Create breadcrumb items based on path segments
   const breadcrumbItems = pathSegments.map((segment, index) => {
     const path = `/${pathSegments.slice(0, index + 1).join('/')}`;
-    const menuItem = menuItems.find(item => item.path === path);
     
+    // Special handling for publishing program detail pages
+    if (pathSegments[0] === 'publishing-programs' && index === 1) {
+      // This is the program ID segment, try to find the program name
+      const program = programs.find(p => p.id === segment);
+      return {
+        label: program ? program.name : 'Loading...',
+        path
+      };
+    }
+
+    // Special handling for sales order detail pages
+    if (pathSegments[0] === 'sales-orders' && index === 1) {
+      // This is the sales order ID segment, try to find the sales order number
+      const salesOrder = salesOrders.find(so => so.id === segment);
+      return {
+        label: salesOrder ? salesOrder.so_number : 'Loading...',
+        path
+      };
+    }
+    
+    // Check if this path matches a menu item
+    const menuItem = menuItems.find(item => item.path === path);
+    if (menuItem) {
+      return {
+        label: menuItem.label,
+        path
+      };
+    }
+    
+    // Check submenu items
+    for (const item of menuItems) {
+      if (item.submenu) {
+        const subItem = item.submenu.find(subItem => 
+          path === subItem.path || 
+          (path.includes(subItem.path) && subItem.path !== '/')
+        );
+        if (subItem) {
+          return {
+            label: subItem.label,
+            path
+          };
+        }
+      }
+    }
+    
+    // Fallback to segment name
     return {
-      label: menuItem?.label || segment.charAt(0).toUpperCase() + segment.slice(1),
+      label: segment.charAt(0).toUpperCase() + segment.slice(1),
       path
     };
   });
 
+  // console.log("Breadcrumb Debug - Generated items:", breadcrumbItems);
+
   return (
-    <nav aria-label="Breadcrumb" className={cn("mb-4", className)}>
-      <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
+    <nav aria-label="Breadcrumb" className={cn("flex items-center", className)}>
+      <ol className="flex items-center space-x-1 text-sm text-gray-700">
         <li className="flex items-center">
           <a
             href="/"
-            className="flex items-center hover:text-foreground transition-colors"
+            className="flex items-center hover:text-gray-900 transition-colors text-gray-600"
           >
             <Home className="h-4 w-4" />
             <span className="sr-only">Home</span>
@@ -46,12 +114,12 @@ const BreadcrumbNavigation = ({ className }: BreadcrumbNavigationProps) => {
         
         {breadcrumbItems.map((item, index) => (
           <li key={item.path} className="flex items-center">
-            <ChevronRight className="h-4 w-4 mx-1" />
+            <ChevronRight className="h-4 w-4 mx-1 text-gray-400" />
             <a
               href={item.path}
               className={cn(
-                "hover:text-foreground transition-colors", 
-                index === breadcrumbItems.length - 1 ? "font-medium text-foreground" : ""
+                "hover:text-gray-900 transition-colors truncate", 
+                index === breadcrumbItems.length - 1 ? "font-medium text-gray-900" : "text-gray-600"
               )}
               aria-current={index === breadcrumbItems.length - 1 ? "page" : undefined}
             >

@@ -34,6 +34,11 @@ const salesOrderSchema = z.object({
   paymentTerms: z.string().optional(),
   deliveryDate: z.date().optional(),
   notes: z.string().optional(),
+  customerPurchaseOrder: z.string().optional(),
+  customerContactName: z.string().optional(),
+  fobDate: z.date().optional(),
+  departingPort: z.string().optional(),
+  salesPerson: z.string().optional(),
 });
 
 type SalesOrderFormValues = z.infer<typeof salesOrderSchema> & {
@@ -120,6 +125,48 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
               
               <FormField
                 control={form.control}
+                name="customerPurchaseOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Customer Purchase Order</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter customer PO number" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="customerContactName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Customer Contact Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter contact name" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="salesPerson"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sales Person</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter sales person name" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
                 name="currency"
                 render={({ field }) => (
                   <FormItem>
@@ -178,6 +225,37 @@ export function SalesOrderForm({ onSubmit, defaultValues }: SalesOrderFormProps)
                         date={field.value}
                         setDate={field.onChange}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="fobDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>FOB Date</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        date={field.value}
+                        setDate={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="departingPort"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Departing Port</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter departing port" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -10,7 +10,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
@@ -252,20 +252,13 @@ const PrintRuns = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Print Runs</h1>
-        <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" /> Create Print Run
-        </Button>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Print Runs Management</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="w-full md:w-2/3">
+            <div className="w-full md:w-1/3">
               <Input
                 placeholder="Search print runs..."
                 value={inputValue}
@@ -280,6 +273,11 @@ const PrintRuns = () => {
                 options={statusOptions}
                 placeholder="Filter by status"
               />
+            </div>
+            <div className="w-full md:w-1/3">
+              <Button onClick={openCreateDialog}>
+                <PlusCircle className="mr-2 h-4 w-8" /> Create Print Run
+              </Button>
             </div>
           </div>
 

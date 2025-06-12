@@ -41,11 +41,6 @@ const CreateCustomer = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Create Customer</h1>
-        <p className="text-gray-500">Add a new customer to your organization</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>New Customer</CardTitle>

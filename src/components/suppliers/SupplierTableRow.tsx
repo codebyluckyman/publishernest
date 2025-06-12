@@ -1,5 +1,6 @@
 
-import { Pencil } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Supplier } from "@/types/supplier";
@@ -12,12 +13,14 @@ interface SupplierTableRowProps {
 }
 
 export function SupplierTableRow({ supplier, onEditSupplier, formatDate }: SupplierTableRowProps) {
+  const navigate = useNavigate();
+
+  const handleViewSupplier = () => {
+    navigate(`/suppliers/${supplier.id}`);
+  };
+
   return (
-    <TableRow
-      key={supplier.id}
-      className="cursor-pointer"
-      onClick={() => onEditSupplier(supplier.id)}
-    >
+    <TableRow key={supplier.id} className="cursor-pointer hover:bg-muted/50">
       <TableCell className="font-medium">{supplier.supplier_name}</TableCell>
       <TableCell>{supplier.contact_name || "N/A"}</TableCell>
       <TableCell>{supplier.contact_email || "N/A"}</TableCell>
@@ -35,11 +38,11 @@ export function SupplierTableRow({ supplier, onEditSupplier, formatDate }: Suppl
             size="icon" 
             onClick={(e) => {
               e.stopPropagation();
-              onEditSupplier(supplier.id);
+              handleViewSupplier();
             }}
-            title="Edit supplier"
+            title="View supplier details"
           >
-            <Pencil className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
           </Button>
         </div>
       </TableCell>

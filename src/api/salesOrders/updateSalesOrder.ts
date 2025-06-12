@@ -16,6 +16,11 @@ interface UpdateSalesOrderParams {
   issueDate?: string;
   fileApprovalStatus?: string;
   advancePaymentStatus?: string;
+  customerPurchaseOrder?: string;
+  customerContactName?: string;
+  fobDate?: string;
+  departingPort?: string;
+  salesPerson?: string;
   changedBy: string;
 }
 
@@ -33,6 +38,11 @@ export async function updateSalesOrder({
   issueDate,
   fileApprovalStatus,
   advancePaymentStatus,
+  customerPurchaseOrder,
+  customerContactName,
+  fobDate,
+  departingPort,
+  salesPerson,
   changedBy
 }: UpdateSalesOrderParams) {
   // Get original order for comparison
@@ -58,6 +68,11 @@ export async function updateSalesOrder({
   if (issueDate !== undefined) updateData.issue_date = issueDate;
   if (fileApprovalStatus !== undefined) updateData.file_approval_status = fileApprovalStatus;
   if (advancePaymentStatus !== undefined) updateData.advance_payment_status = advancePaymentStatus;
+  if (customerPurchaseOrder !== undefined) updateData.customer_purchase_order = customerPurchaseOrder;
+  if (customerContactName !== undefined) updateData.customer_contact_name = customerContactName;
+  if (fobDate !== undefined) updateData.fob_date = fobDate;
+  if (departingPort !== undefined) updateData.departing_port = departingPort;
+  if (salesPerson !== undefined) updateData.sales_person = salesPerson;
 
   // Calculate new totals if line items or tax rate changes
   if (lineItems || taxRate !== undefined) {

@@ -4,17 +4,16 @@ import { Product } from "@/types/product";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
 import { formatPrice } from "@/utils/productUtils";
 import Image from "@/components/ui/img";
-import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
 
 interface TableViewProps {
   products: Array<{
-    product: ProductWithFormat; // Updated to ProductWithFormat
+    product: Product; // Updated to Product
     customPrice?: number;
     customDescription?: string;
   }>;
   displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
-    product: ProductWithFormat; // Updated to ProductWithFormat
+    product: Product; // Updated to Product
     customPrice?: number;
     customDescription?: string;
   }) => void;
@@ -26,7 +25,7 @@ export function TableView({ products, displaySettings, onSelectProduct }: TableV
   const showPricing = features?.showPricing !== false;
   const showProductDetails = features?.showProductDetails !== false;
   
-  const getDisplayValue = (product: ProductWithFormat, column: string, customPrice?: number) => {
+  const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
       return 'Contact for pricing';

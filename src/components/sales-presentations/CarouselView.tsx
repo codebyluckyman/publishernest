@@ -4,18 +4,18 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { PresentationDisplaySettings } from "@/types/salesPresentation";
 import { formatPrice } from "@/utils/productUtils";
 import Image from "@/components/ui/img";
-import { ProductWithFormat } from "@/hooks/useProductsWithFormats";
+import { Product } from "@/types/product";
 import { useEffect, useState } from "react";
 
 interface CarouselViewProps {
   products: Array<{
-    product: ProductWithFormat;
+    product: Product;
     customPrice?: number;
     customDescription?: string;
   }>;
   displaySettings?: PresentationDisplaySettings;
   onSelectProduct: (product: {
-    product: ProductWithFormat;
+    product: Product;
     customPrice?: number;
     customDescription?: string;
   }) => void;
@@ -90,7 +90,7 @@ export function CarouselView({ products, displaySettings, onSelectProduct }: Car
     return column.charAt(0).toUpperCase() + column.slice(1).replace(/_/g, ' ');
   };
   
-  const getDisplayValue = (product: ProductWithFormat, column: string, customPrice?: number) => {
+  const getDisplayValue = (product: Product, column: string, customPrice?: number) => {
     // Don't show price if pricing is disabled
     if (column === 'price' && !showPricing) {
       return 'Contact for pricing';
