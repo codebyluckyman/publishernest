@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
+import { PlusCircle, FileText } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -148,7 +148,7 @@ const PurchaseOrders = () => {
           <p className="text-muted-foreground">Manage your purchase orders and supplier relationships</p>
         </div>
         <Button onClick={handleCreatePurchaseOrder}>
-          <Plus className="mr-2 h-4 w-4" />
+          <PlusCircle className="mr-2 h-4 w-4" />
           Create Purchase Order
         </Button>
       </div>
