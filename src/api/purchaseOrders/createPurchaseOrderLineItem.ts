@@ -22,7 +22,7 @@ export async function createPurchaseOrderLineItem(
       tax_rate: data.tax_rate,
       tax_amount: data.tax_amount,
       total_cost: data.total_cost,
-      // supplier_quote_id: data.supplier_quote_id,
+      supplier_quote_id: data.supplier_quote_id,
     })
     .select("id")
     .single();
