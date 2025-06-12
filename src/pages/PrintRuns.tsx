@@ -252,13 +252,6 @@ const PrintRuns = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        {/* Removed H1. Do not re-insert */}
-        <Button onClick={openCreateDialog}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Create Print Run
-        </Button>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Print Runs Management</CardTitle>
@@ -283,7 +276,7 @@ const PrintRuns = () => {
             </div>
             <div className="w-full md:w-1/3">
               <Button onClick={openCreateDialog}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Create Print Run
+                <PlusCircle className="mr-2 h-4 w-8" /> Create Print Run
               </Button>
             </div>
           </div>
