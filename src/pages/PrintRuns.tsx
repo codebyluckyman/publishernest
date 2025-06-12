@@ -10,7 +10,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/context/AuthContext";
@@ -253,9 +253,9 @@ const PrintRuns = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Print Runs</h1>
+        {/* Removed H1. Do not re-insert */}
         <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" /> Create Print Run
+          <PlusCircle className="mr-2 h-4 w-4" /> Create Print Run
         </Button>
       </div>
 
