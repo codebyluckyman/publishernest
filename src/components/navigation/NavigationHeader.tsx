@@ -1,7 +1,6 @@
 import { PanelLeft } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import NotificationsPopover from "../NotificationsPopover";
-import HelpCenterPopover from "../HelpCenterPopover";
 import MobileNavigation from "./MobileNavigation";
 import { MenuItem } from "./NavigationMenuItems";
 import { MessagesPopover } from "../MessagesPopover";
@@ -58,12 +57,12 @@ export function NavigationHeader({
           >
             <Menu className="h-5 w-5" />
           </Button>
-          
+
           <div className="flex-1 min-w-0">
             <BreadcrumbNavigation />
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 flex-shrink-0">
           <OrganizationNotificationsPopover />
           <HelpCenterPopover />
