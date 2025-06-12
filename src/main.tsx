@@ -30,7 +30,6 @@ createRoot(document.getElementById("root")!).render(
           <App />
         </OnlineStatusProvider>
         <AIAssistantProvider>
-          <App />
         </AIAssistantProvider>
       </OrganizationProvider>
     </AuthProvider>
