@@ -265,7 +265,7 @@ const PrintRuns = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="w-full md:w-2/3">
+            <div className="w-full md:w-1/3">
               <Input
                 placeholder="Search print runs..."
                 value={inputValue}
@@ -279,6 +279,12 @@ const PrintRuns = () => {
                 onValueChange={setStatusFilter}
                 options={statusOptions}
                 placeholder="Filter by status"
+              />
+            </div>
+            <div className="w-full md:w-1/3">
+              <Button onClick={openCreateDialog}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Create Print Run
+              </Button>
               />
             </div>
           </div>
