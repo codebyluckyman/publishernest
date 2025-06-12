@@ -1,14 +1,26 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { usePrintRuns } from "@/hooks/usePrintRuns";
 import { useOrganization } from "@/hooks/useOrganization";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Save, Loader2, X } from "lucide-react";
@@ -18,7 +30,10 @@ import { useSuppliers } from "@/hooks/useSuppliers";
 
 const formSchema = z.object({
   printRunId: z.string().uuid({ message: "Please select a print run" }),
-  supplierId: z.string().uuid({ message: "Please select a supplier" }).optional(),
+  supplierId: z
+    .string()
+    .uuid({ message: "Please select a supplier" })
+    .optional(),
   currency: z.string().min(1, { message: "Please enter a currency" }),
   issueDate: z.date().optional(),
   deliveryDate: z.date().optional(),
@@ -31,10 +46,12 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface PurchaseOrderFormProps {
   initialData?: any;
-  onSubmit: (data: FormValues & { lineItems: NewPurchaseOrderLineItem[] }) => void;
+  onSubmit: (
+    data: FormValues & { lineItems: NewPurchaseOrderLineItem[] }
+  ) => void;
   onCancel: () => void;
   isSubmitting: boolean;
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
 }
 
 export function PurchaseOrderForm({
@@ -42,31 +59,34 @@ export function PurchaseOrderForm({
   onSubmit,
   onCancel,
   isSubmitting,
-  mode = 'create'
+  mode = "create",
 }: PurchaseOrderFormProps) {
   const { currentOrganization } = useOrganization();
   const { printRuns, isLoading: isPrintRunsLoading } = usePrintRuns();
   const { suppliers, isLoading: isSuppliersLoading } = useSuppliers();
-  const [lineItems, setLineItems] = useState<NewPurchaseOrderLineItem[]>(initialData?.lineItems || []);
+  const [lineItems, setLineItems] = useState<NewPurchaseOrderLineItem[]>(
+    initialData?.lineItems || []
+  );
   const [lockSupplier, setLockSupplier] = useState<boolean>(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       currency: "USD",
-      supplierId: undefined
+      supplierId: undefined,
     },
   });
 
   // When a supplier is selected from a line item, update the supplier field
   const handleSupplierChange = (supplierId: string) => {
-    if (!form.getValues('supplierId')) {
-      form.setValue('supplierId', supplierId);
+    if (!form.getValues("supplierId")) {
+      form.setValue("supplierId", supplierId);
       setLockSupplier(true);
     }
   };
 
   const handleFormSubmit = (values: FormValues) => {
+    console.log("lineItems===", lineItems);
     onSubmit({ ...values, lineItems });
   };
 
@@ -77,7 +97,10 @@ export function PurchaseOrderForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="space-y-6"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -131,7 +154,9 @@ export function PurchaseOrderForm({
                       </SelectItem>
                     ))}
                     {suppliers?.length === 0 && (
-                      <SelectItem value="none" disabled>No suppliers available</SelectItem>
+                      <SelectItem value="none" disabled>
+                        No suppliers available
+                      </SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -159,9 +184,9 @@ export function PurchaseOrderForm({
             name="issueDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Issue Date</FormLabel>
-                <DatePicker 
-                  date={field.value} 
+                <FormLabel className="mt-2 mb-[2px]">Issue Date</FormLabel>
+                <DatePicker
+                  date={field.value}
                   onSelect={field.onChange}
                   setDate={field.onChange}
                   disabled={isSubmitting}
@@ -176,10 +201,10 @@ export function PurchaseOrderForm({
             name="deliveryDate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Delivery Date</FormLabel>
-                <DatePicker 
-                  date={field.value} 
-                  onSelect={field.onChange} 
+                <FormLabel className="mt-2 mb-[2px]">Delivery Date</FormLabel>
+                <DatePicker
+                  date={field.value}
+                  onSelect={field.onChange}
                   setDate={field.onChange}
                   disabled={isSubmitting}
                 />
@@ -210,10 +235,10 @@ export function PurchaseOrderForm({
             <FormItem>
               <FormLabel>Shipping Address</FormLabel>
               <FormControl>
-                <Textarea 
-                  {...field} 
+                <Textarea
+                  {...field}
                   disabled={isSubmitting}
-                  value={field.value || ''}
+                  value={field.value || ""}
                   rows={3}
                 />
               </FormControl>
@@ -237,9 +262,9 @@ export function PurchaseOrderForm({
           <div>
             <p className="text-sm font-medium">Total Cost</p>
             <p className="text-xl font-bold">
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: form.watch("currency") || 'USD'
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: form.watch("currency") || "USD",
               }).format(calculateTotalCost())}
             </p>
           </div>
@@ -252,10 +277,10 @@ export function PurchaseOrderForm({
             <FormItem>
               <FormLabel>Notes</FormLabel>
               <FormControl>
-                <Textarea 
-                  {...field} 
+                <Textarea
+                  {...field}
                   disabled={isSubmitting}
-                  value={field.value || ''}
+                  value={field.value || ""}
                   rows={3}
                 />
               </FormControl>
@@ -274,16 +299,13 @@ export function PurchaseOrderForm({
             <X className="mr-2 h-4 w-4" />
             Cancel
           </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
-          >
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            {mode === 'create' ? 'Create Purchase Order' : 'Save Changes'}
+            {mode === "create" ? "Create Purchase Order" : "Save Changes"}
           </Button>
         </div>
       </form>

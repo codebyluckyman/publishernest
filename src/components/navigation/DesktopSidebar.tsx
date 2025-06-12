@@ -1,4 +1,3 @@
-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   User,
@@ -116,8 +115,8 @@ const DesktopSidebar = ({ menuItems }: DesktopSidebarProps) => {
               <OrganizationSwitcher />
             </div>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
+              {menuItems.map((item, key) => (
+                <SidebarMenuItem key={key}>
                   {item.submenu ? (
                     <div className="flex flex-col w-full">
                       <button

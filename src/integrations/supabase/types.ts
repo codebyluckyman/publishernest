@@ -1848,62 +1848,71 @@ export type Database = {
       };
       purchase_order_line_items: {
         Row: {
-          created_at: string;
-          format_id: string | null;
-          id: string;
-          product_id: string;
-          purchase_order_id: string;
-          quantity: number;
-          total_cost: number;
-          unit_cost: number;
-          updated_at: string;
-        };
+          created_at: string
+          format_id: string | null
+          id: string
+          product_id: string
+          production_quantity: number | null
+          purchase_order_id: string
+          quantity: number
+          received_quantity: number | null
+          total_cost: number
+          transit_quantity: number | null
+          unit_cost: number
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          format_id?: string | null;
-          id?: string;
-          product_id: string;
-          purchase_order_id: string;
-          quantity: number;
-          total_cost: number;
-          unit_cost: number;
-          updated_at?: string;
-        };
+          created_at?: string
+          format_id?: string | null
+          id?: string
+          product_id: string
+          production_quantity?: number | null
+          purchase_order_id: string
+          quantity: number
+          received_quantity?: number | null
+          total_cost: number
+          transit_quantity?: number | null
+          unit_cost: number
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          format_id?: string | null;
-          id?: string;
-          product_id?: string;
-          purchase_order_id?: string;
-          quantity?: number;
-          total_cost?: number;
-          unit_cost?: number;
-          updated_at?: string;
-        };
+          created_at?: string
+          format_id?: string | null
+          id?: string
+          product_id?: string
+          production_quantity?: number | null
+          purchase_order_id?: string
+          quantity?: number
+          received_quantity?: number | null
+          total_cost?: number
+          transit_quantity?: number | null
+          unit_cost?: number
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "purchase_order_line_items_format_id_fkey";
-            columns: ["format_id"];
-            isOneToOne: false;
-            referencedRelation: "formats";
-            referencedColumns: ["id"];
+            foreignKeyName: "purchase_order_line_items_format_id_fkey"
+            columns: ["format_id"]
+            isOneToOne: false
+            referencedRelation: "formats"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "purchase_order_line_items_product_id_fkey";
-            columns: ["product_id"];
-            isOneToOne: false;
-            referencedRelation: "products";
-            referencedColumns: ["id"];
+            foreignKeyName: "purchase_order_line_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "purchase_order_line_items_purchase_order_id_fkey";
-            columns: ["purchase_order_id"];
-            isOneToOne: false;
-            referencedRelation: "purchase_orders";
-            referencedColumns: ["id"];
+            foreignKeyName: "purchase_order_line_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       purchase_orders: {
         Row: {
           approved_at: string | null;

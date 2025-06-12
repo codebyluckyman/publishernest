@@ -22,7 +22,6 @@ export const OnlineStatusProvider: React.FC<{ children: React.ReactNode }> = ({
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const setStatus = (newStatus: Status) => {
-    console.log("User status effect triggered");
     setStatusState(newStatus);
     if (user) updateOnlineStatus(user.id, newStatus);
   };
@@ -61,11 +60,14 @@ export const OnlineStatusProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Only update status if we're not already online
       if (status !== "online") {
-        debounceTimeout.current = setTimeout(() => {
-          if (idleTimeout.current) clearTimeout(idleTimeout.current);
-          setStatus("online");
-          idleTimeout.current = setTimeout(setAway, 5 * 60 * 1000); // 5 minutes
-        }, 5 * 60 * 1000); // Debounce for 1 second
+        debounceTimeout.current = setTimeout(
+          () => {
+            if (idleTimeout.current) clearTimeout(idleTimeout.current);
+            setStatus("online");
+            idleTimeout.current = setTimeout(setAway, 5 * 60 * 1000); // 5 minutes
+          },
+          5 * 60 * 1000
+        ); // Debounce for 1 second
       }
 
       // Reset idle timeout without updating status

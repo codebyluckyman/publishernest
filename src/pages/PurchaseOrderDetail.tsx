@@ -1,10 +1,16 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { usePurchaseOrderDetails } from "@/hooks/usePurchaseOrders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PurchaseOrderApprovalDialog } from "@/components/purchase-orders/PurchaseOrderApprovalDialog";
@@ -12,16 +18,19 @@ import { PurchaseOrderCancelDialog } from "@/components/purchase-orders/Purchase
 import { PurchaseOrderStatusUpdate } from "@/components/purchase-orders/PurchaseOrderStatusUpdate";
 import { PurchaseOrderStatusBadge } from "@/components/purchase-orders/PurchaseOrderStatusBadge";
 import { SupplierCommunicationsTab } from "@/components/purchase-orders/supplier-communications/SupplierCommunicationsTab";
-import { 
-  ArrowLeft, 
-  Edit, 
+import {
+  ArrowLeft,
+  Edit,
   ClipboardList,
   AlertTriangle,
-  XCircle, 
+  XCircle,
   FileText,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
-import { PurchaseOrder, PURCHASE_ORDER_STATUS_MAP } from "@/types/purchaseOrder";
+import {
+  PurchaseOrder,
+  PURCHASE_ORDER_STATUS_MAP,
+} from "@/types/purchaseOrder";
 import { formatDate, formatCurrency } from "@/utils/formatters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -29,25 +38,28 @@ const PurchaseOrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = usePurchaseOrderDetails(id);
-  
+
   const [isApprovalDialogOpen, setIsApprovalDialogOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isStatusUpdateOpen, setIsStatusUpdateOpen] = useState(false);
-  
+
   if (isLoading) {
-    return <div className="text-center py-8">Loading purchase order details...</div>;
+    return (
+      <div className="text-center py-8">Loading purchase order details...</div>
+    );
   }
-  
+
   if (isError) {
     return (
       <Alert variant="destructive" className="my-4">
         <AlertDescription>
-          Error loading purchase order: {error instanceof Error ? error.message : 'Unknown error'}
+          Error loading purchase order:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </AlertDescription>
       </Alert>
     );
   }
-  
+
   if (!data || !data.purchaseOrder) {
     return (
       <Alert variant="destructive" className="my-4">
@@ -55,15 +67,18 @@ const PurchaseOrderDetail = () => {
       </Alert>
     );
   }
-  
+
   const { purchaseOrder, lineItems } = data;
-  
-  const canEdit = purchaseOrder.status_code === '00'; // Only editable in draft state
-  const canRequestApproval = purchaseOrder.status_code === '00';
-  const canCancel = purchaseOrder.status_code !== '90'; // Can cancel if not completed
+
+  const canEdit = purchaseOrder.status_code === "00"; // Only editable in draft state
+  const canRequestApproval = purchaseOrder.status_code === "00";
+  const canCancel = purchaseOrder.status_code !== "90"; // Can cancel if not completed
   const canUpdateStatus = true; // Always allow status updates
-  
-  const formatDateWithUser = (date: string | undefined, userId: string | undefined) => {
+
+  const formatDateWithUser = (
+    date: string | undefined,
+    userId: string | undefined
+  ) => {
     if (!date) return "—";
     let result = formatDate(date);
     if (userId) {
@@ -78,7 +93,7 @@ const PurchaseOrderDetail = () => {
         <div className="flex items-center">
           <Button
             variant="ghost"
-            onClick={() => navigate('/purchase-orders')}
+            onClick={() => navigate("/purchase-orders")}
             className="mr-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -86,20 +101,22 @@ const PurchaseOrderDetail = () => {
           </Button>
           <h1 className="text-2xl font-bold">Purchase Order Details</h1>
         </div>
-        
+
         <div className="flex gap-2">
           {canEdit && (
-            <Button 
+            <Button
               variant="outline"
-              onClick={() => navigate(`/purchase-orders/edit/${purchaseOrder.id}`)}
+              onClick={() =>
+                navigate(`/purchase-orders/edit/${purchaseOrder.id}`)
+              }
             >
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </Button>
           )}
-          
+
           {canRequestApproval && (
-            <Button 
+            <Button
               variant="outline"
               onClick={() => setIsApprovalDialogOpen(true)}
             >
@@ -107,9 +124,9 @@ const PurchaseOrderDetail = () => {
               Request Approval
             </Button>
           )}
-          
+
           {canUpdateStatus && (
-            <Button 
+            <Button
               variant="default"
               onClick={() => setIsStatusUpdateOpen(true)}
             >
@@ -117,9 +134,9 @@ const PurchaseOrderDetail = () => {
               Update Status
             </Button>
           )}
-          
+
           {canCancel && (
-            <Button 
+            <Button
               variant="destructive"
               onClick={() => setIsCancelDialogOpen(true)}
             >
@@ -129,7 +146,7 @@ const PurchaseOrderDetail = () => {
           )}
         </div>
       </div>
-      
+
       <Card>
         <CardHeader>
           <div className="flex justify-between">
@@ -145,7 +162,7 @@ const PurchaseOrderDetail = () => {
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           <Tabs defaultValue="details">
             <TabsList>
@@ -155,7 +172,7 @@ const PurchaseOrderDetail = () => {
                 Supplier Communications
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="details" className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
@@ -163,129 +180,197 @@ const PurchaseOrderDetail = () => {
                     <h3 className="font-medium">Print Run</h3>
                     <p>{purchaseOrder.print_run?.title || "—"}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium">Supplier</h3>
                     <p>{purchaseOrder.supplier?.supplier_name || "—"}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium">Currency</h3>
                     <p>{purchaseOrder.currency}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium">Total Amount</h3>
-                    <p>{purchaseOrder.currency} {formatCurrency(purchaseOrder.total_amount)}</p>
+                    <p>
+                      {purchaseOrder.currency}{" "}
+                      {formatCurrency(purchaseOrder.total_amount)}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-medium">Issue Date</h3>
-                    <p>{purchaseOrder.issue_date ? formatDate(purchaseOrder.issue_date) : "—"}</p>
+                    <p>
+                      {purchaseOrder.issue_date
+                        ? formatDate(purchaseOrder.issue_date)
+                        : "—"}
+                    </p>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium">Delivery Date</h3>
-                    <p>{purchaseOrder.delivery_date ? formatDate(purchaseOrder.delivery_date) : "—"}</p>
+                    <p>
+                      {purchaseOrder.delivery_date
+                        ? formatDate(purchaseOrder.delivery_date)
+                        : "—"}
+                    </p>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium">Shipping Address</h3>
                     <p>{purchaseOrder.shipping_address || "—"}</p>
                   </div>
-                  
+
                   <div>
                     <h3 className="font-medium">Shipping Method</h3>
                     <p>{purchaseOrder.shipping_method || "—"}</p>
                   </div>
                 </div>
               </div>
-              
+
               <Separator className="my-6" />
-              
+
               <div>
                 <h3 className="font-medium mb-4">Status Timeline</h3>
                 <div className="space-y-2">
                   {purchaseOrder.approved_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Approved</span>
-                      <span>{formatDateWithUser(purchaseOrder.approved_at, purchaseOrder.approved_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.approved_at,
+                          purchaseOrder.approved_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.issued_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Issued to Supplier</span>
-                      <span>{formatDateWithUser(purchaseOrder.issued_at, purchaseOrder.issued_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.issued_at,
+                          purchaseOrder.issued_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.scheduled_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Scheduled</span>
-                      <span>{formatDateWithUser(purchaseOrder.scheduled_at, purchaseOrder.scheduled_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.scheduled_at,
+                          purchaseOrder.scheduled_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.production_started_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Production Started</span>
-                      <span>{formatDateWithUser(purchaseOrder.production_started_at, purchaseOrder.production_started_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.production_started_at,
+                          purchaseOrder.production_started_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.production_completed_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Production Completed</span>
-                      <span>{formatDateWithUser(purchaseOrder.production_completed_at, purchaseOrder.production_completed_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.production_completed_at,
+                          purchaseOrder.production_completed_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.awaiting_shipment_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Awaiting Shipment</span>
-                      <span>{formatDateWithUser(purchaseOrder.awaiting_shipment_at, purchaseOrder.awaiting_shipment_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.awaiting_shipment_at,
+                          purchaseOrder.awaiting_shipment_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.shipped_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Shipped</span>
-                      <span>{formatDateWithUser(purchaseOrder.shipped_at, purchaseOrder.shipped_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.shipped_at,
+                          purchaseOrder.shipped_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.received_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Received</span>
-                      <span>{formatDateWithUser(purchaseOrder.received_at, purchaseOrder.received_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.received_at,
+                          purchaseOrder.received_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.goods_checked_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Goods Checked</span>
-                      <span>{formatDateWithUser(purchaseOrder.goods_checked_at, purchaseOrder.goods_checked_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.goods_checked_at,
+                          purchaseOrder.goods_checked_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.completed_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Completed</span>
-                      <span>{formatDateWithUser(purchaseOrder.completed_at, purchaseOrder.completed_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.completed_at,
+                          purchaseOrder.completed_by
+                        )}
+                      </span>
                     </div>
                   )}
                   {purchaseOrder.cancelled_at && (
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Cancelled</span>
-                      <span>{formatDateWithUser(purchaseOrder.cancelled_at, purchaseOrder.cancelled_by)}</span>
+                      <span>
+                        {formatDateWithUser(
+                          purchaseOrder.cancelled_at,
+                          purchaseOrder.cancelled_by
+                        )}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
-              
+
               <Separator className="my-6" />
-              
+
               <div>
                 <h3 className="font-medium mb-4">Notes</h3>
-                <p className="whitespace-pre-line">{purchaseOrder.notes || "No notes provided."}</p>
+                <p className="whitespace-pre-line">
+                  {purchaseOrder.notes || "No notes provided."}
+                </p>
               </div>
-              
+
               <Separator className="my-6" />
-              
+
               <div>
                 <h3 className="font-medium mb-4">Line Items</h3>
                 <div className="rounded-md border">
@@ -302,65 +387,85 @@ const PurchaseOrderDetail = () => {
                     <TableBody>
                       {lineItems.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                          <TableCell
+                            colSpan={5}
+                            className="text-center py-4 text-muted-foreground"
+                          >
                             No items added to this purchase order.
                           </TableCell>
                         </TableRow>
                       ) : (
                         lineItems.map((item) => (
                           <TableRow key={item.id}>
-                            <TableCell>{item.product?.title || item.product_id}</TableCell>
-                            <TableCell>{item.format?.format_name || "—"}</TableCell>
+                            <TableCell>
+                              {item.product?.title || item.product_id}
+                            </TableCell>
+                            <TableCell>
+                              {item.formats?.format_name || "—"}
+                            </TableCell>
                             <TableCell>{item.quantity}</TableCell>
-                            <TableCell>{purchaseOrder.currency} {item.unit_cost.toFixed(2)}</TableCell>
-                            <TableCell>{purchaseOrder.currency} {item.total_cost.toFixed(2)}</TableCell>
+                            <TableCell>
+                              {purchaseOrder.currency}{" "}
+                              {item.unit_cost.toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              {purchaseOrder.currency}{" "}
+                              {item.total_cost.toFixed(2)}
+                            </TableCell>
                           </TableRow>
                         ))
                       )}
                       <TableRow>
-                        <TableCell colSpan={4} className="text-right font-medium">
+                        <TableCell
+                          colSpan={4}
+                          className="text-right font-medium"
+                        >
                           Total:
                         </TableCell>
                         <TableCell className="font-medium">
-                          {purchaseOrder.currency} {purchaseOrder.total_amount?.toFixed(2) || "0.00"}
+                          {purchaseOrder.currency}{" "}
+                          {purchaseOrder.total_amount?.toFixed(2) || "0.00"}
                         </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
                 </div>
               </div>
-              
-              {purchaseOrder.status === 'cancelled' && purchaseOrder.cancellation_reason && (
-                <>
-                  <Separator className="my-6" />
-                  <div>
-                    <h3 className="font-medium mb-2">Cancellation Reason</h3>
-                    <p className="text-red-700">{purchaseOrder.cancellation_reason}</p>
-                  </div>
-                </>
-              )}
+
+              {purchaseOrder.status === "cancelled" &&
+                purchaseOrder.cancellation_reason && (
+                  <>
+                    <Separator className="my-6" />
+                    <div>
+                      <h3 className="font-medium mb-2">Cancellation Reason</h3>
+                      <p className="text-red-700">
+                        {purchaseOrder.cancellation_reason}
+                      </p>
+                    </div>
+                  </>
+                )}
             </TabsContent>
-            
+
             <TabsContent value="communications" className="pt-6">
               {id && <SupplierCommunicationsTab purchaseOrderId={id} />}
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
-      
-      <PurchaseOrderApprovalDialog 
+
+      <PurchaseOrderApprovalDialog
         purchaseOrder={purchaseOrder}
         open={isApprovalDialogOpen}
         onOpenChange={setIsApprovalDialogOpen}
       />
-      
+
       <PurchaseOrderCancelDialog
         purchaseOrder={purchaseOrder}
         open={isCancelDialogOpen}
         onOpenChange={setIsCancelDialogOpen}
       />
-      
-      <PurchaseOrderStatusUpdate 
+
+      <PurchaseOrderStatusUpdate
         purchaseOrder={purchaseOrder}
         open={isStatusUpdateOpen}
         onOpenChange={setIsStatusUpdateOpen}

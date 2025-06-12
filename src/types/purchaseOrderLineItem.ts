@@ -1,12 +1,11 @@
-
 export interface PurchaseOrderLineItem {
   id: string;
   purchase_order_id: string;
   product_id: string;
   format_id?: string;
   quantity: number;
-  in_production_quantity: number;
-  in_transit_quantity: number;
+  production_quantity: number;
+  transit_quantity: number;
   received_quantity: number;
   unit_cost: number;
   tax_rate?: number;
@@ -18,6 +17,6 @@ export interface PurchaseOrderLineItem {
 }
 
 export type NewPurchaseOrderLineItem = Omit<
-  PurchaseOrderLineItem, 
-  'id' | 'purchase_order_id' | 'created_at' | 'updated_at'
+  PurchaseOrderLineItem,
+  "id" | "purchase_order_id" | "created_at" | "updated_at"
 >;

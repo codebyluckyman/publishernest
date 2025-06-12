@@ -1,11 +1,17 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText } from "lucide-react";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { toast } from "sonner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { SelectFilter, FilterOption } from "@/components/common/SelectFilter";
@@ -18,21 +24,24 @@ const PurchaseOrders = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  
+
   // Pass status code filter if not "all"
   const { purchaseOrders, isLoading } = usePurchaseOrders({
-    statusCode: statusFilter !== "all" ? statusFilter : undefined
+    statusCode: statusFilter !== "all" ? statusFilter : undefined,
   });
-  
+
   // Filter the purchase orders by search query
-  const filteredPurchaseOrders = purchaseOrders.filter(po => {
-    const matchesSearch = !searchQuery || 
+  const filteredPurchaseOrders = purchaseOrders.filter((po) => {
+    const matchesSearch =
+      !searchQuery ||
       po.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (po.supplier?.supplier_name || "").toLowerCase().includes(searchQuery.toLowerCase());
+      (po.supplier?.supplier_name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
 
     return matchesSearch;
   });
-  
+
   // Set up pagination
   const {
     currentPage,
@@ -43,12 +52,14 @@ const PurchaseOrders = () => {
     goToPage,
     nextPage,
     previousPage,
-    changePageSize
+    changePageSize,
   } = usePagination({
     data: filteredPurchaseOrders,
-    initialPageSize: 10
+    initialPageSize: 10,
   });
-  
+
+  console.log("currentData", paginatedPurchaseOrders);
+
   const handleCreatePurchaseOrder = () => {
     navigate("/purchase-orders/create");
   };
@@ -57,12 +68,12 @@ const PurchaseOrders = () => {
     if (!dateStr) return "—";
     return new Date(dateStr).toLocaleDateString();
   };
-  
-  const formatCurrency = (amount?: number, currency = 'USD') => {
+
+  const formatCurrency = (amount?: number, currency = "USD") => {
     if (amount === undefined || amount === null) return "—";
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
     }).format(amount);
   };
 
@@ -71,7 +82,9 @@ const PurchaseOrders = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Purchase Orders</h1>
-          <p className="text-muted-foreground">Manage your purchase orders and supplier relationships</p>
+          <p className="text-muted-foreground">
+            Manage your purchase orders and supplier relationships
+          </p>
         </div>
         <Button onClick={handleCreatePurchaseOrder}>
           <Plus className="mr-2 h-4 w-4" />
@@ -89,7 +102,7 @@ const PurchaseOrders = () => {
             className="max-w-sm"
           />
         </div>
-        <PurchaseOrderStatusFilter 
+        <PurchaseOrderStatusFilter
           value={statusFilter}
           onValueChange={setStatusFilter}
         />
@@ -113,18 +126,35 @@ const PurchaseOrders = () => {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                  </TableCell>
                 </TableRow>
               ))
             ) : paginatedPurchaseOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="text-center py-8 text-muted-foreground"
+                >
                   No purchase orders found
                 </TableCell>
               </TableRow>
@@ -132,24 +162,26 @@ const PurchaseOrders = () => {
               paginatedPurchaseOrders.map((po) => (
                 <TableRow key={po.id}>
                   <TableCell>
-                    <Button 
-                      variant="link" 
+                    <Button
+                      variant="link"
                       className="p-0 h-auto font-medium text-primary"
                       onClick={() => navigate(`/purchase-orders/${po.id}`)}
                     >
                       {po.po_number}
                     </Button>
                   </TableCell>
-                  <TableCell>{po.supplier?.supplier_name || '—'}</TableCell>
+                  <TableCell>{po.supplier?.supplier_name || "—"}</TableCell>
                   <TableCell>{formatDate(po.issue_date)}</TableCell>
                   <TableCell>{formatDate(po.delivery_date)}</TableCell>
-                  <TableCell>{formatCurrency(po.total_amount, po.currency)}</TableCell>
+                  <TableCell>
+                    {formatCurrency(po.total_amount, po.currency)}
+                  </TableCell>
                   <TableCell>
                     <PurchaseOrderStatusBadge status={po.status_code} />
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       onClick={() => navigate(`/purchase-orders/${po.id}`)}
                     >

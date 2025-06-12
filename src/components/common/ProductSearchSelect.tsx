@@ -1,16 +1,22 @@
-
-import { useState, useEffect } from 'react';
-import { useProducts } from '@/hooks/useProducts';
-import { Product } from '@/types/product';
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { cn } from '@/lib/utils';
+import { useState, useEffect } from "react";
+import { useProducts } from "@/hooks/useProducts";
+import { Product } from "@/types/product";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 interface ProductSearchSelectProps {
   value?: string;
@@ -29,39 +35,38 @@ export function ProductSearchSelect({
   onChange,
   disabled = false,
   placeholder = "Select a product",
-  className
+  className,
 }: ProductSearchSelectProps) {
   const [open, setOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const { products, isLoading } = useProducts();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   // Find the currently selected product(s)
-  const selectedProducts = products?.filter(product => 
-    multiple 
-      ? selectedProductIds.includes(product.id)
-      : product.id === value
-  ) || [];
+  const selectedProducts =
+    products?.filter((product) =>
+      multiple ? selectedProductIds.includes(product.id) : product.id === value
+    ) || [];
 
   // Filter products based on search term
   useEffect(() => {
     if (!products) return;
-    
-    const filtered = products.filter(product => {
+
+    const filtered = products.filter((product) => {
       const searchLower = searchTerm.toLowerCase();
       return (
-        product.title.toLowerCase().includes(searchLower) || 
+        product.title.toLowerCase().includes(searchLower) ||
         (product.isbn13 && product.isbn13.toLowerCase().includes(searchLower))
       );
     });
-    
+
     setFilteredProducts(filtered);
   }, [searchTerm, products]);
 
   const getDisplayText = () => {
     if (selectedProducts.length === 0) return placeholder;
     if (!multiple) return selectedProducts[0]?.title;
-    return `${selectedProducts.length} product${selectedProducts.length === 1 ? '' : 's'} selected`;
+    return `${selectedProducts.length} product${selectedProducts.length === 1 ? "" : "s"} selected`;
   };
 
   return (
@@ -72,18 +77,16 @@ export function ProductSearchSelect({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn("w-full justify-between", className)}
+          className={cn("w-[90%] justify-between", className)}
         >
-          <span className="truncate">
-            {getDisplayText()}
-          </span>
+          <span className="truncate">{getDisplayText()}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0">
         <Command>
-          <CommandInput 
-            placeholder="Search by title or ISBN-13..." 
+          <CommandInput
+            placeholder="Search by title or ISBN-13..."
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
@@ -97,7 +100,7 @@ export function ProductSearchSelect({
                   {filteredProducts.map((product) => (
                     <CommandItem
                       key={product.id}
-                      value={`${product.title} ${product.isbn13 || ''}`}
+                      value={`${product.title} ${product.isbn13 || ""}`}
                       onSelect={() => {
                         onChange(product.id, product);
                         if (!multiple) {
@@ -111,20 +114,26 @@ export function ProductSearchSelect({
                             className={cn(
                               "mr-2 h-4 w-4",
                               multiple
-                                ? selectedProductIds.includes(product.id) ? "opacity-100" : "opacity-0"
-                                : value === product.id ? "opacity-100" : "opacity-0"
+                                ? selectedProductIds.includes(product.id)
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                                : value === product.id
+                                  ? "opacity-100"
+                                  : "opacity-0"
                             )}
                           />
                           <span className="font-medium">{product.title}</span>
                         </div>
                         {product.isbn13 && (
-                          <span className="text-xs text-gray-500 pl-6">ISBN: {product.isbn13}</span>
+                          <span className="text-xs text-gray-500 pl-6">
+                            ISBN: {product.isbn13}
+                          </span>
                         )}
                       </div>
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              </CommandList>  
+              </CommandList>
             </>
           )}
         </Command>
