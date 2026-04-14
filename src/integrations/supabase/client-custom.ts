@@ -2,8 +2,11 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://vzguoukmiwxvqdnabfma.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6Z3VvdWttaXd4dnFkbmFiZm1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEwODIxMDcsImV4cCI6MjA1NjY1ODEwN30.3-y83UCuzWeYtjBpFRiM73NpVg0GTbI_VoJj_evFDFw";
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL ?? "https://moscrvrjtwqthgxdiqsa.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ??
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vc2NydnJqdHdxdGhneGRpcXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNDg3NjIsImV4cCI6MjA5MTcyNDc2Mn0.AvNZYmZjhnPtTchffw-OCZ1Y9WfVeT1x9i1NbN1Mts8";
 
 // This is a custom client that adds explicit typing support for our tables
 // that might not be in the auto-generated types
