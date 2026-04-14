@@ -36,6 +36,9 @@ import Stock from "./pages/Stock";
 import EditPurchaseOrder from "./pages/EditPurchaseOrder";
 import ChatComponent from "./components/chat/ChtaComponent";
 import Notifications from "./pages/Notifications";
+import Pricing from "./pages/Pricing";
+import Billing from "./pages/Billing";
+import CheckoutResult from "./pages/CheckoutResult";
 
 const router = createBrowserRouter([
   {
@@ -276,6 +279,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "billing",
+        element: (
+          <ProtectedRoute>
+            <Billing />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "chat",
         children: [
           {
@@ -312,6 +323,18 @@ const router = createBrowserRouter([
   {
     path: "/auth",
     element: <Auth />,
+  },
+  {
+    path: "/pricing",
+    element: <Pricing />,
+  },
+  {
+    path: "/checkout/success",
+    element: <CheckoutResult status="success" />,
+  },
+  {
+    path: "/checkout/cancel",
+    element: <CheckoutResult status="cancel" />,
   },
 ]);
 
